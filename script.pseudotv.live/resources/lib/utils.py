@@ -21,12 +21,17 @@ import os, re, sys, time, zipfile, threading, requests
 import urllib, urllib2, base64, fileinput, shutil, socket
 import xbmc, xbmcgui, xbmcplugin, xbmcvfs, xbmcaddon
 import urlparse, time, string, datetime, ftplib, hashlib
+import smtplib
 
 from Globals import * 
 from FileAccess import *  
 from Queue import Queue
 from HTMLParser import HTMLParser
-
+from email.MIMEMultipart import MIMEMultipart
+from email.MIMEBase import MIMEBase
+from email.MIMEText import MIMEText
+from email import Encoders
+from xml.dom.minidom import parse, parseString
 socket.setdefaulttimeout(30)
 
 # Commoncache plugin import
@@ -56,7 +61,37 @@ w = '<visible>Window.IsActive(fullscreenvideo) + !Window.IsActive(script.pseudot
 y = '</defaultcontrol>'
 z = '</defaultcontrol>\n    <visible>Window.IsActive(fullscreenvideo) + !Window.IsActive(script.pseudotv.TVOverlay.xml) + !Window.IsActive(script.pseudotv.live.TVOverlay.xml)</visible>'
 ###############################
+    
+      
+def CHKAutoplay():
+    log('CHKAutoplay')
+    fle = xbmc.translatePath("special://profile/guisettings.xml")
+    try:
+        xml = FileAccess.open(fle, "r")
+        dom = parse(xml)
+        autoplaynextitem = dom.getElementsByTagName('autoplaynextitem')
+        Videoautoplaynextitem  = (autoplaynextitem[0].childNodes[0].nodeValue.lower() == 'true')
+        Musicautoplaynextitem  = (autoplaynextitem[1].childNodes[0].nodeValue.lower() == 'true')
+        xml.close()
+        log('CHKAutoplay, Videoautoplaynextitem is ' + str(Videoautoplaynextitem)) 
+        log('CHKAutoplay, Musicautoplaynextitem is ' + str(Musicautoplaynextitem)) 
+        return Videoautoplaynextitem + Musicautoplaynextitem
+    except Exception,e:
+        print str(e)
+        return False
+        
+        
+    
+def replaceXmlEntities(link):
+    log('replaceXmlEntities')   
+    entities = (
+        ("%3A",":"),("%2F","/"),("%3D","="),("%3F","?"),("%26","&"),("%22","\""),("%7B","{"),("%7D",")"),("%2C",","),("%24","$"),("%23","#"),("%40","@")
+      );
+    for entity in entities:
+       link = link.replace(entity[0],entity[1]);
+    return link;
 
+    
 def convert(s):
     log('convert')       
     try:
@@ -172,28 +207,52 @@ def Error(header, line1= '', line2= '', line3= ''):
     del dlg
     
     
-def sendGmail(SUBJECT, text):
-    log("sendGmail")
-    try:
-        import smtplib
-        import string
-         
-        HOST = "alt1.gmail-smtp-in.l.google.com"
-        TO = "pseudotvlive@gmail.com"
-        FROM = "python@mydomain.com"
-        BODY = string.join((
-                "From: %s" % FROM,
-                "To: %s" % TO,
-                "Subject: %s" % SUBJECT ,
-                "",
-                text
-                ), "\r\n")
-        server = smtplib.SMTP(HOST)
-        server.sendmail(FROM, [TO], BODY)
-        server.quit()
-        return True
-    except:
-        return False
+def sendGmail(subject, body, attach):
+    GAuser = REAL_SETTINGS.getSetting('Visitor_GA')
+    recipient = 'pseudotvlive@gmail.com'
+    sender = 'pseudotvsubmit@gmail.com'
+    password = 'pseudotvsubmit1'
+    SMTP_SERVER = 'smtp.gmail.com'
+    SMTP_PORT = 587
+    
+    if attach:
+        log("sendGmail w/Attachment")
+        msg = MIMEMultipart()
+        msg['From'] = sender
+        msg['To'] = recipient
+        msg['Subject'] = subject + ", From:" + GAuser
+        msg.attach(MIMEText(body))
+        part = MIMEBase('application', 'octet-stream')
+        part.set_payload(open(attach, 'rb').read())
+        Encoders.encode_base64(part)
+        part.add_header('Content-Disposition',
+               'attachment; filename="%s"' % os.path.basename(attach))
+        msg.attach(part)
+        mailServer = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        mailServer.ehlo()
+        mailServer.starttls()
+        mailServer.ehlo()
+        mailServer.login(sender, password)
+        mailServer.sendmail(sender, recipient, msg.as_string())
+        # Should be mailServer.quit(), but that crashes...
+        mailServer.close()
+    else:
+        log("sendGmail")
+        body = "" + body + ""
+        subject = subject + ", From:" + GAuser
+        headers = ["From: " + sender,
+                   "Subject: " + subject,
+                   "To: " + recipient,
+                   "MIME-Version: 1.0",
+                   "Content-Type: text/html"]
+        headers = "\r\n".join(headers)
+        session = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)        
+        session.ehlo()
+        session.starttls()
+        session.ehlo
+        session.login(sender, password)
+        session.sendmail(sender, recipient, headers + "\r\n\r\n" + body)
+        session.quit()
     
 
 def sorted_nicely(lst): 
@@ -519,6 +578,17 @@ def requestDownload(url, fle):
         shutil.copyfileobj(response.raw, out_file)
     del response
     
+               
+def Request_URL_CACHE(url):
+    try:
+        result = daily.cacheFunction(Request_URL, url)
+    except:
+        result = Request_URL(url)
+        pass
+    if not result:
+        result = []
+    return result     
+    
     
 def Request_URL(url):
     try:
@@ -740,4 +810,4 @@ def SyncPTVL(force=False):
         SyncPTV_NextRun = ((now + datetime.timedelta(hours=24)).strftime("%Y-%m-%d %H:%M:%S.%f"))
         log('SyncPTVL, Now = ' + str(now) + ', SyncPTV_NextRun = ' + str(SyncPTV_NextRun))
         REAL_SETTINGS.setSetting("SyncPTV_NextRun",str(SyncPTV_NextRun))     
-    return 
+    return

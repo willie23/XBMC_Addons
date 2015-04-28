@@ -15,6 +15,7 @@
                 <setting id="ThreadMode" type="enum" label="30008" values="On|Minimum Use|Off" default="0" />
                 <setting id="EnableSettop" type="bool" label="30998" default="false"/>
                 <setting id="REFRESH_INT" subsetting="true"  visible="eq(-1,true)" type="enum" label="31000" values="4|8|12|24" default="2"/>
+                <setting id="MEDIA_LIMIT" label="30310" type="enum" values="25|50|100|250|500|1000|Unlimited" default="1"/>
                 <setting id="notify" type="bool" label="30046" default="true"/>
     </category>
 <!--Tweaks-->
@@ -29,8 +30,6 @@
         <setting id="AutoJump" type="bool" label="30408" default="false" />
         <setting id="HideClips" type="bool" label="30215" default="true"/>
         <setting id="ClipLength" type="enum" subsetting="true" label="30216" visible="eq(-1,true)" values="15|30|60|90|120|240|360|480" default="7"/>
-    	<setting id="MEDIA_LIMIT" label="30310" type="enum" values="25|50|100|250|500|1000|Unlimited" default="1"/>
-        <setting id="reserveChannels" type="bool" label="30372" default="false"/>
         <setting id="enable_mute" type="bool" label="30373" default="false"/>
         
     </category>
@@ -90,58 +89,48 @@
             <setting id="autoFindLiveHD" type="enum" label="30097" subsetting="true" visible="eq(-6,true)" values=" |Dual - Strms|Prime/Extend - Favourites" default="0" />
             <setting id="autoFindLiveHDPath" type="folder" source="auto" label="30098" subsetting="true" visible="!eq(-1,0) + !eq(-1,2)"default=""/>
             <setting id="autoFindUSTVNOW" type="bool" label="30074" subsetting="true" visible="eq(-8,true)" default="false"/>
-            <setting id="autoFindUSIPTV" type="bool" label="30194" subsetting="true" visible="false" default="false"/>
-            <setting id="autoFindSmoothStreams" type="bool" label="30174" subsetting="true" visible="false" default="false"/>
-            <setting id="autoFindFilmonFavourites" type="bool" label="30953" subsetting="true" visible="false" default="false"/>
-        <setting type="lsep" label="30076" visible="eq(-12,true)"/>
-            <setting id="autoFindNetworks" type="bool" label="30078" subsetting="true" visible="eq(-13,true)" default="false"/>
-            <setting id="autoFindStudios" type="bool" label="30079" subsetting="true" visible="eq(-14,true)" default="false"/>
-            <setting id="autoFindTVGenres" type="bool" label="30080" subsetting="true" visible="eq(-15,true)" default="false"/>
-            <setting id="autoFindMovieGenres" type="bool" label="30081" subsetting="true" visible="eq(-16,true)" default="false"/>
-            <setting id="autoFindMixGenres" type="bool" label="30082" subsetting="true" visible="eq(-17,true)" default="false"/>
-            <setting id="autoFindRecent" type="bool" label="30883" subsetting="true" visible="eq(-18,true)" default="false"/>
+        <setting type="lsep" label="30076" visible="eq(-9,true)"/>
+            <setting id="autoFindNetworks" type="bool" label="30078" subsetting="true" visible="eq(-10,true)" default="false"/>
+            <setting id="autoFindStudios" type="bool" label="30079" subsetting="true" visible="eq(-11,true)" default="false"/>
+            <setting id="autoFindTVGenres" type="bool" label="30080" subsetting="true" visible="eq(-12,true)" default="false"/>
+            <setting id="autoFindMovieGenres" type="bool" label="30081" subsetting="true" visible="eq(-13,true)" default="false"/>
+            <setting id="autoFindMixGenres" type="bool" label="30082" subsetting="true" visible="eq(-14,true)" default="false"/>
+            <setting id="autoFindRecent" type="bool" label="30883" subsetting="true" visible="eq(-15,true)" default="false"/>
             <setting id="autoFind3DMovies" type="bool" label="30884" subsetting="true" visible="false" default="false"/>
-        <setting type="lsep" label="30083" visible="eq(-20,true)"/>
-            <setting id="autoFindMusicGenres" type="bool" label="30084" subsetting="true" visible="eq(-21,true)" default="false"/>
-            <setting id="autoFindMusicVideosVevoTV" type="bool" label="30086" subsetting="true" visible="eq(-22,true)" default="false"/>
-            <setting id="autoFindMusicVideosMusicTV" type="bool" label="30898" subsetting="true" visible="eq(-23,true)" default="false"/>
-            <setting id="autoFindMusicVideosLastFM" type="bool" label="30087" subsetting="true" visible="eq(-24,true)" default="false"/>
-            <setting id="autoFindMusicVideosLastFMuser" subsetting="true" label="30088" visible="eq(-1,true) + eq(-25,true)" type="text" default="Enter Username"/>
-            <setting id="autoFindMusicVideosLocal" type="folder" source="auto" label="30089" subsetting="true" visible="eq(-26,true)" default=""/>  
-        <setting type="lsep" label="30094" visible="eq(-27,true)"/>  
-            <setting id="autoFindYoutube" type="bool" label="30095" subsetting="true" visible="eq(-28,true)" default="false"/>
-            <setting id="autoFindYoutubeUser" type="text" label="30096" visible="eq(-29,true) + eq(-1,true)" default="Enter Username"/>
-        <setting type="lsep" label="30954" visible="eq(-30,true)"/>
-            <setting id="autoFindPlayonAmazon" type="bool" label="30955" subsetting="true" visible="eq(-31,true)" default="false"/>
-            <setting id="autoFindPlayonHulu" type="bool" label="30956" subsetting="true" visible="eq(-32,true)" default="false"/>
-            <setting id="autoFindPlayonNetflix" type="bool" label="30957" subsetting="true" visible="eq(-33,true)" default="false"/>
-        <setting type="lsep" label="30110" visible="eq(-34,true)"/>
-            <setting id="autoFindCommunity_Source" type="enum" label="31110" subsetting="true"  enable="eq(-37,true)" visible="eq(-35,true)" values="Community|Donor" default="0" />
-            <setting id="autoFindCommunity_Plugins" type="bool" label="30111" subsetting="true" visible="eq(-36,true)" default="false"/>
-            <setting id="autoFindCommunity_Playon" type="bool" label="30116" subsetting="true" visible="eq(-37,true)" default="false"/>
-            <setting id="autoFindCommunity_InternetTV" type="bool" label="30117" subsetting="true" visible="eq(-41,true) + eq(-38,true)" default="false"/>
-            <setting id="autoFindCommunity_RSS" type="bool" label="30112" subsetting="true" visible="eq(-39,true)" default="false"/>
-            <setting id="autoFindCommunity_Youtube_Networks" type="bool" label="30115" subsetting="true" visible="eq(-40,true)" default="false"/>
-            <setting id="autoFindCommunity_Youtube_Channels" type="bool" label="30113" subsetting="true" visible="eq(-41,true)" default="false"/>
-            <setting id="autoFindCommunity_Youtube_Playlists" type="bool" label="30114" subsetting="true" visible="eq(-42,true)" default="false"/>
-            <setting id="autoFindCommunity_Youtube_Seasonal" type="bool" label="30817" subsetting="true" visible="eq(-43,true)" default="false"/>
+        <setting type="lsep" label="30083" visible="eq(-17,true)"/>
+            <setting id="autoFindMusicGenres" type="bool" label="30084" subsetting="true" visible="eq(-18,true)" default="false"/>
+            <setting id="autoFindMusicVideosVevoTV" type="bool" label="30086" subsetting="true" visible="eq(-19,true)" default="false"/>
+            <setting id="autoFindMusicVideosMusicTV" type="bool" label="30898" subsetting="true" visible="eq(-20,true)" default="false"/>
+            <setting id="autoFindMusicVideosLastFM" type="bool" label="30087" subsetting="true" visible="eq(-21,true)" default="false"/>
+            <setting id="autoFindMusicVideosLastFMuser" subsetting="true" label="30088" visible="eq(-1,true) + eq(-22,true)" type="text" default="Enter Username"/>
+            <setting id="autoFindMusicVideosLocal" type="folder" source="auto" label="30089" subsetting="true" visible="eq(-23,true)" default=""/>  
+        <setting type="lsep" label="30110" visible="eq(-24,true)"/>
+            <setting id="autoFindCommunity_Youtube_Networks" type="bool" label="30115" subsetting="true" visible="eq(-25,true)" default="false"/>
+            <setting id="autoFindCommunity_Youtube_Channels" type="bool" label="30113" subsetting="true" visible="eq(-26,true)" default="false"/>
+            <setting id="autoFindCommunity_Youtube_Playlists" type="bool" label="30114" subsetting="true" visible="eq(-27,true)" default="false"/>
+            <setting id="autoFindCommunity_Youtube_Seasonal" type="bool" label="30817" subsetting="true" visible="eq(-28,true)" default="false"/>
+            <setting id="autoFindCommunity_RSS" type="bool" label="30112" subsetting="true" visible="eq(-29,true)" default="false"/>
         <!-- AT Donor -->
-        <setting type="lsep" label="30090" visible="eq(-44,true)"/>  
-            <setting id="autoFindPopcorn" type="bool" label="30092" subsetting="true" enable="eq(-47,true)" visible="eq(-45,true)" default="false"/>
-            <setting id="autoFindCinema" type="bool" label="30950" subsetting="true" enable="eq(-48,true)" visible="eq(-46,true)" default="false"/>
-            <setting id="autoFindCinema_Theme" type="enum" label="30908" subsetting="true"  enable="eq(-49,true)" visible="eq(-47,true) + eq(-1,true)" values="Default|IMAX|Custom" default="1" />
-            <setting id="autoFindIPTV_Source" type="enum" label="30965" subsetting="true"  enable="eq(-50,true) + eq(-50,true)" visible="eq(-48,true)" values=" |Local|Online" default="0" />
-            <setting id="autoFindIPTV_Path_Local" type="file" source="auto" label="30966" subsetting="true" enable="eq(-1,1)" visible="eq(-49,true) + eq(-1,1)" default=""/>
-            <setting id="autoFindIPTV_Path_Online" type="text" source="auto" label="30967" subsetting="true" enable="eq(-2,2)" visible="eq(-50,true) + eq(-2,2)" default=""/>
-            <setting id="autoFindLive_Source" type="enum" label="30969" subsetting="true"  enable="eq(-53,true) + eq(-54,true)" visible="eq(-51,true)" values=" |Local|Online" default="0" />
-            <setting id="autoFindLive_Path_Local" type="file" source="auto" label="30970" subsetting="true" enable="eq(-1,1)" visible="eq(-52,true) + eq(-1,1)" default=""/>
-            <setting id="autoFindLive_Path_Online" type="text" source="auto" label="30971" subsetting="true" enable="eq(-2,2)" visible="eq(-53,true) + eq(-2,2)" default=""/>
-            <setting id="autoFindNavix_Source" type="enum" label="30972" subsetting="true"  enable="eq(-56,true) + eq(-57,true)" visible="eq(-54,true)" values=" |Local|Online" default="0" />
-            <setting id="autoFindNavix_Path_Local" type="file" source="auto" label="30973" subsetting="true" enable="eq(-1,1)" visible="eq(-55,true) + eq(-1,1)" default=""/>
-            <setting id="autoFindNavix_Path_Online" type="text" source="auto" label="30974" subsetting="true" enable="eq(-2,2)" visible="eq(-56,true) + eq(-2,2)" default=""/>
+        <setting type="lsep" label="30090" visible="eq(-30,true)"/>  
+            <setting id="autoFindCommunity_LiveTV" type="bool" label="30116" subsetting="true" enable="eq(-33,true)" visible="eq(-31,true)"default="false"/>
+            <setting id="autoFindCommunity_InternetTV" type="bool" label="30117" subsetting="true" enable="eq(-34,true)" visible="eq(-32,true)" default="false"/>
+            <setting id="autoFindCommunity_Plugins" type="bool" label="30111" subsetting="true" enable="eq(-35,true)" visible="eq(-33,true)" default="false"/>
+            <setting id="autoFindPopcorn" type="bool" label="30092" subsetting="true" enable="eq(-36,true)" visible="eq(-34,true)" default="false"/>
+            <setting id="autoFindCinema" type="bool" label="30950" subsetting="true" enable="eq(-37,true)" visible="eq(-35,true)" default="false"/>
+            <setting id="autoFindCinema_Theme" type="enum" label="30908" subsetting="true"  enable="eq(-38,true)" visible="eq(-36,true) + eq(-1,true)" values="Default|IMAX|Custom" default="1" />  
+            <setting id="autoFindIPTV_Source" type="enum" label="30965" subsetting="true"  enable="eq(-39,true) + eq(-43,true)" visible="eq(-37,true)" values=" |Local|Online" default="0" />
+            <setting id="autoFindIPTV_Path_Local" type="file" source="auto" label="30966" subsetting="true" enable="eq(-1,1)" visible="eq(-38,true) + eq(-1,1)" default=""/>
+            <setting id="autoFindIPTV_Path_Online" type="text" source="auto" label="30967" subsetting="true" enable="eq(-2,2)" visible="eq(-39,true) + eq(-2,2)" default=""/>
+            <setting id="autoFindLive_Source" type="enum" label="30969" subsetting="true"  enable="eq(-42,true) + eq(-46,true)" visible="eq(-40,true)" values=" |Local|Online" default="0" />
+            <setting id="autoFindLive_Path_Local" type="file" source="auto" label="30970" subsetting="true" enable="eq(-1,1)" visible="eq(-41,true) + eq(-1,1)" default=""/>
+            <setting id="autoFindLive_Path_Online" type="text" source="auto" label="30971" subsetting="true" enable="eq(-2,2)" visible="eq(-42,true) + eq(-2,2)" default=""/>
+            <setting id="autoFindNavix_Source" type="enum" label="30972" subsetting="true"  enable="eq(-45,true) + eq(-49,true)" visible="eq(-43,true)" values=" |Local|Online" default="0" />
+            <setting id="autoFindNavix_Path_Local" type="file" source="auto" label="30973" subsetting="true" enable="eq(-1,1)" visible="eq(-44,true) + eq(-1,1)" default=""/>
+            <setting id="autoFindNavix_Path_Online" type="text" source="auto" label="30974" subsetting="true" enable="eq(-2,2)" visible="eq(-45,true) + eq(-2,2)" default=""/>
         </category>
 <!--AutoTune Options-->
     <category label="30700"> 
+        <setting id="reserveChannels" type="bool" label="30372" default="false"/>
         <setting id="PVR_Listing" label="30699" type="enum" values="PVR Backend|xmltv File|ScheduleDirect (Coming Soon)|Zap2it (Coming Soon)" default="0" />
         <setting label="30701" type="lsep" default="" /> 
         <setting id="CN_TV" label="30702" type="bool" default="true" />
@@ -167,7 +156,7 @@
         <setting label="30513" id="Advertolog" enable="eq(-3,true)" visible="eq(-2,3)" type="bool" default="false"/>
         <setting label="30514" id="Advertolog_Region" subsetting="true" type="enum" enable="eq(-4,true)" visible="eq(-1,true) + eq(-3,3)" values="North America|Latin & South America|Western Asia & Northern Africa|Europe, Western Asia & Africa|Europe|Balkans|Asia Pacific|Africa" default="0"/>
         <setting label="30515" id="Advertolog_Resolution" subsetting="true" type="enum" enable="eq(-5,true)" visible="eq(-2,true) + eq(-4,3)" values="360p|480p|720p" default="0"/>
-        <setting label="30516" id="iSpot" enable="eq(-6,true)" visible="eq(-5,3)" type="enum" values="Disabled|Recent Ads|Superbowl '13 Ads|Superbowl '14 Ads" default="0"/>
+        <setting label="30516" id="iSpot_type" enable="eq(-6,true)" visible="eq(-5,3)" type="enum" values="Disabled|Recent Ads|Superbowl '13 Ads|Superbowl '14 Ads|Superbowl '15 Ads" default="0"/>
         <setting label="30517" id="commercialschannel" type="text" visible="eq(-6,2)" default="PLlwhS0wsCzbRNwJ4Epac4rHJJ_6m1JaBm,2,50,1"/>
         <setting label="30519" id="AsSeenOn" visible="!eq(-7,0)" type="bool" default="false" />
         <setting label="30518" id="numcommercials" type="enum" visible="!eq(-8,0)" values="1|2|3|4|5" default="0"/>

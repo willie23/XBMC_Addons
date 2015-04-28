@@ -104,9 +104,9 @@ if xbmcgui.Window(10000).getProperty("PseudoTVRunning") != "True":
 
         # Auto VideoWindow Patch.
         VideoWindow()
-                
+                 
         # Clear filelist Caches    
-        if REAL_SETTINGS.getSetting("ClearCache") == "true":
+        if REAL_SETTINGS.getSetting("ClearCache") == "true" or REAL_SETTINGS.getSetting("ForceChannelReset") == "true":
             log('ClearCache')  
             quarterly.delete("%") 
             bidaily.delete("%") 
@@ -122,7 +122,7 @@ if xbmcgui.Window(10000).getProperty("PseudoTVRunning") != "True":
             upnpTV.delete("%")
             lastfm.delete("%")
             REAL_SETTINGS.setSetting('ClearCache', "false")
-            xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "System Cache Cleared", 1000, THUMB) )
+            xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Filelist Cache Cleared", 1000, THUMB) )
        
         # Clear BCT Caches
         if REAL_SETTINGS.getSetting("ClearBCT") == "true":
@@ -192,9 +192,13 @@ if xbmcgui.Window(10000).getProperty("PseudoTVRunning") != "True":
 
         REAL_SETTINGS.setSetting("ArtService_onInit","false")
         REAL_SETTINGS.setSetting("ArtService_Running","false")
+        REAL_SETTINGS.setSetting("autoFindCommunity_Source","1")
         
-        #Start PseudoTV
-        PseudoTV()
+        if CHKAutoplay() > 0:
+            okDialog("Its required you disable Kodi's automatic video & music", "playback option before launching PseudoTV Live")
+        else:    
+            #Start PseudoTV
+            PseudoTV()
 else:
     log('script.pseudotv.live - Already running, exiting', xbmc.LOGERROR)
     xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Already running please wait and try again...", 4000, THUMB) )

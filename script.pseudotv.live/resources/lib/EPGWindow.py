@@ -117,6 +117,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         #Set timebar path, else use alt. path
         self.currentTimeBar = xbmcgui.ControlImage(timex, timey, timew, timeh, MEDIA_LOC + TIME_BAR)  
         self.addControl(self.currentTimeBar)
+        self.curchannelIndex = []
         
         try:
             textcolor = int(self.getControl(100).getLabel(), 16)            
@@ -171,7 +172,6 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             self.focusRow = 2
             self.setShowInfo()
         except:
-            buggalo.onExceptionRaised() 
             self.log("Unknown EPG Initialization Exception", xbmc.LOGERROR)
             self.log(traceback.format_exc(), xbmc.LOGERROR)          
             try:
@@ -268,13 +268,16 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                     mpath = self.MyOverlayWindow.GetMpath(mediapath)
                     setImage = self.Artdownloader.FindLogo(chtype, chname, mpath)
                     self.getControl(321 + i).setImage(setImage)
+                    # self.getControl(321 + i).setImage(self.channelLogos + ascii(self.MyOverlayWindow.channels[curchannel - 1].name) + ".png")
+                    # if not FileAccess.exists(self.channelLogos + ascii(self.MyOverlayWindow.channels[curchannel - 1].name) + ".png"):
+                        # self.getControl(321 + i).setImage('NA.png')
                 else:
                     self.getControl(321 + i).setImage('NA.png')
             except:
                 pass
 
             curchannel = self.MyOverlayWindow.fixChannel(curchannel + 1)
-
+            
         if time.time() >= starttime and time.time() < starttime + 5400:
             dif = int((starttime + 5400 - time.time()))
             self.currentTimeBar.setPosition(int((basex + basew - 2) - (dif * (basew / 5400.0))), timey)
@@ -303,6 +306,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             xbmc.log('self.addControls(myadds) in use')
             pass
         
+        print 'self.curchannelIndex', str(self.curchannelIndex)
 
     # round the given time down to the nearest half hour
     def roundToHalfHour(self, thetime):
@@ -719,6 +723,17 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         except:
             pass
     
+    
+    def GotoChannel(self,channel):
+        newchannel = self.centerChannel
+        trueCount = 999 - self.MyOverlayWindow.maxChannels
+        pageCount = int(trueCount / 6)
+        
+        for x in range(0, 6):
+            newchannel = self.MyOverlayWindow.fixChannel(newchannel + 1)
+        self.setChannelButtons(self.shownTime, self.MyOverlayWindow.fixChannel(newchannel))
+        self.setProperButton(0)
+   
    
     def GoPgDown(self):
         self.log('GoPgDown')
@@ -985,7 +1000,10 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             Description = tmpstr[2]
             timestamp = tmpstr[4]
             LiveID = chanlist.unpackLiveID(tmpstr[5])
-            self.getControl(503).setImage(IMAGES_LOC + 'label_ondemand.png')
+            try:
+                self.getControl(503).setImage(IMAGES_LOC + 'label_ondemand.png')
+            except:
+                pass
         else:
             title = (self.MyOverlayWindow.channels[newchan - 1].getItemTitle(plpos))   
             SEtitle = self.MyOverlayWindow.channels[newchan - 1].getItemEpisodeTitle(plpos) 
@@ -993,8 +1011,10 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             timestamp = (self.MyOverlayWindow.channels[newchan - 1].getItemtimestamp(plpos))
             myLiveID = (self.MyOverlayWindow.channels[newchan - 1].getItemLiveID(plpos))      
             LiveID = chanlist.unpackLiveID(myLiveID)
-            self.getControl(503).setImage(ascii(self.channelLogos + (self.MyOverlayWindow.channels[newchan - 1].name + '.png')))
-        
+            try:
+                self.getControl(503).setImage(ascii(self.channelLogos + (self.MyOverlayWindow.channels[newchan - 1].name + '.png')))
+            except:
+                pass
         try:
             if self.showSeasonEpisode:
                 SEinfo = SEtitle.split(' -')[0]

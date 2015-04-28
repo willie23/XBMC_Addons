@@ -49,7 +49,7 @@
             </control>
             <control type="label">
                 <left>40</left>
-                <top>480</top>
+                <top>481</top>
                 <width>5000</width>
                 <height>35</height>
                 <font>font12</font>
@@ -57,7 +57,7 @@
                 <shadowcolor>black</shadowcolor>
                 <align>left</align>
                 <aligny>center</aligny>
-                <label>[B][I][/B] = Change Channel #  |  [B][Del][/B] - Remove Channel</label>
+                <label>[B][ i ][/B] - Change Channel Number  [B][ del ][/B] - Remove Channel</label>
             </control>
             <control type="label">
                 <left>680</left>                
@@ -250,7 +250,7 @@
                 <focusedcolor>white</focusedcolor>
                 <onup>107</onup>
                 <ondown>114</ondown>
-                <visible>Control.IsVisible(128) | Control.IsVisible(129) | Control.IsVisible(130) | Control.IsVisible(131) | Control.IsVisible(135) | Control.IsVisible(136)</visible>  
+                <visible>Control.IsVisible(120)|Control.IsVisible(128)|Control.IsVisible(129)|Control.IsVisible(130)|Control.IsVisible(131)|Control.IsVisible(135)</visible>  
                 <colordiffuse></colordiffuse>
             </control>
             
@@ -397,7 +397,7 @@
                     <textcolor>white</textcolor>                   
                     <align>left</align>
                     <onup>330</onup>
-                    <ondown>114</ondown>
+                    <ondown>332</ondown>
                     <colordiffuse></colordiffuse>
                 </control>
                 <control type="label">
@@ -407,6 +407,30 @@
                     <height>35</height>               
                     <font>font13</font>
                     <label>Edit SmartPlaylist (Coming Soon)</label>
+                    <textcolor>white</textcolor>
+                    <aligny>center</aligny>
+                    <align>left</align>
+                </control>
+                <control type="button" id="332">
+                    <left>40</left>
+                    <top>185</top>
+                    <width>720</width>
+                    <height>40</height>
+                    <texturefocus border="5">ptv_button-focus2.png</texturefocus>
+                    <texturenofocus border="5">ptv_button-nofocus.png</texturenofocus>
+                    <textcolor>white</textcolor>                   
+                    <align>left</align>
+                    <onup>331</onup>
+                    <ondown>115</ondown>
+                    <colordiffuse></colordiffuse>
+                </control>
+                <control type="label">
+                    <left>47</left>
+                    <top>185</top>
+                    <width>720</width>
+                    <height>35</height>               
+                    <font>font13</font>
+                    <label>Browse Community Playlists</label>
                     <textcolor>white</textcolor>
                     <aligny>center</aligny>
                     <align>left</align>
@@ -2010,7 +2034,7 @@
                     <width>200</width>
                     <height>40</height>
                     <textcolor>white</textcolor>
-                    <label>Click to Browse:</label>
+                    <label>Path:</label>
                     <aligny>center</aligny>                   
                 </control>
                 <!-- Hidden: UPNP Setting1 -->
@@ -2106,11 +2130,12 @@
                     <textcolor>white</textcolor>
                     <label></label>
                     <wrapmultiline>true</wrapmultiline>
-                    <aligny>center</aligny>                   
+                    <aligny>center</aligny>    
+                    <visible>false</visible>
                 </control>
                 <control type="label">
                     <left>47</left>
-                    <top>345</top>
+                    <top>305</top>
                     <width>700</width>
                     <height>40</height>
                     <textcolor>white</textcolor>

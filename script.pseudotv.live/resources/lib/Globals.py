@@ -126,6 +126,8 @@ PTVL_SKIN_LOC = os.path.join(ADDON_PATH, 'resources', 'skins') #Path to PTVL Ski
 LOGO_LOC = xbmc.translatePath(REAL_SETTINGS.getSetting('ChannelLogoFolder')) #Channel Logo location   
 PVR_DOWNLOAD_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('PVR_Folder'))) #PVR Download location
 XMLTV_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('xmltvLOC'))) + '/'
+CUSTOM_SKIN_LOC = os.path.join(SETTINGS_LOC, 'customskin') + '/'
+XSP_LOC = xbmc.translatePath("special://profile/playlists/video/")
 
 #BASEURL
 USERPASS = REAL_SETTINGS.getSetting('Donor_UP')
@@ -167,15 +169,19 @@ PTVLXMLZIP = (os.path.join(LOCK_LOC, 'ptvlguide.zip'))
 # SKIN SELECT
 # Custom skin downloader todo.    
 if int(REAL_SETTINGS.getSetting('SkinSelector')) == 0:
-    #Use XBMC's included PTVL skin, else Default.
-    if os.path.exists(xbmc.translatePath('special://skin/media/script.pseudotv.lite/')):
+    if xbmcvfs.exists(xbmc.translatePath(os.path.join(CUSTOM_SKIN_LOC, 'media')) + '/'): 
+        Skin_Select = 'customskin'
+        MEDIA_LOC = xbmc.translatePath(os.path.join(CUSTOM_SKIN_LOC, 'media')) + '/'       
+        EPGGENRE_LOC = xbmc.translatePath(os.path.join(MEDIA_LOC, 'epg-genres')) + '/'    
+    elif xbmcvfs.exists(xbmc.translatePath('special://skin/media/script.pseudotv.live/')):
         Skin_Select = 'special://skin/media/'
-        MEDIA_LOC = xbmc.translatePath(os.path.join(Skin_Select, 'script.pseudotv.lite')) + '/'
+        MEDIA_LOC = xbmc.translatePath(os.path.join(Skin_Select, 'script.pseudotv.live')) + '/'
         EPGGENRE_LOC = xbmc.translatePath(os.path.join(MEDIA_LOC, 'epg-genres')) + '/'
-    else:
-        Skin_Select = 'Custom' 
+    else: 
+        Skin_Select = 'Default'
         MEDIA_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media')) + '/'       
-        EPGGENRE_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media', 'epg-genres')) + '/'
+        EPGGENRE_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media', 'epg-genres')) + '/'  
+    
 elif int(REAL_SETTINGS.getSetting('SkinSelector')) == 1:
         Skin_Select = 'Default'
         MEDIA_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media')) + '/'       
@@ -195,8 +201,15 @@ elif int(REAL_SETTINGS.getSetting('SkinSelector')) == 4:
 elif int(REAL_SETTINGS.getSetting('SkinSelector')) == 5:
         Skin_Select = 'Z81'
         MEDIA_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media')) + '/'       
-        EPGGENRE_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media', 'epg-genres')) + '/'    
+        EPGGENRE_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media', 'epg-genres')) + '/' 
 
+# Create customskin Folder
+if not xbmcvfs.exists(CUSTOM_SKIN_LOC):   
+    try:
+        xbmcvfs.mkdir(CUSTOM_SKIN_LOC)
+    except:
+        pass
+        
 #Double check core image folders
 if not xbmcvfs.exists(MEDIA_LOC):
     print 'forcing default DEFAULT_MEDIA_LOC'
@@ -246,22 +259,24 @@ if (OS_SET <= 5 or OS_SET == 10 or OS_SET == 12) and REAL_SETTINGS.getSetting("O
 else:
     LOWPOWER = False
 
-# Common Cache types, Stacked and sorted for read performance... Todo convert to local db, mysql? 
+# Common Cache types, Stacked and sorted for read performance?... Todo convert to DB (local sqlite, mysql)? 
+# Cache is redundant to m3u's, but eliminates repetitive off-site parsing. 
+
 #General
-quarterly = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "quarterly",6)                  #System Purge, AutoUpdate
-bidaily = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "bidaily",12)                     #System Purge, AutoUpdate
-daily = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "daily",24)                         #System Purge, AutoUpdate
-weekly = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "weekly",24 * 7)                   #System Purge, AutoUpdate
-seasonal = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "seasonal",((24 * 7) * 3))       #System Purge, AutoUpdate
-monthly = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "monthly",((24 * 7) * 4))         #System Purge, AutoUpdate
+quarterly = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "quarterly",6)                  #System Purge, ForceReset
+bidaily = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "bidaily",12)                     #System Purge, ForceReset
+daily = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "daily",24)                         #System Purge, ForceReset
+weekly = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "weekly",24 * 7)                   #System Purge, ForceReset
+seasonal = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "seasonal",((24 * 7) * 3))       #System Purge, ForceReset
+monthly = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "monthly",((24 * 7) * 4))         #System Purge, ForceReset
 #FileLists
 localTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "localTV",(((SETTOP_REFRESH / 60) / 60) - 3600))#ForceReset
-liveTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "liveTV",24)                       #System Purge, AutoUpdate
-YoutubeTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "YoutubeTV",48)                 #System Purge, AutoUpdate
-RSSTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "RSSTV",48)                         #System Purge, AutoUpdate
-pluginTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "pluginTV",72)                   #System Purge, AutoUpdate
-upnpTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "playonTV",2)                      #System Purge, AutoUpdate
-lastfm = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "lastfm",48)                       #System Purge, AutoUpdate
+liveTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "liveTV",24)                       #System Purge, ForceReset
+YoutubeTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "YoutubeTV",48)                 #System Purge, ForceReset
+RSSTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "RSSTV",48)                         #System Purge, ForceReset
+pluginTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "pluginTV",72)                   #System Purge, ForceReset
+upnpTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "playonTV",2)                      #System Purge, ForceReset
+lastfm = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "lastfm",48)                       #System Purge, ForceReset
 #BCTs
 bumpers = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "bumpers",((24 * 7) * 4))         #BCT Purge
 ratings = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "ratings",((24 * 7) * 4))         #BCT Purge

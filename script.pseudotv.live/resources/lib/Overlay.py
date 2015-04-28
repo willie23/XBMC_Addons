@@ -848,6 +848,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
 
         self.lastActionTime = 0
         timedif = 0
+        self.background.setVisible(True)
         self.getControl(102).setVisible(False)
         self.getControl(119).setVisible(False)
         self.getControl(130).setVisible(False)
@@ -952,8 +953,11 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         if self.MUTE:
             xbmc.executebuiltin("Mute()");     
         
-        self.log("playing selected file");
-        self.Player.playselected(self.channels[self.currentChannel - 1].playlistPosition)
+        if self.Player.ignoreNextStop:
+            self.PlayerTimeout()
+         
+        self.log("playing selected file");          
+        self.Player.playselected(self.channels[self.currentChannel - 1].playlistPosition)         
         self.background.setVisible(False)
         
         # set the time offset
@@ -1009,10 +1013,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         self.showChannelLabel(self.currentChannel)
         self.lastActionTime = time.time()
         self.runActions(RULES_ACTION_OVERLAY_SET_CHANNEL_END, channel, self.channels[channel - 1])
-            
-        if self.Player.ignoreNextStop:
-            self.PlayerTimeout()
-                            
+        
         if self.UPNP:
             self.PlayUPNP(mediapath, self.seektime)
 
@@ -2147,8 +2148,8 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             self.LastChannelJump()
             self.setChannel(self.LastChannel)
                     
-        # elif action == ACTION_OSD:
-            # xbmc.executebuiltin("ActivateWindow(12901)")
+        elif action == ACTION_OSD:
+            xbmc.executebuiltin("ActivateWindow(videoosd)")
 
         elif action == ACTION_CONTEXT_MENU:
             self.log('ACTION_CONTEXT_MENU')
@@ -2349,12 +2350,14 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
 
         
     def PlayerTimeout(self, start_time=-1):
-        self.log("PlayerTimeout, ActionTimeInt = " + str(self.ActionTimeInt))      
+        self.log("PlayerTimeout, ActionTimeInt = " + str(self.ActionTimeInt))    
+        # cancel pending action
         try:
             if self.PlayerTimeoutThread.isAlive():
                 self.PlayerTimeoutThread.cancel()
         except:
             pass
+            
         try:
             get_time = int(self.Player.getTime())
         except:
@@ -2372,9 +2375,10 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                 self.log("PlayerTimeout, Playback Failed: STOPPING!")
                 json_query = '{"jsonrpc":"2.0","method":"Input.ExecuteAction","params":{"action":"stop"},"id":1}'
                 self.channelList.sendJSON(json_query);
-                self.playerTimerAction()
-                if DEBUG == 'true':
-                    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "DEBUGGING: PlayerTimeout Stopped!", 1000, THUMB) )
+                # self.notPlayingCount = ((int(self.ActionTimeInt))/3) + 1
+                # self.playerTimerAction()
+                # if DEBUG == 'true':
+                    # xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "DEBUGGING: PlayerTimeout Stopped!", 1000, THUMB) )
 
                     
     def playerTimerAction(self):
@@ -2385,31 +2389,33 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             self.lastPlayTime = int(self.Player.getTime())
             self.lastPlaylistPosition = xbmc.PlayList(xbmc.PLAYLIST_MUSIC).getposition()    
             self.notPlayingCount = 0    
+            self.background.setVisible(False)
             MSG = ''           
         else:          
             self.notPlayingCount += 1
             self.log("Adding to notPlayingCount, " + str(self.notPlayingCount))
             
             if self.notPlayingCount > 1:
+                self.background.setVisible(True)
                 MSG = (("Playback Failed - %d / %d") % (self.notPlayingCount, ((int(self.ActionTimeInt))/3)))
                 self.background.setLabel(MSG)
         
-        if self.notPlayingCount > (int(self.ActionTimeInt))/3:
-            if self.notPlayingAction == 'Down':
-                self.background.setLabel("Playback Failed - Changing Channel Down")
-                self.channelDown()
-            elif self.notPlayingAction == 'Last':
-                self.background.setLabel("Playback Failed - Returning to Previous Channel")
-                self.LastChannelJump()
-                self.setChannel(self.LastChannel)
-            else:
-                self.background.setLabel("Playback Failed - Changing Channel Up")
-                self.channelUp()
-            
-            self.showChannelLabel(self.currentChannel)
-            self.playerTimer.name = "PlayerTimer"
-            self.playerTimer.start()
-            return
+            if self.notPlayingCount > (int(self.ActionTimeInt))/3:
+                if self.notPlayingAction == 'Down':
+                    self.background.setLabel("Playback Failed - Changing Channel Down")
+                    self.channelDown()
+                elif self.notPlayingAction == 'Last':
+                    self.background.setLabel("Playback Failed - Returning to Previous Channel")
+                    self.LastChannelJump()
+                    self.setChannel(self.LastChannel)
+                else:
+                    self.background.setLabel("Playback Failed - Changing Channel Up")
+                    self.channelUp()
+                
+                self.showChannelLabel(self.currentChannel)
+                self.playerTimer.name = "PlayerTimer"
+                self.playerTimer.start()
+                return
     
         if self.Player.stopped == False:
             self.playerTimer.name = "PlayerTimer"

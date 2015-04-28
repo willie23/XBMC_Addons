@@ -1,5 +1,9 @@
+[*] Moved "Custom" skin folder location to 'userdata/addon_data/script.pseudotv.live/customskin'.
+[*] In-app Custom "Community Playlists" option. Preconfigured collection of Kodi smartplaylists (local media required).
+[*] Anonymous "Community List" channel submission is now available using in-app submit button. Available for LiveTV/InternetTV/Youtube/RSS/Plugin Chtypes.
+[*] Improved Donor features: "BringthePopcorn" parsing, various tweaks and added Superbowl 2015 commercials.
 [*] Easy in-app channel number changing ('i' or info button) and Easy remove channel ('Del' or remove/delete button).
-[*] Added clear all channel button(remove settings2.xml) under "Misc" settings.
+[*] Added clear all channel configurations button(remove settings2.xml) under "Misc" settings.
 [*] Improved "OnNow" load times and LiveTV Parsing.
 [*] Tweaked Plugin and UPNP parsing and Video Mirroring.
 [*] HDhomerun in-app configuration and improved HDHomeRun auto-tuning *Thanks ruuk

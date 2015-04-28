@@ -84,7 +84,7 @@ def service():
                     autostart()
                 
             xbmc.log('script.pseudotv.live-Service: Idle')
-            xbmc.sleep(100000)
+            xbmc.sleep(200000)
     except:
         pass
         
