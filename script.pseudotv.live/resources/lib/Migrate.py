@@ -90,10 +90,6 @@ class Migrate:
         self.log("autoTune, autoFindMusicVideosVevoTV " + str(Globals.REAL_SETTINGS.getSetting("autoFindMusicVideosVevoTV")))
         self.log("autoTune, autoFindMusicVideosLocal " + str(Globals.REAL_SETTINGS.getSetting("autoFindMusicVideosLocal")))
         self.log("autoTune, autoFindYoutube " + str(Globals.REAL_SETTINGS.getSetting("autoFindYoutube")))
-        self.log("autoTune, autoFindPlayonAmazon " + str(Globals.REAL_SETTINGS.getSetting("autoFindPlayonAmazon")))
-        self.log("autoTune, autoFindPlayonHulu " + str(Globals.REAL_SETTINGS.getSetting("autoFindPlayonHulu")))
-        self.log("autoTune, autoFindPlayonNetflix " + str(Globals.REAL_SETTINGS.getSetting("autoFindPlayonNetflix")))
-        self.log("autoTune, autoFindCommunity_Source " + str(Globals.REAL_SETTINGS.getSetting("autoFindCommunity_Source")))
         self.log("autoTune, autoFindCommunity_Plugins " + str(Globals.REAL_SETTINGS.getSetting("autoFindCommunity_Plugins")))
         self.log("autoTune, autoFindCommunity_InternetTV " + str(Globals.REAL_SETTINGS.getSetting("autoFindCommunity_InternetTV")))
         self.log("autoTune, autoFindCommunity_RSS " + str(Globals.REAL_SETTINGS.getSetting("autoFindCommunity_RSS")))
@@ -122,6 +118,7 @@ class Migrate:
         self.updateDialog.create("PseudoTV Live", "Auto Tune")
         Youtube = chanlist.youtube_player()
         
+        self.ATlimit = MEDIA_LIMIT[int(Globals.REAL_SETTINGS.getSetting('AT_MEDIA_LIMIT'))]
         self.limit = MEDIA_LIMIT[int(Globals.REAL_SETTINGS.getSetting('MEDIA_LIMIT'))]
         if self.limit == 0 or self.limit > 200:
             self.limit = 200
@@ -709,11 +706,6 @@ class Migrate:
                 self.logDebug('channelNum = ' + str(channelNum))
         
         #Recommend lists#
-        if int(REAL_SETTINGS.getSetting('autoFindCommunity_Source')) == 1: 
-            CommunityList = False
-        else:
-            CommunityList = True
-        
         self.genre_filter = []
         if Globals.REAL_SETTINGS.getSetting("CN_TV") == "true":
             self.genre_filter.append('TV') 
@@ -740,12 +732,7 @@ class Migrate:
         if Globals.REAL_SETTINGS.getSetting("autoFindCommunity_InternetTV") == "true":
             self.log("autoTune, adding Recommend InternetTV")
             self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding Recommend InternetTV"," ")
-            
-            if not CommunityList:
-                NameLst, Option1LST, Option2LST, Option3LST, Option4LST = chanlist.fillExternalList('InternetTV','','Donor',True)
-            else:
-                NameLst, Option1LST, Option2LST, Option3LST, Option4LST = chanlist.fillExternalList('InternetTV','','',True)
-            
+            NameLst, Option1LST, Option2LST, Option3LST, Option4LST = chanlist.fillExternalList('InternetTV','','Donor',True)            
             channelNum = self.tuneList(channelNum, '9', NameLst, Option1LST, Option2LST, Option3LST, Option4LST)
 
         #RSS
@@ -814,12 +801,7 @@ class Migrate:
         if Globals.REAL_SETTINGS.getSetting("autoFindCommunity_Plugins") == "true":
             self.log("autoTune, adding Recommend Plugins")
             self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding Recommend Plugins"," ")
-            
-            if not CommunityList:
-                NameLst, Option1LST, Option2LST, Option3LST, Option4LST = chanlist.fillExternalList('Plugin','','Donor',True)
-            else:
-                NameLst, Option1LST, Option2LST, Option3LST, Option4LST = chanlist.fillExternalList('Plugin','','',True)
-            
+            NameLst, Option1LST, Option2LST, Option3LST, Option4LST = chanlist.fillExternalList('Plugin','','Donor',True)
             channelNum = self.tuneList(channelNum, '15', NameLst, Option1LST, Option2LST, Option3LST, Option4LST)
 
         #UPNP
@@ -827,12 +809,7 @@ class Migrate:
         if Globals.REAL_SETTINGS.getSetting("autoFindCommunity_Playon") == "true":
             self.log("autoTune, adding Recommend UPNP")
             self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding Recommend UPNP"," ")
-            
-            if not CommunityList:
-                NameLst, Option1LST, Option2LST, Option3LST, Option4LST = chanlist.fillExternalList('UPNP','','Donor',True)
-            else:
-                NameLst, Option1LST, Option2LST, Option3LST, Option4LST = chanlist.fillExternalList('UPNP','','',True)
-            
+            NameLst, Option1LST, Option2LST, Option3LST, Option4LST = chanlist.fillExternalList('UPNP','','Donor',True)
             channelNum = self.tuneList(channelNum, '16', NameLst, Option1LST, Option2LST, Option3LST, Option4LST)
 
         # Extras - Bringthepopcorn
@@ -1028,7 +1005,7 @@ class Migrate:
                 channelNum += 1
                 filecount += 1
                 
-                if filecount > self.limit:
+                if filecount > self.ATlimit:
                     break
                 
             except:

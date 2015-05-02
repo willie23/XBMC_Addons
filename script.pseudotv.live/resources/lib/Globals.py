@@ -126,7 +126,6 @@ PTVL_SKIN_LOC = os.path.join(ADDON_PATH, 'resources', 'skins') #Path to PTVL Ski
 LOGO_LOC = xbmc.translatePath(REAL_SETTINGS.getSetting('ChannelLogoFolder')) #Channel Logo location   
 PVR_DOWNLOAD_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('PVR_Folder'))) #PVR Download location
 XMLTV_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('xmltvLOC'))) + '/'
-CUSTOM_SKIN_LOC = os.path.join(SETTINGS_LOC, 'customskin') + '/'
 XSP_LOC = xbmc.translatePath("special://profile/playlists/video/")
 
 #BASEURL
@@ -169,19 +168,14 @@ PTVLXMLZIP = (os.path.join(LOCK_LOC, 'ptvlguide.zip'))
 # SKIN SELECT
 # Custom skin downloader todo.    
 if int(REAL_SETTINGS.getSetting('SkinSelector')) == 0:
-    if xbmcvfs.exists(xbmc.translatePath(os.path.join(CUSTOM_SKIN_LOC, 'media')) + '/'): 
-        Skin_Select = 'customskin'
-        MEDIA_LOC = xbmc.translatePath(os.path.join(CUSTOM_SKIN_LOC, 'media')) + '/'       
-        EPGGENRE_LOC = xbmc.translatePath(os.path.join(MEDIA_LOC, 'epg-genres')) + '/'    
-    elif xbmcvfs.exists(xbmc.translatePath('special://skin/media/script.pseudotv.live/')):
+    if xbmcvfs.exists(xbmc.translatePath('special://skin/media/script.pseudotv.live/')):
         Skin_Select = 'special://skin/media/'
         MEDIA_LOC = xbmc.translatePath(os.path.join(Skin_Select, 'script.pseudotv.live')) + '/'
         EPGGENRE_LOC = xbmc.translatePath(os.path.join(MEDIA_LOC, 'epg-genres')) + '/'
-    else: 
-        Skin_Select = 'Default'
+    else:
+        Skin_Select = 'Custom' 
         MEDIA_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media')) + '/'       
-        EPGGENRE_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media', 'epg-genres')) + '/'  
-    
+        EPGGENRE_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media', 'epg-genres')) + '/'
 elif int(REAL_SETTINGS.getSetting('SkinSelector')) == 1:
         Skin_Select = 'Default'
         MEDIA_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media')) + '/'       
@@ -201,14 +195,7 @@ elif int(REAL_SETTINGS.getSetting('SkinSelector')) == 4:
 elif int(REAL_SETTINGS.getSetting('SkinSelector')) == 5:
         Skin_Select = 'Z81'
         MEDIA_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media')) + '/'       
-        EPGGENRE_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media', 'epg-genres')) + '/' 
-
-# Create customskin Folder
-if not xbmcvfs.exists(CUSTOM_SKIN_LOC):   
-    try:
-        xbmcvfs.mkdir(CUSTOM_SKIN_LOC)
-    except:
-        pass
+        EPGGENRE_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media', 'epg-genres')) + '/'
         
 #Double check core image folders
 if not xbmcvfs.exists(MEDIA_LOC):
@@ -253,11 +240,6 @@ if REAL_SETTINGS.getSetting('EnableSettop') == 'true':
     SETTOP_REFRESH = REFRESH_INT[int(REAL_SETTINGS.getSetting('REFRESH_INT'))] 
 else:
     SETTOP_REFRESH = 72000
-
-if (OS_SET <= 5 or OS_SET == 10 or OS_SET == 12) and REAL_SETTINGS.getSetting("OS_SET_OVERRIDE") != "true":
-    LOWPOWER = True
-else:
-    LOWPOWER = False
 
 # Common Cache types, Stacked and sorted for read performance?... Todo convert to DB (local sqlite, mysql)? 
 # Cache is redundant to m3u's, but eliminates repetitive off-site parsing. 
@@ -348,11 +330,10 @@ ACTION_PAGEUP = 5
 ACTION_PAGEDOWN = 6
 ACTION_SELECT_ITEM = 7
 ACTION_PREVIOUS_MENU = (9, 10, 92, 247, 257, 275, 61467, 61448)
-##KEY_BUTTON_BACK = 275   
-##ACTION_NAV_BACK = 92
 ACTION_DELETE_ITEM = 80
 ACTION_SHOW_INFO = 11
 ACTION_PAUSE = 12
+ACTION_PLAYER_PLAYPAUSE = 229 #// Play/pause. If playing it pauses, if paused it plays.
 ACTION_STOP = 13
 ACTION_OSD = 122
 ACTION_NUMBER_0 = 58
@@ -392,15 +373,14 @@ ACTION_TELETEXT_RED = 215
 ACTION_TELETEXT_GREEN = 216
 ACTION_TELETEXT_YELLOW = 217
 ACTION_TELETEXT_BLUE = 218
-
-#define ACTION_VOLUME_UP            88
-#define ACTION_VOLUME_DOWN          89
-#define ACTION_MUTE                 91
-#define ACTION_VOLAMP_UP            93
-#define ACTION_VOLAMP_DOWN          94
+#unused
+#define ACTION_MUTE                   91
 #define ACTION_CHANNEL_SWITCH         183 #last channel?
 #define ACTION_TOGGLE_WATCHED         200 // Toggle watched status (videos)
 #define ACTION_TOGGLE_DIGITAL_ANALOG  202 // switch digital <-> analog
+#define ACTION_TRIGGER_OSD            243 // show autoclosing OSD. Can b used in videoFullScreen.xml window id=2005
+#define ACTION_INPUT_TEXT             244
+#define ACTION_STEREOMODE_TOGGLE      237 // turns 3d mode on/off
 
 #UTC XMLTV - XMLTV that uses UTC w/ Offset timing (not local time).
 UTC_XMLTV = []

@@ -114,9 +114,9 @@ class MyPlayer(xbmc.Player):
                     self.overlay.Error('Video Mirroring configuration error','Please verify IP and Port of Kodi Client')
                     pass
             self.overlay.PrimeSetOnNow()
-        else:
-            if self.ignoreNextStop:
-                self.overlay.PlayerTimeout()
+        # else:
+            # if self.ignoreNextStop:
+                # self.overlay.PlayerTimeout()
                     
             
     def onPlayBackEnded(self):
@@ -218,7 +218,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             self.UPNP = True
         else:
             self.UPNP = False
-
+            
         if FileAccess.exists(os.path.join(XBMC_SKIN_LOC, 'custom_script.pseudotv.live_9506.xml')):
             self.VideoWindow = True
         else:
@@ -356,7 +356,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         try:
             self.myEPG = EPGWindow("script.pseudotv.live.EPG.xml", ADDON_PATH, Skin_Select)
         except:
-            self.myEPG = EPGWindow("script.pseudotv.live.EPG.xml", ADDON_PATH, 'Default')
+            return
             
         self.myEPG.MyOverlayWindow = self
         
@@ -386,7 +386,6 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                 REAL_SETTINGS.setSetting("autoFindNetworks","true")
                 REAL_SETTINGS.setSetting("autoFindMovieGenres","true")
                 REAL_SETTINGS.setSetting("autoFindRecent","true")
-                REAL_SETTINGS.setSetting("autoFindCommunity_Source", "0")
                 REAL_SETTINGS.setSetting("autoFindCommunity_RSS","true")
                 REAL_SETTINGS.setSetting("autoFindCommunity_InternetTV","true")
                 if REAL_SETTINGS.getSetting("SyncXMLTV_Enabled") == "true":
@@ -472,11 +471,10 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         if self.backgroundUpdating < 2 or self.isMaster == False:
             self.channelThread.name = "ChannelThread"
             self.channelThread.start()
-        else:  
-            if REAL_SETTINGS.getSetting("ArtService_Enabled") == "true":
-                self.ArtServiceThread = threading.Timer(float(self.InfTimer), self.ArtService)
-                self.ArtServiceThread.name = "ArtServiceThread"
-                self.ArtServiceThread.start()
+        else:
+            self.ArtServiceThread = threading.Timer(float(self.InfTimer), self.ArtService)
+            self.ArtServiceThread.name = "ArtServiceThread"
+            self.ArtServiceThread.start()
                 
             if REAL_SETTINGS.getSetting("EnableSettop") == "true":
                 self.log('onInit, Settop Enabled')
@@ -953,9 +951,9 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         if self.MUTE:
             xbmc.executebuiltin("Mute()");     
         
-        if self.Player.ignoreNextStop:
+        if self.Player.ignoreNextStop == True:
             self.PlayerTimeout()
-         
+            
         self.log("playing selected file");          
         self.Player.playselected(self.channels[self.currentChannel - 1].playlistPosition)         
         self.background.setVisible(False)
@@ -2148,8 +2146,8 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             self.LastChannelJump()
             self.setChannel(self.LastChannel)
                     
-        elif action == ACTION_OSD:
-            xbmc.executebuiltin("ActivateWindow(videoosd)")
+        # elif action == ACTION_OSD:
+            # xbmc.executebuiltin("ActivateWindow(videoosd)")
 
         elif action == ACTION_CONTEXT_MENU:
             self.log('ACTION_CONTEXT_MENU')

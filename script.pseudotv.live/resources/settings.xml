@@ -36,7 +36,6 @@
 <!--Visual-->
     <category label="30200">
         <setting id="SkinSelector" type="enum"  label="30202" values="Custom|Default|PTVL|Concast|Maverick|Z81" default="2"/>
-        <setting id="ArtService_Enabled" label="30201" visible="false" type="bool" default="true" /> 
         <setting id="FindLogos_Enabled" type="bool" label="34547" enable="false" subsetting="true" visible="eq(-4,true)" default="false"/>
         <setting id="ShowSeEp" type="bool" label="30301" default="false"/>
         <setting id="ChannelLogoFolder" type="folder" source="auto" label="30225" default=""/>
@@ -131,6 +130,7 @@
 <!--AutoTune Options-->
     <category label="30700"> 
         <setting id="reserveChannels" type="bool" label="30372" default="false"/>
+        <setting id="AT_MEDIA_LIMIT" label="33310" type="enum" values="25|50|100|250|500" default="0"/>
         <setting id="PVR_Listing" label="30699" type="enum" values="PVR Backend|xmltv File|ScheduleDirect (Coming Soon)|Zap2it (Coming Soon)" default="0" />
         <setting label="30701" type="lsep" default="" /> 
         <setting id="CN_TV" label="30702" type="bool" default="true" />
@@ -207,7 +207,6 @@
         <setting id="ActionTimeInt" type="slider" label="30309" range="10,5,60" option="int" default="15"/>
         <setting id="enable_Debug" type="bool" label="30993" default="false"/>
         <setting id="Override_ok" type="bool" label="30991" default="true"/>
-        <setting id="OS_SET_OVERRIDE" type="bool" label="30981" default="false"/>
         <setting id="ClearBCT" type="bool" label="30995" default="false"/>
         <setting id="ClearLiveArt" type="bool" label="30996" default="false"/>
         <setting id="ClearCache" type="bool" label="30988" default="false"/>

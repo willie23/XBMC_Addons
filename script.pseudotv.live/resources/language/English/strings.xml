@@ -104,10 +104,10 @@
                         <string id="30086">Find Music Videos using Vevo</string>
                         <string id="30089">Find Music Videos using Local Directory</string>
                         <string id="30110">Community List:</string>
-                            <string id="30112">Find Random RSS Channels</string>
+                            <string id="30112">Find Recommended RSS Channels</string>
                             <string id="30115">Find Youtube Network Channels</string>
-                            <string id="30113">Find Random Youtube Channels</string>
-                            <string id="30114">Find Random Youtube Playlists</string>
+                            <string id="30113">Find Recommended Youtube Channels</string>
+                            <string id="30114">Find Recommended Youtube Playlists</string>
                             <string id="30817">Find Seasonal Youtube Playlists</string>
                             <string id="30090">Donor Exclusive:</string>  
                                 <string id="30116">Find LiveTV Channels</string>
@@ -126,9 +126,9 @@
                                 <string id="30972">Find Navi-X Channels</string>
                                 <string id="30973">Select Navi-X PLX File</string>
                                 <string id="30974">Enter Navi-X URL</string>
-                               <!-- <string id="39005">Keep Pre-existing Channels During Autotuning (Experimental)</string> -->
                    
     <string id="30700">AutoTune Options</string>
+    <string id="33310">Channel Limit per Autotune Type</string>
     <string id="30699">Kodi PVR Guide Data from</string>
     <string id="30701">Include Autotune Channels by genre:</string>
     <string id="30702">TV</string>

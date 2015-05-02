@@ -52,7 +52,8 @@ def PseudoTV():
 
     try:
         MyOverlayWindow = Overlay.TVOverlay("script.pseudotv.live.TVOverlay.xml", __cwd__, Skin_Select)
-    except Exception: 
+    except Exception,e:
+        print str(e)
         Error('PseudoTV Live','Error loading "' + Skin_Select + '" skin!','Verify selected skin.') 
         return
         
@@ -93,6 +94,9 @@ if xbmcgui.Window(10000).getProperty("PseudoTVRunning") != "True":
         # Auto VideoWindow Patch.
         VideoWindow()
         
+        if CHKAutoplay() > 0:
+            okDialog("Its recommended you disable Kodi's"+' "Play the next video/song automatically" ' + "feature found under Kodi's video/playback and music/playback settings.")
+
         #call showChangeLog like this to workaround bug in openElec, *Thanks spoyser
         xbmc.executebuiltin("RunScript("+__cwd__+"/utilities.py,-showChangelog)")  
     else:
@@ -146,23 +150,7 @@ if xbmcgui.Window(10000).getProperty("PseudoTVRunning") != "True":
             except:
                 pass
             REAL_SETTINGS.setSetting('ClearLiveArt', "false")
-            
-        #Enforce settings
-        if LOWPOWER == True:
-            #Set Configurations Optimized for LowPower Hardware.
-            log("LOWPOWER = " + str(LOWPOWER))
-            REAL_SETTINGS.setSetting("EnhancedGuideData", "false")
-            REAL_SETTINGS.setSetting("ArtService_Enabled", "false")
-            REAL_SETTINGS.setSetting("ShowSeEp", "false")
-            REAL_SETTINGS.setSetting("EPGcolor_enabled", "0")
-            REAL_SETTINGS.setSetting("EPG.xInfo", "false")
-            REAL_SETTINGS.setSetting("UNAlter_ChanBug", "true")
-            REAL_SETTINGS.setSetting("sickbeard.enabled", "false")
-            REAL_SETTINGS.setSetting("couchpotato.enabled", "false")  
-            xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Optimized Configurations Applied", 1000, THUMB) )
-        else:
-            REAL_SETTINGS.setSetting("ArtService_Enabled", "true")
-            
+
         #Back/Restore Settings2
         settingsFile = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.xml'))
         nsettingsFile = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.bak.xml'))
@@ -192,13 +180,9 @@ if xbmcgui.Window(10000).getProperty("PseudoTVRunning") != "True":
 
         REAL_SETTINGS.setSetting("ArtService_onInit","false")
         REAL_SETTINGS.setSetting("ArtService_Running","false")
-        REAL_SETTINGS.setSetting("autoFindCommunity_Source","1")
-        
-        if CHKAutoplay() > 0:
-            okDialog("Its required you disable Kodi's automatic video & music", "playback option before launching PseudoTV Live")
-        else:    
-            #Start PseudoTV
-            PseudoTV()
+
+        #Start PseudoTV
+        PseudoTV()
 else:
     log('script.pseudotv.live - Already running, exiting', xbmc.LOGERROR)
     xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Already running please wait and try again...", 4000, THUMB) )

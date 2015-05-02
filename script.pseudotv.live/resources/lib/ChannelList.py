@@ -562,7 +562,7 @@ class ChannelList:
         setting4 = setting4.replace('Default','0').replace('Random','1').replace('Reverse','2') 
 
         # Set Media Sort
-        if chtype != 14 and chtype > 9:
+        if chtype != 14 and (chtype > 9 or chtype == 7):
             if setting4 == '0':
                 #DEFAULT
                 israndom = False  
@@ -4261,17 +4261,26 @@ class ChannelList:
         self.filecount = 0
         channel = self.settingChannel
         
+        if setting1.endswith('/'):
+            setting1 = setting1[:-1]
+
         try:
             Directs = (setting1.split('/')) # split folders
             Directs = ([x.replace('%2F','/') for x in Directs if x != '']) # remove empty elements, replace '%2F' with '/'
             plugins = Directs[1] # element 1 in split is plugin name
-            Directs = Directs[2:] # slice two unwanted elements. ie (plugin:, plugin name)
+            Directs = Directs[2:]# slice two unwanted elements. ie (plugin:, plugin name)
             plugin = 'plugin://' + plugins
             PluginPath = (plugins.replace('plugin://','')).split('/')[0]
             PluginName = (xbmcaddon.Addon(id=PluginPath)).getAddonInfo('name')
+            
+            if len(Directs) == 0:
+                lastfolder = PluginName
+            else:
+                DirectCount = len(Directs)
+                lastfolder = Directs[DirectCount-1]
         except:
-            Directs = []
-            pass
+            return
+            
         self.log('BuildPluginFileList_NEW, Directs = ' + str(Directs))
         
         try:
@@ -4281,12 +4290,13 @@ class ChannelList:
             excludeLST = []
             pass
             
+        
         #filter out unwanted folders
         excludeLST += ['<<','back','previous','home','create new super folder','explore favourites','explore  favourites','explore xbmc favourites','explore kodi favourites','isearch','search','clips','seasons','trailers']         
         self.log('BuildPluginFileList_NEW, excludeLST = ' + str(excludeLST))
         
         if self.background == False:
-            self.updateDialog.update(self.updateDialogProgress, "Updating channel " + str(self.settingChannel), "Parsing " + (PluginName))
+            self.updateDialog.update(self.updateDialogProgress, "Updating channel " + str(self.settingChannel), "Building PluginTV", "Parsing " + (PluginName))
 
         Match = True
         while Match:
@@ -4302,14 +4312,12 @@ class ChannelList:
             #end while when no more directories to walk
             if len(Directs) <= 1:
                 Match = False
-                lastfolder = PluginName
                 
             try:
                 for i in range(len(DetailLST)):
-                    lastfolder = Directs[0]
                     
                     if self.background == False:
-                        self.updateDialog.update(self.updateDialogProgress, "Updating channel " + str(self.settingChannel), "Parsing " + (PluginName) + '/' + (lastfolder),'')
+                        self.updateDialog.update(self.updateDialogProgress, "Updating channel " + str(self.settingChannel), "Building PluginTV", "Parsing " + (PluginName) + '/' + (lastfolder))
                         
                     Detail = (DetailLST[i]).split(',')
                     filetype = Detail[0]

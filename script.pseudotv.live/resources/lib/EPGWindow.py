@@ -647,6 +647,18 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                 # self.Conlist.addItem('Item 2')
                 # self.Conlist.addItem('Item 3')
                 # self.setFocus(self.Conlist)
+            elif action == ACTION_TELETEXT_RED:
+                self.log('ACTION_TELETEXT_RED')
+                self.closeEPG()
+            elif action == ACTION_TELETEXT_GREEN:
+                self.log('ACTION_TELETEXT_GREEN')
+                self.closeEPG()
+            elif action == ACTION_TELETEXT_YELLOW:
+                self.log('ACTION_TELETEXT_YELLOW')
+                self.closeEPG()
+            elif action == ACTION_TELETEXT_BLUE:
+                self.log('ACTION_TELETEXT_BLUE')
+                self.closeEPG()
 
         except:
             self.log("Unknown EPG Exception", xbmc.LOGERROR)
@@ -746,7 +758,6 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             self.log('GoPgDown return') 
         except:
             pass
-    
 
     
     def GoPgUp(self):
@@ -1103,11 +1114,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         self.log('setArtwork1')
         print type, chtype, chname, id, dbid, mpath, type1EXT
         try:
-            if LOWPOWER == True or REAL_SETTINGS.getSetting("ArtService_onInit") == "true" or REAL_SETTINGS.getSetting("ArtService_Running") == "true":
-                setImage1 = self.Artdownloader.SetDefaultArt_NEW(chname, mpath, type1EXT)
-            else:
-                setImage1 = self.Artdownloader.FindArtwork_NEW(type, chtype, chname, id, dbid, mpath, type1EXT)
-            
+            setImage1 = self.Artdownloader.FindArtwork_NEW(type, chtype, chname, id, dbid, mpath, type1EXT)
             self.getControl(508).setImage(setImage1)
             self.getControl(508).setVisible(True)
         except Exception,e:
@@ -1118,11 +1125,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
     def setArtwork2(self, type, chtype, chname, id, dbid, mpath, type2EXT):
         self.log('setArtwork2')
         try: 
-            if LOWPOWER == True or REAL_SETTINGS.getSetting("ArtService_onInit") == "true" or REAL_SETTINGS.getSetting("ArtService_Running") == "true":
-                setImage2 = self.Artdownloader.SetDefaultArt_NEW(chname, mpath, type2EXT)
-            else:
-                setImage2 = self.Artdownloader.FindArtwork_NEW(type, chtype, chname, id, dbid, mpath, type2EXT)
-
+            setImage2 = self.Artdownloader.FindArtwork_NEW(type, chtype, chname, id, dbid, mpath, type2EXT)
             self.getControl(510).setImage(setImage2)
             self.getControl(510).setVisible(True)
         except Exception,e:
