@@ -4232,8 +4232,10 @@ class ChannelList:
                     DetailLST.append(Detail)
                     
         # Stop playback from plugins
-        json_query = '{"jsonrpc":"2.0","method":"Input.ExecuteAction","params":{"action":"stop"},"id":1}'
-        self.sendJSON(json_query);  
+        if self.background == False:
+            json_query = '{"jsonrpc":"2.0","method":"Input.ExecuteAction","params":{"action":"stop"},"id":1}'
+            self.sendJSON(json_query); 
+            
         return DetailLST
     
  
@@ -4891,8 +4893,10 @@ class ChannelList:
         self.log("PluginWalk return")
         
         # Stop playback from plugins
-        json_query = '{"jsonrpc":"2.0","method":"Input.ExecuteAction","params":{"action":"stop"},"id":1}'
-        self.sendJSON(json_query);  
+        if self.background == False:
+            json_query = '{"jsonrpc":"2.0","method":"Input.ExecuteAction","params":{"action":"stop"},"id":1}'
+            self.sendJSON(json_query);  
+            
         return fileList
     
 
