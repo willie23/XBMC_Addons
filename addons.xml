@@ -144,9 +144,9 @@
 
 <addon id="webinterface.PTVL" version="4.1.18" name="KODI PTVL Manager" provider-name="peppy, Lunatixz">
     <requires>
-        <import addon="xbmc.json" version="6.14.3"/>
+        <import addon="xbmc.json" version="6.0.0" />
     </requires>
-    <extension point="xbmc.gui.webinterface"/>
+    <extension point="xbmc.webinterface"/>
     <extension point="xbmc.addon.metadata">
         <summary>Web interface to manage media library for kodi.</summary>
         <description>PTVL webinterface allows you to control and manage Kodi libraries, and manage your PTVL Channels.</description>
