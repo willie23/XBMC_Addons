@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<addon id="webinterface.PTVL" version="4.1.18" name="KODI PTVL Manager" provider-name="peppy, Lunatixz">
+<addon id="webinterface.ptvlmanager" version="4.1.18" name="KODI PTVL Manager" provider-name="peppy, Lunatixz">
     <requires>
         <import addon="xbmc.json" version="6.0.0" />
     </requires>
