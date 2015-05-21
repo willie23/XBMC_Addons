@@ -788,10 +788,13 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         self.log('setOnNowArt')
         self.ShowMenuAlt(self.InfTimer)
         try:  
-            pos = self.list.getSelectedPosition()
-            setImage = self.Artdownloader.FindArtwork_NEW(self.OnNowArtLst[pos][1], self.OnNowArtLst[pos][2], self.OnNowArtLst[pos][3], self.OnNowArtLst[pos][4], self.OnNowArtLst[pos][5], self.OnNowArtLst[pos][6], self.OnNowArtLst[pos][7])
-            if FileAccess.exists(setImage) == False:
+            pos = self.list.getSelectedPosition()            
+            if getProperty("EnableArtwork") == "false":
                 setImage = self.Artdownloader.SetDefaultArt_NEW(self.OnNowArtLst[pos][3], self.OnNowArtLst[pos][6], self.OnNowArtLst[pos][7])
+            else:
+                setImage = self.Artdownloader.FindArtwork_NEW(self.OnNowArtLst[pos][1], self.OnNowArtLst[pos][2], self.OnNowArtLst[pos][3], self.OnNowArtLst[pos][4], self.OnNowArtLst[pos][5], self.OnNowArtLst[pos][6], self.OnNowArtLst[pos][7])
+                if FileAccess.exists(setImage) == False:
+                    setImage = self.Artdownloader.SetDefaultArt_NEW(self.OnNowArtLst[pos][3], self.OnNowArtLst[pos][6], self.OnNowArtLst[pos][7])
             self.getControl(131).setImage(setImage)
         except:
             self.getControl(131).setImage('NA.png')
@@ -2476,8 +2479,14 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                         # Classic/Popup note
                         if REAL_SETTINGS.getSetting("EnableComingUp") != "1":
                             self.log('notification, Classic/Popup')
-                            NotifyTHUMB = self.Artdownloader.FindArtwork_NEW(type, chtype, chname, id, dbid, mpath, self.type3EXT)
-                                
+                            
+                            if getProperty("EnableArtwork") == "false":
+                                NotifyTHUMB = self.Artdownloader.SetDefaultArt_NEW(chname, mpath, self.type3EXT)
+                            else:
+                                NotifyTHUMB = self.Artdownloader.FindArtwork_NEW(type, chtype, chname, id, dbid, mpath, self.type3EXT)
+                                if FileAccess.exists(NotifyTHUMB) == False:
+                                    NotifyTHUMB = self.Artdownloader.SetDefaultArt_NEW(chname, mpath, self.type3EXT)
+                                                                            
                             if self.showingInfo == False and self.notificationShowedNotif == False:
                                 if REAL_SETTINGS.getSetting("EnableComingUp") == "3" or ClassicPOPUP == True:
                                     xbmc.executebuiltin('XBMC.Notification(%s, %s, %s, %s)' % (title, self.channels[self.currentChannel - 1].getItemTitle(nextshow).replace(',', ''), str(NOTIFICATION_DISPLAY_TIME * 2000), NotifyTHUMB))

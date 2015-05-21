@@ -87,7 +87,7 @@ def infoDialog(str, header=ADDON_NAME, time=3000):
     try: xbmcgui.Dialog().notification(header, str, THUMB, time, sound=False)
     except: xbmc.executebuiltin("Notification(%s,%s, %s, %s)" % (header, str, time, THUMB))
 
-def okDialog(str1, str2, header=ADDON_NAME):
+def okDialog(str1, str2='', header=ADDON_NAME):
     xbmcgui.Dialog().ok(header, str1, str2)
 
 def selectDialog(list, header=ADDON_NAME, autoclose=0):
@@ -95,7 +95,7 @@ def selectDialog(list, header=ADDON_NAME, autoclose=0):
         select = xbmcgui.Dialog().select(header, list, autoclose)
         return select
 
-def yesnoDialog(str1, str2, header=ADDON_NAME, str3='', str4=''):
+def yesnoDialog(str1, str2='', header=ADDON_NAME, str3='', str4=''):
     answer = xbmcgui.Dialog().yesno(header, str1, str2, '', str4, str3)
     return answer
 
