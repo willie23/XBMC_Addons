@@ -146,6 +146,7 @@
     <requires>
         <import addon="xbmc.json" version="6.0.0" />
     </requires>
+    <extension point="xbmc.gui.webinterface"/>
     <extension point="xbmc.webinterface"/>
     <extension point="xbmc.addon.metadata">
         <summary>Web interface to manage media library for kodi.</summary>
