@@ -1,3 +1,17 @@
+[*] NEW! EPG RSS Push feed, Displayed once every 15mins on/off during a 60min period. Disabled on startup, it can provide you with instant PTVL Status, Repository activity, twitter posts.
+[*] NEW! Direct EPG navigation via channel number. [Experimental]
+[*] NEW! "Quickflip"feature under "Tweaks". When enabled, On startup and while flipping thru channels PTVL will ignore .strms & chtype 15 "Plugin" sources in favour of flipping performance.
+    Channels will be skipped; effectively bypassing channels with long load times. creating a smoother surfing experience. Strms & Plugins can still be loaded via EPG. [Experimental] 
+[*] Heavy "PTVL" skin tweaking and added enhancements. Goal is to create a very detailed skin base for future skinners to use as a guide.
+[*] NEW! "Dynamic" EPG Timebar and past event fading...
+[*] Initial (WIP) code for new overlay menu "MoreInfo". Activate while the Info Overlay is displaying; click "Down". Click "Up", "Back" or "Close" to exit.
+[*] Various tweaks & bug corrections.
+[*] Added EPG/Overlay Artwork multi-threading, this should improve performance. Artwork is disable until channel building is finished only when background building is enabled.
+    Current build no longer needs the "Artwork Spooler" all artwork is queued/downloaded on demand. [Experimental]
+[*] Youtube fixed, but not 100% of all features restored... Not working: Search, RawGdata, User Subs&Favs and Last.FM.
+[*] Default skin changed to "PTVL" and upgraded to 1080i.
+[*] All Skins temporarily removed, include "Custom" Option.
+[*] [COLOR=blue][B]^ v.0.6.2 ^[/B][/COLOR]
 [*] In-app Custom "Community Playlists" option. Preconfigured collection of Kodi smartplaylists (local media required).
 [*] Anonymous "Community List" channel submission is now available using in-app submit button. Available for LiveTV/InternetTV/Youtube/RSS/Plugin Chtypes.
 [*] Improved Donor features: "BringthePopcorn" parsing, various tweaks and added Superbowl 2015 commercials.
@@ -70,7 +84,7 @@
 [*] Increased Kodi Helix Support, Automated VideoWindow "Re-patching", Updated Bromix Youtube paths.
 [*] Seasonal Channel, Channel based on Monthly Youtube Community Playlist, No Playlist = No Channel.
 [*] Idle timer, and ScreenSaver. *Thanks Anisan.
-[*] Sidebar Menu, Activated while the Info Overlay is displaying; click Left. Click Right, Back or Close to exit.
+[*] Sidebar Menu, Activated while the Info Overlay is displaying; click "Left". Click "Right", "Back" or "Close" to exit.
 [*] IPTV/LiveStream/NaviX parsing improvements.
 [*] [COLOR=blue][B]^ v.0.5.7 ^[/B][/COLOR] 
 [*] Full XMLTV Listings for SmoothStream LiveTV EPG.
@@ -104,7 +118,7 @@
 [*] LiveTV XMLTV parsing performance tweaks. 
 [*] Added new "Coming Up Next" type. "Overlay" was renamed to "Popup", "Overlay" now triggers standard Overlay panel.
 [*] [COLOR=blue][B]^ v.0.5.3 ^[/B][/COLOR] 
-[*] Temporary disabled Art/XMLTV services. They still run at start-up.
+[*] Temporarily disabled Art/XMLTV services. They still run at start-up.
 [*] NEW! Optimized "LowPower" configurations based on OS Selection, Override under "Misc" settings.
 [*] Improved plugin detection, Fixed Internet Trailers BCT's
 [*] Global media limits and XMLTV service tweaks. 

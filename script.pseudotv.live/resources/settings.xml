@@ -22,6 +22,7 @@
     <category label="30300">
         <setting id="os" type="enum" values="Android Arm|Android x86|ATV1 Linux|ATV1 Stock|ATV2|IOS|Linux 32bit|Linux 64bit|Mac 32bit|Mac 64bit|Rasberry Pi|Windows|TLBB" label="30401" default="11" />
         <setting id="limit_preferred_language" type="select" label="32055" values="Chinese|Dutch|English|Finnish|French|German|Hungarian|Italian|Japanese|Polish|Portuguese|Russian|Spanish|Swedish" default="English"/>
+        <setting id="quickflip" type="bool" label="30374" default="false"/>
         <setting id="ChannelDelay" type="enum" label="30302" default="0" values="None|0.25|0.5|0.75|1.0|1.25|1.5|1.75|2.0"/>
         <setting id="SUPchannel" type="enum"  label="30303" values="Last Channel|Preferred Channel" default="0"/>
         <setting id="CurrentChannel" type="text" label="30304" subsetting="true" visible="eq(-1,1)" default="1"/>
@@ -35,7 +36,7 @@
     </category>
 <!--Visual-->
     <category label="30200">
-        <setting id="SkinSelector" type="enum"  label="30202" values="Custom|Default|PTVL|Concast|Maverick|Z81" default="2"/>
+        <setting id="SkinSelector" type="enum"  label="30202" values="Custom|Default|PTVL|Concast|Maverick|Z81" visible="false" default="1"/>
         <setting id="FindLogos_Enabled" type="bool" label="34547" enable="false" subsetting="true" visible="eq(-4,true)" default="false"/>
         <setting id="ShowSeEp" type="bool" label="30301" default="false"/>
         <setting id="ChannelLogoFolder" type="folder" source="auto" label="30225" default=""/>

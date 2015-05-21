@@ -19,6 +19,7 @@
 <string id="30300">Tweaks</string>
     <string id="30401">Operating System</string>  
     <string id="32055">Preferred Language</string>  
+    <string id="30374">Enable Quickflip</string>
     <string id="30302">Channel Change Delay (seconds)</string>
     <string id="30303">Startup Channel</string> 
     <string id="30304">Enter Preferred Channel</string>
@@ -186,7 +187,7 @@
     <string id="30995">Clear BCT Cache</string>
     <string id="30996">Clear Art Cache</string>
     <string id="30988">Clear Filelist Cache</string>
-    <string id="39999">Enable Filelist Caching</string>
+    <string id="39999">Enable Cache</string>
     <string id="39958">Include 3D Files</string>
     <string id="30997">Include Strm Files</string>
     <string id="39997">Include BCT Files</string>

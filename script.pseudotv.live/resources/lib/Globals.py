@@ -74,6 +74,7 @@ xbmc.log(ADDON_ID +' '+ ADDON_NAME +' '+ ADDON_PATH +' '+ ADDON_VERSION)
 TVDB_API_KEY = '078845CE15BC08A7'
 TMDB_API_KEY = '9c47d05a3f5f3a00104f6586412306af'
 FANARTTV_API_KEY = '7bc4161cc4add99b14e51eddcdd5b985'
+YT_API_KEY = 'AIzaSyAnwpqhAmdRShnEHnxLiOUjymHlG4ecE7c'
 
 # Timers
 AUTOSTART_TIMER = [0,5,10,15,20]#in seconds
@@ -140,8 +141,9 @@ DEFAULT_LOGO_LOC = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'logos')) + '/'
 
 #CORE IMG FILENAMES
 TIME_BAR = 'pstvTimeBar.png'
+TIME_BUTTON = 'pstvTimeButton.png'
 BUTTON_FOCUS = 'pstvButtonFocus.png'
-BUTTON_NO_FOCUS = 'pstvButtonNoFocus.png'
+BUTTON_NO_FOCUS = 'pstvButtonNoFocusn.png'
 BUTTON_NO_FOCUS_ALT = 'pstvButtonNoFocusAlt.png'
 THUMB = (IMAGES_LOC + 'icon.png')
 
@@ -166,37 +168,10 @@ PTVLXML = (os.path.join(XMLTV_CACHE_LOC, 'ptvlguide.xml'))
 PTVLXMLZIP = (os.path.join(LOCK_LOC, 'ptvlguide.zip'))
 
 # SKIN SELECT
-# Custom skin downloader todo.    
-if int(REAL_SETTINGS.getSetting('SkinSelector')) == 0:
-    if xbmcvfs.exists(xbmc.translatePath('special://skin/media/script.pseudotv.live/')):
-        Skin_Select = 'special://skin/media/'
-        MEDIA_LOC = xbmc.translatePath(os.path.join(Skin_Select, 'script.pseudotv.live')) + '/'
-        EPGGENRE_LOC = xbmc.translatePath(os.path.join(MEDIA_LOC, 'epg-genres')) + '/'
-    else:
-        Skin_Select = 'Custom' 
-        MEDIA_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media')) + '/'       
-        EPGGENRE_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media', 'epg-genres')) + '/'
-elif int(REAL_SETTINGS.getSetting('SkinSelector')) == 1:
-        Skin_Select = 'Default'
-        MEDIA_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media')) + '/'       
-        EPGGENRE_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media', 'epg-genres')) + '/'  
-elif int(REAL_SETTINGS.getSetting('SkinSelector')) == 2:
-        Skin_Select = 'PTVL'
-        MEDIA_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media')) + '/'       
-        EPGGENRE_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media', 'epg-genres')) + '/'    
-elif int(REAL_SETTINGS.getSetting('SkinSelector')) == 3:
-        Skin_Select = 'Concast'
-        MEDIA_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media')) + '/'       
-        EPGGENRE_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media', 'epg-genres')) + '/'    
-elif int(REAL_SETTINGS.getSetting('SkinSelector')) == 4:
-        Skin_Select = 'Maverick'
-        MEDIA_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media')) + '/'       
-        EPGGENRE_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media', 'epg-genres')) + '/'    
-elif int(REAL_SETTINGS.getSetting('SkinSelector')) == 5:
-        Skin_Select = 'Z81'
-        MEDIA_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media')) + '/'       
-        EPGGENRE_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media', 'epg-genres')) + '/'
-        
+Skin_Select = 'Default'
+MEDIA_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media')) + '/'       
+EPGGENRE_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media', 'epg-genres')) + '/'  
+
 #Double check core image folders
 if not xbmcvfs.exists(MEDIA_LOC):
     print 'forcing default DEFAULT_MEDIA_LOC'
@@ -269,6 +244,7 @@ parsers = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parser
 parserFANTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parserFANTV",((24 * 7) * 4)) #No Purge (FANART Queries)
 parserTVDB = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parserTVDB",((24 * 7) * 4))   #No Purge (TVDB Queries)
 parserTMDB = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parserTMDB",((24 * 7) * 4))   #No Purge (TMDB Queries)
+parserYT = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parserYT",((24 * 7) * 4))       #No Purge (Youtube Queries)
 #Artwork
 artwork = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "artwork",((24 * 7) * 4))         #Artwork Purge
 artwork1 = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "artwork1",((24 * 7) * 4))       #Artwork Purge
@@ -301,18 +277,18 @@ COLOR_HOLO = 'FF0297eb'
 COLOR_SMOKE = '#F5F5F5'
 
 # EPG Chtype/Genre COLOR TYPES
-COLOR_RED_TYPE = ['10', '17', 'TV-MA', 'R', 'NC-17', 'Youtube', 'Sport', 'Sports Event', 'Sports Talk', 'Archery', 'Rodeo', 'Card Games', 'Martial Arts', 'Basketball', 'Baseball', 'Hockey', 'Football', 'Boxing', 'Golf', 'Auto Racing', 'Playoff Sports', 'Hunting', 'Gymnastics', 'Shooting', 'Sports non-event']
+COLOR_RED_TYPE = ['10', '17', 'TV-MA', 'R', 'NC-17', 'Youtube', 'Gaming', 'Sports', 'Sport', 'Sports Event', 'Sports Talk', 'Archery', 'Rodeo', 'Card Games', 'Martial Arts', 'Basketball', 'Baseball', 'Hockey', 'Football', 'Boxing', 'Golf', 'Auto Racing', 'Playoff Sports', 'Hunting', 'Gymnastics', 'Shooting', 'Sports non-event']
 COLOR_GREEN_TYPE = ['5', 'News', 'Public Affairs', 'Newsmagazine', 'Politics', 'Entertainment', 'Community', 'Talk', 'Interview', 'Weather']
 COLOR_mdGREEN_TYPE = ['9', 'Suspense', 'Horror', 'Horror Suspense', 'Paranormal', 'Thriller', 'Fantasy']
 COLOR_BLUE_TYPE = ['Comedy', 'Comedy-Drama', 'Romance-Comedy', 'Sitcom', 'Comedy-Romance']
 COLOR_ltBLUE_TYPE = ['2', '4', '14', '15', '16', 'Movie']
-COLOR_CYAN_TYPE = ['8', 'Documentary', 'History', 'Biography', 'Educational', 'Animals', 'Nature', 'Health']
-COLOR_ltCYAN_TYPE = ['Outdoors', 'Special', 'Reality']
+COLOR_CYAN_TYPE = ['8', 'Documentary', 'History', 'Biography', 'Educational', 'Animals', 'Nature', 'Health', 'Science & Tech', 'Learning & Education', 'Foreign Language']
+COLOR_ltCYAN_TYPE = ['Outdoors', 'Special', 'Reality', 'Reality & Game Shows']
 COLOR_PURPLE_TYPE = ['Drama', 'Romance', 'Historical Drama']
 COLOR_ltPURPLE_TYPE = ['12', '13', 'LastFM', 'Vevo', 'VevoTV', 'Musical', 'Music', 'Musical Comedy']
-COLOR_ORANGE_TYPE = ['11', 'TV-PG', 'TV-14', 'PG', 'PG-13', 'RSS', 'Animation', 'Animated', 'Anime', 'Children', 'Cartoon', 'Family']
-COLOR_YELLOW_TYPE = ['1', '3', '6', 'TV-Y7', 'TV-Y', 'TV-G', 'G', 'Action', 'Adventure', 'Action and Adventure', 'Action Adventure', 'Crime', 'Crime Drama', 'Mystery', 'Science Fiction', 'Series', 'Western', 'Soap', 'Variety', 'War', 'Law', 'Adults Only']
-COLOR_GRAY_TYPE = ['Auto', 'Collectibles', 'Travel', 'Shopping', 'House Garden', 'Home and Garden', 'Gardening', 'Fitness Health', 'Fitness', 'Home Improvement', 'How-To', 'Cooking', 'Fashion', 'Aviation', 'Dance', 'Auction', 'Art', 'Exercise', 'Parenting']
+COLOR_ORANGE_TYPE = ['11', 'TV-PG', 'TV-14', 'PG', 'PG-13', 'RSS', 'Animation', 'Animation & Cartoons', 'Animated', 'Anime', 'Children', 'Cartoon', 'Family']
+COLOR_YELLOW_TYPE = ['1', '3', '6', 'TV-Y7', 'TV-Y', 'TV-G', 'G', 'Classic TV', 'Action', 'Adventure', 'Action & Adventure', 'Action and Adventure', 'Action Adventure', 'Crime', 'Crime Drama', 'Mystery', 'Science Fiction', 'Series', 'Western', 'Soap', 'Soaps', 'Variety', 'War', 'Law', 'Adults Only']
+COLOR_GRAY_TYPE = ['Auto', 'Collectibles', 'Travel', 'Shopping', 'House Garden', 'Home & Garden', 'Home and Garden', 'Gardening', 'Fitness Health', 'Fitness', 'Home Improvement', 'How-To', 'Cooking', 'Fashion', 'Beauty & Fashion', 'Aviation', 'Dance', 'Auction', 'Art', 'Exercise', 'Parenting', 'Food', 'Health & Fitness']
 COLOR_ltGRAY_TYPE = ['0', '7', 'NR', 'Consumer', 'Game Show', 'Other', 'Unknown', 'Religious', 'Anthology', 'None']
 
 # http://developer.android.com/reference/android/graphics/Color.html

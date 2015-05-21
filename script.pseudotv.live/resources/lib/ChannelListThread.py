@@ -23,6 +23,7 @@ import datetime
 import sys, re
 import random, traceback
 
+from utils import *
 from ChannelList import ChannelList
 from Channel import Channel
 from Globals import *
@@ -104,9 +105,10 @@ class ChannelListThread(threading.Thread):
         REAL_SETTINGS.setSetting('ForceChannelReset', 'false')
         self.chanlist.sleepTime = 3
         InfoTimer = INFOBAR_TIMER[int(REAL_SETTINGS.getSetting('InfoTimer'))]
-        self.myOverlay.ArtServiceThread = threading.Timer(float(InfoTimer), self.myOverlay.ArtService)
-        self.myOverlay.ArtServiceThread.name = "ArtServiceThread"
-        self.myOverlay.ArtServiceThread.start()
+        # self.myOverlay.ArtServiceThread = threading.Timer(float(InfoTimer), self.myOverlay.ArtService)
+        # self.myOverlay.ArtServiceThread.name = "ArtServiceThread"
+        # self.myOverlay.ArtServiceThread.start()
+        setProperty("EnableArtwork","true")
 
         if REAL_SETTINGS.getSetting("EnableSettop") == "true":
             self.log('onInit, Settop Enabled')
