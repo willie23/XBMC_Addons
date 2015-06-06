@@ -434,7 +434,7 @@ class Artdownloader:
                        
     def DownloadArt_Thread(self, data):
         self.log('DownloadArt_Thread')
-        if getProperty("PseudoTVRunning") == "true":   
+        if getProperty("PseudoTVRunning") == "True":   
             type = data[0]
             id = data[1]
             arttype = data[2]

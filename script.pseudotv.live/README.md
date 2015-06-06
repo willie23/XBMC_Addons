@@ -17,13 +17,13 @@ Special thanks to:
 
 - XBMCHUB - Forum, and home to extremely talented developers.
 
-- jason102, angrycamel, jtucker1972 - Core Code and inspiration.
+- jason102, angrycamel, jtucker1972 - Original code and project inspiration.
 
 - RagnaroktA - CE Intro Video, Visit http://www.cinemavision.org/
 
 - Special Thanks to:
   ARYEZ,thedarkonaut, tman12, peppy6582, earlieb, Steveb1968, kurumushi, twinther, LordIndy, ronie, mcorcoran, 
-  sphere, giftie, spoyser, Eldorados, lambda, kickin, bradvido88, Phil65, RagnaroktA
+  sphere, giftie, spoyser, Eldorados, lambda, kickin, bradvido88, Phil65, RagnaroktA, -bry
   
 * All work is either original, or modified code from the properly credited creators.
 
@@ -41,15 +41,22 @@ Features
 ------------------
 
     - Automatic channel creation based on your library, installed plugins and recommend online sources.
-    - Optionally customize the channels you want with the channel configuration tool.
+    - Optionally customize the channels you want with the in-app channel configuration tool.
     - Utilize the Kodi smartplaylist editor to create advanced channel setups.
     - Use an EPG and view what was on, is on, and will be on.  Would you rather
         see something that will be on later?  Select it and watch it now!
+    - Extended show information including a OnDemand menu.
+    - Missed the beginning of a show? use the "Start Over" feature.
     - Want to pause a channel while you watch another?  And then come back to
         it and have it be paused still?  Sounds like a weird request to me, but
         if you want to do it you certainly can.  It's a feature!
     - An idle-timer makes sure you aren't spinning a hard-drive needlessly all
         night.
+    - Accidental left the EPG open? or screen paused? No need to worry a handy clock 
+      screensaver displays when idle.
+    - No need to wonder what's on next, toward the end of a program the "Coming Up Next" will display 
+      information on the upcoming program.
+    - Multi-Action sleep timer, Turn the TV off? Shutdown Kodi? it's up to you.
     - Discover the other features on your own (so that I don't have to list
         them all...I'm lazy).
 
@@ -75,14 +82,20 @@ Controls
     exits the script.  You may also press the Previous Menu ('Escape') button to do 
     this (don't worry, it will prompt you to verify first).  Scroll through channels using the arrow up and down 
     keys, or alternatively by pressing Page up or down. You can also jump through the EPG using page up and down.
-    To open the EPG, press the Select key ('Enter'). Move around using the arrow keys. Start a program by pressing 
-    Select.  Pressing Previous Menu ('Escape') will close the EPG. Press 'I' to display or hide the info window.  
-    When it is displayed, you can look at the previous and next shows on this channel using arrow left and right.
+    Switch directly to a channel by inputting the channel number, or navigate to it in the EPG.
     
-    Additional controls: use keymap plugin to link these action to a remote key.
+    To open the EPG, press the Select key ('Enter'). Move around using the arrow keys. Start a program by pressing 
+    Select.  Pressing Previous Menu ('Escape') will close the EPG. Pressing 'Context Menu' will reveal more options. 
+    
+    Press 'I' to display or hide the info window. When it is displayed, you can look at the next shows 
+    on this channel using arrow right. Pressing the arrow left reveals the "Sidebar" menu. 
+    Pressing the 'Context Menu' will show the "MoreInfo" bar.
+ 
+    Additional controls: Use the keymap plugin to link these action to a remote key.
     --------------------
     Mute ('F8')
     Last Channel Recall ('ACTION_SHIFT')
+    Favourite Channel Jump ('ACTION_SYMBOL')
     Subtitles ('ACTION_SHOW_SUBTITLES'), ('ShowSubtitles')
     Next Subtitle ('NextSubtitle')
     Show Codec ('ACTION_SHOW_CODEC')
@@ -146,6 +159,53 @@ next when the current show is nearly finished.
 - Hide very short videos: Don't show clips shorter than 60 seconds in the
 EPG, coming up next box, or info box.  This is helpful if you use bumpers or
 commercials.
+
+------------------------------------
+Key Features
+------------------------------------
+
+[  ] Online Channel configurations, Custom Skin's and Community Lists via Pseudotvlive.com website.
+[½] Full Kodi integration including Context Menu, Hot keys and Artwork.
+[✓] Overlay Sidebar ("On Now") Skinnable quick menu.
+[✓] "Coming Up Next"  Skinable Overlay.
+[  ] Enhanced EPG icon flags (rec, new, sickbeard, couchpotato, HD, PG rating).
+[✓] Dynamic artwork for EPG and Overlay.
+[✓] Enhanced Guide Data: "Find Missing Art/Info" using TVDB, TMDB, Fanart.TV
+[✓] Donor Features.
+[✓] Skin Selector.
+[½] Music Channel Type.
+[✓] Music Video Channels with Internet Streaming features.
+[✓] EZ channel configuration ("Autotune").
+[✓] EZ in-app channel configuration
+[✓] Ability to add channels via Kodi favourites list.
+[✓] EPG Guide Data Listings via PVR Backend
+[✓] Hdhomerun Support (Dual/Prime).
+[✓] USTVnow w/ EPG data(Auto Tune).
+[✓] Automatic Bumpers, Commercials, and Trailers w/ Online support ("BCT's").
+[✓] Youtube/RSS Channel types [size=xx-small]*parser core by peppy6582[/size]
+[✓] TVDB/TMDB/IMDB/Fanart.TV Integration w/ trakt support
+[½] Sickbeard / Couchpotato Integration (Map Record button to queue selected show for download, Visual indicators if show is managed by either program).
+[✓] Error handling (dead link) filter.
+[✓]  EPG Color Categories 
+[✓] Autostart Service [size=xx-small]*core created by Steveb1968 [/size]
+[✓] Channel Manager Tool (Windows Only)
+[  ] Android Companion Tool
+[  ] PVR (Recording Feature)
+[  ] Virtual Movie Poster (Showtime) Integration.
+[½] Kodi web interface w/EPG, Channel editor, Remote Control.
+[✓] Direct Plugin directory channel building (ie. Mylibrary method without the need to build strms).
+[✓] Direct Playon channel building (Requires Playon Software).
+[✓] Direct UPNP channel building (Requires UPNP Software or Devices).
+[✓] Kodi PVR Backend channel building.
+[✓] Classic Coming Up Next dialog artwork.
+[½] Vevo Music Video Channel w/ EPG Information
+[✓] Settop Box mode, 24/7 Operation w/ self updating channels.
+[✓] Multiroom Video Mirroring.
+[✓] Multiroom Channel sharing.
+[  ] EPG Guide data from Schedules Direct and zap2it.
+
+✓ = Added to master
+½ = Added to master, but may not be functional.
 
 ------------------------------------
 Manual Configuration Examples
@@ -541,22 +601,9 @@ _opt_1" value=" --- Channel Name
 ------------------
 Skinning Info
 ------------------
-EPG:
-99  - EPG focused text color
-100 - EPG text color
-105 - EPG text font
-522 - TrendingNow Videowindow replacement (Hidden when 523 enabled)
-523 - Videowindow
-215
 
-dynamic artwork types:
-['banner', 'fanart', 'folder', 'landscape', 'poster']
-['character', 'clearart', 'logo', 'disc']
-
-511.image Sickbeard/Couchpotato (SB.png,CP.png)
-512.image New/Old (NEW.png,OLD.png)
-513.default videoplayer artwork, disabled when dynamic art is enabled.
-515.OSD Progress bar
+# Dynamic artwork types:
+['banner', 'fanart', 'folder', 'landscape', 'poster', 'character', 'clearart', 'logo', 'disc']
 
 # EPG Chtype/Genre COLOR TYPES
 COLOR_RED_TYPE = ['10', '17', 'TV-MA', 'R', 'NC-17', 'Youtube', 'Gaming', 'Sports', 'Sport', 'Sports Event', 'Sports Talk', 'Archery', 'Rodeo', 'Card Games', 'Martial Arts', 'Basketball', 'Baseball', 'Hockey', 'Football', 'Boxing', 'Golf', 'Auto Racing', 'Playoff Sports', 'Hunting', 'Gymnastics', 'Shooting', 'Sports non-event']
@@ -573,10 +620,51 @@ COLOR_YELLOW_TYPE = ['1', '3', '6', 'TV-Y7', 'TV-Y', 'TV-G', 'G', 'Classic TV', 
 COLOR_GRAY_TYPE = ['Auto', 'Collectibles', 'Travel', 'Shopping', 'House Garden', 'Home & Garden', 'Home and Garden', 'Gardening', 'Fitness Health', 'Fitness', 'Home Improvement', 'How-To', 'Cooking', 'Fashion', 'Beauty & Fashion', 'Aviation', 'Dance', 'Auction', 'Art', 'Exercise', 'Parenting', 'Food', 'Health & Fitness']
 COLOR_ltGRAY_TYPE = ['0', '7', 'NR', 'Consumer', 'Game Show', 'Other', 'Unknown', 'Religious', 'Anthology', 'None']
 
+# Id's:
+All Id's must remain the same and present in each skin, but you can change their visibility without issue.
+
+# EPG.xml:
+99  - EPG focused text color
+100 - EPG text color
+105 - EPG text font
+522 - TrendingNow Videowindow replacement (Hidden when 523 enabled)
+523 - Videowindow
+215 - EPG
+216 - DVR
+217 - Ondemand
+218 - Apps
+104 - Current Date
+106 - EPG horizontal time button
+101-103 - EPG grid times
+311-316 - EPG grid channel numbers
+301-306 - EPG grid channel names
+321-326 - EPG grid channel icons
+111-116 - EPG grid guide
+118 - EPG future epg event fading
+119 - EPG past epg event fading
+120 - EPG vertical time bar
+507 - Dynamic art1 type
+508 - Dynamic art1 image
+509 - Dynamic art2 type
+510 - Dynamic art2 image
+511 - SB/CP logo (SB.png,CP.png)
+512 - Unaired/New logo (NEW.png,OLD.png)
+516 - Now watching/Coming up label
+500 - Show title
+501 - episode/tagline
+300 - Channel name
+515 - seekbar hide
+502 - show description/plot
+503 - show channel icons
+
+# TVOverlay.xml
+
+
+
 ------------------
 Credits
 ------------------
 
 PseudoTV Live: Lunatixz
 PseudoTV: Jason102
-TV Time: Jtucker1972
+TVTime: Jtucker1972
