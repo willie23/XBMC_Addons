@@ -60,7 +60,7 @@ def ascii(string):
         if isinstance(string, unicode):
            string = string.encode('ascii', 'ignore')
     return string
-
+    
 # Plugin Info
 ADDON_ID = 'script.pseudotv.live'
 REAL_SETTINGS = xbmcaddon.Addon(id=ADDON_ID)
@@ -210,7 +210,6 @@ else:
 dlg = xbmcgui.Dialog()
 ADDON_SETTINGS = Settings.Settings()
 GlobalFileLock = FileLock()
-Donor_Downloaded = False
 NOTIFY = REAL_SETTINGS.getSetting('notify') == "true"
 SILENT = REAL_SETTINGS.getSetting('silent')
 DEBUG = REAL_SETTINGS.getSetting('enable_Debug')   
@@ -229,12 +228,10 @@ quarterly = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "quar
 bidaily = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "bidaily",12)                     #System Purge, ForceReset
 daily = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "daily",24)                         #System Purge, ForceReset
 weekly = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "weekly",24 * 7)                   #System Purge, ForceReset
-seasonal = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "seasonal",((24 * 7) * 3))       #System Purge, ForceReset
 monthly = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "monthly",((24 * 7) * 4))         #System Purge, ForceReset
 #FileLists
 localTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "localTV",(((SETTOP_REFRESH / 60) / 60) - 3600))#ForceReset
 liveTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "liveTV",24)                       #System Purge, ForceReset
-YoutubeTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "YoutubeTV",48)                 #System Purge, ForceReset
 RSSTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "RSSTV",48)                         #System Purge, ForceReset
 pluginTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "pluginTV",72)                   #System Purge, ForceReset
 upnpTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "playonTV",2)                      #System Purge, ForceReset

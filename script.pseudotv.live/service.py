@@ -145,23 +145,21 @@ def HubSwap():
 def donorCHK():
     DonorPath = (os.path.join(ADDON_PATH, 'resources', 'lib', 'Donor.pyo'))
     DL_DonorPath = (os.path.join(ADDON_PATH, 'resources', 'lib', 'Donor.py'))
-    
+
     if xbmcvfs.exists(DonorPath) or xbmcvfs.exists(DL_DonorPath):
         xbmc.log('script.pseudotv.live-Service: donorCHK = Donor') 
-        if xbmcgui.Window(10000).getProperty("Donor") == "false":
-            REAL_SETTINGS.setSetting("AT_Donor", "true")
-            REAL_SETTINGS.setSetting("COM_Donor", "true")
-            REAL_SETTINGS.setSetting("TRL_Donor", "true")
-            REAL_SETTINGS.setSetting("CAT_Donor", "true")  
-            xbmcgui.Window(10000).setProperty("Donor", "true") 
+        REAL_SETTINGS.setSetting("AT_Donor", "true")
+        REAL_SETTINGS.setSetting("COM_Donor", "true")
+        REAL_SETTINGS.setSetting("TRL_Donor", "true")
+        REAL_SETTINGS.setSetting("CAT_Donor", "true")  
+        xbmcgui.Window(10000).setProperty("Donor", "true") 
     else:
         xbmc.log('script.pseudotv.live-Service: donorCHK = FreeUser') 
-        if xbmcgui.Window(10000).getProperty("Donor") == "true":
-            REAL_SETTINGS.setSetting("AT_Donor", "false")
-            REAL_SETTINGS.setSetting("COM_Donor", "false")
-            REAL_SETTINGS.setSetting("TRL_Donor", "false")
-            REAL_SETTINGS.setSetting("CAT_Donor", "false")
-            xbmcgui.Window(10000).setProperty("Donor", "false")
+        REAL_SETTINGS.setSetting("AT_Donor", "false")
+        REAL_SETTINGS.setSetting("COM_Donor", "false")
+        REAL_SETTINGS.setSetting("TRL_Donor", "false")
+        REAL_SETTINGS.setSetting("CAT_Donor", "false")
+        xbmcgui.Window(10000).setProperty("Donor", "false")
     return
         
 # execute service functions

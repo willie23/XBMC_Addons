@@ -60,18 +60,19 @@ try:
     import StorageServer
 except Exception,e:
     import storageserverdummy as StorageServer
-       
+     
 try:
     from Donor import *
-    Donor_Downloaded = True       
+    setProperty("Donor","true")      
     DL_DonorPath = (os.path.join(ADDON_PATH, 'resources', 'lib', 'Donor.py'))
     xbmcvfs.delete(xbmc.translatePath(DL_DonorPath))      
-except Exception,e:  
-    Donor_Downloaded = False
+    xbmc.log("script.pseudotv.live-ChannelList: Donor Imported")
+except Exception,e:
+    setProperty("Donor","false")
     DL_DonorPath = (os.path.join(ADDON_PATH, 'resources', 'lib', 'Donor.py'))
     xbmcvfs.delete(xbmc.translatePath(DL_DonorPath))   
-    xbmc.log("script.pseudotv.live-ChannelList: Donor Import Failed, Disabling Donor Features " + str(e))      
-   
+    xbmc.log("script.pseudotv.live-ChannelList: Donor Import Failed, Disabling Donor Features " + str(e))
+
 try:
     from metahandler import metahandlers
 except Exception,e:  
@@ -106,7 +107,8 @@ class ChannelList:
         self.seasonal = False
         self.youtube_ok = self.youtube_player()
         self.log('Youtube Player is ' + str(self.youtube_ok))
-        
+        self.Donor_Downloaded = getProperty("Donor") == "true"
+
         try:
             self.limit = MEDIA_LIMIT[int(REAL_SETTINGS.getSetting('MEDIA_LIMIT'))]
         except:
@@ -653,14 +655,8 @@ class ChannelList:
                     month = today.strftime('%B')
                     #If Month != Update, and clear old cache.
                     if setting1.lower() != month.lower():
-                        seasonal.delete("%") 
-                        ADDON_SETTINGS.setSetting("Channel_" + str(channel) + "_1", month)
-                        
+                        ADDON_SETTINGS.setSetting("Channel_" + str(channel) + "_1", month)   
                 fileList = self.createYoutubeFilelist(setting1, setting2, setting3, setting4, limit)
-                
-                #clear cache if no results.
-                if len(fileList) == 0:
-                    seasonal.delete("%")
             else:
                 self.log('makeChannelList, CHANNEL: ' + str(channel) + ', CHTYPE: ' + str(chtype), 'self.youtube_ok invalid: ' + str(setting2))
                 return   
@@ -681,7 +677,7 @@ class ChannelList:
             fileList = self.MusicVideos(setting1, setting2, setting3, setting4, limit)    
             
         # Extras
-        elif chtype == 14 and Donor_Downloaded == True:
+        elif chtype == 14 and self.Donor_Downloaded == True:
             self.log("Extras, " + setting1 + "...")
             fileList = self.extras(setting1, setting2, setting3, setting4, channel)     
             
@@ -2589,24 +2585,6 @@ class ChannelList:
 
         
     def createYoutubeFilelist(self, setting1, setting2, setting3, setting4, limit):
-        self.log('createYoutubeFilelist_Cache')
-        if Cache_Enabled == True:
-            try:
-                if self.seasonal:
-                    result = seasonal.cacheFunction(self.createYoutubeFilelist_NEW, setting1, setting2, setting3, setting4, limit)
-                else:
-                    result = YoutubeTV.cacheFunction(self.createYoutubeFilelist_NEW, setting1, setting2, setting3, setting4, limit)
-            except:
-                result = self.createYoutubeFilelist_NEW(setting1, setting2, setting3, setting4, limit)
-                pass
-        else:
-            result = self.createYoutubeFilelist_NEW(setting1, setting2, setting3, setting4, limit)
-        if not result:
-            result = []
-        return result  
-        
-     
-    def createYoutubeFilelist_NEW(self, setting1, setting2, setting3, setting4, limit):
         self.log("createYoutubeFilelist")
         showList = []
         showcount = 0
@@ -2745,6 +2723,10 @@ class ChannelList:
         title = ''
         description = ''
         thumbnail = ''
+        duration = 0
+        Chname = ''
+        Chcat = '31'
+        
         for f in detail:
             items = re.search('"items" *:', f)
             titles = re.search('"title" *: *"(.*?)",', f)
@@ -2778,7 +2760,8 @@ class ChannelList:
                 self.log("description Trim failed" + str(e))
                 description = (description[:350])
                 pass
-
+                
+            self.log("getYoutubeMeta_NEW, return")
             return [title, description, duration, thumbnail, Chname, int(Chcat)]
 
 
@@ -3874,7 +3857,7 @@ class ChannelList:
                 buggalo.onExceptionRaised()
                 
         #Internet (advertolog.com, ispot.tv)
-        elif CommercialsType == '3' and Donor_Downloaded == True:
+        elif CommercialsType == '3' and self.Donor_Downloaded == True:
             self.log("GetCommercialList_NEW, Internet") 
             Advertolog = REAL_SETTINGS.getSetting("Advertolog")
             Advertolog_Region = REAL_SETTINGS.getSetting("Advertolog_Region")
@@ -4043,7 +4026,7 @@ class ChannelList:
                 buggalo.onExceptionRaised()
                 
         #Internet
-        if TrailersType == '4' and Donor_Downloaded == True:
+        if TrailersType == '4' and self.Donor_Downloaded == True:
             self.log("GetTrailerList_NEW, Internet")
             try:   
                 if self.background == False:
@@ -4160,7 +4143,7 @@ class ChannelList:
         limit = MEDIA_LIMIT[int(REAL_SETTINGS.getSetting('MEDIA_LIMIT'))]
         showList = []
 
-        if Donor_Downloaded == True:  
+        if self.Donor_Downloaded == True:  
             if setting1.lower() == 'popcorn':
                 
                 if self.background == False:
@@ -5262,7 +5245,7 @@ class ChannelList:
     def fillFavourites(self):
         self.log('fillFavourites')
         show_busy_dialog()
-        json_query = uni('{"jsonrpc":"2.0","method":"Favourites.GetFavourites","params":{"type": null, "properties": ["path", "thumbnail", "window", "windowparameter"]},"id":3}')
+        json_query = uni('{"jsonrpc":"2.0","method":"Favourites.GetFavourites","params":{"properties": ["path", "thumbnail", "window", "windowparameter"]},"id":3}')
         json_detail = self.sendJSON(json_query)
         detail = re.compile( "{(.*?)}", re.DOTALL ).findall(json_detail)
         TMPfavouritesList = []

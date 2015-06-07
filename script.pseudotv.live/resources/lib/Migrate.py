@@ -27,15 +27,6 @@ from FileAccess import FileAccess
 from urllib import unquote
 from utils import *
 
-try:
-    from Donor import *
-    Donor_Downloaded = True
-    xbmc.log("script.pseudotv.live-Migrate: Donor Imported")
-except Exception,e:
-    Donor_Downloaded = False
-    xbmc.log("script.pseudotv.live-Migrate: Donor Import Failed, Disabling Donor Features " + str(e))
-
-
 class Migrate:
 
     def log(self, msg, level = xbmc.LOGDEBUG):
@@ -54,6 +45,7 @@ class Migrate:
         chanlist.background = True
         chanlist.forceReset = True
         chanlist.createlist = True
+        self.Donor_Downloaded = getProperty("Donor") == "true"
 
         # If Autotune is enabled direct to autotuning
         if Globals.REAL_SETTINGS.getSetting("Autotune") == "true" and Globals.REAL_SETTINGS.getSetting("Warning1") == "true":
@@ -813,7 +805,7 @@ class Migrate:
 
         # Extras - Bringthepopcorn
         self.updateDialogProgress = 80
-        if Globals.REAL_SETTINGS.getSetting("autoFindPopcorn") == "true" and Donor_Downloaded == True:
+        if Globals.REAL_SETTINGS.getSetting("autoFindPopcorn") == "true" and self.Donor_Downloaded == True:
             self.log("autoTune, adding Bring The Popcorn Movies")
             self.updateDialog.update(self.updateDialogProgress,"Auto Tune","adding Bring The Popcorn Movies"," ")
             
@@ -846,7 +838,7 @@ class Migrate:
                 
         # Extras - Cinema Experience 
         self.updateDialogProgress = 81
-        if Globals.REAL_SETTINGS.getSetting("autoFindCinema") == "true" and Donor_Downloaded == True:
+        if Globals.REAL_SETTINGS.getSetting("autoFindCinema") == "true" and self.Donor_Downloaded == True:
             self.log("autoTune, adding Cinema Experience ")
             self.updateDialog.update(self.updateDialogProgress,"Auto Tune","adding Cinema Experience"," ")
             flename = chanlist.createCinemaExperiencePlaylist() #create playlist
@@ -873,7 +865,7 @@ class Migrate:
                   
         # Extras - IPTV
         self.updateDialogProgress = 82
-        if Globals.REAL_SETTINGS.getSetting("autoFindIPTV_Source") != "0" and Donor_Downloaded == True:
+        if Globals.REAL_SETTINGS.getSetting("autoFindIPTV_Source") != "0" and self.Donor_Downloaded == True:
             self.log("autoTune, adding IPTV Channels")
             self.updateDialog.update(self.updateDialogProgress,"adding IPTV Channels","This could take a few minutes","Please Wait...")
 
@@ -887,7 +879,7 @@ class Migrate:
 
         # Extras - LiveStream
         self.updateDialogProgress = 83
-        if Globals.REAL_SETTINGS.getSetting("autoFindLive_Source") != "0" and Donor_Downloaded == True:
+        if Globals.REAL_SETTINGS.getSetting("autoFindLive_Source") != "0" and self.Donor_Downloaded == True:
             self.log("autoTune, adding LiveStream Channels")
             self.updateDialog.update(self.updateDialogProgress,"adding LiveStream Channels","This could take a few minutes","Please Wait...")
 
@@ -901,7 +893,7 @@ class Migrate:
 
         # Extras - Navi-X
         self.updateDialogProgress = 83
-        if Globals.REAL_SETTINGS.getSetting("autoFindNavix_Source") != "0" and Donor_Downloaded == True:
+        if Globals.REAL_SETTINGS.getSetting("autoFindNavix_Source") != "0" and self.Donor_Downloaded == True:
             self.log("autoTune, adding Navi-X Channels")
             self.updateDialog.update(self.updateDialogProgress,"adding Navi-X Channels","This could take a few minutes","Please Wait...")
             NaviXnum = 0
