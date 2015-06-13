@@ -7,7 +7,7 @@
                 <setting id="Auto_Start" type="bool" label="30044" default="false"/>
                 <setting id="timer_amount" type="enum" values="0|5|10|15|20" label="30045" subsetting="true" visible="eq(-1,true)" default="1"/>
                 <setting id="AutoOff" type="enum" label="30004" values="Disable|30|60|90|120|150|180|210|240" default="0"/>
-                <setting id="AutoOff_Mode" type="enum" label="30009" values="Exit PTVL|Quit Kodi|Sleep PC|Shutdown PC|EG Trigger" default="0"/>
+                <setting id="AutoOff_Mode" type="enum" label="30009" values="Exit PTVL|Quit Kodi|Sleep PC|Shutdown PC|EG Trigger|CEC TVStandby" default="0"/>
                 <setting id="Idle_Screensaver" type="bool" label="29999" default="false" />
                 <setting id="ForceChannelReset" type="bool" label="30005" default="false" />
                 <setting id="ChannelResetSetting" type="enum" label="30006" values="Automatic|Daily|Weekly|Monthly|Never|Every Time" default="0"/>
@@ -204,6 +204,7 @@
     </category>
     <!--Utilities-->
     <category label="31900">  
+        <setting id="ClearChanFavs" type="action" label="31997" action="RunScript($CWD/utilities.py, -ClearChanFavorites)"/>
         <setting label="31999" type="lsep"/>
         <setting id="ATRestore" type="bool" label="30909" default="false"/>
       	<setting id="Warning2" type="bool" label="30069" subsetting="true" visible="eq(-1,true)" default="false"/>
@@ -226,7 +227,7 @@
     <!--Debugging-->
     <category label="30900">  
         <setting label="30990" type="lsep"/>
-        <setting id="ActionTimeInt" type="slider" label="30309" range="10,5,60" option="int" default="15"/>
+        <setting id="ActionTimeInt" type="slider" label="30309" range="2,2,60" option="int" default="10"/>
         <setting id="enable_Debug" type="bool" label="30993" default="false"/>
         <setting id="Override_ok" type="bool" label="30991" default="true"/>
         <setting id="Cache_Enabled" label="39999" type="bool" default="true" />

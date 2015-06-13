@@ -60,11 +60,25 @@ w = '<visible>Window.IsActive(fullscreenvideo) + !Window.IsActive(script.pseudot
 y = '</defaultcontrol>'
 z = '</defaultcontrol>\n    <visible>Window.IsActive(fullscreenvideo) + !Window.IsActive(script.pseudotv.TVOverlay.xml) + !Window.IsActive(script.pseudotv.live.TVOverlay.xml)</visible>'
 
+def getPlatform():
+    if xbmc.getCondVisibility('system.platform.osx'):
+        return "OSX"
+    elif xbmc.getCondVisibility('system.platform.atv2'):
+        return "ATV2"
+    elif xbmc.getCondVisibility('system.platform.ios'):
+        return "iOS"
+    elif xbmc.getCondVisibility('system.platform.windows'):
+        return "Windows"
+    elif xbmc.getCondVisibility('system.platform.linux'):
+        return "Linux/RPi"
+    elif xbmc.getCondVisibility('system.platform.android'): 
+        return "Linux/Android"
+    return "Unknown"
+
 def closest(list, Number):
     aux = []
     for valor in list:
         aux.append(abs(Number-int(valor)))
-
     return aux.index(min(aux))   
     
 def removeEmptyElem(lst):
@@ -137,7 +151,6 @@ def ClearCache(type):
         daily.delete("%") 
         weekly.delete("%")
         monthly.delete("%")
-        localTV.delete("%")
         liveTV.delete("%")
         RSSTV.delete("%")
         pluginTV.delete("%")
@@ -634,22 +647,24 @@ def VideoWindow():
     try:
         if xbmcgui.Window(10000).getProperty("PseudoTVRunning") != "True":
             if GetXBMCVersion() == 15:
-                raise
-                
-            if not FileAccess.exists(VWPath):
-                log("VideoWindow, VWPath not found")
-                FreshInstall = True
-                xbmcvfs.copy(flePath, VWPath)
-                if FileAccess.exists(VWPath):
-                    log('script.pseudotv.live-utils: custom_script.pseudotv.live_9506.xml Copied')
-                    VideoWindowPatch()   
-                    if FreshInstall == True:
-                        xbmc.executebuiltin("ReloadSkin()")
-                else:
-                    raise
+                VideoWindowUninstall()
+                VideoWindowUnpatch()
+                return
             else:
-                log("VideoWindow, VWPath found")
-                VideoWindowPatch()
+                if not FileAccess.exists(VWPath):
+                    log("VideoWindow, VWPath not found")
+                    FreshInstall = True
+                    xbmcvfs.copy(flePath, VWPath)
+                    if FileAccess.exists(VWPath):
+                        log('script.pseudotv.live-utils: custom_script.pseudotv.live_9506.xml Copied')
+                        VideoWindowPatch()   
+                        if FreshInstall == True:
+                            xbmc.executebuiltin("ReloadSkin()")
+                    else:
+                        raise
+                else:
+                    log("VideoWindow, VWPath found")
+                    VideoWindowPatch()
     except Exception:
         VideoWindowUninstall()
         VideoWindowUnpatch()
@@ -920,7 +935,7 @@ def addon_status(id):
 
         
     # def ArtService(self):
-        # if getProperty("EnableArtwork") == "true" and getProperty("ArtService_Running") == "false":
+        # if getProperty("PTVL.BackgroundLoading_Finished") == "true" and getProperty("ArtService_Running") == "false":
             # setProperty("ArtService_Running","true")
             # start = datetime.datetime.today()
             # ArtLst = self.PreArtService() 
@@ -1013,7 +1028,7 @@ def addon_status(id):
             # MSSG = ("Artwork Spooled in %d seconds" %finished.seconds) 
             # self.log('script.pseudotv.live-utils: ArtService, ' + MSSG)  
             # setProperty("ArtService_Running","false")
-            # setProperty("EnableArtwork","true")
+            # setProperty("PTVL.BackgroundLoading_Finished","true")
             # REAL_SETTINGS.setSetting("ArtService_LastRun",str(stop))
             
             # if NOTIFY == True:

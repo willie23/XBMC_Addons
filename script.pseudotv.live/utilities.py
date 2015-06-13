@@ -166,7 +166,6 @@ def LogoDownloader():
         xbmcvfs.delete(LogoDEST)
     except:
         pass
-        
     # Return to PTVL Settings
     REAL_SETTINGS.openSettings()
  
@@ -179,7 +178,14 @@ def DeleteSettings2():
                 xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Channel Configurations Cleared", 1000, THUMB) )
             except:
                 pass
-
+    # Return to PTVL Settings
+    REAL_SETTINGS.openSettings()
+    
+    
+def ClearChanFavorites():
+    xbmc.log('script.pseudotv.live-utilities: ClearChanFavorites')
+    REAL_SETTINGS.setSetting("FavChanLst","0")
+    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Channel Favourites Cleared", 1000, THUMB) )
     # Return to PTVL Settings
     REAL_SETTINGS.openSettings()
     
@@ -202,3 +208,5 @@ elif sys.argv[1] == '-repairSettings2':
     from resources.lib.Settings import *
     Setfun = Settings()
     Setfun.repairSettings()
+elif sys.argv[1] == '-ClearChanFavorites':
+    ClearChanFavorites()

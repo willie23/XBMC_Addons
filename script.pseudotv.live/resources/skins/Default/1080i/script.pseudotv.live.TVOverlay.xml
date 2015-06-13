@@ -219,7 +219,7 @@
                     <description>StarOver Label</description>
                     <label>To Start Over | Press </label>
                     <font>font14</font>
-                    <align>right</align>
+                    <align>center</align>
                     <aligny>center</aligny>
                     <textcolor>FFFFFFFF</textcolor>
                     <visible>Control.IsVisible(104)</visible>
@@ -228,7 +228,7 @@
                     <width>55</width>
                     <height>75</height>
                     <description>StarOver SEL image</description> 
-                    <align>left</align>
+                    <align>center</align>
                     <aligny>bottom</aligny>
                     <aspectratio>keep</aspectratio>
                     <texture>sel.png</texture>
@@ -511,7 +511,6 @@
                     <visible>true</visible>
                     <pauseatend>2666</pauseatend>
                     <label>ComingUp Next</label>
-                    <info>Control.GetLabel(123)</info>
                     <info>Control.GetLabel(124)</info>
                     <!-- <info>Control.GetLabel(125)</info> -->
                     <font>font16</font>
@@ -520,23 +519,16 @@
                     <textcolor>FFFFFFFF</textcolor>
                     <align>center</align>
                     <autoscroll time="2000" delay="0" repeat="0">Skin.HasSetting(AutoScroll)</autoscroll>
-                </control>
-                <control type="label" id="123">
-                    <description>Notification Title</description>
-                    <font>font16</font>
-                    <align>center</align>
-                    <textcolor>FFFFFFFF</textcolor>
-                    <visible>false</visible>
-                </control>                  
+                </control>             
                 <control type="label" id="124">
-                    <description>Notification Show</description>
+                    <description>Notification Title</description>
                     <font>font12</font>
                     <align>center</align>
                     <textcolor>FFFFFFFF</textcolor>
                     <visible>false</visible>
                 </control>              
                 <control type="label" id="125">
-                    <description>Notification Episode</description>
+                    <description>Notification Episode/Tagline</description>
                     <font>font12</font>
                     <align>center</align>
                     <textcolor>FFFFFFFF</textcolor>

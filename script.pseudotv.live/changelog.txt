@@ -1,3 +1,7 @@
+[*] Added CEC TVstandby to sleep actions.
+[*] PlayerTimeout tweaked, Improved failed playback detection?
+[*] All "Find Missing Info" parsers tweaked for better performance.
+[*] Plugin/UPNP Chtype 15 tweaked, corrected metadata issues and limits strictly enforced.
 [*] New! Setting Tabs "Utilities" & "Help", both are a work in progress. Utilities features a "repair" and "delete" channel configurations (settings2) tool.
 [*] Eventghost trigger sleep action.
 [*] NEW! "Direct Channel Input" setting under "Tweaks". When enabled users are no longer required to hit select after inputting a channel number.
@@ -52,6 +56,8 @@
 [*] Tweaked Playback failed, Playback timeout timer.
 [*] Changed Eventghost broadcasts.
 [*] "Enhanced Guide Data" aka "Find Missing Info" tweaked, Faster LiveTV Parsing?
+[*] Playon Chtype 16 dropped, in favour of new plugin available from my repo "playonbrowser".
+    Once installed, Chtype 15 "Plugin" will have a custom option for "Playon"
 [*] Playon & Upnp channel building tweaked.
 [*] Pause Playback while browsing "OnDemand" & "Search". Search requires un-pausing playback, OnDemand is automatic.
 [*] Centralized folders when channel sharing (ie. Artwork Cache).

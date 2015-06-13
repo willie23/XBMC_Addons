@@ -141,6 +141,8 @@ DEFAULT_LOGO_LOC = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'logos')) + '/'
 
 # CORE IMG FILENAMES
 THUMB = IMAGES_LOC + 'icon.png'
+INTRO = IMAGES_LOC + 'intro.mp4'
+
 # EPG
 TIME_BAR = 'pstvlTimeBar.png'
 TIME_BUTTON = 'pstvlTimeButton.png'
@@ -230,12 +232,11 @@ daily = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "daily",2
 weekly = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "weekly",24 * 7)                   #System Purge, ForceReset
 monthly = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "monthly",((24 * 7) * 4))         #System Purge, ForceReset
 #FileLists
-localTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "localTV",(((SETTOP_REFRESH / 60) / 60) - 3600))#ForceReset
 liveTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "liveTV",24)                       #System Purge, ForceReset
-RSSTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "RSSTV",48)                         #System Purge, ForceReset
-pluginTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "pluginTV",72)                   #System Purge, ForceReset
-upnpTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "playonTV",2)                      #System Purge, ForceReset
-lastfm = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "lastfm",48)                       #System Purge, ForceReset
+RSSTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "RSSTV",24)                         #System Purge, ForceReset
+pluginTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "pluginTV",24)                   #System Purge, ForceReset
+upnpTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "playonTV",24)                      #System Purge, ForceReset
+lastfm = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "lastfm",24)                       #System Purge, ForceReset
 #BCTs
 bumpers = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "bumpers",((24 * 7) * 4))         #BCT Purge
 ratings = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "ratings",((24 * 7) * 4))         #BCT Purge
@@ -243,6 +244,7 @@ commercials = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "co
 trailers = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "trailers",((24 * 7) * 4))       #BCT Purge
 #Parsers
 parsers = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parsers",((24 * 7) * 4))         #No Purge (API Queries)
+parsersGD = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parsersGD",((24 * 7) * 4))       #No Purge (Guidedata)
 parserFANTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parserFANTV",((24 * 7) * 4)) #No Purge (FANART Queries)
 parserTVDB = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parserTVDB",((24 * 7) * 4))   #No Purge (TVDB Queries)
 parserTMDB = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parserTMDB",((24 * 7) * 4))   #No Purge (TMDB Queries)

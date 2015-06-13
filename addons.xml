@@ -102,7 +102,7 @@
     </extension>
 </addon>
 
-<addon id="script.pseudotv.live" version="0.6.2c" name="PseudoTV Live" provider-name="Lunatixz">
+<addon id="script.pseudotv.live" version="0.6.2d" name="PseudoTV Live" provider-name="Lunatixz">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.extendedinfo" version="2.0.0"/>
@@ -135,6 +135,8 @@
         <summary lang="en">Channel surfing for your video library and online sources</summary>
         <description lang="en">PseudoTV Live acts similar to normal broadcast or cable TV, complete with multiple preset and user-defined channels and an EPG.
         PseudoTV Live can directly integrate with various Kodi plugins and video sources such as Playon, Hdhomerun and PVR backends.</description>
+        <summary lang="pt">Surfing de canal para sua biblioteca de vídeo e streaming on-line</summary>
+        <description lang="pt">PseudoTV Live atua semelhante a transmissão normal ou TV a cabo, completo com pré-ajustes e canais definidos pelo usuário e um EPG.</description>
         <disclaimer lang="en">This software is a BETA release, bugs maybe common until final release.</disclaimer>
         <language>en</language>
         <platform>all</platform>

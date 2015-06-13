@@ -2,8 +2,8 @@
 Channel Types are based on the source or type of media that will be used to populate channels.
 
 [COLOR=blue][B]Custom Playlist[/B][/COLOR] - Uses a Kodi Smartplaylists (*.xsp) to create channels biased on the rules and filters added to the playlist. This Chtype provides the greatest amount of channel customization.
-[COLOR=blue][B]TV Network/Movie Studio[B][/COLOR] - about setting
-[COLOR=blue][B]TV/Movie/Mixed Genre[/B][/COLOR] - about setting
+[COLOR=blue][B]TV Network/Movie Studio[B][/COLOR] - TV Network/Movie Studio's are based on the media found in Kodi's Library, Channels are created using library metadata.
+[COLOR=blue][B]TV/Movie/Mixed Genre[/B][/COLOR] - Mixed (TV/Movie) Genre's are based on the media found in Kodi's Library, Channels are created using library metadata.
 [COLOR=blue][B]TV Show[/B][/COLOR] - about setting
 [COLOR=blue][B]Directory[/B][/COLOR] - about setting
 [COLOR=blue][B]LiveTV[/B][/COLOR] - Is designed for any single video source that is accompanied by a XMLTV TV-Listings file. The XMLTV file provides EPG guide-data for live content.
@@ -12,8 +12,8 @@ Channel Types are based on the source or type of media that will be used to popu
 [COLOR=blue][B]Music[/B][/COLOR] - "Coming Soon" Available through manual settings2.xml configuration.
 [COLOR=blue][B]Music Videos[/B][/COLOR] - "Coming Soon" Available through manual settings2.xml configuration.
 [COLOR=blue][B]Exclusive[/B][/COLOR] - "Coming Soon" Available through manual settings2.xml configuration.
-[COLOR=blue][B]Plugin[/B][/COLOR] - Chtype parses most modern Kodi plug-ins allowing PseudoTV Live to directly build channels from directories and files found within a video plug-in.
-[COLOR=blue][B]UPNP[/B][/COLOR] - Similar to the "Plugin" chtype, UPNP builds from external video servers like "Playon".
+[COLOR=blue][B]Plugin[/B][/COLOR] - Plugin; parses most modern Kodi plug-ins allowing PseudoTV Live to directly build channels from directories and files found within a Kodi plug-in.
+[COLOR=blue][B]UPNP[/B][/COLOR] - Similar to the "Plugin" chtype, UPNP builds from external video servers like "Plex".
 [COLOR=blue][B]None[/B][/COLOR] - Clears and Disables Channel
 
 

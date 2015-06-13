@@ -274,7 +274,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         self.toRemove.append(self.currentTime)
         self.toRemove.append(self.currentTimeBar)
         myadds = []
-        
+                    
         for i in range(self.rowCount):
             if singlerow == -1 or singlerow == i:
                 self.setButtons(starttime, basecur, i)
@@ -301,15 +301,15 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                         self.log("Unknown EPG Chtype Exception", xbmc.LOGERROR)
                         chtype = (ADDON_SETTINGS.getSetting('Channel_' + str(curchannel) + '_type'))
                         pass  
-                    # chname = (self.MyOverlayWindow.channels[curchannel - 1].name)
-                    # plpos = self.determinePlaylistPosAtTime(starttime, (curchannel - 1))
-                    # mediapath = ascii(self.MyOverlayWindow.channels[curchannel - 1].getItemFilename(plpos))
-                    # mpath = self.MyOverlayWindow.GetMpath(mediapath)
-                    # setImage = self.Artdownloader.FindLogo_NEW(chtype, chname, mpath)
-                    # self.getControl(321 + i).setImage(setImage)
-                    self.getControl(321 + i).setImage(self.channelLogos + ascii(self.MyOverlayWindow.channels[curchannel - 1].name) + ".png")
-                    if not FileAccess.exists(self.channelLogos + ascii(self.MyOverlayWindow.channels[curchannel - 1].name) + ".png"):
-                        self.getControl(321 + i).setImage('NA.png')
+
+                    if FileAccess.exists(self.channelLogos + ascii(self.MyOverlayWindow.channels[curchannel - 1].name) + ".png"):
+                        self.getControl(321 + i).setImage(self.channelLogos + ascii(self.MyOverlayWindow.channels[curchannel - 1].name) + ".png")
+                    else:            
+                        chname = (self.MyOverlayWindow.channels[curchannel - 1].name)
+                        plpos = self.determinePlaylistPosAtTime(starttime, (curchannel - 1))
+                        mediapath = ascii(self.MyOverlayWindow.channels[curchannel - 1].getItemFilename(plpos))
+                        data = [chtype, chname, mediapath, 321 + i]
+                        self.setLogo(data)
                 else:
                     self.getControl(321 + i).setImage('NA.png')
             except:
@@ -416,7 +416,6 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
 
         
     def GetEPGtype(self, genre):
-        #rewrite as option switch, dict? faster? time function todo?
         if genre in COLOR_RED_TYPE:
             return (EPGGENRE_LOC + 'COLOR_RED.png')
         elif genre in COLOR_GREEN_TYPE:
@@ -787,36 +786,48 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                     
             elif action == ACTION_TELETEXT_RED:
                 self.log('ACTION_TELETEXT_RED')
-                self.MyOverlayWindow.myOndemand.close()
-                self.MyOverlayWindow.myDVR.close()
-                self.MyOverlayWindow.myApps.close()
+                try:
+                    self.MyOverlayWindow.myOndemand.close()
+                    self.MyOverlayWindow.myDVR.close()
+                    self.MyOverlayWindow.myApps.close()
                     
-                if getProperty("PTVL.EPG_Opened") != "true":
-                    self.MyOverlayWindow.myepg.doModal()
-            
+                    if getProperty("PTVL.EPG_Opened") != "true":
+                        self.MyOverlayWindow.myepg.doModal()
+                except:
+                    pass
+                    
             elif action == ACTION_TELETEXT_GREEN:
                 self.log('ACTION_TELETEXT_GREEN')
-                self.MyOverlayWindow.myOndemand.close()
-                self.MyOverlayWindow.myApps.close()
+                try:
+                    self.MyOverlayWindow.myOndemand.close()
+                    self.MyOverlayWindow.myApps.close()
 
-                if getProperty("PTVL.PVR_Opened") != "true":
-                    self.MyOverlayWindow.myDVR.doModal()
+                    if getProperty("PTVL.PVR_Opened") != "true":
+                        self.MyOverlayWindow.myDVR.doModal()
+                except:
+                    pass
             
             elif action == ACTION_TELETEXT_YELLOW:
                 self.log('ACTION_TELETEXT_YELLOW')
-                self.MyOverlayWindow.myDVR.close()
-                self.MyOverlayWindow.myApps.close()
-                
-                if getProperty("PTVL.ONDEMAND__Opened") != "true":
-                    self.MyOverlayWindow.myOndemand.doModal()
+                try:
+                    self.MyOverlayWindow.myDVR.close()
+                    self.MyOverlayWindow.myApps.close()
+                    
+                    if getProperty("PTVL.ONDEMAND__Opened") != "true":
+                        self.MyOverlayWindow.myOndemand.doModal()
+                except:
+                    pass
             
             elif action == ACTION_TELETEXT_BLUE:
                 self.log('ACTION_TELETEXT_BLUE')
-                self.MyOverlayWindow.myOndemand.close()
-                self.MyOverlayWindow.myDVR.close()
-                
-                if getProperty("PTVL.APPS_Opened") != "true":
-                    self.MyOverlayWindow.myApps.doModal()
+                try:
+                    self.MyOverlayWindow.myOndemand.close()
+                    self.MyOverlayWindow.myDVR.close()
+                    
+                    if getProperty("PTVL.APPS_Opened") != "true":
+                        self.MyOverlayWindow.myApps.doModal()
+                except:
+                    pass
                 
             elif action >= ACTION_NUMBER_0 and action <= ACTION_NUMBER_9:
                 if self.inputChannel < 0:
@@ -881,13 +892,15 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         try:
             if self.ArtThread1.isAlive():
                 self.ArtThread1.cancel()
+                self.ArtThread1.join()
         except:
             pass
         try:
             if self.ArtThread2.isAlive():
                 self.ArtThread2.cancel()
+                self.ArtThread2.join()
         except:
-            pass    
+            pass          
         try:
             self.removeControl(self.currentTime)
             self.removeControl(self.currentTimeBar)
@@ -1419,7 +1432,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
     def FindArtwork_Thread(self, data):
         try:
             self.getControl(data[7]).setVisible(True)
-            if getProperty("EnableArtwork") == "false":
+            if getProperty("PTVL.BackgroundLoading_Finished") != "true":
                 setImage = self.Artdownloader.SetDefaultArt_NEW(data[2], data[5], data[6])
             else:
                 setImage = self.Artdownloader.FindArtwork_NEW(data[0], data[1], data[2], data[3], data[4], data[5], data[6])
@@ -1437,6 +1450,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             try:
                 if self.ArtThread1.isAlive():
                     self.ArtThread1.cancel()
+                    # self.ArtThread1.join()
             except:
                 pass
                 
@@ -1455,6 +1469,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             try:
                 if self.ArtThread2.isAlive():
                     self.ArtThread2.cancel()
+                    # self.ArtThread2.join()
             except:
                 pass
                 
@@ -1464,6 +1479,19 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             self.ArtThread2.start()
         except Exception,e:
             self.log('setArtwork2, Failed!', str(e))
+            pass
+    
+    
+    def setLogo(self, data):
+        self.log('setLogo, data = ' + str(data))  
+        # data = chtype, chname, mediapath, key        
+        try:
+            mpath = self.MyOverlayWindow.GetMpath(data[2])    
+            setImage = self.Artdownloader.FindLogo_NEW(data[0], data[1], mpath)
+            self.getControl(data[3]).setImage(setImage)
+            self.logDebug('setLogo, setImage = ' + ascii(setImage))       
+        except Exception,e:
+            self.log('setLogo, Failed!', str(e))
             pass
     
     

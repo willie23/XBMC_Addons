@@ -195,38 +195,38 @@ class Artdownloader:
             result = THUMB
         return result  
 
-
+        
     def FindLogo_NEW(self, chtype, chname, mpath):
         self.logDebug("FindLogo_NEW")
         found = False
         setImage = ''
-        LogoName = (chname[0:18] + '.png')
+        LogoName = (chname + '.png')
         LogoFolder = os.path.join(LOGO_LOC,LogoName)
         
-        if FileAccess.exists(LogoFolder):
-            return LogoFolder
-        else:
-            if chtype == 6 or chtype == 7:
-                smpath = mpath.rsplit('/',2)[0] #Path Above mpath ie Series folder
-                artSeries = xbmc.translatePath(os.path.join(smpath, 'logo.png'))
-                artSeason = xbmc.translatePath(os.path.join(mpath, 'logo.png'))
-                if FileAccess.exists(artSeries): 
-                    return artSeries
-                elif FileAccess.exists(artSeason): 
-                    return artSeason
-                else:
-                    return 'NA.png'
+        # if chtype == 1:
+            # self.findLogodb(chname)
+            # return LogoFolder
+        if chtype == 6 or chtype == 7:
+            smpath = mpath.rsplit('/',2)[0] #Path Above mpath ie Series folder
+            artSeries = xbmc.translatePath(os.path.join(smpath, 'logo.png'))
+            artSeason = xbmc.translatePath(os.path.join(mpath, 'logo.png'))
+            if FileAccess.exists(artSeries): 
+                return artSeries
+            elif FileAccess.exists(artSeason): 
+                return artSeason
             else:
                 return 'NA.png'
-                # else:
-                    # if REAL_SETTINGS.getSetting('EnhancedGuideData') == 'true': 
-                        # self.Fanart_Download('tvshow', 'logo', id, LogoFolder)
-                        
-            # if setImage.startswith('http'):
-                # requestDownload(setImage, LogoFolder)
+        else:   
+            return 'NA.png'
             # else:
-                # FileAccess.copy(setImage, LogoFolder)
-            # return LogoFolder
+                # if REAL_SETTINGS.getSetting('EnhancedGuideData') == 'true': 
+                    # self.Fanart_Download('tvshow', 'logo', id, LogoFolder)
+                    
+        # if setImage.startswith('http'):
+            # requestDownload(setImage, LogoFolder)
+        # else:
+            # FileAccess.copy(setImage, LogoFolder)
+        # return LogoFolder
 
         # if chtype == 1:
             # setImage = self.logoParser.retrieve_icon(chname)
@@ -283,6 +283,41 @@ class Artdownloader:
             # setImage = 'NA.png'
         # return setImage
         
+        
+    # def findLogodb(self, chname):
+        # urlbase = 'http://www.thelogodb.com/api/json/v1/1/tvchannel.php?s='
+        # self.logDebug("findLogodb " + (urlbase+chname))      
+        # user_region = 'United States'#from settings
+        # user_type = 'strLogoWide'#from settings
+        # useMix = True#from settings
+        
+        # typelst =['strLogoWide','strLogoWideBW','strLogoSquare','strLogoSquareBW','strFanart1']
+        # match = False
+        # response = Request_URL(urlbase+chname)
+        # detail = re.compile("{(.*?)}", re.DOTALL ).findall(response)
+        # mixMatch = []
+        # for f in detail:
+            # regions = re.search('"strCountry" *: *"(.*?)"', f)
+            # if regions:
+                # region = regions.group(1)
+                # for i in range(len(typelst)):
+                    # types = re.search('"'+typelst[i]+'" *: *"(.*?)"', f)
+                    # if types:
+                        # type = types.group(1)
+                        # if typelst[i] == user_type:
+                            # if region.lower() == user_region.lower():
+                                # match = True
+                                # ##print 'MATCH', region, typelst[i], type.replace('\/','\\')
+                                # return self.chanlist.GrabLogo(mixMatch[0], chname)
+                            # else:
+                                # mixMatch.append(type.replace('\/','\\'))
+                                # ##print 'NOMATCH', region, typelst[i], type.replace('\/','\\')
+
+        # if not match and useMix == True:
+            # random.shuffle(mixMatch)
+            # return self.chanlist.GrabLogo(mixMatch[0], chname)
+
+            
     def FindArtwork(self, type, chtype, chname, id, dbid, mpath, arttypeEXT):
         if Cache_Enabled == True: 
             self.log("FindArtwork Cache") 
@@ -426,8 +461,7 @@ class Artdownloader:
             self.DownloadArtTimer.name = "DownloadArtTimer"
             self.DownloadArtTimer.start()
             # Sleep between Download, keeps cpu usage down and reduces the number of simultaneous threads.
-            # xbmc.sleep(15000)
-            xbmc.sleep(100)
+            xbmc.sleep(1000)
         except:
             pass
             

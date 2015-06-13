@@ -108,7 +108,7 @@ class ChannelListThread(threading.Thread):
         # self.myOverlay.ArtServiceThread = threading.Timer(float(InfoTimer), self.myOverlay.ArtService)
         # self.myOverlay.ArtServiceThread.name = "ArtServiceThread"
         # self.myOverlay.ArtServiceThread.start()
-        setProperty("EnableArtwork","true")
+        setProperty("PTVL.BackgroundLoading_Finished","true")
 
         if REAL_SETTINGS.getSetting("EnableSettop") == "true":
             self.log('onInit, Settop Enabled')
