@@ -23,7 +23,9 @@
     <category label="30300">
         <setting id="os" type="enum" values="Android Arm|Android x86|ATV1 Linux|ATV1 Stock|ATV2|IOS|Linux 32bit|Linux 64bit|Mac 32bit|Mac 64bit|Rasberry Pi|Windows|TLBB" label="30401" default="11" />
         <setting id="limit_preferred_language" type="select" label="32055" values="Chinese|Dutch|English|Finnish|French|German|Hungarian|Italian|Japanese|Polish|Portuguese|Russian|Spanish|Swedish" default="English"/>
+        <setting id="limit_preferred_region" type="select" label="32056" values="Andorra|United Arab Emirates|Afghanistan|Antigua and Barbuda|Anguilla|Albania|Armenia|Netherlands Antilles|Angola|Antarctica|Argentina|American Samoa|Austria|Australia|Aruba|Aland|Azerbaijan|Bosnia and Herzegovina|Barbados|Bangladesh|Belgium|Burkina Faso|Bulgaria|Bahrain|Burundi|Benin|Saint Barthelemy|Bermuda|Brunei|Bolivia|Brazil|Bahamas|Bhutan|Bouvet Island|Botswana|Belarus|Belize|Canada|Cocos (Keeling) Islands|Congo (Kinshasa)|Central African Republic|Congo (Brazzaville)|Switzerland|Cote dIvoire|Cook Islands|Chile|Cameroon|China|Colombia|Costa Rica|Cuba|Cape Verde|Christmas Island|Cyprus|Czech Republic|Germany|Djibouti|Denmark|Dominica|Dominican Republic|Algeria|Ecuador|Estonia|Egypt|Western Sahara|Eritrea|Spain|Ethiopia|Finland|Fiji|Falkland Islands|Micronesia|Faroe Islands|France|Gabon|United Kingdom|Grenada|Georgia|French Guiana|Guernsey|Ghana|Gibraltar|Greenland|Gambia|Guinea|Guadeloupe|Equatorial Guinea|Greece|South Georgia and South Sandwich Islands|Guatemala|Guam|Guinea-Bissau|Guyana|Hong Kong|Heard and McDonald Islands|Honduras|Croatia|Haiti|Hungary|Indonesia|name|English country name| |Ireland|Israel|Isle of Man|India|British Indian Ocean Territory|Iraq|Iran|Iceland|Italy|Jersey|Jamaica|Jordan|Japan|Kenya|Kyrgyzstan|Cambodia|Kiribati|Comoros|Saint Kitts and Nevis|North Korea|South Korea|Kuwait|Cayman Islands|Kazakhstan|Laos|Lebanon|Saint Lucia|Liechtenstein|Sri Lanka|Liberia|Lesotho|Lithuania|Luxembourg|Latvia|Libya|Morocco|Monaco|Moldova|Montenegro|Saint Martin|Madagascar|Marshall Islands|Macedonia|Mali|Myanmar|Mongolia|Macau|Northern Mariana Islands|Martinique|Mauritania|Montserrat|Malta|Mauritius|Maldives|Malawi|Mexico|Malaysia|Mozambique|Namibia|New Caledonia|Niger|Norfolk Island|Nigeria|Nicaragua|Netherlands|Norway|Nepal|Nauru|Niue|New Zealand|Oman|Panama|Peru|French Polynesia|Papua New Guinea|Philippines|Pakistan|Poland|Saint Pierre and Miquelon|Pitcairn|Puerto Rico|Palestine|Portugal|Palau|Paraguay|Qatar|Reunion|Romania|Serbia|Russian Federation|Rwanda|Saudi Arabia|Solomon Islands|Seychelles|Sudan|Sweden|Singapore|Saint Helena|Slovenia|Svalbard and Jan Mayen Islands|name|English country name| |Slovakia|Sierra Leone|San Marino|Senegal|Somalia|Suriname|Sao Tome and Principe|El Salvador|Syria|Swaziland|Turks and Caicos Islands|Chad|French Southern Lands|Togo|Thailand|Tajikistan|Tokelau|Timor-Leste|Turkmenistan|Tunisia|Tonga|Turkey|Trinidad and Tobago|Tuvalu|Taiwan|Tanzania|Ukraine|Uganda|United States Minor Outlying Islands|United States|Uruguay|Uzbekistan|Vatican City|Saint Vincent and the Grenadines|Venezuela|British Virgin Islands|Virgin Islands US|Vietnam|Vanuatu|Wallis and Futuna Islands|Samoa|Yemen|Mayotte|South Africa|Zambia|Zimbabwe" default="United States"/>
         <setting id="quickflip" type="bool" label="30374" default="false"/>
+        <setting id="DirectInput" type="bool" label="30379" default="false"/>
         <setting id="ChannelDelay" type="enum" label="30302" default="0" values="None|0.25|0.5|0.75|1.0|1.25|1.5|1.75|2.0"/>
         <setting id="SUPchannel" type="enum"  label="30303" values="Last Channel|Preferred Channel" default="0"/>
         <setting id="CurrentChannel" type="text" label="30304" subsetting="true" visible="eq(-1,1)" default="1"/>
@@ -33,15 +35,18 @@
         <setting id="HideClips" type="bool" label="30215" default="true"/>
         <setting id="ClipLength" type="enum" subsetting="true" label="30216" visible="eq(-1,true)" values="15|30|60|90|120|240|360|480" default="7"/>
         <setting id="enable_mute" type="bool" label="30373" default="false"/>
-        <setting id="DirectInput" type="bool" label="30379" default="false"/>
     </category>
 <!--Visual-->
     <category label="30200">
         <setting id="SkinSelector" type="enum"  label="30202" values="Custom|Default|PTVL|Concast|Maverick|Z81" visible="false" default="1"/>
-        <setting id="FindLogos_Enabled" type="bool" label="34547" enable="false" subsetting="true" visible="eq(-4,true)" default="false"/>
         <setting id="ShowSeEp" type="bool" label="30301" default="false"/>
         <setting id="ChannelLogoFolder" type="folder" source="auto" label="30225" default=""/>
         <setting id="EnableArtwork" type="bool" label="30375" visible="false" default="false"/>
+        <setting id="Enable_FindLogo" type="bool" label="34547" default="false"/>
+        <setting id="LogoDB_Fallback" subsetting="true" visible="eq(-1,true)"type="bool" label="34548" default="true"/>
+        <setting id="LogoDB_Anymatch" subsetting="true" visible="eq(-2,true)"type="bool" label="34549" default="true"/>
+        <setting id="LogoDB_Override" subsetting="true" visible="eq(-3,true)"type="bool" label="34550" default="false"/>
+        <setting id="LogoDB_Type" subsetting="true" type="enum" visible="eq(-4,true)" label="30376" values="Color Square|White Square|Color Wide|White Wide" default="2"/>
         <!-- EPG -->
         <setting label="30210" type="lsep"/>
             <setting id="ClockMode" type="enum" label="30211" default="0" values="12 Hour|24 Hour"/>
@@ -103,8 +108,8 @@
             <setting id="autoFindMusicGenres" type="bool" label="30084" subsetting="true" visible="eq(-18,true)" default="false"/>
             <setting id="autoFindMusicVideosVevoTV" type="bool" label="30086" subsetting="true" visible="eq(-19,true)" default="false"/>
             <setting id="autoFindMusicVideosMusicTV" type="bool" label="30898" subsetting="true" visible="eq(-20,true)" default="false"/>
-            <setting id="autoFindMusicVideosLastFM" type="bool" label="30087" subsetting="true" visible="eq(-21,true)" default="false"/>
-            <setting id="autoFindMusicVideosLastFMuser" subsetting="true" label="30088" visible="eq(-1,true) + eq(-22,true)" type="text" default="Enter Username"/>
+            <setting id="autoFindMusicVideosLastFM" type="bool" label="30087" subsetting="true" visible="false" default="false"/>
+            <setting id="autoFindMusicVideosLastFMuser" subsetting="true" label="30088" visible="false" type="text" default="Enter Username"/>
             <setting id="autoFindMusicVideosLocal" type="folder" source="auto" label="30089" subsetting="true" visible="eq(-23,true)" default=""/>  
         <setting type="lsep" label="30110" visible="eq(-24,true)"/>
             <setting id="autoFindCommunity_Youtube_Networks" type="bool" label="30115" subsetting="true" visible="eq(-25,true)" default="false"/>
@@ -194,13 +199,18 @@
             <setting id="UPNP3_UPW" subsetting="true" type="text" label="30902" visible="eq(-2,true)" default="xbmc:xbmc" />
             <setting id="UPNP_OFFSET" subsetting="true" type="slider" label="30106" visible="eq(-9,true) | eq(-6,true) | eq(-3,true) " default="0" range="0,.10,5" option="float" />
     </category>
+    <!--Donor-->
     <category label="39000">
+        <setting id="Community_Enabled" label="30905" type="bool" default="false"/>
+        <setting id="Gmail_User" subsetting="true" label="30906" visible="eq(-1,true)" type="text" default="User@gmail.com" />
+        <setting id="Gmail_Pass" subsetting="true" label="30907" visible="eq(-2,true)" type="text" option="hidden" default="Password" />
         <setting id="Donor_Enabled" label="30901" type="bool" default="false"/>
-        <setting id="Donor_UP" subsetting="true" label="30902" visible="eq(-1,true)" type="text" default="Username:Password" />    
+        <setting id="Donor_UP" subsetting="true" label="30902" visible="eq(-1,true)" option="hidden" type="text" default="Username:Password" />    
         <setting id="DonorDownload" type="action" subsetting="true" label="30904" visible="eq(-2,true)" option="close" action="RunScript($CWD/utilities.py, -DonorDownloader)"/>
+        <setting label="30903"  visible="eq(-3,true)" type="lsep" /> 
         <setting id="CAT_Donor" type="bool" label="39004"  visible="false" default="false" />
-        <setting id="LogoDownloader" type="action" subsetting="true" label="30905" visible="eq(-1,true)" option="close" action="RunScript($CWD/utilities.py, -LogoDownloader)"/>
-        <setting label="30903" visible="eq(-6,true)" type="lsep" /> 
+        <setting label="" visible="eq(-4,true)" type="lsep" /> 
+        <setting id="Show_Disclaimer" type="action" label="30999" action="RunScript($CWD/utilities.py, -showDisclaimer)"/>
     </category>
     <!--Utilities-->
     <category label="31900">  
@@ -227,7 +237,8 @@
     <!--Debugging-->
     <category label="30900">  
         <setting label="30990" type="lsep"/>
-        <setting id="ActionTimeInt" type="slider" label="30309" range="2,2,60" option="int" default="10"/>
+        <setting id="ActionTimeInt" type="slider" label="30309" range="1,1,60" option="int" default="2"/>
+        <setting id="PlayTimeoutInt" type="slider" label="30319" range="2,2,60" option="int" default="6"/>
         <setting id="enable_Debug" type="bool" label="30993" default="false"/>
         <setting id="Override_ok" type="bool" label="30991" default="true"/>
         <setting id="Cache_Enabled" label="39999" type="bool" default="true" />

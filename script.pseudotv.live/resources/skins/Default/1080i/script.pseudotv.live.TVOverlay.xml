@@ -33,11 +33,214 @@
             <aspectratio>keep</aspectratio>
             <animation effect="fade" start="50" end="50" condition="True">Conditional</animation>
         </control>  
+        <!-- Seekbar -->
+        <!-- <control type="group">
+            <left>560r</left>
+            <top>-6</top>
+            <control type="image">
+                <left>0</left>
+                <top>0</top>
+                <width>370</width>
+                <height>70</height>
+                <colordiffuse>EEFFFFFF</colordiffuse>
+                <texture border="12">OverlayDialogBackground.png</texture>
+            </control>
+            <control type="group">
+                <left>260</left>
+                <top>10</top>
+                <control type="image">
+                    <left>10</left>
+                    <top>0</top>
+                    <width>80</width>
+                    <height>50</height>
+                    <texture>osd/OSDSeekFrame.png</texture>
+                </control>
+                <control type="image">
+                    <left>0</left>
+                    <top>3</top>
+                    <width>20</width>
+                    <height>44</height>
+                    <texture>osd/OSDSeekRewind.png</texture>
+                    <visible>Player.Rewinding</visible>
+                </control>
+                <control type="image">
+                    <left>80</left>
+                    <top>3</top>
+                    <width>20</width>
+                    <height>44</height>
+                    <texture>osd/OSDSeekForward.png</texture>
+                    <visible>Player.Forwarding</visible>
+                </control>
+                <control type="image">
+                    <left>31</left>
+                    <top>4</top>
+                    <width>40</width>
+                    <height>40</height>
+                    <texture>osd/OSDPause.png</texture>
+                    <visible>Player.Paused</visible>
+                </control>
+                <control type="image">
+                    <left>31</left>
+                    <top>4</top>
+                    <width>40</width>
+                    <height>40</height>
+                    <texture>osd/OSDPlay.png</texture>
+                    <visible>Player.Playing</visible>
+                </control>
+                <control type="image">
+                    <left>28</left>
+                    <top>4</top>
+                    <width>40</width>
+                    <height>40</height>
+                    <texture>osd/OSD2x.png</texture>
+                    <visible>Player.Rewinding2x</visible>
+                </control>
+                <control type="image">
+                    <left>25</left>
+                    <top>4</top>
+                    <width>40</width>
+                    <height>40</height>
+                    <texture>osd/OSD4x.png</texture>
+                    <visible>Player.Rewinding4x</visible>
+                </control>
+                <control type="image">
+                    <left>22</left>
+                    <top>4</top>
+                    <width>40</width>
+                    <height>40</height>
+                    <texture>osd/OSD8x.png</texture>
+                    <visible>Player.Rewinding8x</visible>
+                </control>
+                <control type="image">
+                    <left>19</left>
+                    <top>4</top>
+                    <width>40</width>
+                    <height>40</height>
+                    <texture>osd/OSD16x.png</texture>
+                    <visible>Player.Rewinding16x</visible>
+                </control>
+                <control type="image">
+                    <left>17</left>
+                    <top>4</top>
+                    <width>40</width>
+                    <height>40</height>
+                    <texture>osd/OSD32x.png</texture>
+                    <visible>Player.Rewinding32x</visible>
+                </control>
+                <control type="image">
+                    <left>34</left>
+                    <top>4</top>
+                    <width>40</width>
+                    <height>40</height>
+                    <texture>osd/OSD2x.png</texture>
+                    <visible>Player.Forwarding2x</visible>
+                </control>
+                <control type="image">
+                    <left>37</left>
+                    <top>4</top>
+                    <width>40</width>
+                    <height>40</height>
+                    <texture>osd/OSD4x.png</texture>
+                    <visible>Player.Forwarding4x</visible>
+                </control>
+                <control type="image">
+                    <left>40</left>
+                    <top>4</top>
+                    <width>40</width>
+                    <height>40</height>
+                    <texture>osd/OSD8x.png</texture>
+                    <visible>Player.Forwarding8x</visible>
+                </control>
+                <control type="image">
+                    <left>43</left>
+                    <top>4</top>
+                    <width>40</width>
+                    <height>40</height>
+                    <texture>osd/OSD16x.png</texture>
+                    <visible>Player.Forwarding16x</visible>
+                </control>
+                <control type="image">
+                    <left>45</left>
+                    <top>4</top>
+                    <width>40</width>
+                    <height>40</height>
+                    <texture>osd/OSD32x.png</texture>
+                    <visible>Player.Forwarding32x</visible>
+                </control>
+            </control>
+            <control type="label">
+                <description>Seekbar Label</description>
+                <left>20</left>
+                <top>7</top>
+                <width>240</width>
+                <height>20</height>
+                <align>left</align>
+                <aligny>center</aligny>
+                <font>font10_title</font>
+                <textcolor>blue</textcolor>
+                <label>$VAR[SeekLabel]</label>
+            </control>
+            <control type="label">
+                <description>Elapsed Time Label</description>
+                <left>20</left>
+                <top>23</top>
+                <width>240</width>
+                <height>20</height>
+                <font>font13_title</font>
+                <textcolor>white</textcolor>
+                <align>left</align>
+                <aligny>center</aligny>
+                <label>$INFO[Player.Time] - $INFO[Player.Duration]</label>
+                <visible>!Player.Seeking</visible>
+            </control>
+            <control type="label">
+                <description>Seek Time Label</description>
+                <left>20</left>
+                <top>23</top>
+                <width>240</width>
+                <height>20</height>
+                <font>font13_title</font>
+                <textcolor>white</textcolor>
+                <align>left</align>
+                <aligny>center</aligny>
+                <label>$INFO[Player.SeekTime] - $INFO[Player.Duration]</label>
+                <visible>Player.Seeking</visible>
+            </control>
+            <control type="progress">
+                <description>ProgressbarCache</description>
+                <left>20</left>
+                <top>45</top>
+                <width>240</width>
+                <height>15</height>
+                <info>Player.ProgressCache</info>
+                <midtexture border="6,0,6,0">osd/OSDProgressMidLight.png</midtexture>
+                <visible>true</visible>
+            </control>
+            <control type="progress" id="23">
+                <description>Progressbar</description>
+                <left>20</left>
+                <top>45</top>
+                <width>240</width>
+                <height>15</height>
+                <info>Player.Progress</info>
+                <visible>true</visible>
+            </control>
+            <control type="slider" id="401">
+                <description>Seek Slider</description>
+                <left>20</left>
+                <top>42</top>
+                <width>240</width>
+                <height>12</height>
+                <texturesliderbar>seekslider.png</texturesliderbar>
+                <textureslidernib>osd/OSD_slider_nib.png</textureslidernib>
+                <textureslidernibfocus>osd/OSD_slider_nib.png</textureslidernibfocus>
+                <visible>Player.Seeking</visible>
+            </control>
+        </control> -->
         <!-- moreinfo overlay -->
         <control type="group" id="222">
             <posx>0</posx>
             <posy>0</posy>
-            <animation effect="fade" time="500">VisibleChange</animation> 
             <control type="image">
                 <description>MoreInfo Overlay</description>
                 <width>1920</width>
@@ -51,6 +254,7 @@
             </control> 
             <control type="image" id="510">
                 <description>Dynamic art2  - MoreInfo</description>
+                <animation effect="fade" time="500">VisibleChange</animation> 
                 <posx>0</posx>
                 <posy>415r</posy>  
                 <width>360</width>      
@@ -58,16 +262,24 @@
                 <align>center</align>
                 <aligny>center</aligny>
                 <aspectratio>keep</aspectratio>
-                <texture fallback="logo.png"></texture>
-            </control>            
+                <texture fallback="poster.png"></texture>
+            </control>    
+            <control type="image">
+                <description>Context background</description>
+                <posx>299r</posx>
+                <posy>375r</posy>
+                <width>258</width>
+                <height>296</height>
+                <texture>pstvlContextC.png</texture>
+            </control>             
             <control type="grouplist">
                 <posx>295r</posx>
                 <posy>371r</posy>
-                <width>225</width>
+                <width>250</width>
                 <orientation>vertical</orientation>
                 <itemgap>0</itemgap>
                 <control type="button" id="1012">
-                    <width>225</width>
+                    <width>250</width>
                     <height>72</height>
                     <label></label>
                     <align>center</align>
@@ -81,7 +293,7 @@
                     <visible>!IsEmpty(Control.GetLabel(1012))</visible>
                 </control>
                 <control type="button" id="1013">
-                    <width>225</width>
+                    <width>250</width>
                     <height>72</height>
                     <label></label>
                     <align>center</align>
@@ -95,7 +307,7 @@
                     <visible>!IsEmpty(Control.GetLabel(1013))</visible>
                 </control>
                 <control type="button" id="1014">
-                    <width>225</width>
+                    <width>250</width>
                     <height>72</height>
                     <label></label>
                     <align>center</align>
@@ -109,7 +321,7 @@
                     <visible>!IsEmpty(Control.GetLabel(1014))</visible>
                 </control>
                 <control type="button" id="1015">
-                    <width>225</width>
+                    <width>250</width>
                     <height>72</height>
                     <label></label>
                     <align>center</align>
@@ -122,6 +334,19 @@
                     <ondown>1012</ondown>
                     <visible>!IsEmpty(Control.GetLabel(1014))</visible>
                 </control>
+                <control type="label" id="516">
+                    <description>Seekbar Elapsed Time Button</description>
+                    <posx>0</posx>
+                    <posy>0</posy>
+                    <width min="128" max="400">auto</width>
+                    <height>30</height>
+                    <fadetime>250</fadetime>
+                    <textcolor>FFFFFFFF</textcolor>
+                    <font>font12</font>
+                    <align>center</align>
+                    <aligny>center</aligny>
+                    <label>$INFO[Player.TimeRemaining]</label>
+                </control>  
             </control>
             <control type="grouplist">
                 <posx>430</posx>
@@ -175,10 +400,10 @@
                     <visible>!IsEmpty(ListItem.SubtitleLanguage) + IsEmpty(Window.Property(SubtitleLanguage.1))</visible>
                 </control>
             </control>
-        </control>             
+        </control>            
         <!-- info overlay -->
         <control type="group" id="102">
-            <animation effect="fade" time="500">VisibleChange</animation> 
+            <animation effect="slide" start="0,-1080" end="0,1080" time="500">VisibleChange</animation>
             <control type="image">
                 <description>Info Overlay </description>
                 <width>1920</width>
@@ -188,6 +413,7 @@
             </control>
             <!-- Time/Weather -->
              <control type="label">
+                <animation effect="fade" time="500">VisibleChange</animation> 
                 <description>Time/Weather</description>
                 <posx>430r</posx>
                 <posy>30</posy>
@@ -243,6 +469,7 @@
                 </control>
                 <control type="image" id="508">
                     <description>Dynamic art1 - Info Overlay</description>
+                    <animation effect="fade" time="500">VisibleChange</animation> 
                     <posx>35</posx>
                     <posy>270r</posy>  
                     <width>360</width>      
@@ -510,16 +737,24 @@
                     <height>40</height>
                     <visible>true</visible>
                     <pauseatend>2666</pauseatend>
-                    <label>ComingUp Next</label>
-                    <info>Control.GetLabel(124)</info>
-                    <!-- <info>Control.GetLabel(125)</info> -->
+                    <info>Control.GetLabel(123)</info><!--Comingup-->
+                    <info>Control.GetLabel(124)</info><!--ShowTitle-->
+                    <!-- <info>Control.GetLabel(125)</info><!--ShowEpisode/Tagline -->
                     <font>font16</font>
                     <scroll>false</scroll>
                     <scrollout>false</scrollout>
                     <textcolor>FFFFFFFF</textcolor>
                     <align>center</align>
                     <autoscroll time="2000" delay="0" repeat="0">Skin.HasSetting(AutoScroll)</autoscroll>
-                </control>             
+                </control>           
+                <control type="label" id="123">
+                    <description>ComingUp Title</description>
+                    <font>font12</font>
+                    <align>center</align>
+                    <textcolor>FFFFFFFF</textcolor>
+                    <label>ComingUp Next</label>
+                    <visible>false</visible>
+                </control>           
                 <control type="label" id="124">
                     <description>Notification Title</description>
                     <font>font12</font>
@@ -541,6 +776,7 @@
             <posx>0</posx>
             <posy>0</posy>
             <control type="image">
+                <animation effect="slide" start="-1920,0" end="1920,0" time="500">VisibleChange</animation>
                 <description>Background Image</description>
                 <width>1920</width>
                 <height>1080</height>
@@ -549,6 +785,7 @@
             </control>
             <control type="image" id="130">
                 <description>Background Image</description>
+                <animation effect="slide" start="-1920,0" end="1920,0" time="500">VisibleChange</animation>
                 <width>1920</width>
                 <height>1080</height>
                 <texture>pstvlMenuWindowAlt.png</texture>
@@ -567,6 +804,7 @@
             </control>      
             <control type="image" id="131">
                 <description>Onnow Art</description>
+                <animation effect="fade" time="500">VisibleChange</animation> 
                 <posx>310</posx>
                 <posy>15</posy>
                 <width>360</width>      

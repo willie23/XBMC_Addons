@@ -21,7 +21,7 @@ import os, sys, time, urllib
 
 from resources.lib.Globals import *
 from resources.lib.utils import *
-
+  
 # showInfo
 def showText(heading, text):
     xbmc.log('script.pseudotv.live-utilities: showText')
@@ -53,71 +53,53 @@ def showInfo(addonID=None, type='changelog'):
         if type == 'readme':
             title = "PseudoTV Live - Readme"
             f = open(os.path.join(ADDON_PATH,'README.md'))
+        if type == 'disclaimer':
+            title = "PseudoTV Live - Privacy Disclaimer"
+            f = open(os.path.join(ADDON_PATH,'disclaimer'))
+            
         text  = f.read()
         showText(title, text)
     except:
         pass      
 
-#DonorDownload
+#DonorDownload  
+
 DonorURLPath = (PTVLURL + 'Donor.py')
-LinkPath = (os.path.join(ADDON_PATH, 'resources', 'lib', 'links.py'))
-DonorPath = (os.path.join(ADDON_PATH, 'resources', 'lib', 'Donor.pyo'))
-DL_DonorPath = (os.path.join(ADDON_PATH, 'resources', 'lib', 'Donor.py'))
+DonorPath = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'lib', 'Donor.pyo'))
+DL_DonorPath = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'lib', 'Donor.py'))
 
-def DDautopatch():
-    xbmc.log('script.pseudotv.live-utilities: DDautopatch')
-    REAL_SETTINGS.setSetting("AT_Donor", "false")
-    REAL_SETTINGS.setSetting("COM_Donor", "false")
-    REAL_SETTINGS.setSetting("TRL_Donor", "false")
-    REAL_SETTINGS.setSetting("CAT_Donor", "false")
-
-    try:
-        if xbmcvfs.exists(xbmc.translatePath(DL_DonorPath)):
-            xbmcvfs.delete(xbmc.translatePath(DL_DonorPath))
-            xbmc.log('script.pseudotv.live-utilities: DDautopatch, Removed DL_DonorPath')
-            
-        if xbmcvfs.exists(xbmc.translatePath(DonorPath)):
-            xbmcvfs.delete(xbmc.translatePath(DonorPath))  
-            xbmc.log('script.pseudotv.live-utilities: DDautopatch, Removed DonorPath')
-    except:
-        pass
-        
-    try:
-        urllib.urlretrieve(DonorURLPath, (xbmc.translatePath(DL_DonorPath)))
-        if xbmcvfs.exists(DL_DonorPath):
-            xbmc.log('script.pseudotv.live-utilities: DDautopatch, DL_DonorPath Downloaded')
-            REAL_SETTINGS.setSetting("AT_Donor", "true")
-            REAL_SETTINGS.setSetting("COM_Donor", "true")
-            REAL_SETTINGS.setSetting("TRL_Donor", "true")
-            REAL_SETTINGS.setSetting("CAT_Donor", "true")
-            xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Donor Autoupdate Complete", 4000, THUMB) ) 
-    except:
-        pass
-
-def DonorDownloader():
+def DonorDownloader(auto=False):
     xbmc.log('script.pseudotv.live-utilities: DonorDownloader')
     REAL_SETTINGS.setSetting("AT_Donor", "false")
     REAL_SETTINGS.setSetting("COM_Donor", "false")
     REAL_SETTINGS.setSetting("TRL_Donor", "false")
     REAL_SETTINGS.setSetting("CAT_Donor", "false")
-    Install = False
-    Verified = False
-    InstallStatusMSG = 'Activate'  
-    
-    if xbmcvfs.exists(DonorPath):
-        InstallStatusMSG = 'Update'
-        if dlg.yesno("PseudoTV Live", str(InstallStatusMSG) + " Donor Features?"):
-            try:
-                xbmcvfs.delete(xbmc.translatePath(DonorPath))
-                xbmc.log('script.pseudotv.live-utilities: DonorDownloader, Removed DonorPath')
-                Install = True
-            except Exception: 
-                pass
-    else:  
+    if auto == True:
+        MSG = 'Updated'
         Install = True
-    
-    if Install == True:
-        try:                   
+    else: 
+        MSG = 'Activated'
+        InstallStatusMSG = 'Activate'
+        Install = False
+        
+        if xbmcvfs.exists(DonorPath) or xbmcvfs.exists(DL_DonorPath):
+            InstallStatusMSG = 'Update'
+        if dlg.yesno("PseudoTV Live", str(InstallStatusMSG) + " Donor Features?"):
+            Install = True
+                
+    if Install:
+        try:
+            if xbmcvfs.exists((DL_DonorPath)):
+                xbmcvfs.delete(xbmc.translatePath(DL_DonorPath))
+                xbmc.log('script.pseudotv.live-utilities: DonorDownloader, Removed DL_DonorPath')
+                
+            if xbmcvfs.exists(xbmc.translatePath(DonorPath)):
+                xbmcvfs.delete(xbmc.translatePath(DonorPath))  
+                xbmc.log('script.pseudotv.live-utilities: DonorDownloader, Removed DonorPath')
+        except Exception,e:
+            print str(e)
+            
+        try:
             urllib.urlretrieve(DonorURLPath, (xbmc.translatePath(DL_DonorPath)))
             if xbmcvfs.exists(DL_DonorPath):
                 xbmc.log('script.pseudotv.live-utilities: DonorDownloader, DL_DonorPath Downloaded')
@@ -125,50 +107,14 @@ def DonorDownloader():
                 REAL_SETTINGS.setSetting("COM_Donor", "true")
                 REAL_SETTINGS.setSetting("TRL_Donor", "true")
                 REAL_SETTINGS.setSetting("CAT_Donor", "true")
-                xbmc.executebuiltin("UpdateLocalAddons")
+                xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Donor Features "+MSG, 4000, THUMB) ) 
+        except Exception,e:
+            print str(e)
             
-                if REAL_SETTINGS.getSetting('AT_Donor') and REAL_SETTINGS.getSetting('COM_Donor') and REAL_SETTINGS.getSetting('TRL_Donor') and REAL_SETTINGS.getSetting('CAT_Donor'):
-                    Verified = True
-
-            if Verified == True:
-                MSG = "Donor Features " + str(InstallStatusMSG) + "d"
-            else:
-                MSG = "Donor Features Not " + str(InstallStatusMSG) + "d"
-                
-            xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", MSG, 1000, THUMB) ) 
-            
-            # Return to PTVL Settings
-            REAL_SETTINGS.openSettings()
-        except:
-            pass
+    if auto == True:
+        # Return to PTVL Settings
+        REAL_SETTINGS.openSettings()
          
-def LogoDownloader():
-    xbmc.log('script.pseudotv.live-utilities: LogoDownloader')
-    if dlg.yesno("PseudoTV Live", "Download Color Logos or No, Download Mono Logos"):
-        LogoDEST = os.path.join(LOCK_LOC,'PTVL_Color.zip')
-        URLPath = PTVLURL + 'PTVL_Color.zip'
-    else:
-        LogoDEST = os.path.join(LOCK_LOC,'PTVL_Mono.zip')
-        URLPath = PTVLURL + 'PTVL_Mono.zip'
-
-    try:
-        if not xbmcvfs.exists(LOCK_LOC):
-            xbmcvfs.mkdir(LOCK_LOC)
-
-        xbmcvfs.delete(xbmc.translatePath(LogoDEST))
-    except:
-        pass
-         
-    try:
-        download(URLPath, LogoDEST)
-        all(LogoDEST, LOCK_LOC)
-        REAL_SETTINGS.setSetting("ChannelLogoFolder", LogoDEST)
-        xbmcvfs.delete(LogoDEST)
-    except:
-        pass
-    # Return to PTVL Settings
-    REAL_SETTINGS.openSettings()
- 
 def DeleteSettings2():
     xbmc.log('script.pseudotv.live-utilities: DeleteSettings2')
     if xbmcvfs.exists(os.path.join(SETTINGS_LOC, 'settings2.xml')):
@@ -191,17 +137,20 @@ def ClearChanFavorites():
     
     
 if sys.argv[1] == '-DDautopatch':
-    DDautopatch()   
+    DonorDownloader(True)   
 elif sys.argv[1] == '-DonorDownloader':
     DonorDownloader()  
-elif sys.argv[1] == '-LogoDownloader':
-    LogoDownloader()
+    
 elif sys.argv[1] == '-SimpleDownloader':
     xbmcaddon.Addon(id='script.module.simple.downloader').openSettings()
+    
 elif sys.argv[1] == '-showChangelog':
     showInfo(ADDON_ID, 'changelog') 
 elif sys.argv[1] == '-showReadme':
     showInfo(ADDON_ID, 'readme') 
+elif sys.argv[1] == '-showDisclaimer':
+    showInfo(ADDON_ID, 'disclaimer') 
+    
 elif sys.argv[1] == '-DeleteSettings2':
     DeleteSettings2()
 elif sys.argv[1] == '-repairSettings2':

@@ -208,6 +208,27 @@ Key Features
 ½ = Added to master, but may not be functional.
 
 ------------------------------------
+Understanding Chtypes
+------------------------------------
+0.  - Custom Smartplaylist
+1.  - TV networks
+2.  - Movie Studios
+3.  - TV Genre
+4.  - Movie Genre
+5.  - Mixed TV/Movie Genre
+6.  - TV Show
+7.  - Directory Channel
+8.  - LiveTV, Use with a single video source and matching xmltv EPG data.
+9.  - InternetTV, Use with a single video source and no matching EPG data. EPG data is provided manually via settings. 
+10. - Youtube Channels
+11. - RSS Feed
+12. - Music Genres
+13. - Music Videos
+14. - Donor Exclusive Content
+15. - Plugin generated channel (not for single source).
+16. - UPNP generated channel (not for single source).
+
+------------------------------------
 Manual Configuration Examples
 ------------------------------------
 

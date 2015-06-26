@@ -20,6 +20,7 @@
 <string id="30300">Tweaks</string>
     <string id="30401">Operating System</string>  
     <string id="32055">Preferred Language</string>  
+    <string id="32056">Preferred Region</string>  
     <string id="30374">Enable Quickflip</string>
     <string id="30302">Channel Change Delay (seconds)</string>
     <string id="30303">Startup Channel</string> 
@@ -54,6 +55,10 @@
     <string id="30202">Select Skin</string> 
     <string id="30225">Channel Logo Folder</string>  
     <string id="34547">Find Missing Logos</string> 
+    <string id="34548">Allow Multi-Region Fallbacks</string> 
+    <string id="34549">Allow Any-Image Fallbacks</string> 
+    <string id="34550">Override Existing Logos</string> 
+    <string id="30376">Select LogoDB Type</string> 
     <string id="30375">Enable Background ArtService</string> 
     <string id="30210">EPG Options:</string> 
         <string id="30211">Clock Mode</string>
@@ -170,14 +175,14 @@
                 <string id="30528">HD-Trailers.net Movie Title Limit</string>
                 <string id="30530">Number of Trailers Between Shows</string>
                 
-<string id="39000">Donor</string>
+<string id="39000">Community/Donor</string>
     <string id="30901">Enable Donor Features</string>
     <string id="30902">Enter Username:Password</string>
-    <string id="30904">Activate/Update Donor Features</string>
+    <string id="30904">[COLOR=orange]Activate/Update Donor Features[/COLOR]</string>
     <string id="30903">Thank you for your support!</string>
-    <string id="30905">Download Channel Icon Pack</string>
-    <string id="30906">Download Channel Bumper Pack</string>
-    <string id="30907">Download Cinema Experience Pack</string>
+    <string id="30905">Enable Community List</string>
+    <string id="30906">Enter your gmail address</string>
+    <string id="30907">Enter your gmail password</string>
     
 <string id="31900">Utilities</string>
     <string id="31997">Clear Channel Favourites</string>
@@ -196,16 +201,18 @@
 <string id="32900">Help</string>
     <string id="32901">Show Changelog</string>
     <string id="32902">Show Readme</string>
-
+    <string id="30999">[COLOR=orange]Disclaimer[/COLOR]</string>
+    
 <string id="30900">Debugging</string>
+    <string id="30309">Wait for Playback (seconds)</string> 
+    <string id="30319">Force Playback timeout (seconds)</string> 
     <string id="30990">DEBUGGING: (Use with Caution!)</string>    
     <string id="30993">Enable Debugging</string>
     <string id="39999">Enable Cache</string>
     <string id="39958">Include 3D Files</string>
     <string id="30997">Include Strm Files</string>
     <string id="39997">Include BCT Files</string>
-    <string id="30994">Plugin Validation Level</string>
-    <string id="30309">Playback timeout (seconds)</string>  
+    <string id="30994">Plugin Validation Level</string> 
     <string id="30991">Override Stream Validation</string>
     <string id="30981">Override Optimized OS Configurations</string>
     <string id="30992">Disable Google Analytics</string>

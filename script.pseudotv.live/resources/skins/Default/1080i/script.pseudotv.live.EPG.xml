@@ -788,6 +788,7 @@
             </control>
             <control type="image" id="508">
                 <description>Dynamic art1 - Info Overlay</description>
+                <animation effect="fade" time="500">VisibleChange</animation> 
                 <posx>35</posx>
                 <posy>270r</posy>  
                 <width>360</width>      
@@ -800,18 +801,19 @@
         <control type="group">
             <control type="button" id="509">
                 <description>Dynamic art2 - Info Overlay</description>
-                <label>landscape</label>
+                <label>poster</label>
                 <visible>false</visible>
             </control>
             <control type="image" id="510">
                 <description>Dynamic art2 - Info Overlay</description>
+                <animation effect="fade" time="500">VisibleChange</animation> 
                 <posx>35</posx>
                 <posy>270r</posy>  
                 <width>360</width>      
                 <height>180</height>
                 <align>center</align>
                 <aspectratio>keep</aspectratio>
-                <texture fallback="logo.png"></texture>
+                <texture fallback="poster.png"></texture>
                 <visible>false</visible>
             </control>
         </control>            

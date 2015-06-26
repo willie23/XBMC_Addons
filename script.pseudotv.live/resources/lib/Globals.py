@@ -20,7 +20,7 @@ import os, sys, re
 import xbmcaddon, xbmc, xbmcgui, xbmcvfs
 import Settings
 
-from FileAccess import FileLock
+from FileAccess import *
 
 # Commoncache plugin import
 try:
@@ -75,6 +75,7 @@ TVDB_API_KEY = '078845CE15BC08A7'
 TMDB_API_KEY = '9c47d05a3f5f3a00104f6586412306af'
 FANARTTV_API_KEY = '7bc4161cc4add99b14e51eddcdd5b985'
 YT_API_KEY = 'AIzaSyAnwpqhAmdRShnEHnxLiOUjymHlG4ecE7c'
+LOGODB_API_KEY = '8332'
 
 # Timers
 AUTOSTART_TIMER = [0,5,10,15,20]#in seconds
@@ -130,9 +131,9 @@ XMLTV_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('xmltvLOC')
 XSP_LOC = xbmc.translatePath("special://profile/playlists/video/")
 
 #BASEURL
-USERPASS = REAL_SETTINGS.getSetting('Donor_UP')
+USERPASS = FileAccess.decode(xbmcgui.Window(10000).getProperty("PTVL.UPID"), REAL_SETTINGS.getSetting('Donor_UP'))
 BASEURL = 'http://pseudotvlive.com/ptvl/'
-PTVLURL = 'http://'+USERPASS+'@pseudotvlive.com/ptvl/'
+PTVLURL = 'http://%s@pseudotvlive.com/ptvl/' %USERPASS
 
 # Core Default Image Locations
 DEFAULT_MEDIA_LOC =  xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', 'Default', 'media')) + '/'
@@ -151,11 +152,10 @@ BUTTON_NO_FOCUS = 'pstvlButtonNoFocus.png'
 BUTTON_FOCUS_CONTEXT = 'pstvlContextF.png'
 BUTTON_NO_FOCUS_CONTEXT = 'pstvlContextC.png'
 BUTTON_GAUSS_CONTEXT = 'pstvlBackground_gauss.png'
+
 # Overlay
 BUTTON_FOCUS_ALT = 'pstvlButtonFocusAlt.png'
 BUTTON_NO_FOCUS_ALT = 'pstvlButtonNoFocusAlt.png'
-
-
 
 #Channel Sharing location
 if REAL_SETTINGS.getSetting('ChannelSharing') == "true":
@@ -200,12 +200,12 @@ if xbmcvfs.exists(os.path.join(PTVL_SKIN_LOC, Skin_Select, '720p','')):
 else:
     PTVL_SKIN_SELECT = xbmc.translatePath(os.path.join(PTVL_SKIN_LOC, Skin_Select, '1080i')) + '/'
 
-# PseudoTV Cache Control
-if REAL_SETTINGS.getSetting("Cache_Enabled") == 'true': #
-    Cache_Enabled = True
+# Primary Cache Control - Channellist/Filelist
+if REAL_SETTINGS.getSetting("Cache_Enabled") == 'true':
+    Primary_Cache_Enabled = True
     xbmc.log("script.pseudotv.live-Globals: System Caching Enabled")
 else:
-    Cache_Enabled = False
+    Primary_Cache_Enabled = False
     xbmc.log("script.pseudotv.live-Globals: System Caching Disabled")
 
 # Globals
@@ -244,7 +244,7 @@ commercials = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "co
 trailers = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "trailers",((24 * 7) * 4))       #BCT Purge
 #Parsers
 parsers = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parsers",((24 * 7) * 4))         #No Purge (API Queries)
-parsersGD = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parsersGD",((24 * 7) * 4))       #No Purge (Guidedata)
+parsersGH = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parsersGH",((24 * 7) * 4))     #No Purge (Github)
 parserFANTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parserFANTV",((24 * 7) * 4)) #No Purge (FANART Queries)
 parserTVDB = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parserTVDB",((24 * 7) * 4))   #No Purge (TVDB Queries)
 parserTMDB = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parserTMDB",((24 * 7) * 4))   #No Purge (TMDB Queries)
@@ -381,3 +381,7 @@ BYPASS_EPG = ['PseudoCinema']
 
 # Bypass Overlay Coming up next by channel name - keep "ComingUp Next" from displaying
 BYPASS_OVERLAY = ['PseudoCinema']
+
+# Superfavourites Unwanted strings
+SF_FILTER = ['isearch', 'iplay - kodi playlist manager','create new super folder','explore kodi favourites']
+EX_FILTER = SF_FILTER + ['<<','back','previous','home','search','find','clips','seasons','trailers']

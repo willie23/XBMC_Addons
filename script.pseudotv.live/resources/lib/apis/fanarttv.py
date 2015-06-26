@@ -36,11 +36,10 @@ except Exception,e:
 from operator import itemgetter
 from resources.lib.Globals import *
 from urllib2 import HTTPError, URLError
+from resources.lib.utils import *
 
 class fanarttv:
     def __init__(self):
-        # Cache bool
-        CACHE_ON = True
         self.API_KEY = FANARTTV_API_KEY
         self.API_URL_TV = 'http://webservice.fanart.tv/v3/tv/%s?api_key=%s'
         self.API_URL_MOVIE = 'http://webservice.fanart.tv/v3/movies/%s?api_key=%s'
@@ -70,8 +69,10 @@ class fanarttv:
 # Retrieve JSON data from cache function
 def get_data(self, url, data_type ='json'):
     xbmc.log('script.pseudotv.live-fanarttv: self.get_data')
-    if CACHE_ON:
+    if CHKCache() == True:
+        setProperty("PTVL.CHKCache", "false")
         result = parserFANTV.cacheFunction(self.get_data_new, url, data_type)
+        setProperty("PTVL.CHKCache", "true")
     else:
         result = self.get_data_new(url, data_type)
     if not result:

@@ -21,6 +21,7 @@ import urllib, urllib2, socket
 import unicodedata, sys, re
 import xbmc, xbmcgui
 import resources.lib.Globals
+from resources.lib.utils import *
 
 # Use json instead of simplejson when python v2.7 or greater
 if sys.version_info < (2, 7):
@@ -38,9 +39,6 @@ try:
     import StorageServer
 except Exception,e:
     import resources.lib.storageserverdummy as StorageServer
-
-### Cache bool
-CACHE_ON = True
 
 class TMDB(object):
     def __init__(self, api_key='078845CE15BC08A7'):
@@ -73,9 +71,11 @@ class TMDB(object):
         # return '%s%s%s' % (self.imagebaseurl, 'w92/', filename)
 
     def getMovie(self, movieName, year):
-        if CACHE_ON:
+        if Primary_Cache_Enabled == True:
             try:
+                setProperty("PTVL.CHKCache", "false")
                 result = parserTMDB.cacheFunction(self.getMovie_NEW, movieName, year)
+                setProperty("PTVL.CHKCache", "true")
             except:
                 result = self.getMovie_NEW(movieName, year)
                 pass                
@@ -102,9 +102,11 @@ class TMDB(object):
         return response
         
     def getMPAA(self, imdbid):
-        if CACHE_ON:
+        if Primary_Cache_Enabled == True:
             try:
+                setProperty("PTVL.CHKCache", "false")
                 result = parserTMDB.cacheFunction(self.getMPAA_NEW, imdbid)
+                setProperty("PTVL.CHKCache", "true")
             except:
                 result = self.getMPAA_NEW(imdbid)
                 pass               
@@ -269,9 +271,11 @@ class TMDB(object):
     # Retrieve JSON data from cache function
     def get_data(self, url, data_type ='json'):
         log('Downloader: get_data - Cache')
-        if CACHE_ON:
+        if CHKCache() == True:
             try:
+                setProperty("PTVL.CHKCache", "false")
                 result = parserTMDB.cacheFunction(self.get_data_new, url, data_type)
+                setProperty("PTVL.CHKCache", "true")
             except:
                 result = self.get_data_new(url, data_type)
                 pass

@@ -16,10 +16,11 @@
 # You should have received a copy of the GNU General Public License
 # along with PseudoTV Live.  If not, see <http://www.gnu.org/licenses/>.
 
-import xbmc, xbmcgui, xbmcaddon, xbmcvfs
+import xbmc, xbmcgui, xbmcaddon, xbmcvfs, hashlib, base64
 import os, feedparser, datetime, time, _strptime, urllib2, threading
 
 from time import sleep
+from random import randint
 
 # Plugin Info
 ADDON_ID = 'script.pseudotv.live'
@@ -28,8 +29,84 @@ ADDON_ID = REAL_SETTINGS.getAddonInfo('id')
 ADDON_NAME = REAL_SETTINGS.getAddonInfo('name')
 ADDON_PATH = REAL_SETTINGS.getAddonInfo('path')
 ADDON_VERSION = REAL_SETTINGS.getAddonInfo('version')
+SETTINGS_LOC = REAL_SETTINGS.getAddonInfo('profile')
 THUMB = (xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'images')) + '/' + 'icon.png')
 
+def UID():
+    # GAID
+    if not REAL_SETTINGS.getSetting('Visitor_GA'):
+        REAL_SETTINGS.setSetting('Visitor_GA', str(randint(0, 0x7fffffff)))
+        
+    # UID
+    try:
+        UID_LOC = xbmc.translatePath(os.path.join(SETTINGS_LOC,'UID'))
+        if not os.path.exists(UID_LOC):
+            fle = open(UID_LOC, "w")
+            fle.write("%s" % str(randint(0, 0x7fffffff)))
+            fle.close()
+            
+        if not xbmcgui.Window(10000).getProperty("PTVL.UID"):
+            fle = open(UID_LOC, 'r')
+            xbmcgui.Window(10000).setProperty("PTVL.UID",str((fle.readlines())[0]))
+            fle.close()
+    except Exception,e:
+        print str(e)
+        
+    # UPID
+    try:
+        UPID_LOC = xbmc.translatePath(os.path.join(SETTINGS_LOC,'UPID'))
+        if REAL_SETTINGS.getSetting('Donor_UP') != 'Username:Password':     
+            if not os.path.exists(UPID_LOC):
+                fle = open(UPID_LOC, "w")
+                HASH = str(randint(0, 0x7fffffff))
+                REAL_SETTINGS.setSetting("Donor_UP",str(encode(HASH, REAL_SETTINGS.getSetting('Donor_UP'))))
+                fle.write("%s" % HASH)
+                fle.close()
+            
+            if not xbmcgui.Window(10000).getProperty("PTVL.UPID"):
+                fle = open(UPID_LOC, 'r')
+                HASH = str((fle.readlines())[0])
+                fle.close()
+                xbmcgui.Window(10000).setProperty("PTVL.UPID",HASH)
+    except Exception,e:
+        print str(e)
+
+    # GID
+    try:
+        GID_LOC = xbmc.translatePath(os.path.join(SETTINGS_LOC,'GID'))
+        if REAL_SETTINGS.getSetting('Community_Enabled') == 'true' and REAL_SETTINGS.getSetting('Gmail_Pass') != 'Password':     
+            if not os.path.exists(GID_LOC):
+                fle = open(GID_LOC, "w")
+                HASH = str(randint(0, 0x7fffffff))
+                REAL_SETTINGS.setSetting("Gmail_Pass",str(encode(HASH, REAL_SETTINGS.getSetting('Gmail_Pass'))))
+                fle.write("%s" % HASH)
+                fle.close()
+            
+            if not xbmcgui.Window(10000).getProperty("PTVL.GID"):
+                fle = open(GID_LOC, 'r')
+                HASH = str((fle.readlines())[0])
+                fle.close()
+                xbmcgui.Window(10000).setProperty("PTVL.GID",HASH)
+    except Exception,e:
+        print str(e)
+        
+def encode(key, clear):
+    enc = []
+    for i in range(len(clear)):
+        key_c = key[i % len(key)]
+        enc_c = chr((ord(clear[i]) + ord(key_c)) % 256)
+        enc.append(enc_c)
+    return base64.urlsafe_b64encode("".join(enc))
+
+def decode(key, enc):
+    dec = []
+    enc = base64.urlsafe_b64decode(enc)
+    for i in range(len(enc)):
+        key_c = key[i % len(key)]
+        dec_c = chr((256 + ord(enc[i]) - ord(key_c)) % 256)
+        dec.append(dec_c)
+    return "".join(dec)
+    
 def SettopUpdate():
     if xbmcgui.Window(10000).getProperty("PseudoTVRunning") == "True" and REAL_SETTINGS.getSetting("SettopUpdate") == "true" :
         # from resources.lib.Overlay import TVOverlay
@@ -160,6 +237,14 @@ def donorCHK():
         REAL_SETTINGS.setSetting("TRL_Donor", "false")
         REAL_SETTINGS.setSetting("CAT_Donor", "false")
         xbmcgui.Window(10000).setProperty("Donor", "false")
+        
+    # CHK Community list gmail for approval
+    if REAL_SETTINGS.getSetting("Community_Enabled") == "true" and REAL_SETTINGS.getSetting('Gmail_Pass') != 'Password':  
+        xbmcgui.Window(10000).setProperty("PTVL.COM_APP", "true")
+    else:
+        xbmcgui.Window(10000).setProperty("PTVL.COM_APP", "false")
+            
+        
     return
         
 # execute service functions
@@ -167,6 +252,7 @@ def service():
     while not xbmc.abortRequested:
         xbmc.log("script.pseudotv.live-Service: Started")
         xbmc.log('script.pseudotv.live-Service: PseudoTVRunning = ' + xbmcgui.Window(10000).getProperty("PseudoTVRunning")) 
+        UID()
         UpdateRSS()
         SettopUpdate()
         

@@ -18,7 +18,6 @@ from os import environ
 # Set your proprty id via the environment or simply type it
 # below
 PROPERTY_ID = environ.get("GA_PROPERTY_ID", "UA-45979766-1")
- 
 # Generate the visitor identifier somehow. I get it from the
 # environment, calculate the SHA1 sum of it, convert this from base 16
 # to base 10 and get first 10 digits of this number.
@@ -58,16 +57,12 @@ else:
     
 if REAL_SETTINGS.getSetting('Donor_Enabled') == 'true':
     try:
-        donor = REAL_SETTINGS.getSetting('Donor_UP')
+        donor = decode(getProperty("PTVL.UID"), REAL_SETTINGS.getSetting('Donor_UP'))
         donor = donor.split(':')[0]
     except Exception,e:
         donor = 'Unknown'
 else:
     donor = 'FreeUser'
-
-if REAL_SETTINGS.getSetting('Visitor_GA') == '':
-    from random import randint
-    REAL_SETTINGS.setSetting('Visitor_GA', str(randint(0, 0x7fffffff)))
 
 VISITOR = str(REAL_SETTINGS.getSetting("Visitor_GA"))
 

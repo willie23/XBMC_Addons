@@ -27,6 +27,7 @@ import resources.lib.Globals
 
 from urllib2 import HTTPError, URLError
 from language import *
+from resources.lib.utils import *
 # Use json instead of simplejson when python v2.7 or greater
 if sys.version_info < (2, 7):
     import simplejson as json
@@ -42,9 +43,6 @@ try:
 except Exception,e:
     import resources.lib.storageserverdummy as StorageServer
 
-### Cache bool
-CACHE_ON = True
-
 class TVDB(object):
     def __init__(self, api_key='9c47d05a3f5f3a00104f6586412306af'):
         self.apikey = api_key
@@ -55,13 +53,13 @@ class TVDB(object):
 
     def _buildUrl(self, cmd, parms={}):
         url = '%s/api/%s?%s' % (self.baseurl, cmd, urllib.urlencode(parms))
-        #xbmc.log(url)
         return url
 
     def getIdByZap2it(self, zap2it_id):
-        xbmc.log("getIdByZap2it Cache")
-        if CACHE_ON:
+        if Primary_Cache_Enabled == True:
+            setProperty("PTVL.CHKCache", "false")
             result = parserTVDB.cacheFunction(self.getIdByZap2it_NEW, zap2it_id)
+            setProperty("PTVL.CHKCache", "true")
         else:
             result = self.getIdByZap2it_NEW(zap2it_id)
         if not result:
@@ -69,7 +67,6 @@ class TVDB(object):
         return result    
 
     def getIdByZap2it_NEW(self, zap2it_id):
-        xbmc.log("getIdByZap2it Creating Cache")
         try:
             response = urllib2.urlopen(self._buildUrl('GetSeriesByRemoteID.php', {'zap2it' : zap2it_id})).read()
             tvdbidRE = re.compile('<id>(.+?)</id>', re.DOTALL)
@@ -82,9 +79,10 @@ class TVDB(object):
             return 'Empty'
 
     def getIdByIMDB(self, imdb_id):
-        xbmc.log("getIdByIMDB Cache")
-        if CACHE_ON:
+        if Primary_Cache_Enabled == True:
+            setProperty("PTVL.CHKCache", "false")
             result = parserTVDB.cacheFunction(self.getIdByIMDB_NEW, imdb_id)
+            setProperty("PTVL.CHKCache", "true")
         else:
             result = self.getIdByIMDB_NEW(imdb_id)
         if not result:
@@ -92,7 +90,6 @@ class TVDB(object):
         return result    
 
     def getIdByIMDB_NEW(self, imdb_id):
-        xbmc.log("getIdByIMDB Creating Cache")
         try:
             response = urllib2.urlopen(self._buildUrl('GetSeriesByRemoteID.php', {'apikey' : self.apikey, 'imdbid' : imdb_id})).read()
             imdbidRE = re.compile('<id>(.+?)</id>', re.DOTALL)
@@ -106,9 +103,10 @@ class TVDB(object):
             return 'Empty'
 
     def getEpisodeByAirdate(self, tvdbid, airdate):
-        xbmc.log("getEpisodeByAirdate Cache")
-        if CACHE_ON:
+        if Primary_Cache_Enabled == True:
+            setProperty("PTVL.CHKCache", "false")
             result = parserTVDB.cacheFunction(self.getEpisodeByAirdate_NEW, tvdbid, airdate)
+            setProperty("PTVL.CHKCache", "true")
         else:
             result = self.getEpisodeByAirdate_NEW(tvdbid, airdate)
         if not result:
@@ -116,7 +114,6 @@ class TVDB(object):
         return result    
 
     def getEpisodeByAirdate_NEW(self, tvdbid, airdate):
-        xbmc.log("getEpisodeByAirdate Creating Cache")
         try:
             response = urllib2.urlopen(self._buildUrl('GetEpisodeByAirDate.php', {'apikey' : self.apikey, 'seriesid' : tvdbid, 'airdate' : airdate})).read()
             return response
@@ -124,9 +121,10 @@ class TVDB(object):
             return ''
 
     def getEpisodeByID(self, tvdbid):
-        xbmc.log("getIdByIMDB Cache")
-        if CACHE_ON:
+        if Primary_Cache_Enabled == True:
+            setProperty("PTVL.CHKCache", "false")
             result = parserTVDB.cacheFunction(self.getEpisodeByID_NEW, tvdbid)
+            setProperty("PTVL.CHKCache", "true")
         else:
             result = self.getEpisodeByID_NEW(tvdbid)
         if not result:
@@ -134,7 +132,6 @@ class TVDB(object):
         return result    
 
     def getEpisodeByID_NEW(self, tvdbid):
-        xbmc.log("getEpisodeByID_NEW Creating Cache")
         try:
             response = urllib2.urlopen(self._buildUrl(self.apikey + '/series/' + tvdbid + '/all/en.xml')).read()
             return response
@@ -142,10 +139,11 @@ class TVDB(object):
             return ''
 
     def getIdByShowName(self, showName):
-        xbmc.log("getIdByShowName Cache")
-        if CACHE_ON:
+        if Primary_Cache_Enabled == True:
             try:
+                setProperty("PTVL.CHKCache", "false")
                 result = parserTVDB.cacheFunction(self.getIdByShowName_NEW, showName)
+                setProperty("PTVL.CHKCache", "true")
             except:
                 result = self.getIdByShowName_NEW(showName)
                 pass
@@ -156,7 +154,6 @@ class TVDB(object):
         return result    
 
     def getIdByShowName_NEW(self, showName):
-        xbmc.log("getIdByShowName Creating Cache")
         try:
             #NOTE: This assumes an exact match. It is possible to get multiple results though. This could be smarter
             response = urllib2.urlopen(self._buildUrl('GetSeries.php', {'seriesname' : showName})).read()
@@ -170,9 +167,10 @@ class TVDB(object):
             return 'Empty'
 
     def getBannerByID(self, tvdbid, type):
-        xbmc.log("getIdByZap2it Cache")
-        if CACHE_ON:
+        if Primary_Cache_Enabled == True:
+            setProperty("PTVL.CHKCache", "false")
             result = parserTVDB.cacheFunction(self.getBannerByID_NEW, tvdbid, type)
+            setProperty("PTVL.CHKCache", "true")
         else:
             result = self.getBannerByID_NEW(tvdbid, type)
         if not result:
@@ -207,10 +205,11 @@ class TVDB(object):
             return 'Empty'
 
     def getIMDBbyShowName(self, showName):
-        xbmc.log("getIMDBbyShowName Cache")
-        if CACHE_ON:
+        if Primary_Cache_Enabled == True:
             try:
+                setProperty("PTVL.CHKCache", "false")
                 result = parserTVDB.cacheFunction(self.getIMDBbyShowName_NEW, showName)
+                setProperty("PTVL.CHKCache", "true")
             except:
                 result = self.getIMDBbyShowName_NEW(showName)
                 pass
@@ -221,7 +220,6 @@ class TVDB(object):
         return result    
 
     def getIMDBbyShowName_NEW(self, showName):
-        xbmc.log("getIMDBbyShowName Creating Cache")
         try:
             #NOTE: This assumes an exact match. It is possible to get multiple results though. This could be smarter
             response = urllib2.urlopen(self._buildUrl('GetSeries.php', {'seriesname' : showName})).read()
@@ -315,9 +313,10 @@ class TVDB(object):
             
     # Retrieve JSON data from cache function
     def get_data(url, data_type ='json'):
-        xbmc.log('script.pseudotv.live-fanarttv: get_data')
-        if CACHE_ON:
+        if CHKCache() == True:
+            setProperty("PTVL.CHKCache", "false")
             result = parserFANTV.cacheFunction(get_data_new, url, data_type)
+            setProperty("PTVL.CHKCache", "true")
         else:
             result = get_data_new(url, data_type)
         if not result:

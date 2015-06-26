@@ -29,9 +29,7 @@ except:
 # import libraries
 from urllib2 import HTTPError, URLError
 from resources.lib.Globals import *
-
-# Cache bool
-CACHE_ON = True
+from resources.lib.utils import *
 
 class SickBeard(object):
     def __init__(self, base_url='http://localhost:8081', api_key='cf6a9873e3f6dd25abbb654c7e362d9d'):

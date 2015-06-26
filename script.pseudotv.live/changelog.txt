@@ -1,3 +1,12 @@
+[*] In-app Channel manager tweaks.
+[*] Community list submissions fixed, Requires gmail account! Settings can be found in "Community/Donor" tab.
+    List submission should be added to the community list within 24-48hrs after submission. [Experimental]
+    Community list access (auto-tuning/In-app manager) will only work for users who have entered a valid gmail account.
+[*] Improved "Playback failed" detection and PlayerTimeout handling? Tweak setting under "Debugging", PlayerTimeout.
+[*] NEW! Automatic Channel Logos, Chtypes [0,1,8,9] search thelogodb.com, Chtypes [0,2,3,4,5,12,13,14] search my github logo repository and 
+    Chtypes [6,7] search your local media folder or fanart.tv for logo.png. Missing a logo? Submit the missing logo to the appropriate chtype source (LogoDB/Github).
+[*] More EPG & Artwork performance tweaks, Artwork now available immediately after startup.
+[*] [COLOR=blue][B]^ v.0.6.3 ^[/B][/COLOR]
 [*] Added CEC TVstandby to sleep actions.
 [*] PlayerTimeout tweaked, Improved failed playback detection?
 [*] All "Find Missing Info" parsers tweaked for better performance.

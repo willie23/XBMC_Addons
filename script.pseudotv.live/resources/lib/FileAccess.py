@@ -16,25 +16,30 @@
 # You should have received a copy of the GNU General Public License
 # along with PseudoTV.  If not, see <http://www.gnu.org/licenses/>.
 
-import xbmc
-import subprocess, os, shutil
+import xbmc, xbmcvfs
+import subprocess, os, shutil, base64
 import time, threading
-import random, os
+import random, os, codecs
 import Globals
-import codecs
-import xbmcvfs
-
 
 VFS_AVAILABLE = True
 FILE_LOCK_MAX_FILE_TIMEOUT = 13
 FILE_LOCK_NAME = "FileLock.dat"
 
-
 class FileAccess:
     @staticmethod
     def log(msg, level = xbmc.LOGDEBUG):
         Globals.log('FileAccess: ' + msg, level)
-
+    
+    @staticmethod
+    def decode(key, enc):
+        dec = []
+        enc = base64.urlsafe_b64decode(enc)
+        for i in range(len(enc)):
+            key_c = key[i % len(key)]
+            dec_c = chr((256 + ord(enc[i]) - ord(key_c)) % 256)
+            dec.append(dec_c)
+        return "".join(dec)
 
     @staticmethod
     def open(filename, mode, encoding = "utf-8"):

@@ -19,7 +19,6 @@
 import os, sys, re, shutil, threading
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 
-from resources.lib.GA import *
 from resources.lib.Globals import *
 from resources.lib.FileAccess import *
 from resources.lib.utils import *
@@ -36,6 +35,7 @@ __language__   = __settings__.getLocalizedString
 def PseudoTV():
     import resources.lib.Overlay as Overlay
     setProperty("PseudoTVRunning", "True")
+    setProperty("PTVL.CHKCache", "true")
     try:
         MyOverlayWindow = Overlay.TVOverlay("script.pseudotv.live.TVOverlay.xml", __cwd__, Skin_Select)
     except Exception,e:
@@ -76,19 +76,19 @@ if getProperty("PseudoTVRunning") != "True":
         # Donor Download
         xbmc.executebuiltin("RunScript("+__cwd__+"/utilities.py,-DDautopatch)")
 
-        # Auto VideoWindow Patch.
+        # VideoWindow Patch.
         VideoWindow()
         
         # Check if autoplay is enabled
         CHKAutoplay()
 
-        #call showChangeLog like this to workaround bug in openElec, *Thanks spoyser
+        # Call showChangeLog like this to workaround bug in openElec, *Thanks spoyser
         xbmc.executebuiltin("RunScript("+__cwd__+"/utilities.py,-showChangelog)")  
     else:
-        #Check if Outdated/Install Repo
+        # Check if Outdated/Install Repo
         VersionCompare()
         
-        # Auto VideoWindow Patch.
+        # VideoWindow Patch.
         VideoWindow()
                  
         # Clear filelist Caches    
