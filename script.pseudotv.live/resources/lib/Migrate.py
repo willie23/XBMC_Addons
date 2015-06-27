@@ -130,11 +130,53 @@ class Migrate:
         self.updateDialogProgress = 5
         if Globals.REAL_SETTINGS.getSetting("autoFindSuperFav") == "true" :
             self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding Super Favourites"," ")
-            from parsers import SFParser
-            self.SF = SFParser.SFParser() 
-            channelNum = self.SF.SFAutotune(channelNum, self.limit)
-            self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding Super Favourites"," ")   
-            
+            SuperFav = chanlist.plugin_ok('plugin.program.super.favourites')
+            SF = 0
+            if SuperFav == True:
+                plugin_details = chanlist.PluginQuery('plugin://plugin.program.super.favourites')
+                
+                for SF in plugin_details:
+                    try:
+                        filetypes = re.search('"filetype" *: *"(.*?)"', SF)
+                        labels = re.search('"label" *: *"(.*?)"', SF)
+                        files = re.search('"file" *: *"(.*?)"', SF)
+
+                        #if core variables have info proceed
+                        if filetypes and files and labels:
+                            filetype = filetypes.group(1)
+                            file = (files.group(1))
+                            label = (labels.group(1))
+                            print filetype, file, label
+                            
+                            if label and label.lower() not in SF_FILTER:
+                                if filetype == 'directory':
+                                    SFmatch = unquote(file)
+                                    SFmatch = SFmatch.split('Super+Favourites')[1].replace('\\','/')
+                                    self.log("SFAutotune, SFmatch = " + SFmatch)
+                                    
+                                    if SFmatch == '/PseudoTV_Live':
+                                        plugin_details = chanlist.PluginQuery(file)
+                                        break
+                                    elif SFmatch[0:9] != '/Channel_':
+                                        plugin_details = chanlist.PluginQuery(file)
+                                        
+                                    SFmatch = SFmatch.split('&')[0]
+                                    SFname = SFmatch.replace('/PseudoTV_Live/','').replace('/','')
+                                    ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_type", "15")
+                                    ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_time", "0")
+                                    ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_1", 'plugin://plugin.program.super.favourites' + SFmatch)
+                                    ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_2", "")
+                                    ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_3", str(limit))
+                                    ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_4", "0")
+                                    ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rulecount", "1")
+                                    ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rule_1_id", "1")
+                                    ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rule_1_opt_1", SFname)
+                                    ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_changed", "true")
+                                    self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding Super Favourites",SFname)   
+                                    channelNum += 1       
+                    except:
+                        pass
+                
         # LiveTV - PVR
         self.updateDialogProgress = 10
         if Globals.REAL_SETTINGS.getSetting("autoFindLivePVR") == "true":
