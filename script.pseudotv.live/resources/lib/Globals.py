@@ -131,7 +131,10 @@ XMLTV_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('xmltvLOC')
 XSP_LOC = xbmc.translatePath("special://profile/playlists/video/")
 
 #BASEURL
-USERPASS = FileAccess.decode(xbmcgui.Window(10000).getProperty("PTVL.UPID"), REAL_SETTINGS.getSetting('Donor_UP'))
+try:
+    USERPASS = FileAccess.decode(xbmcgui.Window(10000).getProperty("PTVL.UPID"), REAL_SETTINGS.getSetting('Donor_UP'))
+except:
+    USERPASS = "user:password"
 BASEURL = 'http://pseudotvlive.com/ptvl/'
 PTVLURL = 'http://%s@pseudotvlive.com/ptvl/' %USERPASS
 

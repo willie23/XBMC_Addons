@@ -102,7 +102,7 @@
     </extension>
 </addon>
 
-<addon id="script.pseudotv.live" version="0.6.3" name="PseudoTV Live" provider-name="Lunatixz">
+<addon id="script.pseudotv.live" version="0.6.3a" name="PseudoTV Live" provider-name="Lunatixz">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.extendedinfo" version="2.0.0"/>
