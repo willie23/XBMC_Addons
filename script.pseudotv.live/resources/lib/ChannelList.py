@@ -1719,12 +1719,12 @@ class ChannelList:
                                 
                             self.logDebug("buildFileList, dbid = " + str(dbid))
 
-                            if plots != None and len(plots.group(1)) > 0:
+                            if plots and len(plots.group(1)) > 0:
                                 theplot = (plots.group(1)).replace('\\','').replace('\n','')
-                            elif plotoutlines != None and len(plotoutlines.group(1)) > 0:
-                                theplot = (plotoutlines.group(1)).replace('\\','').replace('\n','')
-                            elif descriptions != None and len(descriptions.group(1)) > 0:
+                            elif descriptions and len(descriptions.group(1)) > 0:
                                 theplot = (descriptions.group(1)).replace('\\','').replace('\n','')
+                            elif plotoutlines and len(plotoutlines.group(1)) > 0:
+                                theplot = (plotoutlines.group(1)).replace('\\','').replace('\n','')
                             else:
                                 theplot = (titles.group(1)).replace('\\','').replace('\n','')
                             
@@ -2619,54 +2619,57 @@ class ChannelList:
         
     def getYoutubeMeta_NEW(self, YTID):
         self.log('getYoutubeMeta_NEW ' + YTID)
-        YT_URL_Video = ('https://www.googleapis.com/youtube/v3/videos?key=%s&id=%s&part=snippet,id,statistics,contentDetails' % (YT_API_KEY, YTID))
-        f = request_url(YT_URL_Video)
-        detail = re.compile("},(.*?)}", re.DOTALL ).findall(f)
-        title = ''
-        description = ''
-        thumbnail = ''
-        duration = 0
-        Chname = ''
-        Chcat = '31'
-        
-        for f in detail:
-            items = re.search('"items" *:', f)
-            titles = re.search('"title" *: *"(.*?)",', f)
-            descriptions = re.search('"description" *: *"(.*?)",', f)
-            durations = re.search('"duration" *: *"(.*?)",', f)
-            thumbnails = re.search('"url" *: *"(.*?)",', f)
-            Chnames = re.search('"channelTitle" *: *"(.*?)",', f)
-            Chcats = re.search('"categoryId" *: *"(.*?)",', f)
+        try:
+            YT_URL_Video = ('https://www.googleapis.com/youtube/v3/videos?key=%s&id=%s&part=snippet,id,statistics,contentDetails' % (YT_API_KEY, YTID))
+            f = request_url(YT_URL_Video)
+            detail = re.compile("},(.*?)}", re.DOTALL ).findall(f)
+            title = ''
+            description = ''
+            thumbnail = ''
+            duration = 0
+            Chname = ''
+            Chcat = '31'
+            
+            for f in detail:
+                items = re.search('"items" *:', f)
+                titles = re.search('"title" *: *"(.*?)",', f)
+                descriptions = re.search('"description" *: *"(.*?)",', f)
+                durations = re.search('"duration" *: *"(.*?)",', f)
+                thumbnails = re.search('"url" *: *"(.*?)",', f)
+                Chnames = re.search('"channelTitle" *: *"(.*?)",', f)
+                Chcats = re.search('"categoryId" *: *"(.*?)",', f)
 
-            if durations:
-                duration = durations.group(1)
-                duration = self.parseYoutubeDuration(duration)
-            if Chnames:
-                Chname = self.CleanLabels(Chnames.group(1))
-            if Chcats:
-                Chcat = Chcats.group(1)
-                
-            if items:
-                if titles:
-                    title = self.CleanLabels(titles.group(1))
-                if descriptions:
-                    description = self.CleanLabels(descriptions.group(1).replace('\n',' '))
-                if thumbnails:
-                    thumbnail = thumbnails.group(1)
-        if title:
-            if not description:
-                description = title
-            try:
-                description = (self.trim(description, 350, ''))
-            except Exception,e:
-                self.log("description Trim failed" + str(e))
-                description = (description[:350])
-                pass
-                
-            self.log("getYoutubeMeta_NEW, return")
-            return [title, description, duration, thumbnail, Chname, int(Chcat)]
+                if durations:
+                    duration = durations.group(1)
+                    duration = self.parseYoutubeDuration(duration)
+                if Chnames:
+                    Chname = self.CleanLabels(Chnames.group(1))
+                if Chcats:
+                    Chcat = Chcats.group(1)
+                    
+                if items:
+                    if titles:
+                        title = self.CleanLabels(titles.group(1))
+                    if descriptions:
+                        description = self.CleanLabels(descriptions.group(1).replace('\n',' '))
+                    if thumbnails:
+                        thumbnail = thumbnails.group(1)
+            if title:
+                if not description:
+                    description = title
+                try:
+                    description = (self.trim(description, 350, ''))
+                except Exception,e:
+                    self.log("description Trim failed" + str(e))
+                    description = (description[:350])
+                    pass
+                    
+                self.log("getYoutubeMeta_NEW, return")
+                return [title, description, duration, thumbnail, Chname, int(Chcat)]
+        except:
+            pass
 
-
+            
     def getYoutubeVideos(self, YT_Type, YT_ID, YT_NextPG, limit, YTMSG):
         print 'getYoutubeVideos', YT_Type, YT_ID, YT_NextPG, limit, YTMSG
         region = 'US'
@@ -4404,7 +4407,7 @@ class ChannelList:
                     file = files.group(1)
                     label = self.CleanLabels(labels.group(1))
 
-                    if label.lower() not in excludeLST:
+                    if label and label.lower() not in excludeLST:
                         if filetype == 'directory':
                             self.log('PluginWalk, directory')
                             # self.lastDirName = label
@@ -5177,10 +5180,10 @@ class ChannelList:
             url = PluginURL
         elif type == 'ExternalPlaylist':
             url = ExternalPlaylistURL
-
+        print UPASS, PTVLURL
         try:
             if list == 'Donor':
-                data = open_url_up_cached(url, USERPASS)
+                data = open_url_up_cached(url, UPASS)
             else:
                 data = readline_url(url)
             
@@ -5577,8 +5580,23 @@ class ChannelList:
             self.log("getTVINFObySE, Failed! " + str(e))
         return episodeName, episodeDesc, episodeGenre
         
-
+        
     def getEnhancedGuideData(self, showtitles, year, imdbnumber, genre, rating, type, tagline=None):
+        self.log('getEnhancedGuideData_Cache')
+        if Primary_Cache_Enabled == True:
+            try:
+                result = parsersGD.cacheFunction(self.getEnhancedGuideData_NEW, showtitles, year, imdbnumber, genre, rating, type, tagline)
+            except:
+                result = self.getEnhancedGuideData_NEW(showtitles, year, imdbnumber, genre, rating, type, tagline)
+                pass
+        else:
+            result = self.getEnhancedGuideData_NEW(showtitles, year, imdbnumber, genre, rating, type, tagline)
+        if not result:
+            result = []
+        return result  
+        
+        
+    def getEnhancedGuideData_NEW(self, showtitles, year, imdbnumber, genre, rating, type, tagline=None):
         self.logDebug("getEnhancedGuideData")
         Managed = False
         if type == 'movie':

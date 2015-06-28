@@ -111,7 +111,7 @@ def DonorDownloader(auto=False):
         except Exception,e:
             print str(e)
             
-    if auto == True:
+    if auto == False:
         # Return to PTVL Settings
         REAL_SETTINGS.openSettings()
          

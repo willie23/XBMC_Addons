@@ -27,33 +27,28 @@ try:
     import StorageServer
 except Exception,e:
     import storageserverdummy as StorageServer
-
-    
+     
 def log(msg, level = xbmc.LOGDEBUG):
     try:
         xbmc.log(ADDON_ID + '-' + ascii(msg), level)
     except Exception,e:
         pass
 
-
 def uni(string, encoding = 'utf-8'):
     if isinstance(string, basestring):
         if not isinstance(string, unicode):
             string = unicode(string, encoding, 'ignore')
     return string
-    
-    
+      
 def ConStr(string, encoding = 'utf-8'):
     string = string.encode(encoding, 'ignore')
     return string
-
-    
+  
 def utf(string):
     if isinstance(string, basestring):
         if isinstance(string, unicode):
            string = string.encode( 'utf-8', 'ignore' )
     return string
-
 
 def ascii(string):
     if isinstance(string, basestring):
@@ -132,11 +127,12 @@ XSP_LOC = xbmc.translatePath("special://profile/playlists/video/")
 
 #BASEURL
 try:
-    USERPASS = FileAccess.decode(xbmcgui.Window(10000).getProperty("PTVL.UPID"), REAL_SETTINGS.getSetting('Donor_UP'))
+    UPASS = REAL_SETTINGS.getSetting('Donor_UP')
 except:
-    USERPASS = "user:password"
+    UPASS = "user:password"
+
 BASEURL = 'http://pseudotvlive.com/ptvl/'
-PTVLURL = 'http://%s@pseudotvlive.com/ptvl/' %USERPASS
+PTVLURL = 'http://%s@pseudotvlive.com/ptvl/' %UPASS
 
 # Core Default Image Locations
 DEFAULT_MEDIA_LOC =  xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', 'Default', 'media')) + '/'
@@ -238,20 +234,13 @@ monthly = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "monthl
 liveTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "liveTV",24)                       #System Purge, ForceReset
 RSSTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "RSSTV",24)                         #System Purge, ForceReset
 pluginTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "pluginTV",24)                   #System Purge, ForceReset
-upnpTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "playonTV",24)                      #System Purge, ForceReset
+upnpTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "playonTV",24)                     #System Purge, ForceReset
 lastfm = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "lastfm",24)                       #System Purge, ForceReset
 #BCTs
 bumpers = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "bumpers",((24 * 7) * 4))         #BCT Purge
 ratings = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "ratings",((24 * 7) * 4))         #BCT Purge
 commercials = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "commercials",((24 * 7) * 4)) #BCT Purge
 trailers = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "trailers",((24 * 7) * 4))       #BCT Purge
-#Parsers
-parsers = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parsers",((24 * 7) * 4))         #No Purge (API Queries)
-parsersGH = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parsersGH",((24 * 7) * 4))     #No Purge (Github)
-parserFANTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parserFANTV",((24 * 7) * 4)) #No Purge (FANART Queries)
-parserTVDB = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parserTVDB",((24 * 7) * 4))   #No Purge (TVDB Queries)
-parserTMDB = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parserTMDB",((24 * 7) * 4))   #No Purge (TMDB Queries)
-parserYT = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parserYT",((24 * 7) * 4))       #No Purge (Youtube Queries)
 #Artwork
 artwork = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "artwork",((24 * 7) * 4))         #Artwork Purge
 artwork1 = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "artwork1",((24 * 7) * 4))       #Artwork Purge
@@ -260,6 +249,14 @@ artwork3 = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "artwo
 artwork4 = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "artwork4",((24 * 7) * 4))       #Artwork Purge
 artwork5 = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "artwork5",((24 * 7) * 4))       #Artwork Purge
 artwork6 = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "artwork6",((24 * 7) * 4))       #Artwork Purge
+#Parsers
+parsers = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parsers",((24 * 7) * 4))         #No Purge (API Queries)
+parsersGD = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parsersGD",((24 * 7) * 4))     #No Purge (EnhancedGuideData)
+parsersGH = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parsersGH",((24 * 7) * 4))     #No Purge (Github)
+parserFANTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parserFANTV",((24 * 7) * 4)) #No Purge (FANART Queries)
+parserTVDB = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parserTVDB",((24 * 7) * 4))   #No Purge (TVDB Queries)
+parserTMDB = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parserTMDB",((24 * 7) * 4))   #No Purge (TMDB Queries)
+parserYT = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parserYT",((24 * 7) * 4))       #No Purge (Youtube Queries)
 
 # HEX COLOR OPTIONS 4 (Overlay CHANBUG, EPG Genre & CHtype) 
 # http://www.w3schools.com/html/html_colornames.asp

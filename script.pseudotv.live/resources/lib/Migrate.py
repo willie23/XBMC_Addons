@@ -920,14 +920,12 @@ class Migrate:
         chanlist = ChannelList.ChannelList()
         Com_ch = ['10','11']
         Don_ch = ['8','9','15','16']
-        Don_APP = getProperty("Donor") == "true"
-        Com_App = getProperty("PTVL.COM_APP") == "true"
 
-        if chtype in Com_ch and not Com_APP:
+        if chtype in Com_ch and getProperty("PTVL.COM_APP") == "false":
             xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Please Configure Community List Access", 1000, THUMB) )
             return
             
-        if chtype in Don_ch and not Don_APP:
+        if chtype in Don_ch and getProperty("Donor") == "false":
             xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Please Activate Donor Features", 1000, THUMB) )
             return
 

@@ -297,13 +297,11 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         self.getControl(119).setVisible(False)
         self.getControl(130).setVisible(False)
         self.getControl(120).setVisible(False)
-        self.getControl(508).setImage(THUMB)
-        self.getControl(510).setImage(THUMB)
         
         self.channelList = ChannelList()
         self.Upnp = Upnp()
         dlg = xbmcgui.Dialog()
-  
+
         self.settingsFile = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.xml'))
         self.nsettingsFile = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.bak.xml'))
         self.atsettingsFile = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.pretune.xml'))
@@ -317,6 +315,28 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         json_query = ('{"jsonrpc": "2.0", "method": "JSONRPC.NotifyAll", "params": {"sender":"PTVL","message":"PseudoTV_Live - Starting"}, "id": 1}')
         self.channelList.sendJSON(json_query)
 
+        # Artwork types
+        try:
+            self.getControl(508).setImage(THUMB)
+            self.Arttype1 = str(self.getControl(507).getLabel())
+            self.type1EXT = EXTtype(self.Arttype1)
+            setProperty("type1EXT_Overlay",self.type1EXT)
+        except:
+            pass
+        try:
+            self.getControl(510).setImage(THUMB)
+            self.Arttype2 = str(self.getControl(509).getLabel())
+            self.type2EXT = EXTtype(self.Arttype2)
+            setProperty("type2EXT_Overlay",self.type2EXT)
+        except:
+            pass
+        try:
+            self.Arttype3 = str(self.getControl(121).getLabel())
+            self.type3EXT = EXTtype(self.Arttype3)
+            setProperty("type3EXT_Overlay",self.type3EXT)
+        except:
+            pass
+            
         # Clear Setting2 for fresh autotune
         if REAL_SETTINGS.getSetting("Autotune") == "true" and REAL_SETTINGS.getSetting("Warning1") == "true":
             self.log('Autotune onInit') 
@@ -518,26 +538,6 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         self.TogglesetVisibleTimer.start()
         setProperty("PTVL.FEEDtoggle","false")
 
-        # Artwork types
-        try:
-            self.Arttype1 = str(self.getControl(507).getLabel())
-            self.type1EXT = EXTtype(self.Arttype1)
-            setProperty("type1EXT_Overlay",self.type1EXT)
-        except:
-            pass
-        try:
-            self.Arttype2 = str(self.getControl(509).getLabel())
-            self.type2EXT = EXTtype(self.Arttype2)
-            setProperty("type2EXT_Overlay",self.type2EXT)
-        except:
-            pass
-        try:
-            self.Arttype3 = str(self.getControl(121).getLabel())
-            self.type3EXT = EXTtype(self.Arttype3)
-            setProperty("type3EXT_Overlay",self.type3EXT)
-        except:
-            pass
-            
         if self.backgroundUpdating < 2 or self.isMaster == False:
             self.channelThread.name = "ChannelThread"
             self.channelThread.start()
@@ -1033,19 +1033,19 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         title = self.channels[self.currentChannel - 1].getItemTitle(self.channels[self.currentChannel - 1].playlistPosition)
         setProperty("Playing.Title",title)
         self.background.setVisible(False)
-                
-        if self.infoOnChange == True:
-            self.infoOffset = 0
-            self.showInfo(self.InfTimer)
-        else:
-            self.setShowInfo()
-
+        
         # set the time offset
         self.channels[self.currentChannel - 1].setAccessTime(curtime)
         
         json_query = ('{"jsonrpc": "2.0", "method": "JSONRPC.NotifyAll", "params": {"sender":"PTVL","message":"PseudoTV_Live - Loading: %s"}, "id": 1}' % (chname))
         self.channelList.sendJSON(json_query)
             
+        if self.infoOnChange == True:
+            self.infoOffset = 0
+            self.showInfo(self.InfTimer)
+        else:
+            self.setShowInfo()
+
         # set the show offset
         if self.channels[self.currentChannel - 1].isPaused:
             self.channels[self.currentChannel - 1].setPaused(False)
@@ -1088,7 +1088,8 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         
                 if self.seektime >= halftime: 
                     self.ShowStartover()
-
+        
+                
         # Unmute
         self.log("Finished, unmuting");
         if self.MUTE:
@@ -1374,6 +1375,22 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         setProperty("Playing.Year",str(year))
         setProperty("Playing.Description",Description)
         
+        print type, chtype, chname, id, dbid, mpath, self.type1EXT, self.type2EXT
+        
+        #Dynamic Art1
+        try:
+            self.setArtwork1(type, chtype, chname, id, dbid, mpath, self.type1EXT)
+        except Exception,e:
+            self.log('setShowInfo, Label 508 not found', str(e))
+            pass
+           
+        #Dynamic Art2
+        try:
+            self.setArtwork2(type, chtype, chname, id, dbid, mpath, self.type2EXT)
+        except Exception,e:
+            self.log('setShowInfo, Label 510 not found', str(e))
+            pass
+
         try:
             if Managed == 'True':
                 self.getControl(511).setVisible(True)  
@@ -1384,8 +1401,8 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             else:
                 self.getControl(511).setVisible(False)  
                 self.getControl(511).setImage(IMAGES_LOC + 'NA.png') 
-        except:
-            self.log('setShowInfo, Label 511 not found')
+        except Exception,e:
+            self.log('setShowInfo, Label 511 not found', str(e))
             pass     
             
         #Unaired/aired
@@ -1398,24 +1415,10 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             else:
                 self.getControl(512).setVisible(False) 
                 self.getControl(512).setImage(MEDIA_LOC + 'NA.png')     
-        except:
-            self.log('setShowInfo, Label 512 not found')
+        except Exception,e:
+            self.log('setShowInfo, Label 512 not found', str(e))
             pass  
-        
-        #Dynamic Art1
-        try:
-            self.setArtwork1(type, chtype, chname, id, dbid, mpath, self.type1EXT)
-        except:
-            self.log('setShowInfo, Label 508 not found')
-            pass
-           
-        #Dynamic Art2
-        try:
-            self.setArtwork2(type, chtype, chname, id, dbid, mpath, self.type2EXT)
-        except:
-            self.log('setShowInfo, Label 510 not found')
-            pass
-            
+                    
             
     def FindArtwork_Thread(self, data):
         self.log('FindArtwork_Thread, key = ' + str(data[7]))
@@ -2498,12 +2501,12 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         try:
             if self.PlayerTimedOutTimer.isAlive():
                 self.PlayerTimedOutTimer.cancel()
+            self.background.setVisible(True)
         except:
             pass
             
         # if self.Player.ignoreNextStop == True:       
         json_query = '{"jsonrpc":"2.0","method":"Input.ExecuteAction","params":{"action":"stop"},"id":1}'
-        self.background.setVisible(True)
         self.channelList.sendJSON(json_query);
         xbmc.sleep(10)
             

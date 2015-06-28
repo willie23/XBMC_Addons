@@ -1286,8 +1286,8 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             self.pluginNameList = ['[COLOR=blue][B]Donor List[/B][/COLOR]'] + self.chnlst.pluginNameList
             self.SourceList = self.SourceList + ['Donor List','IPTV M3U','LiveStream XML','Navi-X PLX']
             
-            if self.chnlst.plugin_ok('plugin.video.stalker'):
-                self.SourceList = self.SourceList + ['IPTV Stalker']
+            # if self.chnlst.plugin_ok('plugin.video.stalker'):
+                # self.SourceList = self.SourceList + ['IPTV Stalker']
 
         else:
             self.pluginPathList = self.chnlst.pluginPathList

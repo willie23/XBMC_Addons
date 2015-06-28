@@ -22,6 +22,11 @@ PROPERTY_ID = environ.get("GA_PROPERTY_ID", "UA-45979766-1")
 # environment, calculate the SHA1 sum of it, convert this from base 16
 # to base 10 and get first 10 digits of this number.
 
+# GAID
+if not REAL_SETTINGS.getSetting('Visitor_GA'):
+    REAL_SETTINGS.setSetting('Visitor_GA', str(randint(0, 0x7fffffff)))
+VISITOR = str(REAL_SETTINGS.getSetting("Visitor_GA"))
+
 bcts = ''
 if REAL_SETTINGS.getSetting('bumpers') == '1':
     bcts += 'BL+'
@@ -63,8 +68,6 @@ if REAL_SETTINGS.getSetting('Donor_Enabled') == 'true':
         donor = 'Unknown'
 else:
     donor = 'FreeUser'
-
-VISITOR = str(REAL_SETTINGS.getSetting("Visitor_GA"))
 
 # The path to visit
 PATH = ("PTVL:"+ str(ADDON_VERSION) + "/" + str(VISITOR) + '/' + str(donor) + '/Hub:' + str(HubEdition)+ '/Skin:' + str(Skin_Select) + '/BCT:' + bcts)

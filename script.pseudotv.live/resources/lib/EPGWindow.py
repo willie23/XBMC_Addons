@@ -133,7 +133,23 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         self.addControl(self.currentTime)
         self.addControl(self.currentTimeBar)
         self.curchannelIndex = []
-        
+
+        # Artwork types
+        try:
+            self.getControl(508).setImage(THUMB)
+            self.Arttype1 = str(self.getControl(507).getLabel())
+            self.type1EXT = EXTtype(self.Arttype1)
+            REAL_SETTINGS.setSetting("type1EXT_EPG",self.type1EXT)
+        except:
+            pass
+        try:
+            self.getControl(510).setImage(THUMB)
+            self.Arttype2 = str(self.getControl(509).getLabel())
+            self.type2EXT = EXTtype(self.Arttype2)
+            REAL_SETTINGS.setSetting("type2EXT_EPG",self.type2EXT)
+        except:
+            pass
+            
         try:
             textcolor = int(self.getControl(100).getLabel(), 16)            
             if textcolor > 0:
@@ -147,12 +163,6 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         except:
             pass
 
-        try:
-            self.getControl(508).setImage(THUMB)
-            self.getControl(510).setImage(THUMB)
-        except:
-            pass
-            
         try:
             if self.setChannelButtons(time.time(), self.MyOverlayWindow.currentChannel) == False:
                 self.log('Unable to add channel buttons')
@@ -203,20 +213,6 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             self.MyOverlayWindow.startSleepTimer()
             return
         
-        # Artwork types
-        try:
-            self.Arttype1 = str(self.getControl(507).getLabel())
-            self.type1EXT = EXTtype(self.Arttype1)
-            REAL_SETTINGS.setSetting("type1EXT_EPG",self.type1EXT)
-        except:
-            pass
-        try:
-            self.Arttype2 = str(self.getControl(509).getLabel())
-            self.type2EXT = EXTtype(self.Arttype2)
-            REAL_SETTINGS.setSetting("type2EXT_EPG",self.type2EXT)
-        except:
-            pass
-            
         #Check if VideoWindow Patch found, Toggle Visible.
         try:
             if self.MyOverlayWindow.VideoWindow == True:
@@ -1323,7 +1319,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                 except:
                     pass
                 data = [chtype, chname, mediapath, plpos]
-                self.MyOverlayWindow.GetPlayingTmpstrTimer = threading.Timer(0.10, self.MyOverlayWindow.GetPlayingTmpstrThread, [data])
+                self.MyOverlayWindow.GetPlayingTmpstrTimer = threading.Timer(0.25, self.MyOverlayWindow.GetPlayingTmpstrThread, [data])
                 self.MyOverlayWindow.GetPlayingTmpstrTimer.name = "GetPlayingTmpstrTimer"  
                 self.MyOverlayWindow.GetPlayingTmpstrTimer.start()  
                 return
@@ -1387,6 +1383,20 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         setProperty("PVR.ChanNum",str(newchan))
         setProperty("PVR.TimeStamp",str(timestamp))
         
+        #Dynamic Art1
+        try:
+            self.setArtwork1(type, chtype, chname, id, dbid, mpath, self.type1EXT)
+        except Exception,e:
+            self.log('setShowInfo, Label 508 not found', str(e))
+            pass
+           
+        #Dynamic Art2
+        try:
+            self.setArtwork2(type, chtype, chname, id, dbid, mpath, self.type2EXT)
+        except Exception,e:
+            self.log('setShowInfo, Label 510 not found', str(e))
+            pass
+
         #Sickbeard/Couchpotato
         try:
             if Managed == 'True':
@@ -1416,20 +1426,6 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             self.log('setShowInfo, Label 512 not found')
             pass  
             
-        #Dynamic Art1
-        try:
-            self.setArtwork1(type, chtype, chname, id, dbid, mpath, self.type1EXT)
-        except Exception,e:
-            self.log('setShowInfo, Label 508 not found', str(e))
-            pass
-           
-        #Dynamic Art2
-        try:
-            self.setArtwork2(type, chtype, chname, id, dbid, mpath, self.type2EXT)
-        except Exception,e:
-            self.log('setShowInfo, Label 510 not found', str(e))
-            pass
-
             
     def FindArtwork_Thread(self, data):
         try:
@@ -1455,7 +1451,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                 pass
                 
             data = [type, chtype, chname, id, dbid, mpath, type1EXT, 508]
-            self.ArtThread1 = threading.Timer(0.10, self.FindArtwork_Thread, [data])
+            self.ArtThread1 = threading.Timer(0.1, self.FindArtwork_Thread, [data])
             self.ArtThread1.name = "ArtThread1"
             self.ArtThread1.start()
         except Exception,e:
@@ -1475,7 +1471,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                 pass
                 
             data = [type, chtype, chname, id, dbid, mpath, type2EXT, 510]
-            self.ArtThread2 = threading.Timer(0.10, self.FindArtwork_Thread, [data])
+            self.ArtThread2 = threading.Timer(0.1, self.FindArtwork_Thread, [data])
             self.ArtThread2.name = "ArtThread2"
             self.ArtThread2.start()
         except Exception,e:
