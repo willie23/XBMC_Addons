@@ -995,16 +995,6 @@
             <align>left</align>
             <orientation>horizontal</orientation>
             <itemgap>1</itemgap>  
-            <!--RSS ICON-->
-            <control type="image">
-                <width>25</width>
-                <height>55</height>
-                <aspectratio>keep</aspectratio>
-                <aligny>center</aligny>
-                <align>left</align>
-                <texture colordiffuse="C0C0C0C0">rss.png</texture>
-                <visible>false</visible>
-            </control>
            <control type="label">
                 <description>RSS Sep</description>
                 <width>10</width>
@@ -1015,10 +1005,11 @@
                 <label>|</label>
                 <font>font14</font>
                 <textcolor>C0C0C0C0</textcolor>
+                <visible>!IsEmpty(Control.GetLabel(129))</visible>
             </control>  
             <!--Next Aired RSS-->
-            <control type="label">
-                <width>1890</width>
+            <control type="label" id="129">
+                <width>1880</width>
                 <height>55</height>
                 <font>Font-RSS</font>
                 <aligny>center</aligny>
@@ -1041,6 +1032,7 @@
                 <label>|</label>
                 <font>font14</font>
                 <textcolor>C0C0C0C0</textcolor>
+                <visible>!IsEmpty(Control.GetLabel(129))</visible>
             </control>  
         </control>
 </controls>

@@ -148,11 +148,8 @@ TIME_BAR = 'pstvlTimeBar.png'
 TIME_BUTTON = 'pstvlTimeButton.png'
 BUTTON_FOCUS = 'pstvlButtonFocus.png'
 BUTTON_NO_FOCUS = 'pstvlButtonNoFocus.png'
-BUTTON_FOCUS_CONTEXT = 'pstvlContextF.png'
-BUTTON_NO_FOCUS_CONTEXT = 'pstvlContextC.png'
+BUTTON_BACKGROUND_CONTEXT = 'pstvlContextBackground.png'
 BUTTON_GAUSS_CONTEXT = 'pstvlBackground_gauss.png'
-
-# Overlay
 BUTTON_FOCUS_ALT = 'pstvlButtonFocusAlt.png'
 BUTTON_NO_FOCUS_ALT = 'pstvlButtonNoFocusAlt.png'
 
@@ -370,8 +367,8 @@ ACTION_TELETEXT_BLUE = 218
 UTC_XMLTV = []
 
 #Dynamic Artwork for plugins - #Media title format must be "Title (Year)" or "Title" or "Title - Episode"
-DYNAMIC_PLUGIN_TV = ['plugin.video.playonbrowser', 'plugin.video.simply.player', 'plugin.video.1channel', 'plugin.video.GOtv', 'plugin.video.genesis', 'PlayOn', 'UPNP', 'plugin.video.ororotv', 'plugin.video.F.T.V', 'plugin.video.salts']
-DYNAMIC_PLUGIN_MOVIE = ['plugin.video.playonbrowser', 'plugin.video.prime_instant', 'plugin.video.simply.player', 'plugin.video.1channel', 'plugin.video.iwannawatch', 'plugin.video.viooz.co', 'plugin.video.glowmovies.hd', 'plugin.video.genesis', 'plugin.video.yifymovies.hd', 'plugin.video.GOmovies', 'plugin.video.muchmovies.hd', 'plugin.video.cartoonhd', 'PlayOn', 'UPNP', 'plugin.video.F.T.V', 'plugin.video.salts']
+DYNAMIC_PLUGIN_TV = ['plugin.video.crackler','plugin.video.playonbrowser', 'plugin.video.simply.player', 'plugin.video.1channel', 'plugin.video.GOtv', 'plugin.video.genesis', 'PlayOn', 'UPNP', 'plugin.video.ororotv', 'plugin.video.F.T.V', 'plugin.video.salts']
+DYNAMIC_PLUGIN_MOVIE = ['plugin.video.crackler','plugin.video.playonbrowser', 'plugin.video.prime_instant', 'plugin.video.simply.player', 'plugin.video.1channel', 'plugin.video.iwannawatch', 'plugin.video.viooz.co', 'plugin.video.glowmovies.hd', 'plugin.video.genesis', 'plugin.video.yifymovies.hd', 'plugin.video.GOmovies', 'plugin.video.muchmovies.hd', 'plugin.video.cartoonhd', 'PlayOn', 'UPNP', 'plugin.video.F.T.V', 'plugin.video.salts']
 
 # Plugin seek blacklist - Plugins that are known to use rtmp source which lockup xbmc during seek
 BYPASS_SEEK = ['plugin.video.vevo_tv','plugin.video.g4tv','plugin.video.ustvnow', 'plugin.video.mystreamstv.beta']
@@ -384,4 +381,4 @@ BYPASS_OVERLAY = ['PseudoCinema']
 
 # Superfavourites Unwanted strings
 SF_FILTER = ['isearch', 'iplay - kodi playlist manager','create new super folder','explore kodi favourites']
-EX_FILTER = SF_FILTER + ['<<','back','previous','home','search','find','clips','seasons','trailers']
+EX_FILTER = SF_FILTER + ['video resolver settings','<<','back','previous','home','search','find','clips','seasons','trailers']

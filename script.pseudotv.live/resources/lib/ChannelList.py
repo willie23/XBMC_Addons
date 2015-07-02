@@ -1215,7 +1215,7 @@ class ChannelList:
     
     def cleanRating(self, rating):
         self.log("cleanRating")
-        rating = rating.replace('Rated ','').replace('US:','').replace('UK:','').replace('Unrated','NR').replace('NotRated','NR').replace('N/A','NR').replace('NA','NR').replace('APPROVED','NR').replace('Approved','NR').replace('not rated','NR')
+        rating = rating.replace('Rated ','').replace('US:','').replace('UK:','').replace('Unrated','NR').replace('NotRated','NR').replace('N/A','NR').replace('NA','NR').replace('APPROVED','NR').replace('Approved','NR').replace('not rated','NR').replace('UNRAT','NR')
         return rating
         # rating = rating.replace('Unrated','NR').replace('NotRated','NR').replace('N/A','NR').replace('Approved','NR')
     
@@ -1663,12 +1663,13 @@ class ChannelList:
                             imdbnumbers = re.search('"imdbnumber" *: *"(.*?)",', f)
                             ratings = re.search('"mpaa" *: *"(.*?)",', f)
                             descriptions = re.search('"description" *: *"(.*?)",', f)
-                            dbids = re.search('"id" *: *([\d.]*\d+),', f)
                             
                             if showtitles != None and len(showtitles.group(1)) > 0:
                                 type = 'tvshow'
+                                dbids = re.search('"tvshowid" *: *([\d.]*\d+),', f)
                             else:
                                 type = 'movie'
+                                dbids = re.search('"id" *: *([\d.]*\d+),', f)
 
                             # if possible find year by title
                             try:
@@ -2493,25 +2494,19 @@ class ChannelList:
             limit = int(limit)
             # if setting2 == '1' or setting2 == '3' or setting2 == '4':
             if setting2 == '1':
-                stop = (limit / 25)
                 YTMSG = 'Channel ' + setting1
                 showList = self.getYoutubeVideos(1, setting1, '', limit, YTMSG)
             elif setting2 == '2':
-                stop = (limit / 25)
                 YTMSG = 'Playlist ' + setting1
                 showList = self.getYoutubeVideos(2, setting1, '', limit, YTMSG)
-            # elif setting2 == '5':
-                # stop = (limit / 25)
-                # YTMSG = 'Search Querys'
+            elif setting2 == '5':
+                YTMSG = 'Search Querys'
             elif setting2 == '7':
                 YTMSG = 'MultiTube Playlists'
                 showList = self.BuildMultiYoutubeChannelNetwork(setting1, setting2, setting3, setting4, limit)
             elif setting2 == '8':
                 YTMSG = 'MultiTube Channels'
                 showList = self.BuildMultiYoutubeChannelNetwork(setting1, setting2, setting3, setting4, limit)
-            # elif setting2 == '9': 
-                # stop = 1 # If Setting2 = User playlist pagination disabled, else loop through pagination of 25 entries per page and stop at limit.
-                # YTMSG = 'Raw gdata'
             elif setting2 == '31':
                 YTMSG = 'Seasons Channel'
                 showList = self.BuildseasonalYoutubeChannel(setting1, setting2, setting3, setting4, limit)    
@@ -2528,7 +2523,6 @@ class ChannelList:
         try:
             f = open_url(Playlist_List)
             linesLST = f.readlines()
-            linesLST = linesLST[2:]#remove first two lines
             f.close
         except:
             return
@@ -2567,6 +2561,7 @@ class ChannelList:
             showList = []
             
             for n in range(len(channelList)):
+                self.YT_VideoCount = 0
                 tmpstr = self.createYoutubeFilelist(channelList[n], '2', setting3, setting4, limit)
                 showList.extend(tmpstr)     
         else:
@@ -2575,10 +2570,12 @@ class ChannelList:
             showList = []
             
             for n in range(len(channelList)):
+                self.YT_VideoCount = 0
                 tmpstr = self.createYoutubeFilelist(channelList[n], '1', setting3, setting4, limit)
-                showList.extend(tmpstr)     
-            
-        return showList
+                showList.extend(tmpstr)
+                
+        random.shuffle(showList)
+        return showList[:limit]
     
     
     def parseYoutubeDuration(self, duration):
@@ -3616,7 +3613,6 @@ class ChannelList:
                     Bumper_List = 'http://raw.github.com/Lunatixz/PseudoTV_Lists/master/bumpers.xml'
                     f = open_url_cached(Bumper_List)
                     linesLST = f.readlines()
-                    linesLST = linesLST[2:]
                     f.close
 
                     for i in range(len(Bumper_List)):                        
@@ -4174,11 +4170,12 @@ class ChannelList:
         # return result  
         
 
-    def BuildPluginFileList(self, setting1, setting2, setting3, setting4, limit):
+    def BuildPluginFileList(self, setting1, setting2, setting3, setting4, limit, walk=True):
         self.log('BuildPluginFileList_NEW')
         showList = []
         DetailLST = []
         DetailLST_CHK = []
+        PluginPathLst = []
         self.dircount = 0
         self.filecount = 0
         channel = self.settingChannel
@@ -4254,16 +4251,20 @@ class ChannelList:
                         CurDirect = self.CleanLabels(Directs[0])
                         if CurDirect.lower() == title.lower():
                             self.log('BuildPluginFileList_NEW, Directory Match: ' + CurDirect.lower() + ' = ' + title.lower())
+                            PluginPathLst.append(file)
                             Directs.pop(0) #remove old directory, search next element
                             plugin = file
                             break
             except Exception,e:
                 self.log("BuildPluginFileList_NEW, Failed! " + str(e))
-                
-        #all directories found, walk final folder
-        if len(Directs) == 0:              
-            showList = self.PluginWalk(lastfolder, plugin, excludeLST, limit) 
-        return showList    
+             
+        if walk:
+            #all directories waled, parse final folder
+            if len(Directs) == 0:              
+                showList = self.PluginWalk(lastfolder, plugin, excludeLST, limit) 
+            return showList
+        else:
+            return PluginPathLst.reverse()
            
 
     def BuildUPNPFileList(self, setting1, setting2, setting3, setting4, limit):
@@ -4305,7 +4306,7 @@ class ChannelList:
             Directs = (setting1.split('/')) # split folders
             Directs = ([x.replace('%2F','/') for x in Directs if x != '']) # remove empty elements
             PluginName = Directs[0]
-            Directs = Directs[2:]
+            Directs = Directs[2:]# slice two unwanted elements. ie (plugin:, plugin name)
         except:
             Directs = []
             PluginName = setting1
@@ -5186,8 +5187,6 @@ class ChannelList:
                 data = open_url_up_cached(url, UPASS)
             else:
                 data = readline_url(url)
-            
-            data = data[2:] #remove first two unwanted lines
             data = ([x for x in data if x != '']) #remove empty lines
             
             for i in range(len(data)):

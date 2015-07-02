@@ -369,7 +369,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         elif controlId == 554:      # Change Channel Number
             self.changeChanNum(self.channel)
         elif controlId == 555:      # Help Guide
-            self.help()
+            help((self.getControl(109).getLabel()).replace('None','General'))
         elif controlId == 114:      # Rules button
             self.myRules.ruleList = self.ruleList
             self.myRules.doModal()
@@ -515,14 +515,23 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                 ADDON_SETTINGS.setSetting("Channel_" + str(self.channel) + "_rule_1_opt_1", title) 
             
         elif controlId == 212:    # LiveTV XMLTV Name, Select
-            xmltvLst = []
+            xmltvLst = []   
+            EXxmltvLst = ['pvr','scheduledirect (Coming Soon)','zap2it (Coming Soon)']
+            
             dirs,files = xbmcvfs.listdir(XMLTV_CACHE_LOC)
             dir,file = xbmcvfs.listdir(XMLTV_LOC)
-            xmltvcacheLst = [s.replace('.xml','') for s in files if s.endswith('.xml')] + ['pvr','scheduledirect (Coming Soon)','zap2it (Coming Soon)']
+            
+            if self.chnlst.plugin_ok('plugin.video.stalker'):
+                EXxmltvLst = ['iptv.stalker'] + EXxmltvLst
+            
+            xmltvcacheLst = [s.replace('.xml','') for s in files if s.endswith('.xml')] + EXxmltvLst
             xmltvLst = sorted_nicely([s.replace('.xml','') for s in file if s.endswith('.xml')] + xmltvcacheLst)
             select = selectDialog(xmltvLst, 'Select xmltv file')
             if select != -1:
-                self.getControl(212).setLabel(xmltvLst[select])
+                selXMLTV = xmltvLst[select]
+                if selXMLTV == 'iptv.stalker':
+                    selXMLTV = 'http://127.0.0.1:8899/epg.xml?portal=1'
+                self.getControl(212).setLabel(selXMLTV)
         
         elif controlId == 213:    # LiveTV Channel Name, input
             retval = dlg.input(self.getControl(213).getLabel(), type=xbmcgui.INPUT_ALPHANUM)
@@ -843,10 +852,10 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                     selectItem = PluginDirNameLst[select]
                     
                     if PluginDirPathLst[select] == 'Back':
-                        PluginDirNameLst, PluginDirPathLst = self.parsePlugin(self.chnlst.PluginInfo(self.PreviousPath.pop(0)), 'Dir')
-                        select = selectDialog(PluginDirNameLst, 'Select [COLOR=red][D][/COLOR]irectory')
+                        select = self.findPreviousPluginPath(self.getControl(282).getLabel(),'Dir')
                         if select != -1:
                             selectItem = PluginDirNameLst[select]
+                            
                     elif PluginDirPathLst[select] == 'Return':
                         self.clearLabel()
                         self.DirName = ''
@@ -1285,10 +1294,6 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             self.pluginPathList = [''] + self.chnlst.pluginPathList
             self.pluginNameList = ['[COLOR=blue][B]Donor List[/B][/COLOR]'] + self.chnlst.pluginNameList
             self.SourceList = self.SourceList + ['Donor List','IPTV M3U','LiveStream XML','Navi-X PLX']
-            
-            # if self.chnlst.plugin_ok('plugin.video.stalker'):
-                # self.SourceList = self.SourceList + ['IPTV Stalker']
-
         else:
             self.pluginPathList = self.chnlst.pluginPathList
             self.pluginNameList = self.chnlst.pluginNameList
@@ -1435,7 +1440,13 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                                 break
 
                             if PathLst[select] == 'Back':
-                                self.fillSources('LiveTV/InternetTV', 'Plugin', self.PreviousPath.pop(0))
+                                if type == 'LiveTV':
+                                    select = self.findPreviousPluginPath(self.getControl(217).getLabel())
+                                else:
+                                    select = self.findPreviousPluginPath(self.getControl(227).getLabel())
+                                if select != -1:
+                                    selectItem = PluginDirNameLst[select]
+                            
                             elif PathLst[select] == 'Return':
                                 self.LockBrowse = True
                                 self.clearLabel()
@@ -1471,7 +1482,10 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                                 break
 
                             if PathLst[select] == 'Back':
-                                self.fillSources('LiveTV/InternetTV', 'Plugin', self.PreviousPath.pop(0))
+                                select = self.findPreviousPluginPath()
+                                if select != -1:
+                                    selectItem = PluginDirNameLst[select]
+                                    
                             elif PathLst[select] == 'Return':
                                 self.LockBrowse = True
                                 self.clearLabel()
@@ -1539,7 +1553,10 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                                 break
                                 
                             if PathLst[select] == 'Back':
-                                self.fillSources('LiveTV/InternetTV', 'Plugin', self.PreviousPath.pop(0))
+                                select = self.findPreviousPluginPath()
+                                if select != -1:
+                                    selectItem = PluginDirNameLst[select]
+                            
                             elif PathLst[select] == 'Return':
                                 self.LockBrowse = True
                                 self.clearLabel()
@@ -1724,18 +1741,6 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                             xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Invalid Selection", 1000, THUMB) )  
                 else:
                     xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Please Activate Donor Features", 1000, THUMB) )   
-                                    
-            elif source == 'IPTV Stalker':
-                self.log("IPTV Stalker")
-                if getProperty("Donor") == "true":
-                    NameLst, PathLst = self.chnlst.IPTVtuning('IPTV','http://127.0.0.1:8899/channels-1.m3u')  
-                          
-                    if len(NameLst) > 0:
-                        select = selectDialog(NameLst, 'Select IPTV Stalker Feed')
-                        if select != -1:
-                            return NameLst[select], PathLst[select]  
-                else:
-                    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Please Activate Donor Features", 1000, THUMB) )   
             else:
                 return  
         except:
@@ -1772,19 +1777,24 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                                 self.close()
                             except:
                                 pass
-               
+
+
+    def findPreviousPluginPath(self, path, type='File'):
+        self.log("findPreviousPluginPath")  
+        try:
+            if len(self.PreviousPath) == 0:
+                self.PreviousPath = self.chnlst.BuildPluginFileList(path, '', '', '', False)
+                
+            if type == 'Dir':
+                PluginDirNameLst, PluginDirPathLst = self.parsePlugin(self.chnlst.PluginInfo(self.PreviousPath.pop(0)), type)
+                return selectDialog(PluginDirNameLst, 'Select [COLOR=red][D][/COLOR]irectory')
+            else:
+                PluginDirNameLst, PluginDirPathLst = self.parsePlugin(self.chnlst.PluginInfo(self.PreviousPath.pop(0)))
+                return selectDialog(PluginDirNameLst, 'Select [COLOR=green][F][/COLOR]ile')
+        except:
+            pass
+
         
-    def help(self):
-        HelpBaseURL = 'http://raw.github.com/Lunatixz/XBMC_Addons/master/script.pseudotv.live/resources/help/help_'
-        type = (self.getControl(109).getLabel()).replace('None','General')
-        URL = HelpBaseURL + (type.lower()).replace(' ','%20')
-        self.log("help URL = " + URL)
-        title = type + ' Configuration Help'
-        f = open_url(URL)
-        text = f.read()
-        showText(title, text)
-          
-          
     def ListSubmisson(self, subject, body, attach=None):
         self.log("ListSubmisson")  
         try:

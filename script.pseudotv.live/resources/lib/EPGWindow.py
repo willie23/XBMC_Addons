@@ -70,9 +70,6 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         self.showingContext = False
         self.timeButtonNoFocus = MEDIA_LOC + TIME_BUTTON
         self.timeButtonBar = MEDIA_LOC + TIME_BAR
-        self.ButtonContextB = MEDIA_LOC + BUTTON_GAUSS_CONTEXT
-        self.ButtonContextF = MEDIA_LOC + BUTTON_FOCUS_CONTEXT
-        self.ButtonContextC = MEDIA_LOC + BUTTON_NO_FOCUS_CONTEXT
         
         for i in range(self.rowCount):
             self.channelButtons[i] = []
@@ -116,14 +113,18 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             timeex = now.strftime("%I:%M%p").lower()
         else:
             timeex = now.strftime("%H:%M")
-
+        
         timetx, timety = self.getControl(106).getPosition()
         timetw = self.getControl(106).getWidth()
         timeth = self.getControl(106).getHeight()
         timex, timey = self.getControl(120).getPosition()
         timew = self.getControl(120).getWidth()
         timeh = self.getControl(120).getHeight()
-            
+
+        self.ButtonContextGauss = MEDIA_LOC + BUTTON_GAUSS_CONTEXT
+        self.ButtonContextFocus = MEDIA_LOC + BUTTON_FOCUS_ALT
+        self.ButtonContextNoFocus = MEDIA_LOC + BUTTON_NO_FOCUS_ALT
+        self.ButtonContextBackground = MEDIA_LOC + BUTTON_BACKGROUND_CONTEXT
         self.textureButtonFocus = MEDIA_LOC + BUTTON_FOCUS
         self.textureButtonNoFocus = MEDIA_LOC + BUTTON_NO_FOCUS
         self.textureButtonFocusAlt = MEDIA_LOC + BUTTON_FOCUS_ALT
@@ -667,7 +668,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         try:
             if action in ACTION_PREVIOUS_MENU:
                 if self.showingContext:    
-                    self.closeContext()
+                    self.closeContext()                    
                 else:
                     self.closeEPG()   
                     
@@ -709,46 +710,37 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                 print 'showingContext = ' + str(self.showingContext)
                 if self.showingContext:
                     pos = self.contextButton.getSelectedPosition()  
-                    
                     if getProperty("PVR.Type") == 'tvshow':
-                        print getProperty("PVR.Season"), getProperty("PVR.Episode")
-                        if getProperty("PVR.Season") != '0' and getProperty("PVR.Episode") != '0':
+                        traktinfo = 'similartvshowstrakt'
+                        # if getProperty("PVR.Episode") != '0':
+                            # info = 'episodeinfo'
+                            # dbtype = 'tvdb_id'
+                            # title = 'tvshow'
+                        if getProperty("PVR.Season") != '0':
                             info = 'seasoninfo'
-                            # traktinfo = 'similar'
-                            traktinfo = 'similartvshowstrakt'
                             dbtype = 'tvdb_id'
                             title = 'tvshow'
                         else:
                             info = 'extendedtvinfo'
-                            # traktinfo = 'similar'
-                            traktinfo = 'similartvshowstrakt'
                             dbtype = 'tvdb_id'
                             title = 'name'                    
                     else:
                         info = 'extendedinfo'
-                        # traktinfo = 'similarmovies'
                         traktinfo = 'similarmoviestrakt'
                         dbtype = 'imdb_id'
                         title = 'name'  
-                                            
+                        
                     if pos == 0:
                         print 'Context, MoreInfo'
-                        if info == 'seasoninfo':
-                            xbmc.executebuiltin("XBMC.RunScript(script.extendedinfo,info=%s,dbid=%s,%s=%s,%s=%s,season=%s)" % (info, getProperty("PVR.DBID"), title, getProperty("PVR.Title"), dbtype, getProperty("PVR.ID"), getProperty("PVR.Season")))
+                        self.MyOverlayWindow.OnDemand = True
+                        if info == 'seasoninfo' or info == 'episodeinfo':
+                            xbmc.executebuiltin("XBMC.RunScript(script.extendedinfo,info=%s,dbid=%s,%s=%s,%s=%s,season=%s,episode=%s)" % (info, getProperty("PVR.DBID"), title, getProperty("PVR.Title"), dbtype, getProperty("PVR.ID"), getProperty("PVR.Season"), getProperty("PVR.Episode")))
                         else:
                             xbmc.executebuiltin("XBMC.RunScript(script.extendedinfo,info=%s,dbid=%s,%s=%s,%s=%s)" % (info, getProperty("PVR.DBID"), title, getProperty("PVR.Title"), dbtype, getProperty("PVR.ID")))
                     elif pos == 1:
                         print 'Context, Similar'
-                        print getProperty("PVR.DBID")
-                        if getProperty("PVR.DBID") != '0':
-                            print GetSimilarFromOwnLibrary(getProperty("PVR.DBID"))
-                        # if getProperty("PVR.DBID") == '0' and getProperty("PVR.ID") != '0':
-                            # xbmc.executebuiltin("XBMC.RunScript(script.extendedinfo,info=%s,id=%s)" % (traktinfo, getProperty("PVR.ID")))#NONLOCAL
-                        # elif getProperty("PVR.ID") == '0' and getProperty("PVR.DBID") != '0':
-                            # xbmc.executebuiltin("XBMC.RunScript(script.extendedinfo,info=%s,dbid=%s)" % (traktinfo, getProperty("PVR.DBID")))#LOCAL
-                        # else:
-                            # xbmc.executebuiltin("XBMC.RunScript(script.extendedinfo,info=%s,dbid=%s,id=%s)" % (traktinfo, getProperty("PVR.DBID"), getProperty("PVR.ID")))#OTHER
-                        Comingsoon()
+                        self.MyOverlayWindow.OnDemand = True
+                        xbmc.executebuiltin("XBMC.RunScript(script.extendedinfo,info=%s,dbid=%s,%s=%s)" % (traktinfo, getProperty("PVR.DBID"), dbtype, getProperty("PVR.ID")))
                     elif pos == 2:
                         Comingsoon()
                     elif pos == 3:
@@ -766,7 +758,6 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                         self.infoOffsetV = 0
                         self.lastActionTime = time.time()
                 
-                    
             elif action == ACTION_PAGEDOWN: 
                 if not self.showingContext:
                     self.GoPgDown()  
@@ -785,48 +776,35 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                     
             elif action == ACTION_TELETEXT_RED:
                 self.log('ACTION_TELETEXT_RED')
-                try:
-                    self.MyOverlayWindow.myDVR.close()
-                    self.MyOverlayWindow.myApps.close()
-                    self.MyOverlayWindow.myOndemand.close()
-                except:
-                    pass
-                    
-                if getProperty("PTVL.EPG_Opened") != "true":
-                    self.MyOverlayWindow.myepg.doModal()
-                    
+                self.closeDVR()
+                self.closeOndemand()
+                self.closeAPPS()
+                # self.MyOverlayWindow.myepg.doModal()
+                
             elif action == ACTION_TELETEXT_GREEN:
                 self.log('ACTION_TELETEXT_GREEN')
-                try:
-                    self.MyOverlayWindow.myApps.close()
-                    self.MyOverlayWindow.myOndemand.close()
-                except:
-                    pass
-                if getProperty("PTVL.PVR_Opened") != "true":
-                    self.MyOverlayWindow.myDVR.doModal()
+                # self.closeEPG() 
+                self.closeOndemand()
+                self.closeAPPS()
+                self.MyOverlayWindow.myDVR.doModal()
+
             
             elif action == ACTION_TELETEXT_YELLOW:
                 self.log('ACTION_TELETEXT_YELLOW')
-                try:
-                    self.MyOverlayWindow.myDVR.close()
-                    self.MyOverlayWindow.myApps.close()
-                except:
-                    pass
-                    
-                if getProperty("PTVL.ONDEMAND__Opened") != "true":
-                    self.MyOverlayWindow.myOndemand.doModal()
+                # self.closeEPG() 
+                self.closeDVR()
+                self.closeAPPS()
+                self.MyOverlayWindow.myOndemand.doModal()
+
                     
             elif action == ACTION_TELETEXT_BLUE:
-                self.log('ACTION_TELETEXT_BLUE')
-                try:
-                    self.MyOverlayWindow.myDVR.close()
-                    self.MyOverlayWindow.myOndemand.close()
-                except:
-                    pass
-                    
-                if getProperty("PTVL.APPS_Opened") != "true":
-                    self.MyOverlayWindow.myApps.doModal()
+                self.log('ACTION_TELETEXT_BLUE') 
+                # self.closeEPG()           
+                self.closeOndemand()    
+                self.closeDVR()
+                self.MyOverlayWindow.myApps.doModal()
                 
+  
             elif action >= ACTION_NUMBER_0 and action <= ACTION_NUMBER_9:
                 if self.inputChannel < 0:
                     self.inputChannel = action - ACTION_NUMBER_0
@@ -834,7 +812,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                     if self.inputChannel < 100:
                         self.inputChannel = self.inputChannel * 10 + action - ACTION_NUMBER_0
                 
-                self.showChannelLabel(self.inputChannel)  
+                self.showChannelLabel(self.inputChannel)
 
             elif action == ACTION_SYMBOLS: #Toggle thru favourite channels
                 self.log('ACTION_SYMBOLS')
@@ -870,8 +848,34 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             self.removeControl(self.contextButton)
         except:
             pass     
+                
+                
+    def closeAPPS(self):
+        self.log('closeAPPS')
+        try:
+            setProperty("PTVL.OnDemand_Opened","false") 
+            self.MyOverlayWindow.myApps.close()
+        except:
+            pass
         
-
+        
+    def closeDVR(self):
+        self.log('closeDVR')
+        try:
+            setProperty("PTVL.OnDemand_Opened","false") 
+            self.MyOverlayWindow.myDVR.close()
+        except:
+            pass
+               
+               
+    def closeOndemand(self):
+        self.log('closeOndemand')
+        try:
+            setProperty("PTVL.OnDemand_Opened","false") 
+            self.MyOverlayWindow.myOndemand.close()
+        except:
+            pass
+        
     def closeEPG(self):
         self.log('closeEPG')
         self.closeContext()
@@ -907,6 +911,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             pass
             
         self.close()
+            
 
 
     def onControl(self, control):
@@ -1446,7 +1451,6 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             try:
                 if self.ArtThread1.isAlive():
                     self.ArtThread1.cancel()
-                    # self.ArtThread1.join()
             except:
                 pass
                 
@@ -1466,7 +1470,6 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             try:
                 if self.ArtThread2.isAlive():
                     self.ArtThread2.cancel()
-                    # self.ArtThread2.join()
             except:
                 pass
                 
@@ -1482,8 +1485,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
     # using the currently selected button, play the proper shows
     def selectShow(self):
         self.log('selectShow')    
-        CurChannel = self.MyOverlayWindow.currentChannel
-        REAL_SETTINGS.setSetting('LastChannel', str(CurChannel))
+        self.MyOverlayWindow.SetLastChannel(self.MyOverlayWindow.currentChannel)
         
         try:
             basex, basey = self.getControl(111 + self.focusRow).getPosition()
@@ -1687,14 +1689,13 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         ChanButtonw = self.channelButtons[self.focusRow][self.focusIndex].getWidth()
         ChanButtonh = self.channelButtons[self.focusRow][self.focusIndex].getHeight()
         
-        self.contextButtonB = xbmcgui.ControlImage(0, 0, 1920, 1080, self.ButtonContextB)
+        self.contextButtonB = xbmcgui.ControlImage(0, 0, 1920, 1080, self.ButtonContextGauss)
         self.addControl(self.contextButtonB)
-        self.contextButtonC = xbmcgui.ControlImage(ChanButtonx-4, ChanButtony+71, 258, 308, self.ButtonContextC)
+        self.contextButtonC = xbmcgui.ControlImage(ChanButtonx-4, ChanButtony+71, 258, 308, self.ButtonContextBackground)
         self.addControl(self.contextButtonC)
-        self.contextButtonF = xbmcgui.ControlButton(ChanButtonx-4, ChanButtony, ChanButtonw+8, ChanButtonh, '[ '+getProperty("PVR.Title")+' ]', focusTexture=self.ButtonContextF, noFocusTexture=self.ButtonContextF, alignment=4, textColor=self.textcolor, focusedColor=self.focusedcolor)
+        self.contextButtonF = xbmcgui.ControlButton(ChanButtonx-4, ChanButtony, ChanButtonw+8, ChanButtonh, '[ '+getProperty("PVR.Title")+' ]', focusTexture=self.ButtonContextFocus, noFocusTexture=self.ButtonContextFocus, alignment=4, textColor=self.textcolor, focusedColor=self.focusedcolor)
         self.addControl(self.contextButtonF)
-        
-        self.contextButton = xbmcgui.ControlList(ChanButtonx, ChanButtony+75, 250, 1000, self.textfont, self.textcolor, self.textureButtonNoFocusAlt, self.textureButtonFocus, self.focusedcolor, 0, 0, 0, 0, 75, 0, 4)
+        self.contextButton = xbmcgui.ControlList(ChanButtonx, ChanButtony+75, 250, 1000, self.textfont, self.textcolor, self.ButtonContextNoFocus, self.textureButtonFocus, self.focusedcolor, 0, 0, 0, 0, 75, 0, 4)
         self.addControl(self.contextButton)
         self.ContextList = ['More Info','Find Similar','Record Show','Set Reminder']
         self.contextButton.addItems(items=self.ContextList)

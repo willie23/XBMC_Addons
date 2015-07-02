@@ -214,7 +214,7 @@
     </category>
     <!--Utilities-->
     <category label="31900">  
-        <setting id="ClearChanFavs" type="action" label="31997" action="RunScript($CWD/utilities.py, -ClearChanFavorites)"/>
+        <setting id="UploadLog" type="action" label="30989" action="RunScript($CWD/uploadLog.py)"/>
         <setting label="31999" type="lsep"/>
         <setting id="ATRestore" type="bool" label="30909" default="false"/>
       	<setting id="Warning2" type="bool" label="30069" subsetting="true" visible="eq(-1,true)" default="false"/>
@@ -222,6 +222,7 @@
         <setting id="Restore_Settings2" type="action" label="31902" action="RunScript($CWD/.py)"/>
         <setting id="Repair_Settings2" type="action" label="31903" action="RunScript($CWD/utilities.py, -repairSettings2)"/>
         <setting id="Remove_Settings2" type="action" label="31904" action="RunScript($CWD/utilities.py, -DeleteSettings2)"/>
+        <setting id="ClearChanFavs" type="action" label="31997" action="RunScript($CWD/utilities.py, -ClearChanFavorites)"/>
         <setting label="31998" type="lsep"/>
         <setting id="ClearBCT" type="bool" label="30995" default="false"/>
         <setting id="ClearLiveArt" type="bool" label="30996" default="false"/>
@@ -232,6 +233,8 @@
     <category label="32900">  
         <setting id="Show_Changelog" type="action" label="32901" action="RunScript($CWD/utilities.py, -showChangelog)"/>
         <setting id="Show_Readme" type="action" label="32902" action="RunScript($CWD/utilities.py, -showReadme)"/>
+        <setting id="Show_Readme" type="action" label="32903" action="RunScript($CWD/utilities.py, -showChtype)"/>
+        <setting id="Show_Disclaimer" type="action" label="30999" action="RunScript($CWD/utilities.py, -showDisclaimer)"/>
     </category>
     
     <!--Debugging-->

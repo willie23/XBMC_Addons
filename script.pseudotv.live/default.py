@@ -35,7 +35,7 @@ __language__   = __settings__.getLocalizedString
 def PseudoTV():
     import resources.lib.Overlay as Overlay
     setProperty("PseudoTVRunning", "True")
-    setProperty("PTVL.CHKCache", "true")
+    
     try:
         MyOverlayWindow = Overlay.TVOverlay("script.pseudotv.live.TVOverlay.xml", __cwd__, Skin_Select)
     except Exception,e:
@@ -69,8 +69,8 @@ if getProperty("PseudoTVRunning") != "True":
         PTVL_Version = REAL_SETTINGS.getSetting("PTVL_Version") 
     
     if PTVL_Version != __version__:
-        ClearPlaylists()
-        REAL_SETTINGS.setSetting('ForceChannelReset', 'true')
+        # ClearPlaylists()
+        # REAL_SETTINGS.setSetting('ForceChannelReset', 'true')
         REAL_SETTINGS.setSetting("PTVL_Version", __version__)
         
         # Donor Download

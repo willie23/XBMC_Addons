@@ -185,6 +185,7 @@
     <string id="30907">Enter your gmail password</string>
     
 <string id="31900">Utilities</string>
+    <string id="30989">Upload Kodi Log (Coming Soon)</string>
     <string id="31997">Clear Channel Favourites</string>
     <string id="31999">Channel Configuration Tools</string>
     <string id="30909">Restore Pre-Autotune Configurations</string>
@@ -199,8 +200,9 @@
     <string id="30988">Clear Filelist Cache</string>
     
 <string id="32900">Help</string>
-    <string id="32901">Show Changelog</string>
-    <string id="32902">Show Readme</string>
+    <string id="32901">Changelog</string>
+    <string id="32902">Readme</string>
+    <string id="32903">Channel Types</string>
     <string id="30999">[COLOR=orange]Disclaimer[/COLOR]</string>
     
 <string id="30900">Debugging</string>

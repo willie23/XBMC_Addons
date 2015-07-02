@@ -347,7 +347,7 @@ def FindLogo_Threading(data):
     LogoName = (chname + '.png')
     LogoFolder = os.path.join(LOGO_LOC,LogoName)
 
-    if REAL_SETTINGS.getSetting('LogoDB_Override') == "false" and FileAccess.exists(LogoFolder):
+    if FileAccess.exists(LogoFolder) and REAL_SETTINGS.getSetting('LogoDB_Override') == "false":
         return
     else:
         if chtype in [0,1,8,9]:
@@ -358,11 +358,11 @@ def FindLogo_Threading(data):
             url = findLogodb(chname, user_region, user_type, useMix, useAny)
             if url:
                 return GrabLogo(url, chname)
-        if chtype in [0,2,3,4,5,12,13,14]:
+        if chtype in [0,1,2,3,4,5,12,13,14]:
             url = findGithubLogo(chname)
             if url:
                 return GrabLogo(url, chname) 
-        elif mpath and (chtype == 6 or chtype == 7):
+        if mpath and (chtype == 6 or chtype == 7):
             smpath = mpath.rsplit('/',2)[0] #Path Above mpath ie Series folder
             artSeries = xbmc.translatePath(os.path.join(smpath, 'logo.png'))
             artSeason = xbmc.translatePath(os.path.join(mpath, 'logo.png'))
@@ -370,9 +370,9 @@ def FindLogo_Threading(data):
                 url = artSeries
             elif FileAccess.exists(artSeason): 
                 url = artSeason
-            # else:
-                # url = self.Fanart_Download('tvshow', 'logo', id, LogoFolder)  
- 
+            if url:
+                return GrabLogo(url, chname) 
+
             
 def FindLogo(chtype, chname, mediapath=None):
     log("script.pseudotv.live-utils: FindLogo")
@@ -513,7 +513,7 @@ def GrabLogo(url, Chname):
                 elif url.startswith('http'):
                     download_silent(url, LogoFile)
                 else:
-                    FileAccess.copy(url, LogoFile) 
+                    FileAccess.copy(xbmc.translatePath(url), LogoFile) 
         except Exception,e:
             log("script.pseudotv.live-utils: GrabLogo, Failed! " + str(e))
      
@@ -1031,6 +1031,7 @@ def copyanything(src, dst):
 ##############
       
 def getMpath(mediapath):
+    log('script.pseudotv.live-utils: getMpath')
     try:
         if mediapath[0:5] == 'stack':
             smpath = (mediapath.split(' , ')[0]).replace('stack://','').replace('rar://','')
@@ -1347,7 +1348,7 @@ def SyncXMLTV(force=False):
 def CHKCache():
     # Secondary Cache Control - Threaded cache functions can collide with filelist cache.
     if getProperty("PTVL.BackgroundLoading_Finished") == "true":
-        log('script.pseudotv.live-utils:CHKCache = ' + getProperty("PTVL.CHKCache"))
+        log('script.pseudotv.live-utils: CHKCache = ' + getProperty("PTVL.CHKCache"))
         return getProperty("PTVL.CHKCache") == "true"
     
 def tidy(cmd):
@@ -1365,3 +1366,14 @@ def tidy(cmd):
         cmd = cmd.replace(')")', ')')
 
     return cmd
+    
+def help(chtype):
+    log('script.pseudotv.live-utils: help, ' + chtype)
+    HelpBaseURL = 'http://raw.github.com/Lunatixz/XBMC_Addons/master/script.pseudotv.live/resources/help/help_'
+    type = (chtype).replace('None','General')
+    URL = HelpBaseURL + (type.lower()).replace(' ','%20')
+    log("script.pseudotv.live-utils: help URL = " + URL)
+    title = type + ' Configuration Help'
+    f = open_url(URL)
+    text = f.read()
+    showText(title, text)

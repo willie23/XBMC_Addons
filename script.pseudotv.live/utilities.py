@@ -40,6 +40,8 @@ def showText(heading, text):
         except:
             pass
             
+            
+            
 def showInfo(addonID=None, type='changelog'):
     xbmc.log('script.pseudotv.live-utilities: showInfo')
     try:
@@ -50,10 +52,10 @@ def showInfo(addonID=None, type='changelog'):
         if type == 'changelog':
             title = "PseudoTV Live - Changelog"
             f = open(ADDON.getAddonInfo('changelog'))
-        if type == 'readme':
+        elif type == 'readme':
             title = "PseudoTV Live - Readme"
             f = open(os.path.join(ADDON_PATH,'README.md'))
-        if type == 'disclaimer':
+        elif type == 'disclaimer':
             title = "PseudoTV Live - Privacy Disclaimer"
             f = open(os.path.join(ADDON_PATH,'disclaimer'))
             
@@ -135,22 +137,24 @@ def ClearChanFavorites():
     # Return to PTVL Settings
     REAL_SETTINGS.openSettings()
     
-    
+
 if sys.argv[1] == '-DDautopatch':
     DonorDownloader(True)   
 elif sys.argv[1] == '-DonorDownloader':
-    DonorDownloader()  
-    
+    DonorDownloader()   
 elif sys.argv[1] == '-SimpleDownloader':
-    xbmcaddon.Addon(id='script.module.simple.downloader').openSettings()
-    
+    xbmcaddon.Addon(id='script.module.simple.downloader').openSettings()  
 elif sys.argv[1] == '-showChangelog':
     showInfo(ADDON_ID, 'changelog') 
 elif sys.argv[1] == '-showReadme':
     showInfo(ADDON_ID, 'readme') 
+elif sys.argv[1] == '-showChtype':
+    ChtypeLst = ['General','Custom Playlist','TV Network','Movie Studio','TV Genre','Movie Genre','Mixed Genre','TV Show','Directory','LiveTV','InternetTV','Youtube','RSS','Music','Music Videos','Exclusive','Plugin','UPNP']
+    select = selectDialog(ChtypeLst, 'Select Channel Type')
+    if select != -1:
+        help(ChtypeLst[select])
 elif sys.argv[1] == '-showDisclaimer':
     showInfo(ADDON_ID, 'disclaimer') 
-    
 elif sys.argv[1] == '-DeleteSettings2':
     DeleteSettings2()
 elif sys.argv[1] == '-repairSettings2':

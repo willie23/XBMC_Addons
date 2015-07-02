@@ -164,12 +164,10 @@ def donorCHK():
         xbmcgui.Window(10000).setProperty("Donor", "false")
         
     # CHK Community list gmail for approval
-    if REAL_SETTINGS.getSetting("Community_Enabled") == "true" and REAL_SETTINGS.getSetting('Gmail_Pass') != 'Password':  
+    if REAL_SETTINGS.getSetting("Community_Enabled") == "true":  
         xbmcgui.Window(10000).setProperty("PTVL.COM_APP", "true")
     else:
-        xbmcgui.Window(10000).setProperty("PTVL.COM_APP", "false")
-            
-        
+        xbmcgui.Window(10000).setProperty("PTVL.COM_APP", "false")   
     return
         
 # execute service functions
