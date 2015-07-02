@@ -271,7 +271,7 @@ class Migrate:
                 self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding HDHomeRun UPNP Channels"," ")
                 HDUPNPnum = 0
                 try:
-                    HDHRNameList, HDHRPathList = chanlist.fillHDHR()
+                    HDHRNameList, HDHRPathList = chanlist.fillHDHR(True)
                     HDHRNameList = HDHRNameList[1:]
                     HDHRPathList = HDHRPathList[1:]
                     

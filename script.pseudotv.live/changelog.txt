@@ -1,3 +1,5 @@
+[*] Isengard 15 compatibility, EPG PIP is currently not available due to code changes. Static Window is displayed in its place.
+[*] Improved Youtube Multi - Channel/Playlist parsing limits. Each id parses to limit, PTVL shuffles then returns media limit.
 [*] Removed the need to "Force Channel Reset" & "Cache Purge" after PTVL Version update.
 [*] Tweaked last channel toggle and LiveTV/InternetTV "Plugin" playback.
 [*] In-app Channel manager tweaks, added more help documents to settings "Help" tab.

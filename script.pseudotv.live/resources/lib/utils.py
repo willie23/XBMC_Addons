@@ -903,12 +903,17 @@ def get_Kodi_JSON(params):
 def addon_status(id):
     check = xbmcaddon.Addon(id=id).getAddonInfo("name")
     if not check == ADDON_NAME: return True
+
+def videoIsPlaying():
+    return xbmc.getCondVisibility('Player.HasVideo')
     
 def getXBMCVersion():
-    version = xbmcaddon.Addon('xbmc.addon').getAddonInfo('version')
-    version = version.split('.')
-    log('script.pseudotv.live-utils: getXBMCVersion = ' + str(version[0]))
-    return int(version[0]) #major
+    print 'getXBMCVersion'
+    # retrieve current installed version
+    try:
+        return int((xbmc.getInfoLabel('System.BuildVersion').split('.'))[0])
+    except:
+        return 14
      
 def getPlatform():
     if xbmc.getCondVisibility('system.platform.osx'):

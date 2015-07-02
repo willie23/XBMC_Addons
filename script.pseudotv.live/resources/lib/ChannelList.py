@@ -5300,10 +5300,11 @@ class ChannelList:
         return ExternalNameList, ExternalSetting1List, ExternalSetting2List, ExternalSetting3List, ExternalSetting4List
               
         
-    def fillHDHR(self):
+    def fillHDHR(self,favorite=False):
         self.log("fillHDHR")
         show_busy_dialog()
         Chanlist = []
+        Favlist = []
         HDHRNameList = ['']
         HDHRPathList  = ['']
         list = ''
@@ -5345,13 +5346,18 @@ class ChannelList:
                         drm = bool(drms.group(1))
 
                     if fav:
-                        chname = chname+'[COLOR=gold] [Favorite][/COLOR]'                    
+                        chname = chname+'[COLOR=gold] [Favorite][/COLOR]'
                     if drm:
                         chname = chname+'[COLOR=red] [DRM][/COLOR]'
                                            
                     chname = '[COLOR=blue][B]'+chnum+'[/B][/COLOR] - ' + chname
                     tmp = chname + '@#@' + link
-                    Chanlist.append(tmp)
+                    
+                    if favorite:
+                        if favs:
+                            Chanlist.append(tmp)
+                    else:
+                        Chanlist.append(tmp)
             SortChanlist = sorted_nicely(Chanlist)
             
             for n in range(len(SortChanlist)):
@@ -5363,7 +5369,7 @@ class ChannelList:
 
         if len(Chanlist) == 0:
             HDHRNameList = ['HDHR ERROR: Unable to find device or favorite channels']
-        hide_busy_dialog() 
+        hide_busy_dialog()
         return removeStringElem(HDHRNameList), removeStringElem(HDHRPathList)
 
         

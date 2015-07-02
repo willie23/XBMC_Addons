@@ -5,7 +5,6 @@
     <onload>SetProperty(PTVL.EPG_Opened,true,10000)</onload>
     <onunload>SetProperty(PTVL.EPG_Opened,false,10000)</onunload>
     <onload condition="System.HasAddon(script.tv.show.next.aired)">RunScript(script.tv.show.next.aired,backend=True)</onload>
-    <onload condition="System.HasAddon(script.extendedinfo)">RunScript(script.extendedinfo,info=trendingshows)</onload>
     <coordinates>
         <system>1</system>
         <posx>0</posx>
@@ -38,39 +37,6 @@
             <texture>pstvlBackground0.png</texture>
             <colordiffuse>FFFFFFFF</colordiffuse>
         </control> 
-        <!-- Trending Box --> 
-        <control type="grouplist">
-            <posx>30</posx>
-            <posy>15</posy>
-            <itemgap>10</itemgap> 
-            <orientation>vertical</orientation>
-            <control type="label">
-                <width>360</width>       
-                <height>24</height>
-                <font>font12</font>
-                <textcolor>C0C0C0C0</textcolor>
-                <align>center</align>
-                <scroll>true</scroll>
-                <scrollspeed>40</scrollspeed>
-                <label>Trending Now:</label>      
-                <visible>!Control.IsVisible(523)</visible>
-                <aligny>center</aligny>
-            </control>
-            <control type="image">
-                <width>360</width>      
-                <height>180</height>
-                <aspectratio align="center">keep</aspectratio>
-                <texture>$INFO[Window(Home).Property(TrendingShows.1.Art(fanart))]</texture>  
-                <visible>!Control.IsVisible(523)</visible>
-            </control> 
-            <control type="image">
-                <width>360</width>      
-                <height>180</height>
-                <aspectratio align="center">keep</aspectratio>
-                <texture>$INFO[Window(Home).Property(TrendingShows.1.Art(landscape))]</texture>  
-                <visible>!Control.IsVisible(523)</visible>
-            </control> 
-        </control>   
         <!-- VideoWindow Box --> 
         <control type="grouplist">
             <posx>30</posx>
@@ -103,6 +69,61 @@
             <!-- PATCH END -->
             <!-- ################################################################## -->
         </control>
+        <!-- Static VideoWindow Box --> 
+        <control type="grouplist">
+            <posx>30</posx>
+            <posy>15</posy>
+            <itemgap>10</itemgap> 
+            <orientation>vertical</orientation>
+            <control type="label">
+                <width>360</width>       
+                <height>24</height>
+                <font>font12</font>
+                <textcolor>C0C0C0C0</textcolor>
+                <align>center</align>
+                <scroll>true</scroll>
+                <scrollspeed>40</scrollspeed>
+                <label>$INFO[Window(10000).Property(Playing.Title)]</label>
+                <visible>!Control.IsVisible(523)</visible>
+                <aligny>center</aligny>
+            </control>
+            <control type="image">
+                <width>360</width>      
+                <height>180</height>
+                <align>center</align>
+                <aligny>center</aligny>
+                <aspectratio>keep</aspectratio>
+                <texture>$INFO[Player.Art(fanart)]</texture>
+                <visible>!Control.IsVisible(523)</visible>
+            </control>
+            <control type="image">
+                <width>360</width>      
+                <height>180</height>
+                <align>center</align>
+                <aligny>center</aligny>
+                <aspectratio>keep</aspectratio>
+                <texture>$INFO[Player.Art(landscape)]</texture>
+                <visible>!Control.IsVisible(523)</visible>
+            </control>
+            <control type="image">
+                <width>360</width>      
+                <height>180</height>
+                <align>center</align>
+                <aligny>center</aligny>
+                <aspectratio>keep</aspectratio>
+                <texture>$INFO[Player.Art(TVShow.fanart)]</texture>
+                <visible>!Control.IsVisible(523)</visible>
+            </control>
+            <control type="image">
+                <width>360</width>      
+                <height>180</height>
+                <align>center</align>
+                <aligny>center</aligny>
+                <aspectratio>keep</aspectratio>
+                <texture>$INFO[Player.Art(TVShow.landscape)]</texture>
+                <visible>!Control.IsVisible(523)</visible>
+            </control>
+        </control>   
         <!-- Today Nextaired -->
         <control type="grouplist">    
             <posx>0</posx>
