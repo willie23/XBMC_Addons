@@ -89,51 +89,65 @@ class Artdownloader:
     def dbidArt(self, type, chname, mpath, dbid, arttypeEXT):
         self.log("dbidArt")
         file_detail = []
-        
-        if type == 'tvshow':
-            json_query = ('{"jsonrpc":"2.0","method":"VideoLibrary.GetTVShowDetails","params":{"tvshowid":%s,"properties":["art"]},"id":1}' % dbid)
-        elif type == 'movie':
-            json_query = ('{"jsonrpc":"2.0","method":"VideoLibrary.GetMovieDetails","params":{"movieid":%s,"properties":["art"]},"id":1}' % dbid)
-        else:
-            return self.SetDefaultArt_NEW(chname, mpath, arttypeEXT)
+        arttypes = ''
+        arttypes_fallback = ''
+        try:
+            if type == 'tvshow':
+                json_query = ('{"jsonrpc":"2.0","method":"VideoLibrary.GetTVShowDetails","params":{"tvshowid":%s,"properties":["art","thumbnail","fanart"]},"id":1}' % dbid)
+            elif type == 'movie':
+                json_query = ('{"jsonrpc":"2.0","method":"VideoLibrary.GetMovieDetails","params":{"movieid":%s,"properties":["art","thumbnail","fanart"]},"id":1}' % dbid)
+            else:
+                return self.SetDefaultArt_NEW(chname, mpath, arttypeEXT)
+            arttype = (arttypeEXT.split(".")[0])
+            arttype_fallback = self.getFallback_Arttype(arttype)
+            json_folder_detail = self.chanlist.sendJSON(json_query)
+            file_detail = re.compile( "{(.*?)}", re.DOTALL ).findall(json_folder_detail)
             
-        arttype = (arttypeEXT.split(".")[0])
-        json_folder_detail = self.chanlist.sendJSON(json_query)
-        file_detail = re.compile( "{(.*?)}", re.DOTALL ).findall(json_folder_detail)
+            for f in file_detail:
+                arttypes = re.search(('"%s" *: *"(.*?)"' % arttype), f)
+                arttypes_fallback = re.search(('"%s" *: *"(.*?)"' % arttype_fallback), f)
+                if arttypes != None and len(arttypes.group(1)) > 0:
+                    return (unquote(xbmc.translatePath((arttypes.group(1).split(','))[0]))).replace('image://','').replace('.jpg/','.jpg').replace('.png/','.png') 
+                
+                elif arttypes_fallback and len(arttypes_fallback.group(1)) > 0:
+                    if (arttypes_fallback.group(1)).lower() == arttype_fallback.lower():
+                        SetImage_fallback = (unquote(xbmc.translatePath((arttypes_fallback.group(1).split(','))[0]))).replace('image://','').replace('.jpg/','.jpg').replace('.png/','.png')
+            
+            if not SetImage and SetImage_fallback:
+                SetImage = SetImage_fallback
+        except Exception,e:  
+            self.log("script.pseudotv.live-Artdownloader: dbidArt Failed" + str(e), xbmc.LOGERROR)
         
-        for f in file_detail:
-            arttypes = re.search(('"%s" *: *"(.*?)"' % arttype), f)
-            if arttypes != None and len(arttypes.group(1)) > 0:
-                return (unquote(xbmc.translatePath((arttypes.group(1).split(','))[0]))).replace('image://','').replace('.jpg/','.jpg').replace('.png/','.png') 
-
         
     def JsonArt(self, type, chname, mpath, arttypeEXT):
         self.log("JsonArt")
         file_detail = []
-        SetImage = ''
-        SetImage_fallback = ''
-        arttype, ext = arttypeEXT.split('.')
-        arttype = type.lower() +'.'+ arttype.lower()
-        arttype_fallback = self.getFallback_Arttype(arttype)
-        json_query = ('{"jsonrpc":"2.0","method":"Files.GetDirectory","params":{"directory":"%s","media":"video","properties":["art","fanart","thumbnail"]}, "id": 1}' % (mpath))
-        json_folder_detail = self.chanlist.sendJSON(json_query)
-        file_detail = re.compile( "{(.*?)}", re.DOTALL ).findall(json_folder_detail)
-            
-        for f in file_detail:
-            arttypes = re.search(('"%s" *: *"(.*?)"' % arttype), f)
-            arttypes_fallback = re.search(('"%s" *: *"(.*?)"' % arttype_fallback), f)
+        try:
+            SetImage = ''
+            SetImage_fallback = ''
+            arttype, ext = arttypeEXT.split('.')
+            arttype = type.lower() +'.'+ arttype.lower()
+            arttype_fallback = self.getFallback_Arttype(arttype)
+            json_query = ('{"jsonrpc":"2.0","method":"Files.GetDirectory","params":{"directory":"%s","media":"video","properties":["art","fanart","thumbnail"]}, "id": 1}' % (mpath))
+            json_folder_detail = self.chanlist.sendJSON(json_query)
+            file_detail = re.compile( "{(.*?)}", re.DOTALL ).findall(json_folder_detail)
+                
+            for f in file_detail:
+                arttypes = re.search(('"%s" *: *"(.*?)"' % arttype), f)
+                arttypes_fallback = re.search(('"%s" *: *"(.*?)"' % arttype_fallback), f)
 
-            if arttypes and len(arttypes.group(1)) > 0:
-                if (arttypes.group(1)).lower() == arttype.lower():
-                    SetImage = (unquote(xbmc.translatePath((arttypes.group(1).split(','))[0]))).replace('image://','').replace('.jpg/','.jpg').replace('.png/','.png')
+                if arttypes and len(arttypes.group(1)) > 0:
+                    if (arttypes.group(1)).lower() == arttype.lower():
+                        SetImage = (unquote(xbmc.translatePath((arttypes.group(1).split(','))[0]))).replace('image://','').replace('.jpg/','.jpg').replace('.png/','.png')
+                
+                elif arttypes_fallback and len(arttypes_fallback.group(1)) > 0:
+                    if (arttypes_fallback.group(1)).lower() == arttype_fallback.lower():
+                        SetImage_fallback = (unquote(xbmc.translatePath((arttypes_fallback.group(1).split(','))[0]))).replace('image://','').replace('.jpg/','.jpg').replace('.png/','.png')
             
-            elif arttypes_fallback and len(arttypes_fallback.group(1)) > 0:
-                if (arttypes_fallback.group(1)).lower() == arttype_fallback.lower():
-                    SetImage_fallback = (unquote(xbmc.translatePath((arttypes_fallback.group(1).split(','))[0]))).replace('image://','').replace('.jpg/','.jpg').replace('.png/','.png')
-        
-        if not SetImage and SetImage_fallback:
-            SetImage = SetImage_fallback
-            
+            if not SetImage and SetImage_fallback:
+                SetImage = SetImage_fallback
+        except Exception,e:  
+            self.log("script.pseudotv.live-Artdownloader: JsonArt Failed" + str(e), xbmc.LOGERROR)
         return SetImage
 
         
@@ -172,7 +186,7 @@ class Artdownloader:
             return mod
         except Exception,e:  
             self.log("script.pseudotv.live-Artdownloader: ConvertBug Failed" + str(e), xbmc.LOGERROR)
-            buggalo.onExceptionRaised()
+            return 'NA.png'
             
 
     def FindBug(self, chtype, chname):

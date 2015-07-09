@@ -634,6 +634,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                             # self.textureButtonFocus = IMAGES_LOC + 'label_ondemand.png'
                             # self.textureButtonNoFocus = MEDIA_LOC + 'label_ondemand.png'
                         # Filtered = True
+                        
                         #Create Control array
                         self.channelButtons[row].append(xbmcgui.ControlButton(xpos, basey, width, baseh, mylabel, focusTexture=self.textureButtonFocus, noFocusTexture=self.textureButtonNoFocus, alignment=4, font=self.textfont, textColor=self.textcolor, focusedColor=self.focusedcolor))
 

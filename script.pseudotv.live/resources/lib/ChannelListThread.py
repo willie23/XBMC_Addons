@@ -36,7 +36,6 @@ class ChannelListThread(threading.Thread):
         self.chanlist = ChannelList()
         self.paused = False
         self.fullUpdating = True
-
         
     def log(self, msg, level = xbmc.LOGDEBUG):
         log('ChannelListThread: ' + msg, level)
@@ -47,7 +46,7 @@ class ChannelListThread(threading.Thread):
         self.chanlist.exitThread = False
         self.chanlist.readConfig()
         self.chanlist.sleepTime = 1
-
+        
         if self.myOverlay == None:
             self.log("Overlay not defined. Exiting.")
             return
@@ -95,8 +94,7 @@ class ChannelListThread(threading.Thread):
 
                             if self.myOverlay.channels[i].isValid == True:
                                 title = "PseudoTV Live, Channel " + str(i + 1) + " Added"
-                                xbmc.executebuiltin('XBMC.Notification(%s, %s, %s)' % (title, 4000, THUMB))
-                                
+                                xbmc.executebuiltin('XBMC.Notification(%s, %s, %s)' % (title, 4000, THUMB))              
                     except Exception,e:
                         self.log("Unknown Channel Creation Exception", xbmc.LOGERROR)
                         self.log(traceback.format_exc(), xbmc.LOGERROR)

@@ -382,42 +382,8 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                 self.saveSettings()
                 self.hideChanDetails()
                 ADDON_SETTINGS.writeSettings()  
-                try:
-                    type = ADDON_SETTINGS.getSetting("Channel_" + str(self.channel) + "_type")
-                    setting1 = (ADDON_SETTINGS.getSetting("Channel_" + str(self.channel) + "_1"))
-                    setting2 = (ADDON_SETTINGS.getSetting("Channel_" + str(self.channel) + "_2"))
-                    setting3 = (ADDON_SETTINGS.getSetting("Channel_" + str(self.channel) + "_3"))
-                    setting4 = (ADDON_SETTINGS.getSetting("Channel_" + str(self.channel) + "_4"))
-                    channame = self.chnlst.CleanLabels(ADDON_SETTINGS.getSetting("Channel_" + str(self.channel) + "_rule_1_opt_1"))
-                except:
-                    pass
+                self.ListSubmit(self.channel)
                 
-                if str(type) == '0':
-                    if setting1 != '':
-                        self.ListSubmisson("PseudoTVLive Submission: Chtype = " + str(type), 'Custom Playlist|' + setting1, xbmc.translatePath(setting1))
-                else:
-                    select = selectDialog(self.GenreLst, 'Select Submission Genre Type')
-                    if select != -1:
-                        genre = self.GenreLst[select]
-                        
-                        #todo prompt for missing info
-                        #retval = dlg.input('Enter info', type=xbmcgui.INPUT_ALPHANUM)
-                        if setting1 == '':
-                            setting1 = '""'
-                        if setting2 == '':
-                            setting2 = '""'
-                        if setting3 == '':
-                            setting3 = '""'
-                        if setting4 == '':
-                            setting4 = '""'
-                        if channame == '':
-                            channame = '""'
-
-                        if type == '10':
-                            setting2 = setting2.replace('|',',')
-                        self.optionList = [str(type), str(setting1), str(setting2), str(setting3), str(setting4), str(channame)]
-                        self.ListSubmisson("PseudoTVLive Submission: Chtype = " + str(type) + ", Genre = " + str(genre), ('|').join(self.optionList))
-        
         elif controlId == 330:      # Playlist-type channel, playlist button
             retval = dlg.browse(1, "Channel " + str(self.channel) + " Playlist", "files", ".xsp", False, False, "special://videoplaylists/")
             if retval != "special://videoplaylists/":
@@ -520,17 +486,12 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             
             dirs,files = xbmcvfs.listdir(XMLTV_CACHE_LOC)
             dir,file = xbmcvfs.listdir(XMLTV_LOC)
-            
-            if self.chnlst.plugin_ok('plugin.video.stalker'):
-                EXxmltvLst = ['iptv.stalker'] + EXxmltvLst
-            
+
             xmltvcacheLst = [s.replace('.xml','') for s in files if s.endswith('.xml')] + EXxmltvLst
             xmltvLst = sorted_nicely([s.replace('.xml','') for s in file if s.endswith('.xml')] + xmltvcacheLst)
             select = selectDialog(xmltvLst, 'Select xmltv file')
             if select != -1:
                 selXMLTV = xmltvLst[select]
-                if selXMLTV == 'iptv.stalker':
-                    selXMLTV = 'http://127.0.0.1:8899/epg.xml?portal=1'
                 self.getControl(212).setLabel(selXMLTV)
         
         elif controlId == 213:    # LiveTV Channel Name, input
@@ -941,8 +902,14 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             index += len(thelist)
         while index >= len(thelist):
             index -= len(thelist)
-
+        
         self.getControl(controlid).setLabel(thelist[index])
+        
+        # Disable Submit button
+        if thelist[index] in ['PVR','HDhomerun','UPNP','Local Music','Local Video']:
+            self.getControl(115).setVisible(False)
+        else:
+            self.getControl(115).setVisible(True)
         self.log("changeListData return")
 
 
@@ -1794,6 +1761,74 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         except:
             pass
 
+            
+    def ListSubmit(self, channel):
+        self.log("ListSubmit")  
+        dlg = xbmcgui.Dialog()
+        
+        try:
+            type = ADDON_SETTINGS.getSetting("Channel_" + str(channel) + "_type")
+            setting1 = (ADDON_SETTINGS.getSetting("Channel_" + str(channel) + "_1"))
+            setting2 = (ADDON_SETTINGS.getSetting("Channel_" + str(channel) + "_2"))
+            setting3 = (ADDON_SETTINGS.getSetting("Channel_" + str(channel) + "_3"))
+            setting4 = (ADDON_SETTINGS.getSetting("Channel_" + str(channel) + "_4"))
+            channame = self.chnlst.CleanLabels(ADDON_SETTINGS.getSetting("Channel_" + str(channel) + "_rule_1_opt_1"))
+        except:
+            pass
+            
+        # Custom XSP Playlist
+        if str(type) == '0':
+            if setting1 != '':
+                plname = self.getSmartPlaylistName(setting1)
+                if len(plname) != 0:   
+                    self.ListSubmisson("PseudoTVLive Submission: Chtype = " + str(type), 'Custom Playlist|' + setting1, xbmc.translatePath(setting1))
+                else:
+                    # todo retval = dlg.input('Enter Playlist Name', type=xbmcgui.INPUT_ALPHANUM)
+                    # if retval and len(retval) > 0:
+                    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Please Edit Playlist Name.", 4000, THUMB) )
+        else:
+            select = selectDialog(self.GenreLst, 'Select Submission Genre Type')
+            if select != -1:
+                genre = self.GenreLst[select]
+                
+                #todo prompt for missing info
+                #retval = dlg.input('Enter info', type=xbmcgui.INPUT_ALPHANUM)
+                # if retval and len(retval) > 0:
+                if setting1 == '':
+                    setting1 = '""'
+                if setting2 == '':
+                    setting2 = '""'
+                if setting3 == '':
+                    setting3 = '""'
+                if setting4 == '':
+                    setting4 = '""'
+                if channame == '':
+                    channame = '""'
+
+                # correct multitube format
+                if type == '10':
+                    setting1 = setting1.replace('|',',')     
+                    
+                self.optionList = [str(type), str(setting1), str(setting2), str(setting3), str(setting4), str(channame)]
+                self.ListSubmisson("PseudoTVLive Submission: Chtype = " + str(type) + ", Genre = " + str(genre), ('|').join(self.optionList))
+        
+        
+    def ListSubmisson(self, subject, body, attach=None):
+        self.log("ListSubmisson")  
+        try:
+            sender = (REAL_SETTINGS.getSetting('Gmail_User'))            
+            if sender == 'email@gmail.com':
+                okDialog('Enter your gmail address & password','Found in settings under the "Donor" tab')
+                return
+            sendGmail(subject, body, attach)
+            MSG = 'Submisson Complete'
+            okDialog('Thank you for your submission, Please wait 24-48hrs to process your submission.','[COLOR=red]Warning!! repeat spammers will be banned!![/COLOR]')
+        except Exception,e:
+            self.log("ListSubmisson, Failed! " + str(e))  
+            xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", 'Submission Failed!', 1000, THUMB) )  
+            pass   
+    
+    
         
     def ListSubmisson(self, subject, body, attach=None):
         self.log("ListSubmisson")  

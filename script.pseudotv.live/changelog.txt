@@ -1,4 +1,6 @@
-[*] Isengard 15 compatibility, EPG PIP is currently not available due to code changes. Static Window is displayed in its place.
+[*] Updated As seen on TV Commercials, BCT's disabled while using Multi-room Channel Sharing.
+[*] Improved Menu controls, and tweaked "More Info" Overlay (accessed via context button).
+[*] Isengard 15 compatibility (Not 100%). Known Kodi PVR issues and the EPG PIP is currently not available. A Static Window is displayed in its place.
 [*] Improved Youtube Multi - Channel/Playlist parsing limits. Each id parses to limit, PTVL shuffles then returns media limit.
 [*] Removed the need to "Force Channel Reset" & "Cache Purge" after PTVL Version update.
 [*] Tweaked last channel toggle and LiveTV/InternetTV "Plugin" playback.

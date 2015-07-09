@@ -1026,7 +1026,7 @@
                 <label>|</label>
                 <font>font14</font>
                 <textcolor>C0C0C0C0</textcolor>
-                <visible>!IsEmpty(Control.GetLabel(129))</visible>
+                <visible>!IsEmpty(Window(home).Property(NextAired.1.Label))</visible>
             </control>  
             <!--Next Aired RSS-->
             <control type="label" id="129">
@@ -1053,7 +1053,7 @@
                 <label>|</label>
                 <font>font14</font>
                 <textcolor>C0C0C0C0</textcolor>
-                <visible>!IsEmpty(Control.GetLabel(129))</visible>
+                <visible>!IsEmpty(Window(home).Property(NextAired.1.Label))</visible>
             </control>  
         </control>
 </controls>

@@ -741,7 +741,7 @@ def open_url_up_cached(url, userpass):
     return result    
           
 def open_url_up(url, userpass):
-    print 'open_url_up'
+    log("script.pseudotv.live-utils: open_url_up")
     try:
         userpass = userpass.split(':')
         username = userpass[0]
@@ -801,7 +801,6 @@ def allNoProgress(_in, _out):
         zin = zipfile.ZipFile(_in, 'r')
         zin.extractall(_out)
     except Exception, e:
-        print str(e)
         return False
     return True
 
@@ -817,7 +816,6 @@ def allWithProgress(_in, _out, dp):
             dp.update(int(update))
             zin.extract(item, _out)
     except Exception, e:
-        print str(e)
         return False
     return True 
      
@@ -908,7 +906,7 @@ def videoIsPlaying():
     return xbmc.getCondVisibility('Player.HasVideo')
     
 def getXBMCVersion():
-    print 'getXBMCVersion'
+    log("script.pseudotv.live-utils: getXBMCVersion")
     # retrieve current installed version
     try:
         return int((xbmc.getInfoLabel('System.BuildVersion').split('.'))[0])

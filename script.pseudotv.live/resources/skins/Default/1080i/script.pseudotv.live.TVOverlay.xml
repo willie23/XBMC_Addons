@@ -255,26 +255,290 @@
             <control type="image" id="510">
                 <description>Dynamic art2  - MoreInfo</description>
                 <animation effect="fade" time="500">VisibleChange</animation> 
-                <posx>0</posx>
-                <posy>415r</posy>  
-                <width>360</width>      
-                <height>375</height>
+                <posx>35</posx>
+                <posy>475r</posy>  
+                <width>360</width> 
+                <height min="180" max="360">auto</height>
                 <align>center</align>
                 <aligny>center</aligny>
                 <aspectratio>keep</aspectratio>
                 <texture fallback="poster.png"></texture>
-            </control>    
+            </control>   
+            <!--line 1 --> 
+            <control type="grouplist">
+                <posx>430</posx>
+                <posy>475r</posy>
+                <width>1100</width>
+                <orientation>horizontal</orientation>
+                <itemgap>5</itemgap>   
+                <control type="label">
+                    <description>Now Watching/ComingUp Label</description>
+                    <width min="5" max="300">auto</width>
+                    <height>30</height>
+                    <font>font14</font>
+                    <align>left</align>
+                    <aligny>center</aligny>
+                    <textcolor>C0C0C0C0</textcolor>
+                    <label>$INFO[Control.GetLabel(502)]</label>
+                    <visible>!IsEmpty(Control.GetLabel(503))</visible>
+                </control>  
+                <control type="label">
+                    <description>Show Title Label</description>
+                    <width min="5" max="1100">auto</width>
+                    <height>30</height>
+                    <font>font14</font>
+                    <textcolor>FF0297eb</textcolor>
+                    <scroll>true</scroll>
+                    <align>left</align>
+                    <aligny>center</aligny>
+                    <wrapmultiline>false</wrapmultiline>
+                    <scrollspeed>50</scrollspeed>
+                    <scrollsuffix> - </scrollsuffix>
+                    <label>$INFO[Control.GetLabel(503)][COLOR=C0C0C0C0][B] • [/B][/COLOR][COLOR=FFFFFFFF]$INFO[Control.GetLabel(504)][/COLOR]</label>
+                </control>
+            </control>
+            <!--line 2 -->
+            <control type="grouplist">
+                <posx>430</posx>
+                <posy>435r</posy>
+                <width>1100</width>
+                <orientation>vertical</orientation>
+                <itemgap>4</itemgap>
+               <control type="image">
+                    <description>Seekbar Line</description>
+                    <width>1100</width>
+                    <height>4</height>
+                    <texture>seek/progress_mid.png</texture>
+                    <align>center</align>
+                    <aligny>center</aligny>
+                    <visible>!Control.IsVisible(515)</visible>
+                </control>
+                <control type="group">  
+                    <control type="progress">
+                        <posx>0</posx>
+                        <posy>0</posy>
+                        <width>1100</width>
+                        <height>4</height>
+                        <texturebg>seek/progress_back.png</texturebg>
+                        <lefttexture border="0">seek/progresscache_left.png</lefttexture>
+                        <midtexture border="0">seek/progresscache_mid.png</midtexture>
+                        <righttexture border="0">seek/progresscache_right.png</righttexture>
+                        <align>center</align>
+                        <aligny>center</aligny>
+                        <info>Player.ProgressCache</info>
+                    </control>
+                    <control type="progress">
+                        <posx>0</posx>
+                        <posy>0</posy>
+                        <width>1100</width>
+                        <height>4</height>
+                        <texturebg>seek/progresscache_back.png</texturebg>
+                        <lefttexture border="0">seek/progress_left.png</lefttexture>
+                        <midtexture border="0">seek/progress_mid.png</midtexture>
+                        <righttexture border="0">seek/progress_right.png</righttexture>
+                        <align>center</align>
+                        <aligny>center</aligny>
+                        <info>Player.Progress</info>
+                    </control> 
+                </control>  
+                <control type="grouplist">
+                    <posx>0</posx>
+                    <posy>0</posy>
+                    <width>1100</width>
+                    <orientation>horizontal</orientation>
+                    <itemgap>4</itemgap>
+                    <control type="label" id="517">
+                        <description>Seekbar start time</description>
+                        <width min="128" max="400">auto</width>
+                        <height>30</height>
+                        <fadetime>250</fadetime>
+                        <textcolor>FFFFFFFF</textcolor>
+                        <font>font12</font>
+                        <align>left</align>
+                        <aligny>center</aligny>
+                        <label fallback="">$INFO[System.Time, Time: ] $INFO[Player.StartTime, Started: ]</label>
+                        <visible>False</visible>
+                    </control> 
+                    <control type="label" id="516">
+                        <description>Seekbar Elapsed Time Button</description>
+                        <width min="128" max="550">auto</width>
+                        <height>30</height>
+                        <fadetime>250</fadetime>
+                        <textcolor>FFFFFFFF</textcolor>
+                        <font>font12</font>
+                        <align>left</align>
+                        <aligny>center</aligny>
+                        <label>$INFO[Player.TimeRemaining,Remaining: ] / $INFO[Player.Time,Elapsed: ]</label>
+                    </control>  
+                    <control type="label" id="518">"
+                        <description>Seekbar time</description>
+                        <width min="128" max="550">auto</width>
+                        <height>30</height>
+                        <fadetime>250</fadetime>
+                        <textcolor>FFFFFFFF</textcolor>
+                        <font>font12</font>
+                        <align>right</align>
+                        <aligny>center</aligny>
+                        <label>$INFO[Player.Duration, Duration: ] / $INFO[Player.FinishTime(hh:mm xx), Finished: ]</label>
+                    </control> 
+                </control> 
+            </control>  
+            <!-- line 3 -->
+            <control type="label">
+                <description>Show Description</description>
+                <posx>430</posx>
+                <posy>389r</posy>
+                <width>1100</width>
+                <height>90</height>
+                <align>left</align>
+                <aligny>bottom</aligny>
+                <wrapmultiline>true</wrapmultiline>
+                <textcolor>FFFFFFFF</textcolor>
+                <font>font12</font>
+                <label>$INFO[Control.GetLabel(505)]</label>
+            </control> 
+            <!-- line 4 -->
+            <control type="grouplist">
+                <posx>430</posx>
+                <posy>279r</posy>
+                <width>1100</width>
+                <orientation>vertical</orientation>
+                <itemgap>4</itemgap>
+                <control type="grouplist">
+                    <posx>0</posx>
+                    <posy>0</posy>
+                    <width>1100</width>
+                    <orientation>horizontal</orientation>
+                    <itemgap>4</itemgap>
+                    <control type="label">
+                        <description>Show Genres</description>
+                        <width min="128" max="400">auto</width>
+                        <height>30</height>
+                        <align>left</align>
+                        <aligny>bottom</aligny>
+                        <wrapmultiline>true</wrapmultiline>
+                        <textcolor>FFFFFFFF</textcolor>
+                        <font>font12</font>
+                        <label fallback="Genre: Unknown">$INFO[VideoPlayer.Genre, Genre: ]</label>
+                    </control> 
+                    <control type="label">
+                        <description>Show Info</description>
+                        <width min="128" max="800">auto</width>
+                        <height>30</height>
+                        <align>left</align>
+                        <aligny>bottom</aligny>
+                        <wrapmultiline>true</wrapmultiline>
+                        <textcolor>FFFFFFFF</textcolor>
+                        <font>font12</font>
+                        <label>$INFO[VideoPlayer.Premiered, Premièred ] $INFO[VideoPlayer.Studio, on ] $INFO[VideoPlayer.Director, Directed by ]</label>
+                    </control>
+                </control>
+            </control>
+            <!-- line 5 -->
+            <control type="grouplist">
+                <posx>430</posx>
+                <posy>239r</posy>
+                <width>1100</width>
+                <orientation>vertical</orientation>
+                <itemgap>75</itemgap>
+                <control type="grouplist">
+                    <posx>0</posx>
+                    <posy>0</posy>
+                    <width>1100</width>
+                    <orientation>horizontal</orientation>
+                    <itemgap>4</itemgap>
+                    <control type="image" id="506">
+                        <description>Channel Logo</description>
+                        <width>62</width>
+                        <height>62</height>
+                        <aspectratio>keep</aspectratio>
+                        <aligny>center</aligny>
+                    </control>
+                    <control type="image">
+                        <posy>5</posy>
+                        <width>100</width>
+                        <height>62</height>
+                        <aspectratio>keep</aspectratio>
+                        <texture fallback="flags/rating/MPAA_NR_Certificate_US.png" colordiffuse="ffffffff">$INFO[VideoPlayer.mpaa,flags/mpaa/,.png]</texture>
+                    </control>
+                    <control type="image">
+                        <posy>5</posy>
+                        <width>100</width>
+                        <height>62</height>
+                        <aspectratio>keep</aspectratio>
+                        <texture fallback="flags/rating/0.0.png" colordiffuse="ffffffff">$INFO[VideoPlayer.Rating,flags/rating/,.png]</texture>
+                    </control>
+                </control>
+                <control type="grouplist">
+                    <posx>0</posx>
+                    <posy>0</posy>
+                    <width>1100</width>
+                    <orientation>horizontal</orientation>
+                    <itemgap>4</itemgap>
+                    <control type="image">
+                        <posy>5</posy>
+                        <width>100</width>
+                        <height>62</height>
+                        <aspectratio>keep</aspectratio>
+                        <texture colordiffuse="ffffffff">$INFO[VideoPlayer.VideoCodec,flags/source/,.png]</texture>
+                    </control>
+                    <control type="image">
+                        <posy>5</posy>
+                        <width>80</width>
+                        <height>62</height>
+                        <aspectratio>keep</aspectratio>
+                        <texture colordiffuse="ffffffff">$INFO[VideoPlayer.VideoResolution,flags/resolution/,.png]</texture>
+                    </control>
+                    <control type="image">
+                        <posy>5</posy>
+                        <width>80</width>
+                        <height>62</height>
+                        <aspectratio>keep</aspectratio>
+                        <texture colordiffuse="ffffffff">$INFO[VideoPlayer.VideoAspect,flags/aspectratio/,.png]</texture>
+                    </control>
+                    <control type="image">
+                        <posy>5</posy>
+                        <width>80</width>
+                        <height>62</height>
+                        <aspectratio>keep</aspectratio>
+                        <texture colordiffuse="ffffffff">$INFO[VideoPlayer.AudioCodec,flags/audio/,.png]</texture>
+                    </control>
+                    <control type="image">
+                        <posy>5</posy>
+                        <width>80</width>
+                        <height>62</height>
+                        <aspectratio>keep</aspectratio>
+                        <texture colordiffuse="ffffffff">$INFO[VideoPlayer.AudioChannels,flags/channels/,.png]</texture>
+                    </control>
+                    <control type="image">
+                        <posy>5</posy>
+                        <width>80</width>
+                        <height>62</height>
+                        <aspectratio>keep</aspectratio>
+                        <texture colordiffuse="ffffffff">$INFO[VideoPlayer.AudioLanguage,flags/language/,.png]</texture>
+                    </control>       
+                    <control type="image">
+                        <posy>5</posy>
+                        <width>100</width>
+                        <height>62</height>
+                        <aspectratio>keep</aspectratio>
+                        <texture colordiffuse="ffffffff">$INFO[VideoPlayer.Country,flags/language/,.png]</texture>
+                    </control>
+                </control>
+            </control> 
+            <!-- Context menu -->
             <control type="image">
                 <description>Context background</description>
                 <posx>299r</posx>
-                <posy>375r</posy>
+                <posy>435r</posy>
                 <width>258</width>
                 <height>296</height>
-                <texture>pstvlContextC.png</texture>
-            </control>             
+                <texture>pstvlContextBackground.png</texture>
+            </control>
             <control type="grouplist">
+                <description>Context buttons</description>
                 <posx>295r</posx>
-                <posy>371r</posy>
+                <posy>431r</posy>
                 <width>250</width>
                 <orientation>vertical</orientation>
                 <itemgap>0</itemgap>
@@ -334,72 +598,7 @@
                     <ondown>1012</ondown>
                     <visible>!IsEmpty(Control.GetLabel(1014))</visible>
                 </control>
-                <control type="label" id="516">
-                    <description>Seekbar Elapsed Time Button</description>
-                    <posx>0</posx>
-                    <posy>0</posy>
-                    <width min="128" max="400">auto</width>
-                    <height>30</height>
-                    <fadetime>250</fadetime>
-                    <textcolor>FFFFFFFF</textcolor>
-                    <font>font12</font>
-                    <align>center</align>
-                    <aligny>center</aligny>
-                    <label>$INFO[Player.TimeRemaining]</label>
-                </control>  
-            </control>
-            <control type="grouplist">
-                <posx>430</posx>
-                <posy>70r</posy>
-                <width>1045</width>
-                <height>90</height>
-                <orientation>horizontal</orientation>
-                <itemgap>25</itemgap>
-                <usecontrolcoords>true</usecontrolcoords>
-                <control type="image" id="900011">
-                    <posy>5</posy>
-                    <width>100</width>
-                    <height>62</height>
-                    <aspectratio>keep</aspectratio>
-                    <texture colordiffuse="ffffffff">$VAR[SourceFlagVar,extendedinfo/flags/source/,.png]</texture>
-                </control>
-                <control type="image" id="900012">
-                    <posy>5</posy>
-                    <width>100</width>
-                    <height>62</height>
-                    <aspectratio>keep</aspectratio>
-                    <texture colordiffuse="ffffffff">$INFO[VideoPlayer.VideoCodec,extendedinfo/flags/source/,.png]</texture>
-                </control>
-                <control type="image" id="900013">
-                    <posy>5</posy>
-                    <width>126</width>
-                    <height>62</height>
-                    <aspectratio>keep</aspectratio>
-                    <texture colordiffuse="ffffffff">$INFO[VideoPlayer.AudioCodec,extendedinfo/flags/audio/,.png]</texture>
-                </control>
-                <control type="image" id="900014">
-                    <posy>5</posy>
-                    <width>80</width>
-                    <height>62</height>
-                    <aspectratio>keep</aspectratio>
-                    <texture colordiffuse="ffffffff">$INFO[VideoPlayer.VideoResolution,extendedinfo/flags/resolution/,.png]</texture>
-                </control>
-                <control type="image" id="900015">
-                    <posy>5</posy>
-                    <width>80</width>
-                    <height>62</height>
-                    <aspectratio>keep</aspectratio>
-                    <texture colordiffuse="ffffffff">$INFO[VideoPlayer.VideoAspect,extendedinfo/flags/aspectratio/,.png]</texture>
-                </control>
-                <control type="image">
-                    <posy>5</posy>
-                    <width>100</width>
-                    <height>62</height>
-                    <aspectratio aligny="center" align="center">keep</aspectratio>
-                    <texture colordiffuse="ffffffff">extendedinfo/flags/cc.png</texture>
-                    <visible>!IsEmpty(ListItem.SubtitleLanguage) + IsEmpty(Window.Property(SubtitleLanguage.1))</visible>
-                </control>
-            </control>
+            </control>  
         </control>            
         <!-- info overlay -->
         <control type="group" id="102">
@@ -508,7 +707,6 @@
                     <description>Now Watching/ComingUp Label</description>
                     <width min="5" max="300">auto</width>
                     <height>30</height>
-                    <label>Now Playing</label>
                     <font>font14</font>
                     <align>left</align>
                     <aligny>center</aligny>
@@ -638,43 +836,9 @@
                     <font>font12</font>
                 </control> 
             </control>    
-                    
-        <!-- <control type="label">
-            <description>startime</description>
-            <posx>285</posx>
-            <posy>688</posy>
-            <width>100</width>
-            <height>10</height>
-            <label>$INFO[System.Time(ii:mm)]</label>
-            <font>font12</font>
-            <align>left</align>
-            <textcolor>C0C0C0C0</textcolor>
-        </control>
-        <control type="label">
-            <description>remtime</description>
-            <posx>1000</posx>
-            <posy>688</posy>
-            <width>100</width>
-            <height>10</height>
-            <label>$INFO[VideoPlayer.TimeRemaining(ii:mm)]</label>
-            <font>font12</font>
-            <align>right</align>
-            <textcolor>C0C0C0C0</textcolor>
-        </control>
-        <control type="label">
-            <description>endtime</description>
-            <posx>1105</posx>
-            <posy>688</posy>
-            <width>100</width>
-            <height>10</height>
-            <label>$INFO[VideoPlayer.FinishTime(ii:mm)]</label>
-            <font>font12</font>
-            <align>right</align>
-            <textcolor>C0C0C0C0</textcolor>
-        </control>      -->
         <!--Bottom bar-->   
         <control type="grouplist">
-	        <posx>18</posx>
+            <posx>18</posx>
             <posy>45r</posy>
             <align>left</align>
             <orientation>horizontal</orientation>
@@ -688,19 +852,6 @@
                 <aligny>center</aligny>
                 <visible>False</visible>
             </control>
-            <!-- <control type="label">
-                <width>1250</width>
-                <height>50</height>
-                <font>Font-RSS</font>
-                <aligny>bottom</aligny>
-                <scroll>true</scroll>
-                <scrollsuffix>  •    </scrollsuffix>
-                <visible>!Skin.HasSetting(disable.rss)</visible>
-                <visible>Control.IsVisible(515)</visible>
-                <textcolor>C0C0C0C0</textcolor>
-                <autoscroll time="1000" delay="1000" repeat="0">True</autoscroll>
-                <label>$INFO[VideoPlayer.Genre, ,  ]$INFO[VideoPlayer.mpaa,,  ]$INFO[VideoPlayer.LastPlayed,,  ]$INFO[VideoPlayer.EndTime,,  ]$INFO[VideoPlayer.TimeRemaining,  •   </label>
-            </control> -->
         </control> 
     </control>
     <!-- Overlay Coming Up Next Popup -->

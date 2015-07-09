@@ -915,7 +915,6 @@ class Migrate:
         
     def tuneList(self, channelNum, chtype, NameLst, Option1LST, Option2LST, Option3LST, Option4LST):
         self.log('tuneList')
-        print channelNum, chtype, NameLst, Option1LST, Option2LST, Option3LST, Option4LST
         filecount = 0
         chanlist = ChannelList.ChannelList()
         Com_ch = ['10','11']
@@ -969,7 +968,8 @@ class Migrate:
                 if filecount > self.ATlimit:
                     break
                 
-            except:
+            except Exception,e:
+                self.log('tuneList Failed ' + str(e))
                 pass
 
         return channelNum
