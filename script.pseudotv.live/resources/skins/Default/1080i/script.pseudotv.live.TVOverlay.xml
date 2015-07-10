@@ -251,7 +251,7 @@
                 <description>Dynamic art2 - MoreInfo</description>
                 <label>poster</label>
                 <visible>false</visible>
-            </control> 
+            </control>      
             <control type="image" id="510">
                 <description>Dynamic art2  - MoreInfo</description>
                 <animation effect="fade" time="500">VisibleChange</animation> 
@@ -263,7 +263,16 @@
                 <aligny>center</aligny>
                 <aspectratio>keep</aspectratio>
                 <texture fallback="poster.png"></texture>
-            </control>   
+            </control>        
+            <control type="image">
+                <description>Unaired "NEW" image</description>         
+                <posx>65</posx>
+                <posy>485r</posy>  
+                <width>50</width>
+                <height>50</height>
+                <aspectratio>keep</aspectratio>
+                <texture>$INFO[Control.GetLabel(512)]</texture>
+            </control>  
             <!--line 1 --> 
             <control type="grouplist">
                 <posx>430</posx>
@@ -468,6 +477,15 @@
                         <aspectratio>keep</aspectratio>
                         <texture fallback="flags/rating/0.0.png" colordiffuse="ffffffff">$INFO[VideoPlayer.Rating,flags/rating/,.png]</texture>
                     </control>
+                    <control type="image">
+                        <description>Sickbeard/Couchpotato image</description>   
+                        <posx>345</posx>
+                        <posy>120r</posy>   
+                        <width>100</width>
+                        <height>62</height>
+                        <aspectratio>keep</aspectratio>
+                        <texture>$INFO[Control.GetLabel(511)]</texture>
+                    </control> 
                 </control>
                 <control type="grouplist">
                     <posx>0</posx>
@@ -694,7 +712,7 @@
                 <width>50</width>
                 <height>50</height>
                 <aspectratio>keep</aspectratio>
-                <visible></visible>
+                <visible>true</visible>
             </control>
             <!--line 1 -->
             <control type="grouplist">

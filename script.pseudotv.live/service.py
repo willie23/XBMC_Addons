@@ -29,7 +29,26 @@ ADDON_PATH = REAL_SETTINGS.getAddonInfo('path')
 ADDON_VERSION = REAL_SETTINGS.getAddonInfo('version')
 SETTINGS_LOC = REAL_SETTINGS.getAddonInfo('profile')
 THUMB = (xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'images')) + '/' + 'icon.png')
-    
+
+def HubCHK():
+    xbmc.log('script.pseudotv.live-Service: HubCHK = Hub Edition')
+    if xbmc.getCondVisibility('System.HasAddon(plugin.program.addoninstaller)') == 1:
+        if REAL_SETTINGS.getSetting('Hub') == 'false':
+            xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live","Hub-Edition Activated", 1000, THUMB) )
+        REAL_SETTINGS.setSetting("Hub","true")
+    else:
+        REAL_SETTINGS.setSetting("Hub","false")
+        
+def ComCHK():
+    # CHK Community list gmail for approval, replace with email verification todo 
+    if REAL_SETTINGS.getSetting("Community_Enabled") == "true": 
+        if REAL_SETTINGS.getSetting("Gmail_User") != '' and REAL_SETTINGS.getSetting("Gmail_User") != 'User@gmail.com':  
+            xbmcgui.Window(10000).setProperty("PTVL.COM_APP", "true")
+        else:    
+            xbmcgui.Window(10000).setProperty("PTVL.COM_APP", "false")  
+    else:    
+        xbmcgui.Window(10000).setProperty("PTVL.COM_APP", "false")  
+
 def UpdateRSS():
     now  = datetime.datetime.today()
     try:
@@ -100,8 +119,9 @@ def service():
         UpdateRSS()
         
         # If PTVL is running or settings opened ignore service
-        if xbmcgui.Window(10000).getProperty("PseudoTVRunning") != "True" and xbmc.getCondVisibility('Window.IsActive(addonsettings)') != True:
-            xbmc.executebuiltin("RunScript("+ADDON_PATH+"/utilities.py,-ServiceCHK)")
+        if xbmcgui.Window(10000).getProperty("PseudoTVRunning") != "True" and xbmc.getCondVisibility('Window.IsActive(addonsettings)') != True:         
+            HubCHK() 
+            ComCHK()     
             
             # if autostart enabled, and first boot. Start PTVL!
             if REAL_SETTINGS.getSetting("Auto_Start") == "true" and xbmcgui.Window(10000).getProperty("Auto_Start_Exit") != "true":

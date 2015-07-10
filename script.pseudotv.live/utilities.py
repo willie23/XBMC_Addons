@@ -67,25 +67,6 @@ DonorURLPath = (PTVLURL + 'Donor.py')
 DonorPath = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'lib', 'Donor.pyo'))
 DL_DonorPath = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'lib', 'Donor.py'))
 
-def HubCHK():
-    xbmc.log('script.pseudotv.live-Service: HubCHK = Hub Edition')
-    if xbmc.getCondVisibility('System.HasAddon(plugin.program.addoninstaller)') == 1:
-        if REAL_SETTINGS.getSetting('Hub') == 'false':
-            xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live","Hub-Edition Activated", 1000, THUMB) )
-        REAL_SETTINGS.setSetting("Hub","true")
-    else:
-        REAL_SETTINGS.setSetting("Hub","false")
-        
-def ComCHK():
-    # CHK Community list gmail for approval, replace with email verification todo 
-    if REAL_SETTINGS.getSetting("Community_Enabled") == "true": 
-        if REAL_SETTINGS.getSetting("Gmail_User") != '' and REAL_SETTINGS.getSetting("Gmail_User") != 'User@gmail.com':  
-            xbmcgui.Window(10000).setProperty("PTVL.COM_APP", "true")
-        else:    
-            xbmcgui.Window(10000).setProperty("PTVL.COM_APP", "false")  
-    else:    
-        xbmcgui.Window(10000).setProperty("PTVL.COM_APP", "false")  
-     
 def DonorDownloader(auto=False):
     xbmc.log('script.pseudotv.live-utilities: DonorDownloader')
     REAL_SETTINGS.setSetting("AT_Donor", "false")
@@ -159,9 +140,6 @@ if sys.argv[1] == '-DDautopatch':
     DonorDownloader(True)   
 elif sys.argv[1] == '-DonorDownloader':
     DonorDownloader()   
-elif sys.argv[1] == '-ServiceCHK':
-    HubCHK() 
-    ComCHK()     
 elif sys.argv[1] == '-SimpleDownloader':
     xbmcaddon.Addon(id='script.module.simple.downloader').openSettings()  
 elif sys.argv[1] == '-showChangelog':

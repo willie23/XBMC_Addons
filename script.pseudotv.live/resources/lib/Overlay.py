@@ -1644,7 +1644,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
     def showInfo(self, timer):
         self.log("showInfo") 
         try:
-            self.MenuControl('MoreInfo',self.InfTimer,True)
+            # self.MenuControl('MoreInfo',self.InfTimer,True)
             
             if self.hideShortItems:
                 position = xbmc.PlayList(xbmc.PLAYLIST_MUSIC).getposition() + self.infoOffset
@@ -2485,7 +2485,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                         else:
                             self.log('notification, Overlay') 
                             self.infoOffset = ((nextshow) - self.notificationLastShow)
-                            self.log('snotification, Overlay infoOffset = ' + str(self.infoOffset))
+                            self.log('notification, Overlay infoOffset = ' + str(self.infoOffset))
                             self.showInfo(self.InfTimer)
                             self.notificationShowedNotif = True
                         
