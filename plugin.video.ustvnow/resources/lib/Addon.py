@@ -1,6 +1,6 @@
 '''
     ustvnow XBMC Plugin
-    Copyright (C) 2011 t0mm0
+    Copyright (C) 2015 t0mm0, Lunatixz
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ def log(msg, err=False):
 def show_error(details):
     show_dialog(details, get_string(30000), True)
 
-def show_dialog(details, title='ustvnow', is_error=False):
+def show_dialog(details, title='USTVnow', is_error=False):
     error = ['', '', '']
     text = ''
     for k, v in enumerate(details):
@@ -54,6 +54,9 @@ def show_dialog(details, title='ustvnow', is_error=False):
     
 def get_setting(setting):
     return addon.getSetting(setting)
+    
+def set_setting(setting, string):
+    return addon.setSetting(setting, string)
     
 def get_string(string_id):
     return addon.getLocalizedString(string_id)   
