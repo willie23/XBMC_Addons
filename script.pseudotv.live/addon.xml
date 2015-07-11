@@ -19,10 +19,9 @@
         <import addon="script.extendedinfo" version="2.0.10"/>
         <import addon="plugin.video.youtube" version="5.1.6"/>
         <import addon="plugin.video.vimeo" version="4.1.4"/>
-        <import addon="plugin.video.ustvnow" version="10.0.1"/>
-        <import addon="plugin.video.playonbrowser" version="1.0.2"/>
+        <import addon="plugin.video.ustvnow" optional="true"/>
+        <import addon="plugin.video.playonbrowser" optional="true"/>
         <import addon="script.module.pil" optional="true"/>
-        <import addon="webinterface.ptvlmanager" optional="true"/>
     </requires>
     <extension point="xbmc.python.script" library="default.py">
         <provides>Programs</provides>
