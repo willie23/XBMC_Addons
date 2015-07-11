@@ -214,7 +214,6 @@
     </category>
     <!--Utilities-->
     <category label="31900">  
-        <setting id="UploadLog" type="action" label="30989" action="RunScript($CWD/uploadLog.py)"/>
         <setting label="31999" type="lsep"/>
         <setting id="ATRestore" type="bool" label="30909" default="false"/>
       	<setting id="Warning2" type="bool" label="30069" subsetting="true" visible="eq(-1,true)" default="false"/>
@@ -234,6 +233,7 @@
         <setting id="Show_Changelog" type="action" label="32901" action="RunScript($CWD/utilities.py, -showChangelog)"/>
         <setting id="Show_Readme" type="action" label="32902" action="RunScript($CWD/utilities.py, -showReadme)"/>
         <setting id="Show_Readme" type="action" label="32903" action="RunScript($CWD/utilities.py, -showChtype)"/>
+        <setting id="UploadLog" type="action" label="30989" action="RunScript($CWD/uploadLog.py)"/>
         <setting id="Show_Disclaimer" type="action" label="30999" action="RunScript($CWD/utilities.py, -showDisclaimer)"/>
     </category>
     

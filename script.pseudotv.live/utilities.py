@@ -56,7 +56,9 @@ def showInfo(addonID=None, type='changelog'):
         elif type == 'disclaimer':
             title = "PseudoTV Live - Privacy Disclaimer"
             f = open(os.path.join(ADDON_PATH,'disclaimer'))
-            
+        elif type == 'settings':
+            title = "PseudoTV Live - User Settings"
+            f = open(os.path.join(ADDON_PATH,'settings'))
         text  = f.read()
         showText(title, text)
     except:
@@ -146,6 +148,8 @@ elif sys.argv[1] == '-showChangelog':
     showInfo(ADDON_ID, 'changelog') 
 elif sys.argv[1] == '-showReadme':
     showInfo(ADDON_ID, 'readme') 
+elif sys.argv[1] == '-showUserSettings':
+    showInfo(ADDON_ID, 'settings') 
 elif sys.argv[1] == '-showChtype':
     ChtypeLst = ['General','Custom Playlist','TV Network','Movie Studio','TV Genre','Movie Genre','Mixed Genre','TV Show','Directory','LiveTV','InternetTV','Youtube','RSS','Music','Music Videos','Exclusive','Plugin','UPNP']
     select = selectDialog(ChtypeLst, 'Select Channel Type')

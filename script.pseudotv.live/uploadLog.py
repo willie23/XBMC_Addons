@@ -1,9 +1,13 @@
 import json, os, re
-import urllib, urllib2
+import urllib, urllib2, smtplib
 import xbmcaddon, xbmcgui
 
 from resources.lib.Globals import *
 from xbmc import getCondVisibility as condition, translatePath as translate, log as xbmc_log
+from email.MIMEMultipart import MIMEMultipart
+from email.MIMEBase import MIMEBase
+from email.MIMEText import MIMEText
+from email import Encoders
 
 STRINGS = {
     'do_upload': 30000,
@@ -17,11 +21,20 @@ UPLOAD_LINK = BASE_URL + '/%s'
 UPLOAD_URL = BASE_URL + '/api/json/create'
 EMAIL_URL = BASE_URL + '/xbmc-addons.php'
 
+try:
+    USER, PASS = UPASS.split(":")
+except:
+    USER = ""
+    PASS = ""
+    
 REPLACES = (
     ('//.+?:.+?@', '//USER:PASSWORD@'),
     ('<user>.+?</user>', '<user>USER</user>'),
     ('<pass>.+?</pass>', '<pass>PASSWORD</pass>'),
-    (UPASS, "user:password"),(REAL_SETTINGS.getSetting('Gmail_Pass'),'PASSWORD'),
+    (UPASS, "user:password"),
+    (PASS, "user:password"),
+    (USER, "user:password"),
+    (REAL_SETTINGS.getSetting('Gmail_Pass'),'PASSWORD'),
 )
 
 # # Open Settings on first run
@@ -35,15 +48,12 @@ class LogUploader(object):
         self.log('started')
         self.get_settings()
         found_logs = self.__get_logs()
-        uploaded_logs = []
+        uploaded_logs = ''
         for logfile in found_logs:
             if self.ask_upload(logfile['title']):
                 paste_id = self.upload_file(logfile['path'])
                 if paste_id:
-                    uploaded_logs.append({
-                        'paste_id': paste_id,
-                        'title': logfile['title']
-                    })
+                    uploaded_logs = 'paste_id: ' + str(paste_id) + '\r' + 'paste_url: http://xbmclogs.com/'+ str(paste_id) + '\r' + 'title: '+logfile['title']
                     self.report_msg(paste_id)
         if uploaded_logs and self.email_address:
             self.report_mail(self.email_address, uploaded_logs)
@@ -102,25 +112,58 @@ class LogUploader(object):
         msg2 = 'URL: [B]%s[/B]' % url
         return Dialog.ok(ADDON_NAME, msg1, '', msg2)
 
-    def report_mail(self, mail_address, uploaded_logs):
-        if not mail_address:
-            raise Exception('No Email set!')
-        post_dict = {'email': mail_address}
-        for logfile in uploaded_logs:
-            if logfile['title'] == 'kodi.log':
-                post_dict['xbmclog_id'] = logfile['paste_id']
-            elif logfile['title'] == 'kodi.old.log':
-                post_dict['oldlog_id'] = logfile['paste_id']
-            elif logfile['title'] == 'crash.log':
-                post_dict['crashlog_id'] = logfile['paste_id']
-        post_data = urllib.urlencode(post_dict)
-        if DEBUG:
-            print post_data
-        req = urllib2.Request(EMAIL_URL, post_data)
-        response = urllib2.urlopen(req).read()
-        if DEBUG:
-            print response
+    # def report_mail(self, mail_address, uploaded_logs):
+        # print 'report_mail'
+        # print mail_address, uploaded_logs
+        
+        # if not mail_address:
+            # raise Exception('No Email set!')
+        # post_dict = {'email': mail_address}
+        # for logfile in uploaded_logs:
+            # if logfile['title'] == 'kodi.log':
+                # post_dict['xbmclog_id'] = logfile['paste_id']
+            # elif logfile['title'] == 'kodi.old.log':
+                # post_dict['oldlog_id'] = logfile['paste_id']
+            # elif logfile['title'] == 'crash.log':
+                # post_dict['crashlog_id'] = logfile['paste_id']
+        # post_data = urllib.urlencode(post_dict)
+        # if DEBUG:
+            # print post_data
+        # req = urllib2.Request(EMAIL_URL, post_data)
+        # response = urllib2.urlopen(req).read()
+        # if DEBUG:
+            # print response
 
+    def report_mail(self, recipient, body):
+        self.log("script.pseudotv.live-utils: sendGmail")
+        sender = REAL_SETTINGS.getSetting('Gmail_User')
+        password = REAL_SETTINGS.getSetting('Gmail_Pass')
+        SMTP_SERVER = 'smtp.gmail.com'
+        SMTP_PORT = 587
+        try:
+            if password == 'Password' or password == '':
+                xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Please Configure Community Gmail Info", 1000, THUMB) )
+                raise
+                
+            body = "" + body + ""
+            subject = "PseudoTV Live - Kodi log upload"
+            headers = ["From: " + sender,
+                       "Subject: " + subject,
+                       "To: " + recipient,
+                       "MIME-Version: 1.0",
+                       "Content-Type: text/html"]
+            headers = "\r\n".join(headers)
+            session = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)        
+            session.ehlo()
+            session.starttls()
+            session.ehlo
+            session.login(sender, password)
+            session.sendmail(sender, recipient, headers + "\r\n\r\n" + body)
+            session.quit()
+            xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Email Sent", 1000, THUMB) )
+        except:
+            xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Email Failed!", 1000, THUMB) )
+            
     def __get_logs(self):
         log_path = translate('special://logpath')
         crashlog_path = None

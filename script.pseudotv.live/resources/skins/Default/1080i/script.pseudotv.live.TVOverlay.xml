@@ -240,7 +240,21 @@
         <!-- moreinfo overlay -->
         <control type="group" id="222">
             <posx>0</posx>
-            <posy>0</posy>
+            <posy>0</posy>            
+            <!-- Time/Weather -->
+            <control type="label">
+                <animation effect="fade" time="500">VisibleChange</animation> 
+                <description>Time/Weather</description>
+                <posx>430r</posx>
+                <posy>30</posy>
+                <width min="5" max="430">auto</width>
+                <height>30</height>
+                <label>$INFO[System.Time] | $INFO[Window(weather).Property(Current.Temperature)] $INFO[System.TemperatureUnits]</label>
+                <font>font30</font>
+                <align>left</align>
+                <aligny>center</aligny>
+                <textcolor>FFFFFFFF</textcolor>
+            </control>
             <control type="image">
                 <description>MoreInfo Overlay</description>
                 <width>1920</width>
@@ -312,16 +326,7 @@
                 <posy>435r</posy>
                 <width>1100</width>
                 <orientation>vertical</orientation>
-                <itemgap>4</itemgap>
-               <control type="image">
-                    <description>Seekbar Line</description>
-                    <width>1100</width>
-                    <height>4</height>
-                    <texture>seek/progress_mid.png</texture>
-                    <align>center</align>
-                    <aligny>center</aligny>
-                    <visible>!Control.IsVisible(515)</visible>
-                </control>
+                <itemgap>16</itemgap>
                 <control type="group">  
                     <control type="progress">
                         <posx>0</posx>
@@ -393,63 +398,42 @@
                 </control> 
             </control>  
             <!-- line 3 -->
-            <control type="label">
-                <description>Show Description</description>
-                <posx>430</posx>
-                <posy>389r</posy>
-                <width>1100</width>
-                <height>90</height>
-                <align>left</align>
-                <aligny>bottom</aligny>
-                <wrapmultiline>true</wrapmultiline>
-                <textcolor>FFFFFFFF</textcolor>
-                <font>font12</font>
-                <label>$INFO[Control.GetLabel(505)]</label>
-            </control> 
-            <!-- line 4 -->
             <control type="grouplist">
                 <posx>430</posx>
-                <posy>279r</posy>
+                <posy>377r</posy>
                 <width>1100</width>
                 <orientation>vertical</orientation>
-                <itemgap>4</itemgap>
-                <control type="grouplist">
-                    <posx>0</posx>
-                    <posy>0</posy>
+                <itemgap>24</itemgap>
+                <control type="label">
+                    <description>Show Description</description>
                     <width>1100</width>
-                    <orientation>horizontal</orientation>
-                    <itemgap>4</itemgap>
-                    <control type="label">
-                        <description>Show Genres</description>
-                        <width min="128" max="400">auto</width>
-                        <height>30</height>
-                        <align>left</align>
-                        <aligny>bottom</aligny>
-                        <wrapmultiline>true</wrapmultiline>
-                        <textcolor>FFFFFFFF</textcolor>
-                        <font>font12</font>
-                        <label fallback="Genre: Unknown">$INFO[VideoPlayer.Genre, Genre: ]</label>
-                    </control> 
-                    <control type="label">
-                        <description>Show Info</description>
-                        <width min="128" max="800">auto</width>
-                        <height>30</height>
-                        <align>left</align>
-                        <aligny>bottom</aligny>
-                        <wrapmultiline>true</wrapmultiline>
-                        <textcolor>FFFFFFFF</textcolor>
-                        <font>font12</font>
-                        <label>$INFO[VideoPlayer.Premiered, Premièred ] $INFO[VideoPlayer.Studio, on ] $INFO[VideoPlayer.Director, Directed by ]</label>
-                    </control>
+                    <height>90</height>
+                    <align>left</align>
+                    <aligny>bottom</aligny>
+                    <wrapmultiline>true</wrapmultiline>
+                    <textcolor>FFFFFFFF</textcolor>
+                    <font>font12</font>
+                    <label>$INFO[Control.GetLabel(505)]</label>
                 </control>
-            </control>
-            <!-- line 5 -->
+                <control type="label">
+                    <description>Show Info</description>
+                    <width min="128" max="1100">auto</width>
+                    <height>30</height>
+                    <align>left</align>
+                    <aligny>bottom</aligny>
+                    <wrapmultiline>true</wrapmultiline>
+                    <textcolor>FFFFFFFF</textcolor>
+                    <font>font12</font>
+                    <label>$INFO[Window(10000).Property(Playing.Genre),Genre: ] $INFO[VideoPlayer.Premiered, Premièred ] $INFO[VideoPlayer.Studio, on ]</label>
+                </control>  
+            </control> 
+            <!-- line 4 -->
             <control type="grouplist">
                 <posx>430</posx>
                 <posy>239r</posy>
                 <width>1100</width>
                 <orientation>vertical</orientation>
-                <itemgap>75</itemgap>
+                <itemgap>62</itemgap>
                 <control type="grouplist">
                     <posx>0</posx>
                     <posy>0</posy>
@@ -458,31 +442,34 @@
                     <itemgap>4</itemgap>
                     <control type="image" id="506">
                         <description>Channel Logo</description>
-                        <width>62</width>
-                        <height>62</height>
-                        <aspectratio>keep</aspectratio>
-                        <aligny>center</aligny>
-                    </control>
-                    <control type="image">
-                        <posy>5</posy>
                         <width>100</width>
                         <height>62</height>
                         <aspectratio>keep</aspectratio>
-                        <texture fallback="flags/rating/MPAA_NR_Certificate_US.png" colordiffuse="ffffffff">$INFO[VideoPlayer.mpaa,flags/mpaa/,.png]</texture>
+                        <align>left</align>
+                        <aligny>bottom</aligny>
                     </control>
                     <control type="image">
-                        <posy>5</posy>
                         <width>100</width>
                         <height>62</height>
+                        <align>left</align>
+                        <aligny>bottom</aligny>
+                        <aspectratio>keep</aspectratio>
+                        <texture fallback="flags/rating/MPAA_NR_Certificate_US.png" colordiffuse="ffffffff">$INFO[Window(10000).Property(Playing.Rating),flags/mpaa/,.png]</texture>
+                    </control>
+                    <control type="image">
+                        <width>100</width>
+                        <height>62</height>
+                        <align>left</align>
+                        <aligny>bottom</aligny>
                         <aspectratio>keep</aspectratio>
                         <texture fallback="flags/rating/0.0.png" colordiffuse="ffffffff">$INFO[VideoPlayer.Rating,flags/rating/,.png]</texture>
                     </control>
                     <control type="image">
-                        <description>Sickbeard/Couchpotato image</description>   
-                        <posx>345</posx>
-                        <posy>120r</posy>   
+                        <description>Sickbeard/Couchpotato image</description>      
                         <width>100</width>
                         <height>62</height>
+                        <align>left</align>
+                        <aligny>bottom</aligny>
                         <aspectratio>keep</aspectratio>
                         <texture>$INFO[Control.GetLabel(511)]</texture>
                     </control> 
@@ -494,51 +481,58 @@
                     <orientation>horizontal</orientation>
                     <itemgap>4</itemgap>
                     <control type="image">
-                        <posy>5</posy>
                         <width>100</width>
                         <height>62</height>
+                        <align>left</align>
+                        <aligny>bottom</aligny>
                         <aspectratio>keep</aspectratio>
                         <texture colordiffuse="ffffffff">$INFO[VideoPlayer.VideoCodec,flags/source/,.png]</texture>
                     </control>
                     <control type="image">
-                        <posy>5</posy>
-                        <width>80</width>
+                        <width>100</width>
                         <height>62</height>
+                        <align>left</align>
+                        <aligny>bottom</aligny>
                         <aspectratio>keep</aspectratio>
                         <texture colordiffuse="ffffffff">$INFO[VideoPlayer.VideoResolution,flags/resolution/,.png]</texture>
                     </control>
                     <control type="image">
-                        <posy>5</posy>
-                        <width>80</width>
+                        <width>100</width>
                         <height>62</height>
+                        <align>left</align>
+                        <aligny>bottom</aligny>
                         <aspectratio>keep</aspectratio>
                         <texture colordiffuse="ffffffff">$INFO[VideoPlayer.VideoAspect,flags/aspectratio/,.png]</texture>
                     </control>
                     <control type="image">
-                        <posy>5</posy>
-                        <width>80</width>
+                        <width>100</width>
                         <height>62</height>
+                        <align>left</align>
+                        <aligny>bottom</aligny>
                         <aspectratio>keep</aspectratio>
                         <texture colordiffuse="ffffffff">$INFO[VideoPlayer.AudioCodec,flags/audio/,.png]</texture>
                     </control>
                     <control type="image">
-                        <posy>5</posy>
-                        <width>80</width>
+                        <width>100</width>
                         <height>62</height>
+                        <align>left</align>
+                        <aligny>bottom</aligny>
                         <aspectratio>keep</aspectratio>
                         <texture colordiffuse="ffffffff">$INFO[VideoPlayer.AudioChannels,flags/channels/,.png]</texture>
                     </control>
                     <control type="image">
-                        <posy>5</posy>
-                        <width>80</width>
+                        <width>100</width>
                         <height>62</height>
+                        <align>left</align>
+                        <aligny>bottom</aligny>
                         <aspectratio>keep</aspectratio>
                         <texture colordiffuse="ffffffff">$INFO[VideoPlayer.AudioLanguage,flags/language/,.png]</texture>
                     </control>       
                     <control type="image">
-                        <posy>5</posy>
                         <width>100</width>
                         <height>62</height>
+                        <align>left</align>
+                        <aligny>bottom</aligny>
                         <aspectratio>keep</aspectratio>
                         <texture colordiffuse="ffffffff">$INFO[VideoPlayer.Country,flags/language/,.png]</texture>
                     </control>
@@ -861,15 +855,6 @@
             <align>left</align>
             <orientation>horizontal</orientation>
             <itemgap>8</itemgap>
-            <!--Bottom logo--> 
-            <control type="image" id="506">
-                <description>Channel Logo</description>
-                <width>50</width>
-                <height>50</height>
-                <aspectratio>keep</aspectratio>
-                <aligny>center</aligny>
-                <visible>False</visible>
-            </control>
         </control> 
     </control>
     <!-- Overlay Coming Up Next Popup -->

@@ -1,3 +1,7 @@
+[*] USTVnow guidedata fixed; requires updated USTVnow plugin v.10.0.1 available in my repository.
+[*] "Upload Kodi Log" added to the "Help" tab. Recommend you have community access enabled and gmail configured in order to receive a conformation email.
+    Log is uploaded to xbmclogs.com users receive the id on-screen and via email. All Kodi/PTVL Usernames/Passwords are removed from the log, Please review Privacy disclaimer.
+[*] [COLOR=blue][B]^ v.0.6.4 ^[/B][/COLOR]
 [*] Updated As seen on TV Commercials, BCT's disabled while using Multi-room Channel Sharing.
 [*] Improved Menu controls, and tweaked "More Info" Overlay (accessed via context button).
 [*] Isengard 15 compatibility (Not 100%). Known Kodi PVR issues and the EPG PIP is currently not available. A Static Window is displayed in its place.

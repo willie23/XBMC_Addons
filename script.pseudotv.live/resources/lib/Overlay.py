@@ -1353,10 +1353,11 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             genre = (self.channels[self.currentChannel - 1].getItemgenre(position))
             LiveID = (self.channels[self.currentChannel - 1].getItemLiveID(position))
             LiveID = self.channelList.unpackLiveID(LiveID)
-            try:
+            
+            if FileAccess.exists(self.channelLogos + (self.channels[self.currentChannel - 1].name) + '.png'):
                 self.getControl(506).setImage(self.channelLogos + (self.channels[self.currentChannel - 1].name) + '.png') 
-            except:
-                self.getControl(506).setImage('NA.png')
+            else:
+                self.getControl(506).setImage('logo.png')
         try:
             SEinfo = SEtitle.split(' -')[0]
             season = int(SEinfo.split('x')[0])
@@ -1388,7 +1389,8 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         id = LiveID[1]
         dbid = LiveID[2]
         Managed = LiveID[3]
-        playcount = int(LiveID[4])        
+        playcount = int(LiveID[4])  
+        rating = LiveID[5]
         year = self.channelList.getYear(type, title)
         
         #PVR Globals
@@ -1403,6 +1405,8 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         setProperty("Playing.Type",type)
         setProperty("Playing.Year",str(year))
         setProperty("Playing.Description",Description)
+        setProperty("Playing.Rating",rating)
+        setProperty("Playing.Genre",genre)
 
         #Dynamic Art1
         try:
@@ -1619,6 +1623,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         
     def hideInfo(self):
         self.log('hideInfo')
+        # self.DisableOverlay = False
         try:
             self.showingInfo = False 
             self.getControl(102).setVisible(False)
@@ -1643,9 +1648,12 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
               
     def showInfo(self, timer):
         self.log("showInfo") 
+        # self.DisableOverlay = True
         try:
-            # self.MenuControl('MoreInfo',self.InfTimer,True)
-            
+            self.getControl(222).setVisible(False)
+        except:
+            pass
+        try:        
             if self.hideShortItems:
                 position = xbmc.PlayList(xbmc.PLAYLIST_MUSIC).getposition() + self.infoOffset
                 try:
@@ -1658,7 +1666,10 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                     return
                     
             self.showingInfo = True
-            self.getControl(102).setVisible(True)
+            try:
+                self.getControl(102).setVisible(True)
+            except:
+                pass
             self.setShowInfo()
             
             if self.infoTimer.isAlive():
@@ -1773,6 +1784,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             
     def hidePOP(self):
         self.log("hidePOP")
+        self.DisableOverlay = False
         try:
             self.getControl(120).setVisible(False)
 
@@ -1789,6 +1801,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                      
     def showPOP(self, timer):
         self.log("showPOP")
+        self.DisableOverlay = True
         try:
             #disable channel bug
             self.getControl(103).setVisible(False)

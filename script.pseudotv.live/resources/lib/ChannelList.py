@@ -4797,7 +4797,7 @@ class ChannelList:
         if Primary_Cache_Enabled == True:
             try:
                 setProperty("PTVL.CHKCache", "false")
-                result = daily.cacheFunction(self.readXMLTV_NEW, filename)
+                result = quarterly.cacheFunction(self.readXMLTV_NEW, filename)
                 setProperty("PTVL.CHKCache", "true")
             except:
                 result = self.readXMLTV_NEW(filename)
@@ -4825,9 +4825,9 @@ class ChannelList:
                 for event, elem in context:
                     if event == "end":
                         if elem.tag == "channel":
-                            CHid = elem.get("id")
+                            CHid = ascii(elem.get("id"))
                             for title in elem.findall('display-name'):
-                                channel = (title.text.replace('<display-name>','').replace('</display-name>','').replace('-DT','DT').replace(' DT','DT').replace('DT','').replace('-HD','HD').replace(' HD','HD').replace('HD','').replace('-SD','SD').replace(' SD','SD').replace('SD','').replace("'",'').replace(')',''))
+                                channel = ascii(title.text.replace('<display-name>','').replace('</display-name>','').replace('-DT','DT').replace(' DT','DT').replace('DT','').replace('-HD','HD').replace(' HD','HD').replace('HD','').replace('-SD','SD').replace(' SD','SD').replace('SD','').replace("'",'').replace(')',''))
                                 channel = channel+' : '+CHid
                                 self.cached_readXMLTV.append(channel)
                 f.close()
@@ -4849,83 +4849,91 @@ class ChannelList:
         XMLTVMatchlst = []
         sorted_XMLTVMatchlst = []
         found = False
-        # try:
-        if filename == 'pvr':
-            self.log("findZap2itID, pvr backend")             
-            if not self.cached_json_detailed_xmltvChannels_pvr:
-                self.log("findZap2itID, no cached_json_detailed_xmltvChannels")
-                json_query = uni('{"jsonrpc":"2.0","method":"PVR.GetChannels","params":{"channelgroupid":2,"properties":["thumbnail"]},"id": 1 }')
-                json_detail = self.sendJSON(json_query)
-                self.cached_json_detailed_xmltvChannels_pvr = re.compile( "{(.*?)}", re.DOTALL ).findall(json_detail)
-            file_detail = self.cached_json_detailed_xmltvChannels_pvr
-            
-            for f in file_detail:
-                CHids = re.search('"channelid" *: *(.*?),', f)
-                dnames = re.search('"label" *: *"(.*?)"', f)
-                thumbs = re.search('"thumbnail" *: *"(.*?)"', f)
-               
-                if CHids and dnames:
-                    CHid = CHids.group(1)
-                    dname = dnames.group(1)       
-                    CHname = CHname.replace('-DT','DT').replace(' DT','DT').replace('DT','').replace('-HD','HD').replace(' HD','HD').replace('HD','').replace('-SD','SD').replace(' SD','SD').replace('SD','')
-                    matchLST = [CHname, 'W'+CHname, CHname+'HD', CHname+'DT', str(CHid)+' '+CHname, orgCHname.upper(), 'W'+orgCHname.upper(), orgCHname.upper()+'HD', orgCHname.upper()+'DT', str(CHid)+' '+orgCHname.upper(), orgCHname]
-                    dnameID = dname + ' : ' + CHid
-                    self.logDebug("findZap2itID, dnameID = " + dnameID)
-                    XMLTVMatchlst.append(dnameID)
-        else:
-            XMLTVMatchlst = self.readXMLTV(filename)
-            
-            try:
-                CHnum = CHname.split(' ')[0]
-                CHname = CHname.split(' ')[1]
-            except:
-                CHnum = 0
-                pass
-            
-            CHname = CHname.replace('-DT','DT').replace(' DT','DT').replace('DT','').replace('-HD','HD').replace(' HD','HD').replace('HD','').replace('-SD','SD').replace(' SD','SD').replace('SD','')
-            matchLST = [CHname, 'W'+CHname, CHname+'HD', CHname+'DT', str(CHnum)+' '+CHname, orgCHname.upper(), 'W'+orgCHname.upper(), orgCHname.upper()+'HD', orgCHname.upper()+'DT', str(CHnum)+' '+orgCHname.upper(), orgCHname]
-            self.logDebug("findZap2itID, Cleaned CHname = " + CHname)
-            
-        sorted_XMLTVMatchlst = sorted_nicely(XMLTVMatchlst)
-        self.logDebug("findZap2itID, sorted_XMLTVMatchlst = " + str(sorted_XMLTVMatchlst))
-
-        for n in range(len(sorted_XMLTVMatchlst)):
-            CHid = '0'
-            found = False
-            dnameID = sorted_XMLTVMatchlst[n]
-            dname = dnameID.split(' : ')[0]
-            CHid = dnameID.split(' : ')[1]
-
-            if dname.upper() in matchLST: 
-                found = True
-                hide_busy_dialog()
-                return orgCHname, CHid
-                    
-        if not found:
-            hide_busy_dialog()
-            XMLTVMatchlst = []
-
-            for s in range(len(sorted_XMLTVMatchlst)):
-                dnameID = sorted_XMLTVMatchlst[s]
-                dname = dnameID.split(' : ')[0]
-                CHid = dnameID.split(' : ')[1]
-                                
+        try:
+            if filename == 'pvr':
+                self.log("findZap2itID, pvr backend")             
+                if not self.cached_json_detailed_xmltvChannels_pvr:
+                    self.log("findZap2itID, no cached_json_detailed_xmltvChannels")
+                    json_query = uni('{"jsonrpc":"2.0","method":"PVR.GetChannels","params":{"channelgroupid":2,"properties":["thumbnail"]},"id": 1 }')
+                    json_detail = self.sendJSON(json_query)
+                    self.cached_json_detailed_xmltvChannels_pvr = re.compile( "{(.*?)}", re.DOTALL ).findall(json_detail)
+                file_detail = self.cached_json_detailed_xmltvChannels_pvr
+                
+                for f in file_detail:
+                    CHids = re.search('"channelid" *: *(.*?),', f)
+                    dnames = re.search('"label" *: *"(.*?)"', f)
+                    thumbs = re.search('"thumbnail" *: *"(.*?)"', f)
+                   
+                    if CHids and dnames:
+                        CHid = CHids.group(1)
+                        dname = dnames.group(1)       
+                        CHname = CHname.replace('-DT','DT').replace(' DT','DT').replace('DT','').replace('-HD','HD').replace(' HD','HD').replace('HD','').replace('-SD','SD').replace(' SD','SD').replace('SD','')
+                        matchLST = [CHname, 'W'+CHname, CHname+'HD', CHname+'DT', str(CHid)+' '+CHname, orgCHname.upper(), 'W'+orgCHname.upper(), orgCHname.upper()+'HD', orgCHname.upper()+'DT', str(CHid)+' '+orgCHname.upper(), orgCHname]
+                        dnameID = dname + ' : ' + CHid
+                        self.logDebug("findZap2itID, dnameID = " + dnameID)
+                        XMLTVMatchlst.append(dnameID)
+            else:
+                XMLTVMatchlst = self.readXMLTV(filename)
                 try:
-                    CHid = CHid.split(', icon')[0]
+                    CHnum = int(CHname.split(' ')[0])
+                    CHname = (CHname.split(' ')[1]).upper()
                 except:
+                    CHnum = 0
+                    pass
+                
+                CHname = CHname.replace('-DT','DT').replace(' DT','DT').replace('DT','').replace('-HD','HD').replace(' HD','HD').replace('HD','').replace('-SD','SD').replace(' SD','SD').replace('SD','')
+                matchLST = [CHname, 'W'+CHname, CHname+'HD', CHname+'DT', str(CHnum)+' '+CHname, orgCHname.upper(), 'W'+orgCHname.upper(), orgCHname.upper()+'HD', orgCHname.upper()+'DT', str(CHnum)+' '+orgCHname.upper(), orgCHname]
+                self.logDebug("findZap2itID, Cleaned CHname = " + CHname)
+                
+            sorted_XMLTVMatchlst = sorted_nicely(XMLTVMatchlst)
+            for n in range(len(sorted_XMLTVMatchlst)):
+                try:
+                    CHid = '0'
+                    found = False
+                    dnameID = sorted_XMLTVMatchlst[n]
+                    dname = dnameID.split(' : ')[0]
+                    CHid = dnameID.split(' : ')[1]
+
+                    if dname.upper() in matchLST: 
+                        found = True
+                        hide_busy_dialog()
+                        return orgCHname, CHid
+                except:
+                    hide_busy_dialog()
                     pass
                     
-                line = dname + ' : ' + CHid 
-                if dname[0:3] != 'en': 
-                    XMLTVMatchlst.append(line)
+            if not found:
+                hide_busy_dialog()
+                XMLTVMatchlst = []
+
+                for s in range(len(sorted_XMLTVMatchlst)):
+                    try:
+                        dnameID = sorted_XMLTVMatchlst[s]
+                        dname = dnameID.split(' : ')[0]
+                        CHid = dnameID.split(' : ')[1]
+                                        
+                        try:
+                            CHid = CHid.split(', icon')[0]
+                        except:
+                            pass
+                            
+                        line = dname + ' : ' + CHid 
+                        if dname[0:3] != 'en': 
+                            XMLTVMatchlst.append(line)
+                    except:
+                        hide_busy_dialog()
+                        pass
+                        
+                if XMLTVMatchlst:
+                    select = selectDialog(XMLTVMatchlst, 'Select matching id to [B]%s[/B]' % orgCHname, 30000)
+                    dnameID = XMLTVMatchlst[select]
+                    CHid = dnameID.split(' : ')[1]
+                    dnameID = dnameID.split(' : ')[0]
+                    return dnameID, CHid
                     
-            select = selectDialog(XMLTVMatchlst, 'Select matching id to [B]%s[/B]' % orgCHname, 30000)
-            dnameID = XMLTVMatchlst[select]
-            CHid = dnameID.split(' : ')[1]
-            dnameID = dnameID.split(' : ')[0]
-            return dnameID, CHid
-        # except Exception,e:
-            # self.log("findZap2itID, Failed! " + str(e))
+        except Exception,e:
+            hide_busy_dialog()
+            self.log("findZap2itID, Failed! " + str(e))
             
             
     def IPTVtuning(self, type, url, Random=False):
