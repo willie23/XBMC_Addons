@@ -51,7 +51,16 @@ class STRMParser:
             if duration == 0:
                 try:
                     xmlruntime = dom.getElementsByTagName('runtime')[0].toxml()
-                    runtime = xmlruntime.replace('<runtime>','').replace('</runtime>','')    
+                    runtime = xmlruntime.replace('<runtime>','').replace('</runtime>','').replace(' min.','')    
+                    runtime = int(runtime)
+                    duration = runtime * 60
+                except Exception,e:
+                    duration = 0
+                    
+            if duration == 0:
+                try:
+                    xmlruntime = dom.getElementsByTagName('duration')[0].toxml()
+                    runtime = xmlruntime.replace('<duration>','').replace('</duration>','')
                     runtime = int(runtime)
                     duration = runtime * 60
                 except Exception,e:

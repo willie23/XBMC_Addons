@@ -593,27 +593,20 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                         width = basex + basew - xpos
 
                     if shouldskip == False and width >= 30:
-                        chname = (self.MyOverlayWindow.channels[curchannel - 1].name)
-                        mediapath = ascii(self.MyOverlayWindow.channels[curchannel - 1].getItemFilename(playlistpos))
                         mylabel = self.MyOverlayWindow.channels[curchannel - 1].getItemTitle(playlistpos)
                         myLiveID = self.MyOverlayWindow.channels[curchannel - 1].getItemLiveID(playlistpos)
                         LiveID = self.chanlist.unpackLiveID(myLiveID)
                         type = LiveID[0]
-                        id = LiveID[1]
-                        playcount = int(LiveID[4])  
                         rating = LiveID[5]
                         
                         if REAL_SETTINGS.getSetting("EPG.xInfo") == "true":                  
-                            if playcount == 0:
-                                New = '(NEW)'
-                            else:
-                                New = ''
+                            
                             if rating != 'NR':
-                                Rat = '[' + rating + ']'
+                                Rat = ' [' + rating + ']'
                             else:
                                 Rat = ''  
                                 
-                            mylabel = (mylabel + ' ' + New + ' ' + Rat).replace('()','').replace('[]','')
+                            mylabel = (mylabel + Rat).replace('()','').replace('[]','')
                             
                         if REAL_SETTINGS.getSetting('EPGcolor_enabled') == '1':
                             if type == 'movie' and REAL_SETTINGS.getSetting('EPGcolor_MovieGenre') == "false":
@@ -1370,7 +1363,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         ##LIVEID##
         type = LiveID[0]
         id = LiveID[1]
-        dbid = LiveID[2]
+        dbid, epid = splitDBID(LiveID[2])
         Managed = LiveID[3]
         playcount = int(LiveID[4])
         
@@ -1378,12 +1371,15 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         setProperty("PVR.Chtype",str(chtype))
         setProperty("PVR.Title",((title).replace("*NEW*","")))
         setProperty("PVR.Mpath",mpath)
+        setProperty("PVR.Mediapath",mediapath)
         setProperty("PVR.Chname",chname)
         setProperty("PVR.SEtitle",SEtitle)
         setProperty("PVR.Type",type)
         setProperty("PVR.DBID",dbid)
+        setProperty("PVR.EPID",epid)
         setProperty("PVR.ID",id)
         setProperty("PVR.Type",type)
+        setProperty("PVR.Playcount",str(playcount))
             
         #Notification Globals
         setProperty("PVR.ChanNum",str(newchan))
@@ -1393,14 +1389,14 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         try:
             self.setArtwork1(type, chtype, chname, id, dbid, mpath, self.type1EXT)
         except Exception,e:
-            self.log('setShowInfo, Label 508 not found', str(e))
+            self.log('setShowInfo, Label 508 not found,' + str(e))
             pass
            
         #Dynamic Art2
         try:
             self.setArtwork2(type, chtype, chname, id, dbid, mpath, self.type2EXT)
         except Exception,e:
-            self.log('setShowInfo, Label 510 not found', str(e))
+            self.log('setShowInfo, Label 510 not found,' + str(e))
             pass
 
         #Sickbeard/Couchpotato
@@ -1416,22 +1412,8 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                 self.getControl(511).setImage(IMAGES_LOC + 'NA.png') 
         except:
             self.log('setShowInfo, Label 511 not found')
-            pass    
-            
-        #Unaired/aired
-        try:
-            self.getControl(512).setVisible(True)
-            if playcount == 0:
-                self.getControl(512).setImage(MEDIA_LOC + 'NEW.png')
-            elif playcount >= 1:
-                self.getControl(512).setImage(MEDIA_LOC + 'OLD.png')      
-            else:
-                self.getControl(512).setVisible(False) 
-                self.getControl(512).setImage(MEDIA_LOC + 'NA.png')     
-        except:
-            self.log('setShowInfo, Label 512 not found')
-            pass  
-            
+            pass      
+
             
     def FindArtwork_Thread(self, data):
         try:
@@ -1441,8 +1423,16 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                 setImage = self.Artdownloader.SetDefaultArt_NEW(data[2], data[5], data[6])
             self.getControl(data[7]).setImage(setImage)
         except Exception,e:
-            self.log('FindArtwork_Thread, Failed!', str(e))
-            pass  
+            self.log('FindArtwork_Thread, Failed!,' + str(e))
+            
+        self.setNew(self.MyOverlayWindow.isNEW(getProperty("PVR.Mediapath"), getProperty("PVR.Playcount")))
+            
+            
+    def setNew(self, aired):
+        if aired == True:
+            self.getControl(512).setImage(MEDIA_LOC + 'NEW.png')
+        else: 
+            self.getControl(512).setImage(MEDIA_LOC + 'OLD.png')
         
         
     def setArtwork1(self, type, chtype, chname, id, dbid, mpath, type1EXT):
@@ -1460,7 +1450,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             self.ArtThread1.name = "ArtThread1"
             self.ArtThread1.start()
         except Exception,e:
-            self.log('setArtwork1, Failed!', str(e))
+            self.log('setArtwork1, Failed!,' + str(e))
             pass  
     
     
@@ -1479,7 +1469,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             self.ArtThread2.name = "ArtThread2"
             self.ArtThread2.start()
         except Exception,e:
-            self.log('setArtwork2, Failed!', str(e))
+            self.log('setArtwork2, Failed!,' + str(e))
             pass
 
             

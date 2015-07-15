@@ -45,7 +45,6 @@ class Migrate:
         chanlist.background = True
         chanlist.forceReset = True
         chanlist.createlist = True
-        self.Donor_Downloaded = getProperty("Donor") == "true"
 
         # If Autotune is enabled direct to autotuning
         if Globals.REAL_SETTINGS.getSetting("Autotune") == "true" and Globals.REAL_SETTINGS.getSetting("Warning1") == "true":
@@ -676,7 +675,7 @@ class Migrate:
         
         #LiveTV
         self.updateDialogProgress = 70
-        if Globals.REAL_SETTINGS.getSetting("autoFindCommunity_LiveTV") == "true":
+        if Globals.REAL_SETTINGS.getSetting("autoFindCommunity_LiveTV") == "true" and isDon() == True:
             self.log("autoTune, adding Recommend LiveTV")
             self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding Recommend LiveTV"," ")
             NameLst, Option1LST, Option2LST, Option3LST, Option4LST = chanlist.fillExternalList('LiveTV','','Donor',True)            
@@ -684,56 +683,48 @@ class Migrate:
             
         #InternetTV
         self.updateDialogProgress = 71
-        if Globals.REAL_SETTINGS.getSetting("autoFindCommunity_InternetTV") == "true":
+        if Globals.REAL_SETTINGS.getSetting("autoFindCommunity_InternetTV") == "true" and isDon() == True:
             self.log("autoTune, adding Recommend InternetTV")
             self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding Recommend InternetTV"," ")
             NameLst, Option1LST, Option2LST, Option3LST, Option4LST = chanlist.fillExternalList('InternetTV','','Donor',True)            
             channelNum = self.tuneList(channelNum, '9', NameLst, Option1LST, Option2LST, Option3LST, Option4LST)
 
-        #RSS
-        self.updateDialogProgress = 72
-        if Globals.REAL_SETTINGS.getSetting("autoFindCommunity_RSS") == "true":
-            self.log("autoTune, adding Recommend RSS")
-            self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding Recommend RSS"," ")
-            NameLst, Option1LST, Option2LST, Option3LST, Option4LST = chanlist.fillExternalList('RSS','','',True)
-            channelNum = self.tuneList(channelNum, '11', NameLst, Option1LST, Option2LST, Option3LST, Option4LST)
-          
         if Youtube != False:  
             #Youtube - Channel
-            self.updateDialogProgress = 73
-            if Globals.REAL_SETTINGS.getSetting("autoFindCommunity_Youtube_Channels") == "true":
+            self.updateDialogProgress = 72
+            if Globals.REAL_SETTINGS.getSetting("autoFindCommunity_Youtube_Channels") == "true" and isCom() == True:
                 self.log("autoTune, adding Recommend Youtube Channels")
                 self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding Recommend Youtube Channels"," ")
                 NameLst, Option1LST, Option2LST, Option3LST, Option4LST = chanlist.fillExternalList('YouTube','Channel','',True)
                 channelNum = self.tuneList(channelNum, '10', NameLst, Option1LST, Option2LST, Option3LST, Option4LST)
             
             #Youtube - Playlist
-            self.updateDialogProgress = 74
-            if Globals.REAL_SETTINGS.getSetting("autoFindCommunity_Youtube_Playlists") == "true":
+            self.updateDialogProgress = 73
+            if Globals.REAL_SETTINGS.getSetting("autoFindCommunity_Youtube_Playlists") == "true" and isCom() == True:
                 self.log("autoTune, adding Recommend Youtube Playlists")
                 self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding Recommend Youtube Playlists"," ")
                 NameLst, Option1LST, Option2LST, Option3LST, Option4LST = chanlist.fillExternalList('YouTube','Playlist','',True)
                 channelNum = self.tuneList(channelNum, '10', NameLst, Option1LST, Option2LST, Option3LST, Option4LST)
                 
             #Youtube - Channel Network
-            self.updateDialogProgress = 75
-            if Globals.REAL_SETTINGS.getSetting("autoFindCommunity_Youtube_Networks") == "true":
+            self.updateDialogProgress = 74
+            if Globals.REAL_SETTINGS.getSetting("autoFindCommunity_Youtube_Networks") == "true" and isCom() == True:
                 self.log("autoTune, adding Recommend Youtube Multi Channel")
                 self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding Recommend Youtube Multi Channel"," ")
                 NameLst, Option1LST, Option2LST, Option3LST, Option4LST = chanlist.fillExternalList('YouTube','Multi Channel','',True)
                 channelNum = self.tuneList(channelNum, '10', NameLst, Option1LST, Option2LST, Option3LST, Option4LST)
             
             #Youtube - Playlist Network
-            self.updateDialogProgress = 76
-            if Globals.REAL_SETTINGS.getSetting("autoFindCommunity_Youtube_Networks") == "true":
+            self.updateDialogProgress = 75
+            if Globals.REAL_SETTINGS.getSetting("autoFindCommunity_Youtube_Networks") == "true" and isCom() == True:
                 self.log("autoTune, adding Recommend Youtube Multi Playlist")
                 self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding Recommend Youtube Multi Playlist"," ")
                 NameLst, Option1LST, Option2LST, Option3LST, Option4LST = chanlist.fillExternalList('YouTube','Multi Playlist','',True)
                 channelNum = self.tuneList(channelNum, '10', NameLst, Option1LST, Option2LST, Option3LST, Option4LST)
             
             #Youtube - Seasonal
-            self.updateDialogProgress = 77
-            if Globals.REAL_SETTINGS.getSetting("autoFindCommunity_Youtube_Seasonal") == "true":
+            self.updateDialogProgress = 76
+            if Globals.REAL_SETTINGS.getSetting("autoFindCommunity_Youtube_Seasonal") == "true" and isCom() == True:
                 today = datetime.datetime.now()
                 month = today.strftime('%B')
                 Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_type", "10")
@@ -750,10 +741,18 @@ class Migrate:
                 Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_changed", "true")
                 self.updateDialog.update(self.updateDialogProgress,"Auto Tune","adding Youtube Networks","Seasonal Channel")
                 channelNum += 1 
+          
+        #RSS
+        self.updateDialogProgress = 77
+        if Globals.REAL_SETTINGS.getSetting("autoFindCommunity_RSS") == "true" and isCom() == True:
+            self.log("autoTune, adding Recommend RSS")
+            self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding Recommend RSS"," ")
+            NameLst, Option1LST, Option2LST, Option3LST, Option4LST = chanlist.fillExternalList('RSS','','',True)
+            channelNum = self.tuneList(channelNum, '11', NameLst, Option1LST, Option2LST, Option3LST, Option4LST)
             
         #Plugin
         self.updateDialogProgress = 78
-        if Globals.REAL_SETTINGS.getSetting("autoFindCommunity_Plugins") == "true":
+        if Globals.REAL_SETTINGS.getSetting("autoFindCommunity_Plugins") == "true" and isDon() == True:
             self.log("autoTune, adding Recommend Plugins")
             self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding Recommend Plugins"," ")
             NameLst, Option1LST, Option2LST, Option3LST, Option4LST = chanlist.fillExternalList('Plugin','','Donor',True)
@@ -761,7 +760,7 @@ class Migrate:
 
         #UPNP
         self.updateDialogProgress = 79
-        if Globals.REAL_SETTINGS.getSetting("autoFindCommunity_Playon") == "true":
+        if Globals.REAL_SETTINGS.getSetting("autoFindCommunity_Playon") == "true" and isDon() == True:
             self.log("autoTune, adding Recommend UPNP")
             self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding Recommend UPNP"," ")
             NameLst, Option1LST, Option2LST, Option3LST, Option4LST = chanlist.fillExternalList('UPNP','','Donor',True)
@@ -769,7 +768,7 @@ class Migrate:
 
         # Extras - Bringthepopcorn
         self.updateDialogProgress = 80
-        if Globals.REAL_SETTINGS.getSetting("autoFindPopcorn") == "true" and self.Donor_Downloaded == True:
+        if Globals.REAL_SETTINGS.getSetting("autoFindPopcorn") == "true" and isDon() == True:
             self.log("autoTune, adding Bring The Popcorn Movies")
             self.updateDialog.update(self.updateDialogProgress,"Auto Tune","adding Bring The Popcorn Movies"," ")
             
@@ -802,12 +801,12 @@ class Migrate:
                 
         # Extras - Cinema Experience 
         self.updateDialogProgress = 81
-        if Globals.REAL_SETTINGS.getSetting("autoFindCinema") == "true" and self.Donor_Downloaded == True:
+        if Globals.REAL_SETTINGS.getSetting("autoFindCinema") != "0" and isDon() == True:
             self.log("autoTune, adding Cinema Experience ")
             self.updateDialog.update(self.updateDialogProgress,"Auto Tune","adding Cinema Experience"," ")
             flename = chanlist.createCinemaExperiencePlaylist() #create playlist
-            THEME_NAMES = ['Default','IMAX']
-            THEME = THEME_NAMES[int(Globals.REAL_SETTINGS.getSetting('autoFindCinema_Theme'))]
+            THEME_NAMES = ['Disabled','Default','IMAX']
+            THEME = THEME_NAMES[int(Globals.REAL_SETTINGS.getSetting('autoFindCinema'))]
             
             Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_type", "14")
             Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_time", "0")
@@ -829,7 +828,7 @@ class Migrate:
                   
         # Extras - IPTV
         self.updateDialogProgress = 82
-        if Globals.REAL_SETTINGS.getSetting("autoFindIPTV_Source") != "0" and self.Donor_Downloaded == True:
+        if Globals.REAL_SETTINGS.getSetting("autoFindIPTV_Source") != "0" and isDon() == True:
             self.log("autoTune, adding IPTV Channels")
             self.updateDialog.update(self.updateDialogProgress,"adding IPTV Channels","This could take a few minutes","Please Wait...")
 
@@ -843,7 +842,7 @@ class Migrate:
 
         # Extras - LiveStream
         self.updateDialogProgress = 83
-        if Globals.REAL_SETTINGS.getSetting("autoFindLive_Source") != "0" and self.Donor_Downloaded == True:
+        if Globals.REAL_SETTINGS.getSetting("autoFindLive_Source") != "0" and isDon() == True:
             self.log("autoTune, adding LiveStream Channels")
             self.updateDialog.update(self.updateDialogProgress,"adding LiveStream Channels","This could take a few minutes","Please Wait...")
 
@@ -857,7 +856,7 @@ class Migrate:
 
         # Extras - Navi-X
         self.updateDialogProgress = 83
-        if Globals.REAL_SETTINGS.getSetting("autoFindNavix_Source") != "0" and self.Donor_Downloaded == True:
+        if Globals.REAL_SETTINGS.getSetting("autoFindNavix_Source") != "0" and isDon() == True:
             self.log("autoTune, adding Navi-X Channels")
             self.updateDialog.update(self.updateDialogProgress,"adding Navi-X Channels","This could take a few minutes","Please Wait...")
             NaviXnum = 0
@@ -919,17 +918,7 @@ class Migrate:
         self.log('tuneList')
         filecount = 0
         chanlist = ChannelList.ChannelList()
-        Com_ch = ['10','11']
-        Don_ch = ['8','9','15','16']
-
-        if chtype in Com_ch and getProperty("PTVL.COM_APP") == "false":
-            xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Please Configure Community List Access", 1000, THUMB) )
-            return
-            
-        if chtype in Don_ch and getProperty("Donor") == "false":
-            xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Please Activate Donor Features", 1000, THUMB) )
-            return
-
+        
         for i in range(len(NameLst)):
             found = True
             try:

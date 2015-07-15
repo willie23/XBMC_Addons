@@ -72,13 +72,13 @@ if getProperty("PseudoTVRunning") != "True":
         # ClearPlaylists()
         # REAL_SETTINGS.setSetting('ForceChannelReset', 'true')
         REAL_SETTINGS.setSetting("PTVL_Version", __version__)
+                
+        # VideoWindow Patch.
+        VideoWindow()
         
         # Donor Download
         xbmc.executebuiltin("RunScript("+__cwd__+"/utilities.py,-DDautopatch)")
 
-        # VideoWindow Patch.
-        VideoWindow()
-        
         # Check if autoplay is enabled
         CHKAutoplay()
 
@@ -87,7 +87,7 @@ if getProperty("PseudoTVRunning") != "True":
     else:
         # Check if Outdated/Install Repo
         VersionCompare()
-        
+
         # VideoWindow Patch.
         VideoWindow()
                  

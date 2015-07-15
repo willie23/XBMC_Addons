@@ -363,7 +363,7 @@
                     <itemgap>4</itemgap>
                     <control type="label" id="517">
                         <description>Seekbar start time</description>
-                        <width min="128" max="400">auto</width>
+                        <width>550</width>
                         <height>30</height>
                         <fadetime>250</fadetime>
                         <textcolor>FFFFFFFF</textcolor>
@@ -375,7 +375,7 @@
                     </control> 
                     <control type="label" id="516">
                         <description>Seekbar Elapsed Time Button</description>
-                        <width min="128" max="550">auto</width>
+                        <width>550</width>
                         <height>30</height>
                         <fadetime>250</fadetime>
                         <textcolor>FFFFFFFF</textcolor>
@@ -386,7 +386,7 @@
                     </control>  
                     <control type="label" id="518">"
                         <description>Seekbar time</description>
-                        <width min="128" max="550">auto</width>
+                        <width>550</width>
                         <height>30</height>
                         <fadetime>250</fadetime>
                         <textcolor>FFFFFFFF</textcolor>
@@ -400,8 +400,7 @@
             <!-- line 3 -->
             <control type="grouplist">
                 <posx>430</posx>
-                <posy>377r</posy>
-                <width>1100</width>
+                <posy>380r</posy>
                 <orientation>vertical</orientation>
                 <itemgap>24</itemgap>
                 <control type="label">
@@ -415,16 +414,31 @@
                     <font>font12</font>
                     <label>$INFO[Control.GetLabel(505)]</label>
                 </control>
-                <control type="label">
-                    <description>Show Info</description>
-                    <width min="128" max="1100">auto</width>
-                    <height>30</height>
-                    <align>left</align>
-                    <aligny>bottom</aligny>
-                    <wrapmultiline>true</wrapmultiline>
-                    <textcolor>FFFFFFFF</textcolor>
-                    <font>font12</font>
-                    <label>$INFO[Window(10000).Property(Playing.Genre),Genre: ] $INFO[VideoPlayer.Premiered, Premièred ] $INFO[VideoPlayer.Studio, on ]</label>
+                <control type="grouplist">  
+                    <posx>0</posx>
+                    <posy>0</posy>
+                    <orientation>horizontal</orientation>
+                    <control type="label">
+                        <description>Show Info</description>
+                        <width>550</width>
+                        <height>30</height>
+                        <align>left</align>
+                        <aligny>bottom</aligny>
+                        <wrapmultiline>true</wrapmultiline>
+                        <textcolor>FFFFFFFF</textcolor>
+                        <font>font12</font>
+                        <label>$INFO[Window(10000).Property(Playing.Genre),Genre: ]</label>
+                    </control> 
+                    <control type="label">
+                        <description>Show Info</description>
+                        <width>550</width>
+                        <height>30</height>
+                        <align>right</align>
+                        <aligny>bottom</aligny>
+                        <textcolor>FFFFFFFF</textcolor>
+                        <font>font12</font>
+                        <label>$INFO[VideoPlayer.Premiered, Premièred ] $INFO[VideoPlayer.Studio, on ]</label>
+                    </control>  
                 </control>  
             </control> 
             <!-- line 4 -->
@@ -906,7 +920,7 @@
                     <font>font12</font>
                     <align>center</align>
                     <textcolor>FFFFFFFF</textcolor>
-                    <label>ComingUp Next</label>
+                    <label>Coming Up Next</label>
                     <visible>false</visible>
                 </control>           
                 <control type="label" id="124">

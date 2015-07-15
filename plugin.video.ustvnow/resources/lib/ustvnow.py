@@ -40,19 +40,20 @@ class Ustvnow:
                                    html, re.DOTALL):
             name, icon, title, plot, url = channel.groups()
 
-            #tmp work around till ustvnow stablizes changes
+            #tmp work around till ustvnow stabilizes changes.
             name = name.replace('\n','').replace('\t','').replace('\r','').replace('<fieldset> ','').replace('<div class=','').replace('>','').replace('"','').replace(' ','')
             if not name:
                 name = ((icon.rsplit('/',1)[1]).replace('.png','')).upper()
-                name = name.replace('WLYH','CW').replace('WHTM','ABC').replace('WPMT','FOX').replace('WPSU','PBS').replace('WHP','CBS').replace('WGAL','NBS').replace('WHVLLD','MY9')
-
+                name = name.replace('WLYH','The CW').replace('WHTM','ABC').replace('WPMT','FOX').replace('WPSU','PBS').replace('WHP','CBS').replace('WGAL','NBC').replace('WHVLLD','MY9').replace('AETV','AE')
+                name = name.replace('APL','Animal Planet').replace('TOON','Cartoon Network').replace('DSC','Discovery').replace('BRAVO','Bravo').replace('USA','USA Network').replace('SYFY','Syfy').replace('HISTORY','History')
+                name = name.replace('COMEDY','Comedy Central').replace('FOOD','Food Network').replace('NIK','Nickelodeon').replace('LIFE','Lifetime').replace('SPIKETV','Spike').replace('FNC','Fox News').replace('NGC','National Geographic')
             try:
                 if not url.startswith('http'):
                     now = {'title': title, 'plot': plot.strip()}
                     url = '%s%s%d' % (stream_type, url[4:-1], quality + 1)
                     
                     if self.premium == False:
-                        if name not in ['CW','ABC','FOX','PBS','CBS','NBS','MY9']:
+                        if name not in ['CW','ABC','FOX','PBS','CBS','NBC','MY9']:
                             raise
                     channels.append({'name': name, 'url': url, 
                                    'icon': icon, 'now': now})
@@ -99,10 +100,10 @@ class Ustvnow:
 
     def _fetch(self, url, form_data=False):
         if form_data:
-            Addon.log('posting: %s %s' % (url, str(form_data)))
+            # Addon.log('posting: %s %s' % (url, str(form_data)))
             req = urllib2.Request(url, form_data)
         else:
-            Addon.log('getting: ' + url)
+            # Addon.log('getting: ' + url)
             req = url
         try:
             response = urllib2.urlopen(url)

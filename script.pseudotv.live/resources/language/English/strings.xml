@@ -31,9 +31,12 @@
     <string id="30215">Hide very short videos</string>
     <string id="30216">Duration of "short" videos (seconds)</string>  
     <string id="30310">Media Limit Per Channel</string>
-    <string id="30372">Reserve Channels 501-999 for Autotune</string>
     <string id="30373">Mute between channel change</string>
     <string id="30379">Enable Direct Channel Input</string>
+    <string id="30026">Quickstart hotkey</string>
+    <string id="30122">XBMC</string>
+    <string id="30050">Enable global menu</string>
+    <string id="30158">Menu style</string>
     
 <string id="30100">Sharing</string>
     <string id="30101">Channel Sharing:</string>
@@ -65,7 +68,7 @@
         <string id="30212">EPG Color by</string>
         <string id="30213">Include Movie Genres</string>
         <string id="30214">Menu uses Channel</string>
-        <string id="30229">Show Detailed Info ie."(New)[TV-14]"</string>
+        <string id="30229">Show Detailed Info ie."[TV-14]"</string>
     <string id="30220">Overlay Options:</string>
         <string id="30203">Select Overlay Number Color</string>
         <string id="30221">Show info when changing channels</string>
@@ -92,19 +95,20 @@
             <string id="30077">Find Custom Playlist</string>
             <string id="30093">Find Super Favourites</string>
             <string id="30073">LiveTV:</string>
-                <string id="30075">Find PVR Backend</string>
+                <string id="30075">Find Kodi PVR Backend</string>
                 <string id="30097">Find HDHomeRun</string>
                 <string id="30098">HDHomeRun Path</string>
-                <string id="30074">Find USTVNOW</string>
-                <string id="30076">LocalTV:</string>
+                <string id="30074">Find USTVnow</string>
+                <string id="30076">Local Media:</string>
                     <string id="30078">Find TV Networks</string>
                     <string id="30079">Find Movie Studios</string>
                     <string id="30080">Find TV Genres</string>
                     <string id="30081">Find Movie Genres</string>
                     <string id="30082">Find Mixed Genres</string>
                     <string id="30883">Find Recently Added</string>
+                    <string id="30884">Find 3D Movies (Coming Soon)</string>
                     <string id="30083">Music:</string>
-                        <string id="30084">Find Music Genres</string>
+                        <string id="30084">Find Music Genres [Experimental]</string>
                         <string id="30898">Find Music Videos using Youtube</string>
                         <string id="30087">Find Music Videos using Last.FM</string>
                         <string id="30088">Last.FM Username</string>
@@ -123,7 +127,7 @@
                                 <string id="30111">Find Plugin Channels</string>
                                 <string id="30092">BringThePopcorn Movie Channel</string>
                                 <string id="30950">PseudoCinema Movie Channel</string>  
-                                <string id="30908">Preferred PseudoCinema Experience</string>
+                                <string id="30908">PseudoCinema Experience</string>
                                 <string id="30965">Find IPTV Channels</string>
                                 <string id="30966">Select IPTV M3U File</string>
                                 <string id="30967">Enter IPTV URL</string>
@@ -135,10 +139,11 @@
                                 <string id="30973">Select Navi-X PLX File</string>
                                 <string id="30974">Enter Navi-X URL</string>
                    
-    <string id="30700">AutoTune Options</string>
-    <string id="33310">Channel Limit per Autotune Type</string>
+    <string id="30700">AutoTune Options:</string>
+    <string id="33310">AutoTune Limit Per Channel</string>
+    <string id="30372">Reserve Channels 501-999 for AutoTuning</string>
     <string id="30699">Kodi PVR Guide Data from</string>
-    <string id="30701">Include Autotune Channels by genre:</string>
+    <string id="30701">AutoTune Genres:</string>
     <string id="30702">TV</string>
     <string id="30703">Movies</string>
     <string id="30704">Episodes</string>
@@ -176,6 +181,8 @@
                 <string id="30530">Number of Trailers Between Shows</string>
                 
 <string id="39000">Community/Donor</string>
+    <string id="30776">Community Verified:</string>
+    <string id="30777">Donor Verified:</string>
     <string id="30901">Enable Donor Features</string>
     <string id="30902">Enter Username:Password</string>
     <string id="30904">[COLOR=orange]Activate/Update Donor Features[/COLOR]</string>

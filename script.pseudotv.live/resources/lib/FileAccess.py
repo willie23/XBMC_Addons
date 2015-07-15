@@ -46,6 +46,24 @@ class FileAccess:
 
 
     @staticmethod
+    def delete(fle):
+        FileAccess.log('deleting ' + fle)
+        try:
+            xbmcvfs.delete(fle)
+            return True
+        except:
+            FileAccess._delete(fle)
+
+            
+    def _delete(fle):
+        try:
+            os.delete(fle)
+            return True
+        except:
+            return False
+            
+            
+    @staticmethod
     def copy(orgfilename, newfilename):
         FileAccess.log('copying ' + orgfilename + ' to ' + newfilename)
         xbmcvfs.copy(orgfilename, newfilename)
@@ -149,9 +167,8 @@ class FileAccess:
                 return xbmcvfs.mkdir(path)
 
         return xbmcvfs.exists(path)
-
-
-
+        
+        
 class VFSFile:
     def __init__(self, filename, mode):
         # Globals.log("VFSFile: trying to open " + filename)

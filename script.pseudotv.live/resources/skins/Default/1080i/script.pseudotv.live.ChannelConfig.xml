@@ -444,6 +444,7 @@
                     <textcolor>white</textcolor>
                     <aligny>center</aligny>
                     <align>left</align>
+                    <visible>Control.IsVisible(332)</visible>
                 </control>
             </control>
     
@@ -1447,6 +1448,7 @@
                     <height>40</height>
                     <textcolor>white</textcolor>
                     <label>Browse Community List:</label>
+                    <visible>Control.IsVisible(240)</visible>
                     <aligny>center</aligny>                      
                 </control>
                 <control type="button" id="241">

@@ -33,12 +33,6 @@ from resources.lib.FileAccess import FileAccess
 from resources.lib.Migrate import Migrate
 
 try:
-    import resources.lib.Donor
-    Donor_Downloaded = True
-except:  
-    Donor_Downloaded = False      
-    pass
-try:
     import buggalo
     buggalo.SUBMIT_URL = 'http://pseudotvlive.com/buggalo-web/submit.php'
 except:
@@ -92,8 +86,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         self.log("onInit")
         REAL_SETTINGS.setSetting('Autotune', "false")
         REAL_SETTINGS.setSetting('Warning1', "false") 
-        # self.KodiVideoSources()
-        
+        # self.KodiVideoSources()        
         for i in range(NUMBER_CHANNEL_TYPES):
             try:
                 self.getControl(120 + i).setVisible(False)
@@ -104,9 +97,14 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         migratemaster.migrate()
         self.prepareConfig()
         self.myRules = AdvancedConfig("script.pseudotv.live.AdvancedConfig.xml", ADDON_PATH, "Default")
-        self.getControl(239).setVisible(False)
         self.log("onInit return")
-
+        
+        self.getControl(239).setVisible(False)
+        if isCom() == False:
+            self.getControl(115).setVisible(False)
+            self.getControl(332).setVisible(False)
+            self.getControl(233).setVisible(False)
+            self.getControl(240).setVisible(False)
 
     def onFocus(self, controlId):
         pass
@@ -1257,7 +1255,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             self.chnlst.pluginPathList = ['plugin.video.playonbrowser'] + self.chnlst.pluginPathList
             self.chnlst.pluginNameList = ['[COLOR=blue][B]Playon[/B][/COLOR]'] + self.chnlst.pluginNameList
 
-        if Donor_Downloaded:
+        if isDon() == True:
             self.pluginPathList = [''] + self.chnlst.pluginPathList
             self.pluginNameList = ['[COLOR=blue][B]Donor List[/B][/COLOR]'] + self.chnlst.pluginNameList
             self.SourceList = self.SourceList + ['Donor List','IPTV M3U','LiveStream XML','Navi-X PLX']
@@ -1426,7 +1424,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                     return self.chnlst.CleanLabels(NameLst[select]).replace('[D]','').replace('[F]',''), PathLst[select]
                 else:
                     self.PreviousPath = []
-                    if Donor_Downloaded:
+                    if isDon() == True:
                         select = selectDialog(self.pluginNameList[1:], 'Select Plugin')
                         if select != -1:
                             return self.chnlst.CleanLabels((self.pluginNameList[1:])[select]), 'plugin://' + (self.pluginPathList[1:])[select]
@@ -1550,7 +1548,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                     
             elif source == 'Community List':
                 self.log("Community List")
-                if getProperty("PTVL.COM_APP") == "true":
+                if isCom() == True:
                     if type == 'YouTube':
                         self.log("Community List, YouTube")
                         if path == 'Channel':
@@ -1588,7 +1586,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                     
             elif source == 'Donor List':
                 self.log("Donor List")
-                if getProperty("Donor") == "true":
+                if isDon() == True:
                     if type == 'LiveTV':
                         self.log("Donor List, LiveTV")
                         NameLst, Option1LST, PathLst, Option3LST, Option4LST = self.chnlst.fillExternalList('LiveTV','','Donor')
@@ -1620,7 +1618,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                     
             elif source == 'IPTV M3U':
                 self.log("IPTV M3U")
-                if getProperty("Donor") == "true":
+                if isDon() == True:
                     select = selectDialog(self.ExternalPlaylistSources, 'Select IPTV M3U')
                     if select != -1:
                         if self.chnlst.CleanLabels(self.ExternalPlaylistSources[select]) == 'Donor List':
@@ -1651,7 +1649,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                         
             elif source == 'LiveStream XML':
                 self.log("LiveStream XML")
-                if getProperty("Donor") == "true":
+                if isDon() == True:
                     select = selectDialog(self.ExternalPlaylistSources, 'Select LiveStream XML')
                     if select != -1:    
                         if self.chnlst.CleanLabels(self.ExternalPlaylistSources[select]) == 'Donor List':
@@ -1680,7 +1678,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             
             elif source == 'Navi-X PLX':
                 self.log("Navi-X PLX")
-                if getProperty("Donor") == "true":
+                if isDon() == True:
                     select = selectDialog(self.ExternalPlaylistSources, 'Select Navi-X PLX')
                     if select != -1:
                         if self.chnlst.CleanLabels(self.ExternalPlaylistSources[select]) == 'Donor List':
@@ -1856,58 +1854,61 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             end = channel
 
         for i in range(start, end):
-            theitem = self.listcontrol.getListItem(i)
-            chantype = 9999
-            chansetting1 = ''
-            chansetting2 = ''
-            chansetting3 = ''
-            chansetting4 = ''
-            channame = ''
-            newlabel = ''
-
             try:
-                chantype = int(ADDON_SETTINGS.getSetting("Channel_" + str(i + 1) + "_type"))
-                chansetting1 = ADDON_SETTINGS.getSetting("Channel_" + str(i + 1) + "_1")
-                chansetting2 = ADDON_SETTINGS.getSetting("Channel_" + str(i + 1) + "_2")
-                chansetting3 = ADDON_SETTINGS.getSetting("Channel_" + str(i + 1) + "_3")
-                chansetting4 = ADDON_SETTINGS.getSetting("Channel_" + str(i + 1) + "_4")
-                channame = ADDON_SETTINGS.getSetting("Channel_" + str(i + 1) + "_rule_1_opt_1")
+                theitem = self.listcontrol.getListItem(i)
+                chantype = 9999
+                chansetting1 = ''
+                chansetting2 = ''
+                chansetting3 = ''
+                chansetting4 = ''
+                channame = ''
+                newlabel = ''
+
+                try:
+                    chantype = int(ADDON_SETTINGS.getSetting("Channel_" + str(i + 1) + "_type"))
+                    chansetting1 = ADDON_SETTINGS.getSetting("Channel_" + str(i + 1) + "_1")
+                    chansetting2 = ADDON_SETTINGS.getSetting("Channel_" + str(i + 1) + "_2")
+                    chansetting3 = ADDON_SETTINGS.getSetting("Channel_" + str(i + 1) + "_3")
+                    chansetting4 = ADDON_SETTINGS.getSetting("Channel_" + str(i + 1) + "_4")
+                    channame = ADDON_SETTINGS.getSetting("Channel_" + str(i + 1) + "_rule_1_opt_1")
+                except:
+                    pass
+
+                if chantype == 0:
+                    newlabel = self.getSmartPlaylistName(chansetting1)
+                elif chantype == 1 or chantype == 2 or chantype == 5 or chantype == 6:
+                    newlabel = chansetting1
+                elif chantype == 3:
+                    newlabel = chansetting1 + " - TV"
+                elif chantype == 4:
+                    newlabel = chansetting1 + " - Movies"
+                elif chantype == 7:
+                    if chansetting1[-1] == '/' or chansetting1[-1] == '\\':
+                        newlabel = os.path.split(chansetting1[:-1])[1]
+                    else:
+                        newlabel = os.path.split(chansetting1)[1]
+                elif chantype == 8:
+                    newlabel = channame + " - LiveTV"
+                elif chantype == 9:
+                    newlabel = channame + " - InternetTV"
+                elif chantype == 10:
+                    newlabel = channame + " - Youtube"            
+                elif chantype == 11:
+                    newlabel = channame + " - RSS"            
+                elif chantype == 12:
+                    newlabel = channame + " - Music"
+                elif chantype == 13:
+                    newlabel = channame + " - Music Videos"
+                elif chantype == 14:
+                    newlabel = channame + " - Exclusive"
+                elif chantype == 15:
+                    newlabel = channame + " - Plugin"
+                elif chantype == 16:
+                    newlabel = channame + " - UPNP"
+                
+                theitem.setLabel2(newlabel)
             except:
                 pass
-
-            if chantype == 0:
-                newlabel = self.getSmartPlaylistName(chansetting1)
-            elif chantype == 1 or chantype == 2 or chantype == 5 or chantype == 6:
-                newlabel = chansetting1
-            elif chantype == 3:
-                newlabel = chansetting1 + " - TV"
-            elif chantype == 4:
-                newlabel = chansetting1 + " - Movies"
-            elif chantype == 7:
-                if chansetting1[-1] == '/' or chansetting1[-1] == '\\':
-                    newlabel = os.path.split(chansetting1[:-1])[1]
-                else:
-                    newlabel = os.path.split(chansetting1)[1]
-            elif chantype == 8:
-                newlabel = channame + " - LiveTV"
-            elif chantype == 9:
-                newlabel = channame + " - InternetTV"
-            elif chantype == 10:
-                newlabel = channame + " - Youtube"            
-            elif chantype == 11:
-                newlabel = channame + " - RSS"            
-            elif chantype == 12:
-                newlabel = channame + " - Music"
-            elif chantype == 13:
-                newlabel = channame + " - Music Videos"
-            elif chantype == 14:
-                newlabel = channame + " - Exclusive"
-            elif chantype == 15:
-                newlabel = channame + " - Plugin"
-            elif chantype == 16:
-                newlabel = channame + " - UPNP"
-            
-            theitem.setLabel2(newlabel)
         self.log("updateListing return")
    
 __cwd__ = REAL_SETTINGS.getAddonInfo('path')

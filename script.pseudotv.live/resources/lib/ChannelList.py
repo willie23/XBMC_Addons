@@ -53,17 +53,13 @@ try:
     import StorageServer
 except Exception,e:
     import storageserverdummy as StorageServer
-     
+        
 try:
-    from Donor import *
-    setProperty("Donor","true")      
-    DL_DonorPath = (os.path.join(ADDON_PATH, 'resources', 'lib', 'Donor.py'))
-    xbmcvfs.delete(xbmc.translatePath(DL_DonorPath))      
+    from Donor import *     
+    DonorDel()
     xbmc.log("script.pseudotv.live-ChannelList: Donor Imported")
 except Exception,e:
-    setProperty("Donor","false")
-    DL_DonorPath = (os.path.join(ADDON_PATH, 'resources', 'lib', 'Donor.py'))
-    xbmcvfs.delete(xbmc.translatePath(DL_DonorPath))   
+    DonorDel(True)
     xbmc.log("script.pseudotv.live-ChannelList: Donor Import Failed, Disabling Donor Features " + str(e))
 
 try:
@@ -99,7 +95,6 @@ class ChannelList:
         self.background = True
         self.youtube_ok = self.youtube_player()
         self.log('Youtube Player is ' + str(self.youtube_ok))
-        self.Donor_Downloaded = getProperty("Donor") == "true"
         self.Enable_FindLogo = REAL_SETTINGS.getSetting('Enable_FindLogo') == "true"
         
         try:
@@ -673,7 +668,7 @@ class ChannelList:
             fileList = self.MusicVideos(setting1, setting2, setting3, setting4, limit)    
             
         # Extras
-        elif chtype == 14 and self.Donor_Downloaded == True:
+        elif chtype == 14 and isDon() == True:
             self.log("Extras, " + setting1 + "...")
             fileList = self.extras(setting1, setting2, setting3, setting4, channel)     
             
@@ -1648,9 +1643,11 @@ class ChannelList:
                             if showtitles != None and len(showtitles.group(1)) > 0:
                                 type = 'tvshow'
                                 dbids = re.search('"tvshowid" *: *([\d.]*\d+),', f)
+                                epids = re.search('"id" *: *([\d.]*\d+),', f)
                             else:
                                 type = 'movie'
-                                dbids = re.search('"id" *: *([\d.]*\d+),', f)
+                                dbids = re.search('"id" *: *([\d.]*\d+),', f)  
+                                epids = None
 
                             # if possible find year by title
                             try:
@@ -1693,13 +1690,21 @@ class ChannelList:
                             else:
                                 imdbnumber = 0
 
+                            
+                            if epids != None and len(epids.group(1)) > 0:
+                                epid = int((epids.group(1)).split(',')[0])
+                            else:
+                                epid = 0
+                                
+                            self.logDebug("buildFileList, epid = " + str(epid))
+                            
                             if dbids != None and len(dbids.group(1)) > 0:
                                 dbid = int((dbids.group(1)).split(',')[0])
                             else:
                                 dbid = 0
                                 
                             self.logDebug("buildFileList, dbid = " + str(dbid))
-
+                            
                             if plots and len(plots.group(1)) > 0:
                                 theplot = (plots.group(1)).replace('\\','').replace('\n','')
                             elif descriptions and len(descriptions.group(1)) > 0:
@@ -1720,6 +1725,7 @@ class ChannelList:
                                 episode = re.search('"episode" *: *([0-9]*?),', f)
                                 swtitle = (titles.group(1)).replace('\\','')
                                 swtitle = (swtitle.split('.', 1)[-1]).replace('. ','')
+                                dbid = str(dbid) +':'+ str(epid)
                                 
                                 try:
                                     seasonval = int(season.group(1))
@@ -1744,6 +1750,7 @@ class ChannelList:
                                 
                                     label = titles.group(1)  
                                     showtitle = label  
+                                    dbid = str(dbid)
                                     
                                     if '(' in showtitle and year == 0:
                                         try:
@@ -3733,7 +3740,7 @@ class ChannelList:
                 self.log("GetCommercialList_NEW Failed!" + str(e), xbmc.LOGERROR)
                 
         #Internet (advertolog.com, ispot.tv)
-        elif CommercialsType == '3' and self.Donor_Downloaded == True:
+        elif CommercialsType == '3' and isDon() == True:
             self.log("GetCommercialList_NEW, Internet") 
             Advertolog = REAL_SETTINGS.getSetting("Advertolog")
             Advertolog_Region = REAL_SETTINGS.getSetting("Advertolog_Region")
@@ -3904,7 +3911,7 @@ class ChannelList:
                 self.log("GetTrailerList_NEW Failed!" + str(e), xbmc.LOGERROR)
                 
         #Internet
-        if TrailersType == '4' and self.Donor_Downloaded == True:
+        if TrailersType == '4' and isDon() == True:
             self.log("GetTrailerList_NEW, Internet")
             try:   
                 if self.background == False:
@@ -4021,7 +4028,7 @@ class ChannelList:
         limit = MEDIA_LIMIT[int(REAL_SETTINGS.getSetting('MEDIA_LIMIT'))]
         showList = []
 
-        if self.Donor_Downloaded == True:  
+        if isDon() == True:  
             if setting1.lower() == 'popcorn':
                 
                 if self.background == False:

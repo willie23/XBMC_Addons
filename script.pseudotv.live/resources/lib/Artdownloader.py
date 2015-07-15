@@ -406,7 +406,7 @@ class Artdownloader:
             self.DownloadArtTimer.name = "DownloadArtTimer"
             self.DownloadArtTimer.start()
             # Sleep between Download, keeps cpu usage down and reduces the number of simultaneous threads.
-            xbmc.sleep(1000)
+            xbmc.sleep(500)
         except Exception,e:  
             self.log("script.pseudotv.live-Artdownloader: DownloadArt Failed" + str(e), xbmc.LOGERROR)
             buggalo.onExceptionRaised()
@@ -414,132 +414,134 @@ class Artdownloader:
                        
     def DownloadArt_Thread(self, data):
         self.log('DownloadArt_Thread')
-        if getProperty("PseudoTVRunning") == "True":   
-            type = data[0]
-            id = data[1]
-            arttype = data[2]
-            arttype_fallback = data[3]
-            cachefile = data[4]
-            chname = data[5]
-            mpath = data[6]
-            arttypeEXT = data[7]
-            
-            # print cachefile
-            drive, Dpath = os.path.splitdrive(cachefile)
-            path, filename = os.path.split(Dpath)
-            # print drive, Dpath, path, filename
-
-            if not FileAccess.exists(os.path.join(drive,path)):
-                FileAccess.makedirs(os.path.join(drive,path))   
-                    
-            if type == 'tvshow':
-                self.logDebug('DownloadArt_Thread, tvshow')
-                FanTVDownload = True
-                TVFilePath = cachefile
-                tvdb_Types = ['banner', 'fanart', 'folder', 'poster']
-                    
-                try:
-                    if arttype in tvdb_Types:
-                        self.logDebug('DownloadArt_Thread, TVDB')
-                        arttype = arttype.replace('banner', 'graphical').replace('folder', 'poster')
-                        tvdb = str(self.tvdbAPI.getBannerByID(id, arttype))
-                        tvdbPath = tvdb.split(', ')[0].replace("[('", "").replace("'", "") 
-                        if tvdbPath.startswith('http'):
-                            download_silent(tvdbPath,TVFilePath)
-                            FanTVDownload = False
-                except Exception,e:
-                    self.log("script.pseudotv.live-Artdownloader: DownloadArt_Thread, TVDB Failed" + str(e), xbmc.LOGERROR)
-                    buggalo.onExceptionRaised() 
-                    
-                if FanTVDownload == True:
-                    self.logDebug('DownloadArt_Thread, Fanart.TV')
-                    try:
-                        arttype = arttype.replace('graphical', 'banner').replace('folder', 'poster').replace('fanart', 'landscape')
-                        fan = str(self.fanarttv.get_image_list_TV(id))
-                        file_detail = re.compile( "{(.*?)}", re.DOTALL ).findall(fan)
-                        pref_language = self.fanarttv.get_abbrev(REAL_SETTINGS.getSetting('limit_preferred_language'))
-                        
-                        for f in file_detail:
-                            languages = re.search("'language' *: *(.*?),", f)
-                            art_types = re.search("'art_type' *: *(.*?),", f)
-                            fanPaths = re.search("'url' *: *(.*?),", f)       
-                            if languages and len(languages.group(1)) > 0:
-                                language = (languages.group(1)).replace("u'",'').replace("'",'')
-                                if language == pref_language:
-                                    if art_types and len(art_types.group(1)) > 0:
-                                        art_type = art_types.group(1).replace("u'",'').replace("'",'').replace("[",'').replace("]",'')
-                                        if art_type.lower() == arttype.lower():
-                                            if fanPaths and len(fanPaths.group(1)) > 0:
-                                                fanPath = fanPaths.group(1).replace("u'",'').replace("'",'')
-                                                if fanPath.startswith('http'):
-                                                    download_silent(fanPath,TVFilePath)
-                                                    break 
-                    except Exception,e:  
-                        self.log("script.pseudotv.live-Artdownloader: DownloadArt_Thread, Fanart.TV Failed" + str(e), xbmc.LOGERROR)
-                        buggalo.onExceptionRaised() 
-                    
-            elif type == 'movie':
-                self.logDebug('DownloadArt_Thread, movie')
-                FanMovieDownload = True
-                MovieFilePath = cachefile
-                tmdb_Types = ['fanart', 'folder', 'poster']
+        try:
+            if getProperty("PseudoTVRunning") == "True":   
+                type = data[0]
+                id = data[1]
+                arttype = data[2]
+                arttype_fallback = data[3]
+                cachefile = data[4]
+                chname = data[5]
+                mpath = data[6]
+                arttypeEXT = data[7]
                 
-                try:
-                    if arttype in tmdb_Types:
-                        self.logDebug('DownloadArt_Thread, TMDB')
-                        arttype = arttype.replace('folder', 'poster')
-                        tmdb = self.tmdbAPI.get_image_list(id)
-                        data = str(tmdb).replace("[", "").replace("]", "").replace("'", "")
-                        data = data.split('}, {')
-                        tmdbPath = str([s for s in data if arttype in s]).split("', 'width: ")[0]
-                        match = re.search('url *: *(.*?),', tmdbPath)
-                        if match:
-                            tmdbPath = match.group().replace(",", "").replace("url: u", "").replace("url: ", "")
-                            if tmdbPath.startswith('http'):
-                                download_silent(tmdbPath,MovieFilePath)
-                                FanMovieDownload = False
-                except Exception,e:  
-                    self.log("script.pseudotv.live-Artdownloader: DownloadArt_Thread, movie Failed" + str(e), xbmc.LOGERROR)
-                    buggalo.onExceptionRaised() 
+                # print cachefile
+                drive, Dpath = os.path.splitdrive(cachefile)
+                path, filename = os.path.split(Dpath)
+                # print drive, Dpath, path, filename
 
-                if FanMovieDownload == True:
-                    self.logDebug('DownloadArt_Thread, Fanart.TV')
-                    try:
-                        arttype = arttype.replace('graphical', 'banner').replace('folder', 'poster').replace('fanart', 'landscape')
-                        fan = str(self.fanarttv.get_image_list_Movie(id))
-                        file_detail = re.compile( "{(.*?)}", re.DOTALL ).findall(fan)
-                        # print file_detail
-                        pref_language = self.fanarttv.get_abbrev(REAL_SETTINGS.getSetting('limit_preferred_language'))
+                if not FileAccess.exists(os.path.join(drive,path)):
+                    FileAccess.makedirs(os.path.join(drive,path))   
                         
-                        for f in file_detail:
-                            languages = re.search("'language' *: *(.*?),", f)
-                            art_types = re.search("'art_type' *: *(.*?),", f)
-                            fanPaths = re.search("'url' *: *(.*?),", f)    
-                            if languages and len(languages.group(1)) > 0:
-                                language = (languages.group(1)).replace("u'",'').replace("'",'')
-                                if language == pref_language:
-                                    if art_types and len(art_types.group(1)) > 0:
-                                        art_type = art_types.group(1).replace("u'",'').replace("'",'').replace("[",'').replace("]",'')
-                                        if art_type.lower() == arttype.lower():
-                                            if fanPaths and len(fanPaths.group(1)) > 0:
-                                                fanPath = fanPaths.group(1).replace("u'",'').replace("'",'')
-                                                # print fanPath
-                                                if fanPath.startswith('http'):
-                                                    download_silent(fanPath,MovieFilePath)
-                                                    break                            
-                    except Exception,e:  
-                        self.log("script.pseudotv.live-Artdownloader: DownloadArt_Thread, Fanart.TV Failed" + str(e), xbmc.LOGERROR)
+                if type == 'tvshow':
+                    self.logDebug('DownloadArt_Thread, tvshow')
+                    FanTVDownload = True
+                    TVFilePath = cachefile
+                    tvdb_Types = ['banner', 'fanart', 'folder', 'poster']
+                        
+                    try:
+                        if arttype in tvdb_Types:
+                            self.logDebug('DownloadArt_Thread, TVDB')
+                            arttype = arttype.replace('banner', 'graphical').replace('folder', 'poster')
+                            tvdb = str(self.tvdbAPI.getBannerByID(id, arttype))
+                            tvdbPath = tvdb.split(', ')[0].replace("[('", "").replace("'", "") 
+                            if tvdbPath.startswith('http'):
+                                download_silent(tvdbPath,TVFilePath)
+                                FanTVDownload = False
+                    except Exception,e:
+                        self.log("script.pseudotv.live-Artdownloader: DownloadArt_Thread, TVDB Failed" + str(e), xbmc.LOGERROR)
                         buggalo.onExceptionRaised() 
-            try:
-                if not FileAccess.exists(cachefile):    
-                    if arttype == arttype_fallback:
-                        print 'No Art Downloaded'
-                        # FileAccess.copy(self.SetDefaultArt_NEW(chname, mpath, arttypeEXT), cachefile)
-                    else:
-                        self.DownloadArt(type, id, arttype_fallback, arttype_fallback, cachefile, chname, mpath, arttypeEXT)
-            except:
-                pass
+                        
+                    if FanTVDownload == True:
+                        self.logDebug('DownloadArt_Thread, Fanart.TV')
+                        try:
+                            arttype = arttype.replace('graphical', 'banner').replace('folder', 'poster').replace('fanart', 'landscape')
+                            fan = str(self.fanarttv.get_image_list_TV(id))
+                            file_detail = re.compile( "{(.*?)}", re.DOTALL ).findall(fan)
+                            pref_language = self.fanarttv.get_abbrev(REAL_SETTINGS.getSetting('limit_preferred_language'))
+                            
+                            for f in file_detail:
+                                languages = re.search("'language' *: *(.*?),", f)
+                                art_types = re.search("'art_type' *: *(.*?),", f)
+                                fanPaths = re.search("'url' *: *(.*?),", f)       
+                                if languages and len(languages.group(1)) > 0:
+                                    language = (languages.group(1)).replace("u'",'').replace("'",'')
+                                    if language == pref_language:
+                                        if art_types and len(art_types.group(1)) > 0:
+                                            art_type = art_types.group(1).replace("u'",'').replace("'",'').replace("[",'').replace("]",'')
+                                            if art_type.lower() == arttype.lower():
+                                                if fanPaths and len(fanPaths.group(1)) > 0:
+                                                    fanPath = fanPaths.group(1).replace("u'",'').replace("'",'')
+                                                    if fanPath.startswith('http'):
+                                                        download_silent(fanPath,TVFilePath)
+                                                        break 
+                        except Exception,e:  
+                            self.log("script.pseudotv.live-Artdownloader: DownloadArt_Thread, Fanart.TV Failed" + str(e), xbmc.LOGERROR)
+                            buggalo.onExceptionRaised() 
+                        
+                elif type == 'movie':
+                    self.logDebug('DownloadArt_Thread, movie')
+                    FanMovieDownload = True
+                    MovieFilePath = cachefile
+                    tmdb_Types = ['fanart', 'folder', 'poster']
+                    
+                    try:
+                        if arttype in tmdb_Types:
+                            self.logDebug('DownloadArt_Thread, TMDB')
+                            arttype = arttype.replace('folder', 'poster')
+                            tmdb = self.tmdbAPI.get_image_list(id)
+                            data = str(tmdb).replace("[", "").replace("]", "").replace("'", "")
+                            data = data.split('}, {')
+                            tmdbPath = str([s for s in data if arttype in s]).split("', 'width: ")[0]
+                            match = re.search('url *: *(.*?),', tmdbPath)
+                            if match:
+                                tmdbPath = match.group().replace(",", "").replace("url: u", "").replace("url: ", "")
+                                if tmdbPath.startswith('http'):
+                                    download_silent(tmdbPath,MovieFilePath)
+                                    FanMovieDownload = False
+                    except Exception,e:  
+                        self.log("script.pseudotv.live-Artdownloader: DownloadArt_Thread, movie Failed" + str(e), xbmc.LOGERROR)
+                        buggalo.onExceptionRaised() 
 
+                    if FanMovieDownload == True:
+                        self.logDebug('DownloadArt_Thread, Fanart.TV')
+                        try:
+                            arttype = arttype.replace('graphical', 'banner').replace('folder', 'poster').replace('fanart', 'landscape')
+                            fan = str(self.fanarttv.get_image_list_Movie(id))
+                            file_detail = re.compile( "{(.*?)}", re.DOTALL ).findall(fan)
+                            # print file_detail
+                            pref_language = self.fanarttv.get_abbrev(REAL_SETTINGS.getSetting('limit_preferred_language'))
+                            
+                            for f in file_detail:
+                                languages = re.search("'language' *: *(.*?),", f)
+                                art_types = re.search("'art_type' *: *(.*?),", f)
+                                fanPaths = re.search("'url' *: *(.*?),", f)    
+                                if languages and len(languages.group(1)) > 0:
+                                    language = (languages.group(1)).replace("u'",'').replace("'",'')
+                                    if language == pref_language:
+                                        if art_types and len(art_types.group(1)) > 0:
+                                            art_type = art_types.group(1).replace("u'",'').replace("'",'').replace("[",'').replace("]",'')
+                                            if art_type.lower() == arttype.lower():
+                                                if fanPaths and len(fanPaths.group(1)) > 0:
+                                                    fanPath = fanPaths.group(1).replace("u'",'').replace("'",'')
+                                                    # print fanPath
+                                                    if fanPath.startswith('http'):
+                                                        download_silent(fanPath,MovieFilePath)
+                                                        break                            
+                        except Exception,e:  
+                            self.log("script.pseudotv.live-Artdownloader: DownloadArt_Thread, Fanart.TV Failed" + str(e), xbmc.LOGERROR)
+                            buggalo.onExceptionRaised() 
+                try:
+                    if not FileAccess.exists(cachefile):    
+                        if arttype == arttype_fallback:
+                            print 'No Art Downloaded'
+                            # FileAccess.copy(self.SetDefaultArt_NEW(chname, mpath, arttypeEXT), cachefile)
+                        else:
+                            self.DownloadArt(type, id, arttype_fallback, arttype_fallback, cachefile, chname, mpath, arttypeEXT)
+                except:
+                    pass
+        except:
+            pass
             
     def DownloadMetaArt(self, type, fle, id, typeEXT, ART_LOC):
         self.log('DownloadMetaArt')
