@@ -76,14 +76,14 @@ while (not xbmc.abortRequested):
         xbmc.sleep(1000)
         xbmc.executebuiltin('Action(reloadkeymaps)')
 
-    if xbmc.getCondVisibility('Window.IsActive(addonsettings)') != True:
-        # Disable PseudoTVRunning
-        if getProperty("PseudoTVRunning") != "True":
-            HubCHK()
-            xbmc.sleep(1000)
-            ComCHK()
-            xbmc.sleep(1000)
-            DonCHK()
+    # if xbmc.getCondVisibility('Window.IsActive(addonsettings)') != True:
+        # # Disable PseudoTVRunning
+        # if getProperty("PseudoTVRunning") != "True":
+            # HubCHK()
+            # xbmc.sleep(1000)
+            # ComCHK()
+            # xbmc.sleep(1000)
+            # DonCHK()
             
     UpdateRSS()     
                 
