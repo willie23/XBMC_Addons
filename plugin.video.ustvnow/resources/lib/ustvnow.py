@@ -44,7 +44,7 @@ class Ustvnow:
             name = name.replace('\n','').replace('\t','').replace('\r','').replace('<fieldset> ','').replace('<div class=','').replace('>','').replace('"','').replace(' ','')
             if not name:
                 name = ((icon.rsplit('/',1)[1]).replace('.png','')).upper()
-                name = name.replace('WLYH','The CW').replace('WHTM','ABC').replace('WPMT','FOX').replace('WPSU','PBS').replace('WHP','CBS').replace('WGAL','NBC').replace('WHVLLD','MY9').replace('AETV','AE')
+                name = name.replace('WLYH','CW').replace('WHTM','ABC').replace('WPMT','FOX').replace('WPSU','PBS').replace('WHP','CBS').replace('WGAL','NBC').replace('WHVLLD','MY9').replace('AETV','AE')
                 name = name.replace('APL','Animal Planet').replace('TOON','Cartoon Network').replace('DSC','Discovery').replace('BRAVO','Bravo').replace('USA','USA Network').replace('SYFY','Syfy').replace('HISTORY','History')
                 name = name.replace('COMEDY','Comedy Central').replace('FOOD','Food Network').replace('NIK','Nickelodeon').replace('LIFE','Lifetime').replace('SPIKETV','Spike').replace('FNC','Fox News').replace('NGC','National Geographic')
             try:
