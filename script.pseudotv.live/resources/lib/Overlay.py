@@ -149,6 +149,7 @@ class MyPlayer(xbmc.Player):
             if self.overlay.OnDemand == True:
                 self.overlay.showInfo(self.overlay.InfTimer)
                 
+            self.overlay.setShowInfo()
             self.overlay.PrimeSetOnNow()
             
     def onPlayBackEnded(self):
@@ -693,6 +694,9 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             
         if FileAccess.exists(self.channelLogos) == False:
             self.channelLogos = DEFAULT_LOGO_LOC
+            if FileAccess.exists(DEFAULT_LOGO_LOC) == False:
+                FileAccess.makedirs(DEFAULT_LOGO_LOC)
+            REAL_SETTINGS.setSetting("ChannelLogoFolder",DEFAULT_LOGO_LOC)
         self.log('Channel logo folder - ' + self.channelLogos)
         
         self.channelList = ChannelList()
@@ -1050,8 +1054,6 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             xbmc.executebuiltin(tidy(mediapath).replace(',', ''))
         else:
             self.Player.playselected(self.channels[self.currentChannel - 1].playlistPosition)
-        title = self.channels[self.currentChannel - 1].getItemTitle(self.channels[self.currentChannel - 1].playlistPosition)
-        setProperty("Playing.Title",title)
         self.background.setVisible(False)
         
         # set the time offset
@@ -1408,6 +1410,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         year = self.channelList.getYear(type, title)
         
         #PVR Globals
+        setProperty("Playing.Title",title)
         setProperty("Playing.Chtype",str(chtype))
         setProperty("Playing.Mpath",mpath)
         setProperty("Playing.Mediapath",mediapath)
@@ -1462,10 +1465,10 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             if FileAccess.exists(setImage) == False:
                 setImage = self.Artdownloader.SetDefaultArt_NEW(data[2], data[5], data[6])
             self.getControl(data[7]).setImage(setImage)
+            self.setNew(self.isNEW(int(getProperty("Playing.Chtype")), getProperty("Playing.Mediapath"), int(getProperty("Playing.Playcount"))))
         except Exception,e:
             self.log('FindArtwork_Thread, Failed!, ' + str(e))
             pass
-        self.setNew(self.isNEW(getProperty("Playing.Mediapath"), getProperty("Playing.Playcount")))
         
         
     def setNew(self, aired):
@@ -2095,7 +2098,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                 self.OnDemand = True  
                 self.showingBrowse = False 
             elif self.showingInfo and self.infoOffset > 0:
-                    self.selectShow(self.infoOffset)
+                    self.selectShow()
             elif not self.showingMenu and not self.showingMoreInfo and not self.showingBrowse:
                 # If we're manually typing the channel, set it now
                 if self.inputChannel > 0:
@@ -2521,6 +2524,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             id = re.search('"label" *: *"(.*?)"', f)
             if id and len(id.group(1)) > 0:
                 currentWindow = id.group(1)
+                break
         return currentWindow
         
     
@@ -2531,6 +2535,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             json_query = '{"jsonrpc":"2.0","method":"Input.ExecuteAction","params":{"action":"select"},"id":1}'
             self.channelList.sendJSON(json_query);
             return True
+        return False
     
     
     def CancelPending(self, type=['Working']):
@@ -2566,9 +2571,11 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         if REAL_SETTINGS.getSetting("Idle_Screensaver") == "true":
             self.IdleTimer()
    
+        if int(getProperty("Playing.Chtype")) in [8, 9]:
+            self.Player.resume_playback()
+        
         self.CloseDialog(['Dialogue OK'])
         self.playerTimer.start()
-        self.Player.resume_playback()
         
         if self.Player.PlaybackValid():
             self.lastPlayTime = int(self.Player.getTime())
@@ -2598,7 +2605,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         # self.log('SetAutoJump') 
     
     
-    # Adapted from lamdba's plugin.video.genesis
+    # Adapted from lamdba's plugin
     def change_watched(self, data):
         chtype = data[0]
         type = data[1]
@@ -3181,12 +3188,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                 self.Artdownloader.DownloadArtTimer.join()
         except:
             pass
-        # try:
-            # if self.ArtServiceThread.isAlive():
-                # self.ArtServiceThread.cancel()
-        # except:
-            # pass
-            
+
         updateDialog.update(6)
 
         if self.channelThread.isAlive():
@@ -3261,31 +3263,39 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         self.close()
 
         
-    def isNEW(self, mediapath, playcount):
+    def isNEW(self, chtype, mediapath, playcount):
         self.log("isNEW")
-        try:
-            json_query = ('{"jsonrpc":"2.0","method":"Files.GetFileDetails","params":{"file":"%s","media":"video","properties":["playcount"]}, "id": 1 }' % mediapath)
-            json_folder_detail = self.channelList.sendJSON(json_query)
-            file_detail = re.compile( "{(.*?)}", re.DOTALL ).findall(json_folder_detail)
+        
+        if playcount > 0:
+            return False
+        elif chtype == 8 and playcount == 0:
+            return True
+            
+        if chtype < 7:
+            try:
+                json_query = ('{"jsonrpc":"2.0","method":"Files.GetFileDetails","params":{"file":"%s","media":"video","properties":["playcount"]}, "id": 1 }' % mediapath)
+                json_folder_detail = self.channelList.sendJSON(json_query)
+                file_detail = re.compile( "{(.*?)}", re.DOTALL ).findall(json_folder_detail)
 
-            for f in file_detail:
-                playcounts = re.search('"playcount" *: *([\d.]*\d+),', f)
-                if playcounts != None and len(playcounts.group(1)) > 0:
-                    aired = int(playcounts.group(1))
-                    break
-                    
-            if not aired:
-                aired = int(playcount)
-                
-            self.getControl(512).setVisible(True)
-            if aired == 0:
-                return True
-            elif aired >= 1:
+                for f in file_detail:
+                    playcounts = re.search('"playcount" *: *([\d.]*\d+),', f)
+                    if playcounts != None and len(playcounts.group(1)) > 0:
+                        aired = int(playcounts.group(1))
+                        break
+                        
+                if not aired:
+                    aired = int(playcount)
+                self.getControl(512).setVisible(True)
+                if aired == 0:
+                    return True
+                elif aired >= 1:
+                    return False
+                else:
+                    raise
+            except Exception,e:
+                self.getControl(512).setVisible(False) 
                 return False
-            else:
-                raise
-        except Exception,e:
-            self.getControl(512).setVisible(False) 
+        else:
             return False
         
         
@@ -3444,10 +3454,10 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         self.TogglesetVisibleTimer.start()
      
      
-    def selectShow(self, infoOffset):
+    def selectShow(self):
         self.log("selectShow")
-        modifier = 1
-        self.Player.playselected(self.channels[self.currentChannel - 1].fixPlaylistIndex(infoOffset + modifier))
+        modifier = xbmc.PlayList(xbmc.PLAYLIST_MUSIC).getposition()
+        self.Player.playselected(self.channels[self.currentChannel - 1].fixPlaylistIndex(self.infoOffset + modifier))
      
      
     def GA_Request(self):

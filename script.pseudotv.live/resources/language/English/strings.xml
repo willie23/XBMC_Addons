@@ -33,9 +33,7 @@
     <string id="30310">Media Limit Per Channel</string>
     <string id="30373">Mute between channel change</string>
     <string id="30379">Enable Direct Channel Input</string>
-    <string id="30026">Quickstart hotkey</string>
-    <string id="30122">XBMC</string>
-    <string id="30050">Enable global menu</string>
+    <string id="30050">Enable global menu [Experimental]</string>
     <string id="30158">Menu style</string>
     
 <string id="30100">Sharing</string>

@@ -34,7 +34,6 @@ THUMB = (xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'images')) + '
 
 def checkDisabled():
     if xbmc.getCondVisibility('System.HasAddon(script.pseudotv.live)') == 0:
-        DeleteKeymap('ptvl_hot.xml')
         DeleteKeymap('ptvl_menu.xml')
         return True
     return False 
@@ -49,7 +48,7 @@ def autostart():
 
 # Startup tasks
 VerifyKeymaps()
-        
+                            
 if REAL_SETTINGS.getSetting("Auto_Start") == "true":
     autostart()
 
@@ -76,14 +75,14 @@ while (not xbmc.abortRequested):
         xbmc.sleep(1000)
         xbmc.executebuiltin('Action(reloadkeymaps)')
 
-    # if xbmc.getCondVisibility('Window.IsActive(addonsettings)') != True:
-        # # Disable PseudoTVRunning
-        # if getProperty("PseudoTVRunning") != "True":
-            # HubCHK()
-            # xbmc.sleep(1000)
-            # ComCHK()
-            # xbmc.sleep(1000)
-            # DonCHK()
+    if xbmc.getCondVisibility('Window.IsActive(addonsettings)') != True:
+        # Disable PseudoTVRunning
+        if getProperty("PseudoTVRunning") != "True":
+            HubCHK()
+            xbmc.sleep(1000)
+            ComCHK()
+            xbmc.sleep(1000)
+            DonCHK()
             
     UpdateRSS()     
                 

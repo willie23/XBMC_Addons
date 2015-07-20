@@ -258,7 +258,7 @@
                 <focusedcolor>white</focusedcolor>
                 <onup>107</onup>
                 <ondown>114</ondown>
-                <visible>Control.IsVisible(120)|Control.IsVisible(128)|Control.IsVisible(129)|Control.IsVisible(130)|Control.IsVisible(131)|Control.IsVisible(135)</visible>  
+                <visible>[SubString(Window(10000).Property(Verified_Community),True)]</visible>  
                 <colordiffuse></colordiffuse>
             </control>
             
@@ -433,6 +433,7 @@
                     <onup>331</onup>
                     <ondown>115</ondown>
                     <colordiffuse></colordiffuse>
+                    <visible>[SubString(Window(10000).Property(Verified_Community),True)]</visible>  
                 </control>
                 <control type="label">
                     <left>47</left>
@@ -444,7 +445,7 @@
                     <textcolor>white</textcolor>
                     <aligny>center</aligny>
                     <align>left</align>
-                    <visible>Control.IsVisible(332)</visible>
+                    <visible>[SubString(Window(10000).Property(Verified_Community),True)]</visible>  
                 </control>
             </control>
     
@@ -1326,6 +1327,7 @@
                     <onup>230</onup>
                     <ondown>234</ondown>
                     <colordiffuse></colordiffuse>
+                    <visible>[SubString(Window(10000).Property(Verified_Community),True)]</visible>  
                 </control>
                 <control type="label">
                     <left>47</left>
@@ -1333,7 +1335,7 @@
                     <width>500</width>
                     <height>40</height>
                     <textcolor>white</textcolor>
-                    <visible>Control.IsVisible(233)</visible>
+                    <visible>[SubString(Window(10000).Property(Verified_Community),True)]</visible>  
                     <label>Browse Community List:</label>
                     <aligny>center</aligny>                      
                 </control>
@@ -1417,7 +1419,8 @@
                     <textcolor>white</textcolor>
                     <label></label>
                     <wrapmultiline>true</wrapmultiline>
-                    <aligny>center</aligny>                   
+                    <aligny>center</aligny>  
+                    <visible>false</visible>                 
                 </control>
             </control>
             <!-- Controls for type RSS -->
@@ -1439,6 +1442,7 @@
                     <align>right</align>
                     <onup>110</onup>
                     <ondown>241</ondown>
+                    <visible>[SubString(Window(10000).Property(Verified_Community),True)]</visible>  
                     <colordiffuse></colordiffuse>
                 </control>
                 <control type="label">
@@ -1448,7 +1452,7 @@
                     <height>40</height>
                     <textcolor>white</textcolor>
                     <label>Browse Community List:</label>
-                    <visible>Control.IsVisible(240)</visible>
+                    <visible>[SubString(Window(10000).Property(Verified_Community),True)]</visible>  
                     <aligny>center</aligny>                      
                 </control>
                 <control type="button" id="241">
@@ -1530,7 +1534,8 @@
                     <textcolor>white</textcolor>
                     <label></label>
                     <wrapmultiline>true</wrapmultiline>
-                    <aligny>center</aligny>                   
+                    <aligny>center</aligny>      
+                    <visible>false</visible>               
                 </control>
             </control>
             

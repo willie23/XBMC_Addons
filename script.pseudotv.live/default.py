@@ -20,7 +20,6 @@ import os, sys, re, shutil, threading
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 
 from resources.lib.Globals import *
-from resources.lib.FileAccess import *
 from resources.lib.utils import *
 
 # Script constants
@@ -39,7 +38,7 @@ def PseudoTV():
     try:
         MyOverlayWindow = Overlay.TVOverlay("script.pseudotv.live.TVOverlay.xml", __cwd__, Skin_Select)
     except Exception,e:
-        xbmc.log('script.pseudotv.live-default: PseudoTV Overlay Failed! ' + str(e))
+        log('default: PseudoTV Overlay Failed! ' + str(e))
         Error('PseudoTV Live','Error loading "' + Skin_Select + '" skin!','Verify selected skin.') 
         return
         
@@ -79,11 +78,11 @@ if getProperty("PseudoTVRunning") != "True":
         # Donor Download
         xbmc.executebuiltin("RunScript("+__cwd__+"/utilities.py,-DDautopatch)")
 
+        # Call showChangeLog like this to workaround bug in openElec, *Thanks spoyser
+        xbmc.executebuiltin("RunScript("+__cwd__+"/utilities.py,-showChangelog)") 
+        
         # Check if autoplay is enabled
         CHKAutoplay()
-
-        # Call showChangeLog like this to workaround bug in openElec, *Thanks spoyser
-        xbmc.executebuiltin("RunScript("+__cwd__+"/utilities.py,-showChangelog)")  
     else:
         # Check if Outdated/Install Repo
         VersionCompare()
@@ -109,5 +108,5 @@ if getProperty("PseudoTVRunning") != "True":
         #Start PseudoTV
         PseudoTV()
 else:
-    log('script.pseudotv.live - Already running, exiting', xbmc.LOGERROR)
+    log('default: Already running, exiting', xbmc.LOGERROR)
     xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Already running please wait and try again later.", 4000, THUMB) )

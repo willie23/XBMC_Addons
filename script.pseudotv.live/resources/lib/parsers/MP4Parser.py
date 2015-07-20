@@ -30,7 +30,6 @@ class MP4DataBlock:
         self.data = ''
 
 
-
 class MP4MovieHeader:
     def __init__(self):
         self.version = 0
@@ -39,7 +38,6 @@ class MP4MovieHeader:
         self.modified = 0
         self.scale = 0
         self.duration = 0
-
 
 
 class MP4Parser:

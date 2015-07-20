@@ -86,7 +86,8 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         self.log("onInit")
         REAL_SETTINGS.setSetting('Autotune', "false")
         REAL_SETTINGS.setSetting('Warning1', "false") 
-        # self.KodiVideoSources()        
+        # self.KodiVideoSources()    
+        
         for i in range(NUMBER_CHANNEL_TYPES):
             try:
                 self.getControl(120 + i).setVisible(False)
@@ -99,12 +100,6 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         self.myRules = AdvancedConfig("script.pseudotv.live.AdvancedConfig.xml", ADDON_PATH, "Default")
         self.log("onInit return")
         
-        self.getControl(239).setVisible(False)
-        if isCom() == False:
-            self.getControl(115).setVisible(False)
-            self.getControl(332).setVisible(False)
-            self.getControl(233).setVisible(False)
-            self.getControl(240).setVisible(False)
 
     def onFocus(self, controlId):
         pass
@@ -904,10 +899,10 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         self.getControl(controlid).setLabel(thelist[index])
         
         # Disable Submit button
-        if thelist[index] in ['PVR','HDhomerun','UPNP','Local Music','Local Video']:
-            self.getControl(115).setVisible(False)
-        else:
+        if isCom() and thelist[index] not in ['PVR','HDhomerun','UPNP','Local Music','Local Video','User Subscription','User Favorites','Search Query','Raw gdata','Seasonal']:
             self.getControl(115).setVisible(True)
+        else:
+            self.getControl(115).setVisible(False)
         self.log("changeListData return")
 
 
@@ -943,7 +938,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
     def changeChanType(self, channel, val):
         self.log("changeChanType " + str(channel) + ", " + str(val))
         chantype = 9999
-
+        
         try:
             chantype = int(ADDON_SETTINGS.getSetting("Channel_" + str(channel) + "_type"))
         except:
@@ -998,7 +993,13 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                 except:
                     pass
 
-        self.fillInDetails(channel)
+        self.fillInDetails(channel)        
+        
+        # Disable Submit button
+        if isCom() and chantype in [0,8,9,10,11,15]:
+            self.getControl(115).setVisible(True)
+        else:
+            self.getControl(115).setVisible(False)
         self.log("changeChanType return")
 
 

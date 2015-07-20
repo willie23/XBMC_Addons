@@ -18,9 +18,9 @@
 
 
 import os, re, sys, time, zipfile, threading, requests
-import urllib, urllib2, base64, fileinput, shutil, socket
+import urllib, urllib2, base64, fileinput, shutil, socket, httplib
 import xbmc, xbmcgui, xbmcplugin, xbmcvfs, xbmcaddon
-import urlparse, time, _strptime, string, datetime, ftplib, hashlib, smtplib, feedparser
+import urlparse, time, _strptime, string, datetime, ftplib, hashlib, smtplib, feedparser, imp
 
 
 from Globals import * 
@@ -521,7 +521,69 @@ def GrabLogo(url, Chname):
 #######################
 # Communication Tools #
 #######################
-
+   
+def UpdateRSS():
+    now  = datetime.datetime.today()
+    try:
+        UpdateRSS_LastRun = getProperty("UpdateRSS_NextRun")
+        if not UpdateRSS_LastRun:
+            raise
+    except:
+        UpdateRSS_LastRun = "1970-01-01 23:59:00.000000"
+        setProperty("UpdateRSS_NextRun",UpdateRSS_LastRun)
+    try:
+        SyncUpdateRSS = datetime.datetime.strptime(UpdateRSS_LastRun, "%Y-%m-%d %H:%M:%S.%f")
+    except:
+        UpdateRSS_LastRun = "1970-01-01 23:59:00.000000"
+        SyncUpdateRSS = datetime.datetime.strptime(UpdateRSS_LastRun, "%Y-%m-%d %H:%M:%S.%f")
+    # log('utils: UpdateRSS, Now = ' + str(now) + ', UpdateRSS_NextRun = ' + str(UpdateRSS_LastRun))
+    
+    if now > SyncUpdateRSS:
+        ##Push MSG
+        pushlist = ''
+        try:
+            pushrss = 'https://raw.githubusercontent.com/Lunatixz/XBMC_Addons/master/push_msg.xml'
+            file = request_url('https://raw.githubusercontent.com/Lunatixz/XBMC_Addons/master/push_msg.xml')
+            pushlist = file.read()
+            file.close()
+        except:
+            pass
+        ##Github RSS
+        gitlist = ''
+        try:
+            gitrss = 'https://github.com/Lunatixz.atom'
+            d = feedparser.parse(gitrss)
+            header = (d['feed']['title']).replace(' ',' Github ')
+            post = d['entries'][0]['title']
+            for post in d.entries:
+                if post.title.startswith('Lunatixz pushed') and 'Lunatixz/XBMC_Addons' in post.title:
+                    date = time.strftime("%m.%d.%Y @ %I:%M %p", post.date_parsed)
+                    title = (post.title).replace('Lunatixz pushed to master at ','').replace('Lunatixz/XBMC_Addons','Updated repository plugins on')
+                    gitlist += (header + ' - ' + title + ": " + date + "   ").replace('&amp;','&')
+                    break
+        except:
+            pass
+        ##Twitter RSS
+        twitlist = ''
+        try:
+            twitrss ='http://feedtwit.com/f/pseudotv_live'
+            e = feedparser.parse(twitrss)
+            header = ((e['feed']['title']) + ' - ')
+            twitlist = header
+            for tost in e.entries:
+                if '#PTVLnews' in tost.title:
+                    date = time.strftime("%m.%d.%Y @ %I:%M %p", tost.published_parsed)
+                    twitlist += (date + ": " + tost.title + "   ").replace('&amp;','&')
+        except:
+            pass
+            
+        UpdateRSS_NextRun = ((now + datetime.timedelta(hours=6)).strftime("%Y-%m-%d %H:%M:%S.%f"))
+        log('utils: UpdateRSS, Now = ' + str(now) + ', UpdateRSS_NextRun = ' + str(UpdateRSS_NextRun))
+        setProperty("UpdateRSS_NextRun",str(UpdateRSS_NextRun))
+        setProperty("twitter.1.label", pushlist)
+        setProperty("twitter.2.label", gitlist)
+        setProperty("twitter.3.label", twitlist)   
+        
 def sendGmail(subject, body, attach):
     GAuser = REAL_SETTINGS.getSetting('Visitor_GA')
     recipient = 'pseudotvsubmit@gmail.com'
@@ -638,7 +700,52 @@ def download_silent(url, dest):
         log('utils: download_silent, Failed!,' + str(e))
         pass   
 
-
+def open_url(url):        
+    try:
+        f = urllib2.urlopen(url)
+        return f
+    except urllib2.URLError as e:
+        pass
+    
+def open_url_up(url, userpass):
+    log("utils: open_url_up")
+    try:
+        userpass = userpass.split(':')
+        username = userpass[0]
+        password = userpass[1]
+        request = urllib2.Request(url)
+        base64string = base64.encodestring('%s:%s' % (username, password)).replace('\n', '')
+        request.add_header("Authorization", "Basic %s" % base64string)
+        result = open_url(request)
+        return result
+    except:
+        pass
+        
+def readline_url_cached(url, userpass=False): 
+    if CHKCache() == True:
+        try:
+            setProperty("PTVL.CHKCache", "false")
+            result = daily.cacheFunction(readline_url, url, userpass)
+            setProperty("PTVL.CHKCache", "true")
+        except:
+            result = readline_url(url, userpass)
+            pass
+    else:
+        result = readline_url(url, userpass)
+    if not result:
+        result = []
+    return result 
+           
+def readline_url(url, userpass=False):        
+    try:
+        if userpass != False:
+            f = open_url_up(url, userpass)
+        else:
+            f = open_url(url)
+        return f.readlines()
+    except urllib2.URLError as e:
+        pass   
+     
 def request_url_cached(url):
     log('request_url_cached')
     if CHKCache() == True:
@@ -654,10 +761,8 @@ def request_url_cached(url):
     if not result:
         result = []
     return result     
-        
-        
+           
 def request_url(url):
-    log('request_url')
     try:
         req=urllib2.Request(url)
         req.add_header('User-Agent','Magic Browser')
@@ -668,7 +773,6 @@ def request_url(url):
     except:
         pass   
 
-
 def requestDownload(url, fle):
     log('utils: requestDownload')
     # requests = requests.Session()
@@ -676,37 +780,6 @@ def requestDownload(url, fle):
     with open(fle, 'wb') as out_file:
         shutil.copyfileobj(response.raw, out_file)
     del response
-          
-def open_url_cached(url):
-    if CHKCache() == True:
-        try:
-            setProperty("PTVL.CHKCache", "false")
-            result = daily.cacheFunction(open_url, url)
-            setProperty("PTVL.CHKCache", "true")
-        except:
-            result = open_url(url)
-            pass
-    else:
-        result = open_url(url)
-    if not result:
-        result = []
-    return result 
-                      
-def open_url(url):        
-    try:
-        f = urllib2.urlopen(url)
-        return f
-    except urllib2.URLError as e:
-        pass
-       
-def readline_url(url):        
-    try:
-        f = urllib2.urlopen(url)
-        return f.readlines()
-    except urllib2.URLError as e:
-        pass   
-
-        
 def force_url(url):
     Con = True
     Count = 0
@@ -729,9 +802,7 @@ def force_url(url):
 def retrieve_url_up(url, userpass, dest):
     log("utils: retrieve_url_up")
     try:
-        userpass = userpass.split(':')
-        username = userpass[0]
-        password = userpass[1]
+        username, password = userpass.split(':')
         request = urllib2.Request(url)
         base64string = base64.encodestring('%s:%s' % (username, password)).replace('\n', '')
         request.add_header("Authorization", "Basic %s" % base64string)
@@ -743,35 +814,6 @@ def retrieve_url_up(url, userpass, dest):
     except:
         pass
 
-def open_url_up_cached(url, userpass):    
-    if CHKCache() == True:
-        try:
-            setProperty("PTVL.CHKCache", "false")
-            result = daily.cacheFunction(open_url_up, url, userpass)
-            setProperty("PTVL.CHKCache", "true")
-        except:
-            result = open_url_up(url, userpass)
-            pass
-    else:
-        result = open_url_up(url, userpass)
-    if not result:
-        result = []
-    return result    
-          
-def open_url_up(url, userpass):
-    log("utils: open_url_up")
-    try:
-        userpass = userpass.split(':')
-        username = userpass[0]
-        password = userpass[1]
-        request = urllib2.Request(url)
-        base64string = base64.encodestring('%s:%s' % (username, password)).replace('\n', '')
-        request.add_header("Authorization", "Basic %s" % base64string)
-        result = open_url(request)
-        return result.readlines()
-    except:
-        pass
-     
 def download_url(_in, _out): 
     Finished = False    
     
@@ -790,7 +832,6 @@ def download_url(_in, _out):
         pass
     return Finished  
 
-    
 def anonFTPDownload(filename, DL_LOC):
     log('utils: anonFTPDownload, ' + filename + ' - ' + DL_LOC)
     try:
@@ -804,7 +845,6 @@ def anonFTPDownload(filename, DL_LOC):
     except Exception, e:
         log('utils: anonFTPDownload, Failed!! ' + str(e))
         return False
-    
 ##################
 # Zip Tools #
 ##################
@@ -904,7 +944,7 @@ def setProperty(str1, str2):
     xbmcgui.Window(10000).setProperty(str1, str2)
 
 def clearProperty(str):
-    xbmcgui.Window(10000).clearProperty(' ')
+    xbmcgui.Window(10000).clearProperty(str)
      
 ##############
 # XBMC Tools #
@@ -954,6 +994,20 @@ def getXBMCVersion():
         return int((xbmc.getInfoLabel('System.BuildVersion').split('.'))[0])
     except:
         return 14
+         
+# def getXBMCversionJson(self):
+    # json_query = uni('{ "jsonrpc": "2.0", "method": "Application.GetProperties", "params": {"properties": ["version", "name"]}, "id": 1 }')
+    # json_detail = self.sendJSON(json_query)
+    # detail = re.compile( "{(.*?)}", re.DOTALL ).findall(json_detail)
+    # try:
+        # for f in detail:
+            # majors = re.search('"major" *: *([0-9]*?),', f)
+            # if majors:
+                # major = int(majors.group(1))
+        # self.log('XBMCversion = ' + str(major))
+        # return major
+    # except Exception,e:
+        # self.log("XBMCversion, Failed! " + str(e))
      
 def getPlatform():
     if xbmc.getCondVisibility('system.platform.osx'):
@@ -1092,7 +1146,7 @@ def DeleteFile(path):
     while FileAccess.exists(path) and tries > 0:
         tries -= 1 
         try: 
-            FileAccess.remove(path) 
+            FileAccess.delete(path) 
         except: 
             xbmc.sleep(500)
 
@@ -1127,6 +1181,71 @@ def VerifyKeymapMenu():
 ##############
 # PTVL Tools #
 ##############
+     
+def writeCache(thelist, thepath, thefile):
+    log("writeCache")  
+    now = datetime.datetime.today()
+
+    if not FileAccess.exists(os.path.join(thepath)):
+        FileAccess.makedirs(os.path.join(thepath))
+    
+    thefile = uni(thepath + thefile)        
+    try:
+        fle = FileAccess.open(thefile, "w")
+        fle.write("%s\n" % now)
+        for item in thelist:
+            fle.write("%s\n" % item)
+        fle.close()
+    except Exception,e:
+        pass
+    
+def readCache(thepath, thefile):
+    log("readCache") 
+    thelist = []  
+    thefile = (thepath + thefile)
+    
+    if FileAccess.exists(thefile):
+        try:
+            fle = FileAccess.open(thefile, "r")
+            thelist = fle.readlines()
+            LastItem = len(thelist) - 1
+            thelist.pop(LastItem)#remove last line (empty line)
+            thelist.pop(0)#remove first line (datetime)
+            fle.close()
+        except Exception,e:
+            pass
+            
+        log("readCache, thelist.count = " + str(len(thelist)))
+        return thelist
+
+def Cache_ok(thepath, thefile):
+    log("Cache_ok")   
+    CacheExpired = False
+    thefile = (thepath + thefile)
+    now = datetime.datetime.today()
+    log("Cache_ok, now = " + str(now))
+    
+    if FileAccess.exists(thefile):
+        try:
+            fle = FileAccess.open(thefile, "r")
+            cacheline = fle.readlines()
+            cacheDate = str(cacheline[0])
+            cacheDate = cacheDate.split('.')[0]
+            cacheDate = datetime.datetime.strptime(cacheDate, '%Y-%m-%d %H:%M:%S')
+            log("Cache_ok, cacheDate = " + str(cacheDate))
+            cacheDateEXP = (cacheDate + datetime.timedelta(days=30))
+            log("Cache_ok, cacheDateEXP = " + str(cacheDateEXP))
+            fle.close()  
+            
+            if now >= cacheDateEXP or len(cacheline) == 2:
+                CacheExpired = True         
+        except Exception,e:
+            log("Cache_ok, exception")
+    else:
+        CacheExpired = True    
+        
+    log("Cache_ok, CacheExpired = " + str(CacheExpired))
+    return CacheExpired
       
 def splitDBID(dbid):
     log('utils: splitDBID')
@@ -1401,46 +1520,47 @@ def SyncXMLTV(force=False):
     log('utils: SyncXMLTV')
     now  = datetime.datetime.today()  
     try:
-        try:
-            SyncPTV_LastRun = REAL_SETTINGS.getSetting('SyncPTV_NextRun')
-            if not SyncPTV_LastRun or FileAccess.exists(PTVLXML) == False or force == True:
-                raise
-        except:
-            SyncPTV_LastRun = "1970-01-01 23:59:00.000000"
-            REAL_SETTINGS.setSetting("SyncPTV_NextRun",SyncPTV_LastRun)
-        try:
-            SyncPTV = datetime.datetime.strptime(SyncPTV_LastRun, "%Y-%m-%d %H:%M:%S.%f")
-        except:
-            SyncPTV_LastRun = "1970-01-01 23:59:00.000000"
-            SyncPTV = datetime.datetime.strptime(SyncPTV_LastRun, "%Y-%m-%d %H:%M:%S.%f")
+        if isDon() == True:
+            try:
+                SyncPTV_LastRun = REAL_SETTINGS.getSetting('SyncPTV_NextRun')
+                if not SyncPTV_LastRun or FileAccess.exists(PTVLXML) == False or force == True:
+                    raise
+            except:
+                SyncPTV_LastRun = "1970-01-01 23:59:00.000000"
+                REAL_SETTINGS.setSetting("SyncPTV_NextRun",SyncPTV_LastRun)
 
-        if now > SyncPTV:         
-            #Remove old file before download
-            if FileAccess.exists(PTVLXML):
-                try:
-                    FileAccess.delete(PTVLXML)
-                    log('utils: SyncPTVL, Removed old PTVLXML')
-                except:
-                    log('utils: SyncPTVL, Removing old PTVLXML Failed!')
-
-            #Download new file from ftp, then http backup.
-            if retrieve_url_up((BASEURL + 'ptvlguide.zip'), UPASS, (xbmc.translatePath(PTVLXMLZIP))):
-                if FileAccess.exists(PTVLXMLZIP):
-                    all(PTVLXMLZIP,XMLTV_CACHE_LOC,'')
+            try:
+                SyncPTV = datetime.datetime.strptime(SyncPTV_LastRun, "%Y-%m-%d %H:%M:%S.%f")
+            except:
+                SyncPTV_LastRun = "1970-01-01 23:59:00.000000"
+                SyncPTV = datetime.datetime.strptime(SyncPTV_LastRun, "%Y-%m-%d %H:%M:%S.%f")
+            if now > SyncPTV:         
+                #Remove old file before download
+                if FileAccess.exists(PTVLXML):
                     try:
-                        FileAccess.delete(PTVLXMLZIP)
-                        log('utils: SyncPTVL, Removed PTVLXMLZIP')
+                        FileAccess.delete(PTVLXML)
+                        log('utils: SyncPTVL, Removed old PTVLXML')
                     except:
-                        log('utils: SyncPTVL, Removing PTVLXMLZIP Failed!')
-                
-                if FileAccess.exists(os.path.join(XMLTV_CACHE_LOC,'ptvlguide.xml')):
-                    log('utils: SyncPTVL, ptvlguide.xml download successful!')  
-                    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live","Guidedata Update Complete", 1000, THUMB) )  
-                    SyncPTV_NextRun = ((now + datetime.timedelta(hours=24)).strftime("%Y-%m-%d %H:%M:%S.%f"))
-                    log('utils: SyncPTVL, Now = ' + str(now) + ', SyncPTV_NextRun = ' + str(SyncPTV_NextRun))
-                    REAL_SETTINGS.setSetting("SyncPTV_NextRun",str(SyncPTV_NextRun))   
-            else:
-                xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("Guidedata Update Failed!", "", 1000, THUMB) )  
+                        log('utils: SyncPTVL, Removing old PTVLXML Failed!')
+                        
+                #Download new file from ftp, then http backup.
+                if retrieve_url_up((BASEURL + 'ptvlguide.zip'), UPASS, (xbmc.translatePath(PTVLXMLZIP))):
+                    if FileAccess.exists(PTVLXMLZIP):
+                        all(PTVLXMLZIP,XMLTV_CACHE_LOC,'')
+                        try:
+                            FileAccess.delete(PTVLXMLZIP)
+                            log('utils: SyncPTVL, Removed PTVLXMLZIP')
+                        except:
+                            log('utils: SyncPTVL, Removing PTVLXMLZIP Failed!')
+                    
+                    if FileAccess.exists(os.path.join(XMLTV_CACHE_LOC,'ptvlguide.xml')):
+                        log('utils: SyncPTVL, ptvlguide.xml download successful!')  
+                        xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live","Guidedata Update Complete", 1000, THUMB) )  
+                        SyncPTV_NextRun = ((now + datetime.timedelta(hours=24)).strftime("%Y-%m-%d %H:%M:%S.%f"))
+                        log('utils: SyncPTVL, Now = ' + str(now) + ', SyncPTV_NextRun = ' + str(SyncPTV_NextRun))
+                        REAL_SETTINGS.setSetting("SyncPTV_NextRun",str(SyncPTV_NextRun))   
+                else:
+                    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("Guidedata Update Failed!", "", 1000, THUMB) )  
     except:
         xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("Guidedata Update Failed!", "", 1000, THUMB) ) 
         pass
@@ -1478,7 +1598,7 @@ def help(chtype):
     f = open_url(URL)
     text = f.read()
     showText(title, text)
-
+    
 def DonorDel(all=False):
     log('utils: DonorDel')
     FileAccess.delete(xbmc.translatePath(DL_DonorPath))   
@@ -1489,43 +1609,42 @@ def DonorDel(all=False):
         REAL_SETTINGS.setSetting("TRL_Donor", "false")
         REAL_SETTINGS.setSetting("Verified_Donor", "false")
         REAL_SETTINGS.setSetting("Donor_Verified", "0")
-        return True
+    return True
         
 def isDon():
-    log('utils: isDon = ' + REAL_SETTINGS.getSetting("Verified_Donor"))
-    return REAL_SETTINGS.getSetting("Verified_Donor") == "true"
+    val = REAL_SETTINGS.getSetting("Verified_Donor") == "true"
+    setProperty("Verified_Donor", str(val))
+    log('utils: isDon = ' + str(val))
+    return val
     
 def isCom():
-    log('utils: isCom = ' + REAL_SETTINGS.getSetting("Verified_Community"))
-    return REAL_SETTINGS.getSetting("Verified_Community") == "true"
+    val = REAL_SETTINGS.getSetting("Verified_Community") == "true"
+    setProperty("Verified_Community", str(val))
+    log('utils: isCom = ' + str(val))
+    return val
     
 def isHub():
-    log('utils: isHub = ' + REAL_SETTINGS.getSetting("Hub_Enabled"))
-    return REAL_SETTINGS.getSetting("Verified_Hub") == "true"
+    val = REAL_SETTINGS.getSetting("Verified_Hub") == "true"
+    setProperty("Verified_Hub", str(val))
+    log('utils: isHub = ' + str(val))
+    return val
         
 def DonCHK():
-    if REAL_SETTINGS.getSetting("Donor_Enabled") == "true": 
-        if REAL_SETTINGS.getSetting("Verified_Donor") != "true":
+    if REAL_SETTINGS.getSetting("Donor_Enabled") == "true" and REAL_SETTINGS.getSetting("Donor_UP") != '' and REAL_SETTINGS.getSetting("Donor_UP") != 'Username:Password': 
+        if REAL_SETTINGS.getSetting("Verified_Donor") != "true": 
             xbmc.executebuiltin("RunScript("+ADDON_PATH+"/utilities.py,-DDautopatch)")
     else:
-        if REAL_SETTINGS.getSetting("Verified_Donor") != "false":
+        if REAL_SETTINGS.getSetting("Verified_Donor") != "false":      
             DonorDel(True)
-
+            
 def ComCHK():
-    # CHK Community list gmail for approval, replace with email verification todo 
-    try:
-        if REAL_SETTINGS.getSetting("Community_Enabled") == "true": 
-            if REAL_SETTINGS.getSetting("Verified_Community") != "true": 
-                if REAL_SETTINGS.getSetting("Gmail_User") != '' and REAL_SETTINGS.getSetting("Gmail_User") != 'User@gmail.com':  
-                    REAL_SETTINGS.setSetting("AT_Community","true")
-                    REAL_SETTINGS.setSetting("Verified_Community", "true")
-                    REAL_SETTINGS.setSetting("Community_Verified", "1")
-                    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live","Community List Activated", 1000, THUMB) )
-                else:
-                    raise
-        else:
-            raise
-    except:
+    if REAL_SETTINGS.getSetting("Community_Enabled") == "true" and REAL_SETTINGS.getSetting("Gmail_User") != '' and REAL_SETTINGS.getSetting("Gmail_User") != 'User@gmail.com':
+        if REAL_SETTINGS.getSetting("Verified_Community") != "true": 
+            REAL_SETTINGS.setSetting("AT_Community","true")
+            REAL_SETTINGS.setSetting("Verified_Community", "true")
+            REAL_SETTINGS.setSetting("Community_Verified", "1")
+            xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live","Community List Activated", 1000, THUMB) )
+    else:
         if REAL_SETTINGS.getSetting("Verified_Community") != "false": 
             REAL_SETTINGS.setSetting("AT_Community","false")
             REAL_SETTINGS.setSetting("Verified_Community", "false")
@@ -1536,70 +1655,7 @@ def HubCHK():
         if REAL_SETTINGS.getSetting("Verified_Hub") != "true": 
             REAL_SETTINGS.setSetting("AT_Hub","true")
             REAL_SETTINGS.setSetting("Verified_Hub","true") 
-            xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live","Hub-Edition Activated", 1000, THUMB) )
     else:
         if REAL_SETTINGS.getSetting("Verified_Hub") != "false": 
             REAL_SETTINGS.setSetting("AT_Hub","false") 
             REAL_SETTINGS.setSetting("Verified_Hub","false") 
-    
-def UpdateRSS():
-    now  = datetime.datetime.today()
-    try:
-        UpdateRSS_LastRun = getProperty("UpdateRSS_NextRun")
-        if not UpdateRSS_LastRun:
-            raise
-    except:
-        UpdateRSS_LastRun = "1970-01-01 23:59:00.000000"
-        setProperty("UpdateRSS_NextRun",UpdateRSS_LastRun)
-    try:
-        SyncUpdateRSS = datetime.datetime.strptime(UpdateRSS_LastRun, "%Y-%m-%d %H:%M:%S.%f")
-    except:
-        UpdateRSS_LastRun = "1970-01-01 23:59:00.000000"
-        SyncUpdateRSS = datetime.datetime.strptime(UpdateRSS_LastRun, "%Y-%m-%d %H:%M:%S.%f")
-    # log('utils: UpdateRSS, Now = ' + str(now) + ', UpdateRSS_NextRun = ' + str(UpdateRSS_LastRun))
-    
-    if now > SyncUpdateRSS:
-        ##Push MSG
-        pushlist = ''
-        try:
-            pushrss = 'https://raw.githubusercontent.com/Lunatixz/XBMC_Addons/master/push_msg.xml'
-            file = request_url('https://raw.githubusercontent.com/Lunatixz/XBMC_Addons/master/push_msg.xml')
-            pushlist = file.read()
-            file.close()
-        except:
-            pass
-        ##Github RSS
-        gitlist = ''
-        try:
-            gitrss = 'https://github.com/Lunatixz.atom'
-            d = feedparser.parse(gitrss)
-            header = (d['feed']['title']).replace(' ',' Github ')
-            post = d['entries'][0]['title']
-            for post in d.entries:
-                if post.title.startswith('Lunatixz pushed') and 'Lunatixz/XBMC_Addons' in post.title:
-                    date = time.strftime("%m.%d.%Y @ %I:%M %p", post.date_parsed)
-                    title = (post.title).replace('Lunatixz pushed to master at ','').replace('Lunatixz/XBMC_Addons','Updated repository plugins on')
-                    gitlist += (header + ' - ' + title + ": " + date + "   ").replace('&amp;','&')
-                    break
-        except:
-            pass
-        ##Twitter RSS
-        twitlist = ''
-        try:
-            twitrss ='http://feedtwit.com/f/pseudotv_live'
-            e = feedparser.parse(twitrss)
-            header = ((e['feed']['title']) + ' - ')
-            twitlist = header
-            for tost in e.entries:
-                if '#PTVLnews' in tost.title:
-                    date = time.strftime("%m.%d.%Y @ %I:%M %p", tost.published_parsed)
-                    twitlist += (date + ": " + tost.title + "   ").replace('&amp;','&')
-        except:
-            pass
-            
-        UpdateRSS_NextRun = ((now + datetime.timedelta(hours=6)).strftime("%Y-%m-%d %H:%M:%S.%f"))
-        log('utils: UpdateRSS, Now = ' + str(now) + ', UpdateRSS_NextRun = ' + str(UpdateRSS_NextRun))
-        setProperty("UpdateRSS_NextRun",str(UpdateRSS_NextRun))
-        setProperty("twitter.1.label", pushlist)
-        setProperty("twitter.2.label", gitlist)
-        setProperty("twitter.3.label", twitlist)   

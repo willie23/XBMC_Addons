@@ -121,6 +121,13 @@ def ClearChanFavorites():
     # Return to PTVL Settings
     REAL_SETTINGS.openSettings()
                    
+def showChtype():
+    log('utilities: showChtype')
+    ChtypeLst = ['General','Custom Playlist','TV Network','Movie Studio','TV Genre','Movie Genre','Mixed Genre','TV Show','Directory','LiveTV','InternetTV','Youtube','RSS','Music','Music Videos','Exclusive','Plugin','UPNP']
+    select = selectDialog(ChtypeLst, 'Select Channel Type')
+    if select != -1:
+        help(ChtypeLst[select])
+                   
 if sys.argv[1] == '-DDautopatch':
     DonorDownloader(True)   
 elif sys.argv[1] == '-DonorDownloader':
@@ -134,10 +141,7 @@ elif sys.argv[1] == '-showReadme':
 elif sys.argv[1] == '-showUserSettings':
     showInfo(ADDON_ID, 'settings') 
 elif sys.argv[1] == '-showChtype':
-    ChtypeLst = ['General','Custom Playlist','TV Network','Movie Studio','TV Genre','Movie Genre','Mixed Genre','TV Show','Directory','LiveTV','InternetTV','Youtube','RSS','Music','Music Videos','Exclusive','Plugin','UPNP']
-    select = selectDialog(ChtypeLst, 'Select Channel Type')
-    if select != -1:
-        help(ChtypeLst[select])
+    showChtype()
 elif sys.argv[1] == '-showDisclaimer':
     showInfo(ADDON_ID, 'disclaimer') 
 elif sys.argv[1] == '-DeleteSettings2':

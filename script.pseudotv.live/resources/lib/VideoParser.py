@@ -72,5 +72,4 @@ class VideoParser:
         else:
             self.log("No parser found for extension " + ext)
             return 0
-
         return self.parser.determineLength(filename)

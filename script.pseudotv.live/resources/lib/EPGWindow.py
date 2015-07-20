@@ -1422,10 +1422,9 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             if FileAccess.exists(setImage) == False:
                 setImage = self.Artdownloader.SetDefaultArt_NEW(data[2], data[5], data[6])
             self.getControl(data[7]).setImage(setImage)
+            self.setNew(self.MyOverlayWindow.isNEW(int(getProperty("PVR.Chtype")), getProperty("PVR.Mediapath"), int(getProperty("PVR.Playcount"))))
         except Exception,e:
             self.log('FindArtwork_Thread, Failed!,' + str(e))
-            
-        self.setNew(self.MyOverlayWindow.isNEW(getProperty("PVR.Mediapath"), getProperty("PVR.Playcount")))
             
             
     def setNew(self, aired):

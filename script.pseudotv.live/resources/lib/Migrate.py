@@ -181,8 +181,8 @@ class Migrate:
         if Globals.REAL_SETTINGS.getSetting("autoFindLivePVR") == "true":
             self.log("autoTune, adding Live PVR Channels")
             self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding PVR Channels"," ")
-            chanlist.cached_readXMLTV = []
             PVRnum = 0
+            chanlist.cached_readXMLTV = []
             try:
                 PVRNameList, PVRPathList = chanlist.fillPVR()
 
@@ -304,19 +304,13 @@ class Migrate:
         if Globals.REAL_SETTINGS.getSetting("autoFindUSTVNOW") == "true":
             self.log("autoTune, adding USTVnow Channels")
             self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding USTVnow Channels"," ")
-            chanlist.cached_readXMLTV = []
             USTVnum = 0
+            chanlist.cached_readXMLTV = []
             USTVnow = chanlist.plugin_ok('plugin.video.ustvnow')
-                
-            if USTVnow == True:
-                    
+            
+            if USTVnow == True:   
                 try:
-                    json_query = uni('{"jsonrpc":"2.0","method":"Files.GetDirectory","params":{"directory":"plugin://plugin.video.ustvnow/live?mode=live","media":"video","properties":["thumbnail"]},"id":1}')
-                    json_folder_detail = chanlist.sendJSON(json_query)
-                    if not json_folder_detail:
-                        json_folder_detail = chanlist.sendJSON(json_query)
-                    file_detail = re.compile( "{(.*?)}", re.DOTALL ).findall(json_folder_detail)
-
+                    file_detail = chanlist.PluginQuery("plugin://plugin.video.ustvnow/live?mode=live")
                     for USTVnum in file_detail:      
                         files = re.search('"file" *: *"(.*?)"', USTVnum)
                         labels = re.search('"label" *: *"(.*?)"', USTVnum)
@@ -331,24 +325,19 @@ class Migrate:
                             if thumbnails != None and len(thumbnails.group(1)) > 0:
                                 thumbnail = thumbnails.group(1)
                                 GrabLogo(thumbnail, CHname + ' USTV')
-                                
-                            if not xbmcvfs.exists(PTVLXML):
-                                SyncPTVL(True)
-                                
-                            if xbmcvfs.exists(PTVLXML):  
-                                CHSetName, CHzapit = chanlist.findZap2itID('USTVnow - ' + CHname, PTVLXML)
-                                Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_type", "8")
-                                Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_time", "0")
-                                Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_1", CHzapit)
-                                # Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_2", file) #Raw RTMP Link
-                                Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_2", "plugin://plugin.video.ustvnow/?name="+CHname+"&mode=play")
-                                Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_3", "ptvlguide")
-                                Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rulecount", "1")
-                                Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rule_1_id", "1")
-                                Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rule_1_opt_1", CHname + ' USTV')   
-                                Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_changed", "true")                           
-                                self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding USTVnow Channels",CHname)
-                                channelNum += 1
+                                 
+                            # CHSetName, CHzapit = chanlist.findZap2itID('USTVnow - ' + CHname, PTVLXML)
+                            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_type", "8")
+                            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_time", "0")
+                            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_1", "USTVnow - "+CHname)
+                            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_2", "plugin://plugin.video.ustvnow/?name="+CHname+"&mode=play")
+                            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_3", "ptvlguide")
+                            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rulecount", "1")
+                            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rule_1_id", "1")
+                            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rule_1_opt_1", CHname + ' USTV')   
+                            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_changed", "true")                           
+                            self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding USTVnow Channels",CHname)
+                            channelNum += 1
                 except:
                     pass
 

@@ -129,6 +129,7 @@ class ChannelList:
         self.tmdbAPI = tmdb.TMDB(TMDB_API_KEY)  
         self.sbAPI = sickbeard.SickBeard(REAL_SETTINGS.getSetting('sickbeard.baseurl'),REAL_SETTINGS.getSetting('sickbeard.apikey'))
         self.cpAPI = couchpotato.CouchPotato(REAL_SETTINGS.getSetting('couchpotato.baseurl'),REAL_SETTINGS.getSetting('couchpotato.apikey'))
+        self.OSpath = self.getOSPpath(REAL_SETTINGS.getSetting('os'))
         self.findMaxChannels()
         
         if self.forceReset:
@@ -1595,7 +1596,7 @@ class ChannelList:
                         except Exception,e:
                             dur = 0
                             pass
-
+                            
                     # Less accurate duration
                     if dur == 0:
                         duration = re.search('"runtime" *: *([0-9]*?),', f)
@@ -1904,7 +1905,7 @@ class ChannelList:
             result = self.buildLiveTVFileList_NEW(setting1, setting2, setting3, setting4, limit)
         if not result:
             chname = (self.getChannelName(9, self.settingChannel))
-            result = self.buildInternetTVFileList('5400', setting2, chname, 'Guide-data from ' + str(setting3) + ' is currently unavailable.', 24)
+            result = self.buildInternetTVFileList('5400', setting2, chname, 'Guide-data from ' + str(setting3) + ' is currently available to donors only.', 24)
         return result  
         
     
@@ -3251,39 +3252,18 @@ class ChannelList:
         return self.strmValid   
 
 
+    def getffprobeLength(filename):
+        self.FFpath = self.OSpath.replace('rtmpdump','ffprobe')
+        FFPROBE = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'lib', 'rtmpdump', self.FFpath))
+        result = subprocess.Popen([FFPROBE, filename],
+        stdout = subprocess.PIPE, stderr = subprocess.STDOUT)
+        return [x for x in result.stdout.readlines() if "Duration" in x]
+      
+      
     def rtmpDump(self, stream):
         self.rtmpValid = False
         url = unquote(stream)
-        
-        OSplat = REAL_SETTINGS.getSetting('os')
-        if OSplat == '0':
-            OSpath = 'androidarm/rtmpdump'
-        elif OSplat == '1':
-            OSpath = 'android86/rtmpdump'
-        elif OSplat == '2':
-            OSpath = 'atv1linux/rtmpdump'
-        elif OSplat == '3':
-            OSpath = 'atv1stock/rtmpdump'
-        elif OSplat == '4':
-            OSpath = 'atv2/rtmpdump'
-        elif OSplat == '5':
-            OSpath = 'ios/rtmpdump'
-        elif OSplat == '6':
-            OSpath = 'linux32/rtmpdump'
-        elif OSplat == '7':
-            OSpath = 'linux64/rtmpdump'
-        elif OSplat == '8':
-            OSpath = 'mac32/rtmpdump'
-        elif OSplat == '9':
-            OSpath = 'mac64/rtmpdump'
-        elif OSplat == '10':
-            OSpath = 'pi/rtmpdump'
-        elif OSplat == '11':
-            OSpath = 'win/rtmpdump.exe'
-        elif OSplat == '12':
-            OSpath = '/usr/bin/rtmpdump'
-            
-        RTMPDUMP = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'lib', 'rtmpdump', OSpath))
+        RTMPDUMP = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'lib', 'rtmpdump', self.OSpath))
         self.log("RTMPDUMP = " + RTMPDUMP)
         assert os.path.isfile(RTMPDUMP)
         
@@ -3954,75 +3934,6 @@ class ChannelList:
                     video += self.walk(os.path.join(folder,item,'')) # make sure paths end with a slash
         return video
         
-    
-    def writeCache(self, thelist, thepath, thefile):
-        self.log("writeCache")  
-        now = datetime.datetime.today()
-
-        if not FileAccess.exists(os.path.join(thepath)):
-            FileAccess.makedirs(os.path.join(thepath))
-        
-        thefile = uni(thepath + thefile)        
-        try:
-            fle = FileAccess.open(thefile, "w")
-            fle.write("%s\n" % now)
-            for item in thelist:
-                fle.write("%s\n" % item)
-            fle.close()
-        except Exception,e:
-            pass
-        
-    
-    def readCache(self, thepath, thefile):
-        self.log("readCache") 
-        thelist = []  
-        thefile = (thepath + thefile)
-        
-        if FileAccess.exists(thefile):
-            try:
-                fle = FileAccess.open(thefile, "r")
-                thelist = fle.readlines()
-                LastItem = len(thelist) - 1
-                thelist.pop(LastItem)#remove last line (empty line)
-                thelist.pop(0)#remove first line (datetime)
-                fle.close()
-            except Exception,e:
-                pass
-                
-            self.logDebug("readCache, thelist.count = " + str(len(thelist)))
-            return thelist
-    
-    
-    def Cache_ok(self, thepath, thefile):
-        self.log("Cache_ok")   
-        CacheExpired = False
-        thefile = (thepath + thefile)
-        now = datetime.datetime.today()
-        self.logDebug("Cache_ok, now = " + str(now))
-        
-        if FileAccess.exists(thefile):
-            try:
-                fle = FileAccess.open(thefile, "r")
-                cacheline = fle.readlines()
-                cacheDate = str(cacheline[0])
-                cacheDate = cacheDate.split('.')[0]
-                cacheDate = datetime.datetime.strptime(cacheDate, '%Y-%m-%d %H:%M:%S')
-                self.logDebug("Cache_ok, cacheDate = " + str(cacheDate))
-                cacheDateEXP = (cacheDate + datetime.timedelta(days=30))
-                self.logDebug("Cache_ok, cacheDateEXP = " + str(cacheDateEXP))
-                fle.close()  
-                
-                if now >= cacheDateEXP or len(cacheline) == 2:
-                    CacheExpired = True         
-            except Exception,e:
-                self.logDebug("Cache_ok, exception")
-        else:
-            CacheExpired = True    
-            
-        self.log("Cache_ok, CacheExpired = " + str(CacheExpired))
-        return CacheExpired
-    
-     
     def extras(self, setting1, setting2, setting3, setting4, channel):
         self.log("extras")
         limit = MEDIA_LIMIT[int(REAL_SETTINGS.getSetting('MEDIA_LIMIT'))]
@@ -4056,7 +3967,7 @@ class ChannelList:
         self.log("PluginQuery") 
         json_folder_detail = ''
         FleType = 'video'
-        json_query = uni('{"jsonrpc": "2.0", "method": "Files.GetDirectory", "params": {"directory": "%s", "media": "%s", "properties":["title","year","mpaa","imdbnumber","description","season","episode","playcount","genre","duration","runtime","showtitle","album","artist","plot","plotoutline","tagline"]}, "id": 1}' % (self.escapeDirJSON(path), FleType))
+        json_query = uni('{"jsonrpc": "2.0", "method": "Files.GetDirectory", "params": {"directory": "%s", "media": "%s", "properties":["title","year","mpaa","imdbnumber","description","thumbnail","season","episode","playcount","genre","duration","runtime","showtitle","album","artist","plot","plotoutline","tagline"]}, "id": 1}' % (self.escapeDirJSON(path), FleType))
         json_folder_detail = self.sendJSON(json_query)
         return re.compile( "{(.*?)}", re.DOTALL ).findall(json_folder_detail)
     
@@ -4974,22 +4885,7 @@ class ChannelList:
             self.log("IPTVtuning, Failed! " + str(e))    
         hide_busy_dialog()
         return IPTVNameList, IPTVPathList
-        
-            
-    def XBMCversion(self):
-        json_query = uni('{ "jsonrpc": "2.0", "method": "Application.GetProperties", "params": {"properties": ["version", "name"]}, "id": 1 }')
-        json_detail = self.sendJSON(json_query)
-        detail = re.compile( "{(.*?)}", re.DOTALL ).findall(json_detail)
-        try:
-            for f in detail:
-                majors = re.search('"major" *: *([0-9]*?),', f)
-                if majors:
-                    major = int(majors.group(1))
-            self.log('XBMCversion = ' + str(major))
-            return major
-        except Exception,e:
-            self.log("XBMCversion, Failed! " + str(e))
-        
+
         
     def fillPluginList(self):
         self.log('fillPluginList')
@@ -4997,22 +4893,22 @@ class ChannelList:
         json_detail = self.sendJSON(json_query)
         detail = re.compile( "{(.*?)}", re.DOTALL ).findall(json_detail)
         TMPpluginList = []
-        # try:
-        for f in detail:
-            names = re.search('"name" *: *"(.*?)",', f)
-            paths = re.search('"addonid" *: *"(.*?)",', f)
-            if names and paths:
-                name = self.CleanLabels(names.group(1))
-                path = paths.group(1)
-                if name.lower() != 'super favourites' and name.lower() != '.playon browser' and name.lower() != 'playon browser':
-                    TMPpluginList.append(name+','+path)  
-                
-        SortedpluginList = sorted_nicely(TMPpluginList)
-        for i in range(len(SortedpluginList)):
-            self.pluginNameList.append((SortedpluginList[i]).split(',')[0])
-            self.pluginPathList.append((SortedpluginList[i]).split(',')[1]) 
-        # except Exception,e:
-            # self.log("fillPluginList, Failed! " + str(e))
+        try:
+            for f in detail:
+                names = re.search('"name" *: *"(.*?)",', f)
+                paths = re.search('"addonid" *: *"(.*?)",', f)
+                if names and paths:
+                    name = self.CleanLabels(names.group(1))
+                    path = paths.group(1)
+                    if name.lower() != 'super favourites' and name.lower() != '.playon browser' and name.lower() != 'playon browser':
+                        TMPpluginList.append(name+','+path)  
+                    
+            SortedpluginList = sorted_nicely(TMPpluginList)
+            for i in range(len(SortedpluginList)):
+                self.pluginNameList.append((SortedpluginList[i]).split(',')[0])
+                self.pluginPathList.append((SortedpluginList[i]).split(',')[1]) 
+        except Exception,e:
+            self.log("fillPluginList, Failed! " + str(e))
 
         if len(TMPpluginList) == 0:
             self.pluginNameList = ['No Kodi plugins unavailable!']
@@ -5030,8 +4926,7 @@ class ChannelList:
         self.cached_json_detailed_xmltvChannels_pvr = [] 
         
         #PVR Path by XBMC Version
-        XBMCver = self.XBMCversion()
-        if XBMCver < 14:
+        if self.XBMCversion() < 14:
             PVRverPath = "pvr://channels/tv/All TV channels/"
         else:
             PVRverPath = "pvr://channels/tv/All channels/"          
@@ -5095,7 +4990,6 @@ class ChannelList:
                         # elif "window" in fav and "windowparameter" in fav:
                             # path = "ActivateWindow(%s,%s)" % (fav["window"], fav["windowparameter"])
                             TMPfavouritesList.append(name+'@#@'+path) 
-
             SortedFavouritesList = sorted_nicely(TMPfavouritesList)
             for i in range(len(SortedFavouritesList)):  
                 FavouritesNameList.append((SortedFavouritesList[i]).split('@#@')[0])  
@@ -5608,13 +5502,43 @@ class ChannelList:
         
         return year, imdbnumber, genre, rating, Managed, tagline
         
-
+        
+    def getOSPpath(self, OSplat):
+        self.log("getOSPpath") 
+        if OSplat == '0':
+            return 'androidarm/rtmpdump'
+        elif OSplat == '1':
+            return 'android86/rtmpdump'
+        elif OSplat == '2':
+            return 'atv1linux/rtmpdump'
+        elif OSplat == '3':
+            return 'atv1stock/rtmpdump'
+        elif OSplat == '4':
+            return 'atv2/rtmpdump'
+        elif OSplat == '5':
+            return 'ios/rtmpdump'
+        elif OSplat == '6':
+            return 'linux32/rtmpdump'
+        elif OSplat == '7':
+            return 'linux64/rtmpdump'
+        elif OSplat == '8':
+            return 'mac32/rtmpdump'
+        elif OSplat == '9':
+            return 'mac64/rtmpdump'
+        elif OSplat == '10':
+            return 'pi/rtmpdump'
+        elif OSplat == '11':
+            return 'win/rtmpdump.exe'
+        elif OSplat == '12':
+            return '/usr/bin/rtmpdump'
+            
+            
     def getFileListCache(self, chtype, channel, purge=False):
         self.log("getFileListCache")
         #Cache name
         cachetype = str(chtype) + ':' + str(channel)
         
-        #Set Life of cach
+        #Set Life of cache
         if chtype <= 7:
             life = SETTOP_REFRESH - 1000
         elif chtype == 8:
@@ -5622,18 +5546,21 @@ class ChannelList:
         else:
             life = 24
             
-        self.FileListCache = StorageServer.StorageServer("plugin://script.pseudotv.live/" + cachetype,life)
+        self.FileListCache = StorageServer.StorageServer(("plugin://script.pseudotv.live/%s" % cachetype),life)
         if purge:
             self.FileListCache.delete("%")
-        return True
-         
+
          
     def clearFileListCache(self, chtype=-1, channel=9999):
         self.log("clearFileListCache")
-        if chtype == -1 and channel == 9999:
+        if channel == 9999:
             for n in range(999):
                 for i in range(15):
-                    self.getFileListCache(i+1, n+1, True)
-        elif channel == 9999:
-            channel = self.settingChannel
-        return True
+                    try:
+                        self.getFileListCache(i+1, n+1, True)
+                    except:
+                        pass
+            return True
+        else:
+            self.getFileListCache(chtype, channel, True)
+            return True

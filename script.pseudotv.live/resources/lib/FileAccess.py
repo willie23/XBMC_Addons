@@ -36,7 +36,6 @@ class FileAccess:
     def open(filename, mode, encoding = "utf-8"):
         fle = 0
         FileAccess.log("trying to open " + filename)
-        
         try:
             return VFSFile(filename, mode)
         except UnicodeDecodeError:
@@ -76,7 +75,6 @@ class FileAccess:
             return xbmcvfs.exists(filename)
         except UnicodeDecodeError:
             return FileAccess.exists(ascii(filename))
-
         return False
 
 
@@ -91,7 +89,6 @@ class FileAccess:
                 fle = codecs.open(newname, mode, encoding)
             except Exception,e:
                 fle = 0
-
         return fle
 
 
@@ -100,7 +97,6 @@ class FileAccess:
         if os.name.lower() == 'nt':
             filename = '\\\\' + filename[6:]
             return FileAccess.exists(filename)
-
         return False
 
 
@@ -165,7 +161,6 @@ class FileAccess:
 
             if FileAccess._makedirs(os.path.dirname(path)):
                 return xbmcvfs.mkdir(path)
-
         return xbmcvfs.exists(path)
         
         
@@ -211,6 +206,7 @@ class VFSFile:
         
     def readlines(self):
         return self.currentFile.read().split('\n')    
+        
         
     def writelines(self):
         return self.currentFile.write().split('\n')
@@ -537,5 +533,4 @@ class FileLock:
 
         self.releaseLockFile()
         self.grabSemaphore.release()
-        return retval
-        
+        return retval  
