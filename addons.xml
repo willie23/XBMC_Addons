@@ -1,5 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addons>
+<addon id="context.pseudotv.live.export" name="PseudoTV Live Export" version="1.0.0" provider-name="Lunatixz">
+  <requires>
+    <import addon="xbmc.python" version="2.20.0"/>
+    <import addon="script.pseudotv.live" version="0.6.5"/>
+  </requires>
+    <extension point="kodi.context.item" library="addon.py">
+      <item>
+        <label>32000</label>
+        <visible>true</visible>
+        <!-- <visible>StringCompare(ListItem.dbtype,movie) | StringCompare(ListItem.dbtype,tvshow) | StringCompare(ListItem.dbtype,season) | StringCompare(ListItem.dbtype,episode)</visible> -->
+<!--         <visible>!IsEmpty(ListItem.Property(Addon.ID)) | StringCompare(ListItem.Addon.Type,video) | StringCompare(ListItem.Addon.Type,music)</visible> -->
+      </item>
+    </extension>
+  <extension point="xbmc.addon.metadata">
+    <description lang="en">Export sources to PseudoTV Live for easy channel creation.</description>
+    <description lang="en_US">>Export sources to PseudoTV Live for easy channel creation.</description>
+    <platform>all</platform>
+    <forum></forum>
+    <source></source>
+  </extension>
+</addon>
+
 <addon id="plugin.video.playonbrowser" name=".Playon Browser" version="1.0.2" provider-name="Sytone, Lunatixz">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -25,7 +47,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.ustvnow" version="10.0.3" name="USTVnow" provider-name="Lunatixz">
+<addon id="plugin.video.ustvnow" version="10.0.5" name="USTVnow" provider-name="Lunatixz">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
     </requires>
@@ -33,9 +55,12 @@
         <provides>video</provides>
     </extension>
     <extension point="xbmc.addon.metadata">
-        <summary>Plays live streams and recordings from ustvnow.com</summary>
-        <description>Live streaming US TV. You MUST log in to view streams (see addon settings). You can also play any recordings you have made on ustvnow.com</description>
+        <summary lang="en">Plays live streams and recordings from ustvnow.com</summary>
+        <description lang="en">Live streaming US TV. You MUST log in to view streams (see addon settings). You can also play any recordings you have made on ustvnow.com</description>
         <platform>all</platform>
+        <language>en</language>
+        <license>GNU GENERAL PUBLIC LICENSE. Version 3, June 2007</license>
+        <source>https://github.com/Lunatixz/XBMC_Addons/tree/master/plugin.video.ustvnow</source>
     </extension>
 </addon>
 
