@@ -13,5 +13,6 @@
         <language>en</language>
         <license>GNU GENERAL PUBLIC LICENSE. Version 3, June 2007</license>
         <source>https://github.com/Lunatixz/XBMC_Addons/tree/master/plugin.video.ustvnow</source>
+        <forum>http://forum.kodi.tv/showthread.php?tid=233135</forum>   
     </extension>
 </addon>
