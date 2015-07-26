@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="context.pseudotv.live.export" name="PseudoTV Live Export" version="1.0.0" provider-name="Lunatixz">
+<addon id="context.pseudotv.live.export" name="PseudoTV Live Export" version="1.0.1" provider-name="Lunatixz">
   <requires>
     <import addon="xbmc.python" version="2.20.0"/>
     <import addon="script.pseudotv.live" version="0.6.5"/>
@@ -7,9 +7,7 @@
     <extension point="kodi.context.item" library="addon.py">		
       <item>
         <label>32000</label>
-        <visible>true</visible>
-        <!-- <visible>StringCompare(ListItem.dbtype,movie) | StringCompare(ListItem.dbtype,tvshow) | StringCompare(ListItem.dbtype,season) | StringCompare(ListItem.dbtype,episode)</visible> -->
-<!--         <visible>!IsEmpty(ListItem.Property(Addon.ID)) | StringCompare(ListItem.Addon.Type,video) | StringCompare(ListItem.Addon.Type,music)</visible> -->
+        <visible>[ListItem.IsFolder | ListItem.Property(IsPlayable) | StringCompare(ListItem.dbtype,tvshow)]</visible>
       </item>
     </extension>
   <extension point="xbmc.addon.metadata">
