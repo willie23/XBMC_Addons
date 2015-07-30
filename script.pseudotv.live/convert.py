@@ -34,10 +34,15 @@ class Main:
         if REAL_SETTINGS.getSetting("convert") != "true":
             ADDON_SETTINGS.loadSettings()
             self.channelList = ChannelList()  
-            okDialog('PseudoTV Live is about to convert your plugin channels to the new format, please be patient, do not interrupt this process! You will be prompted when its finished.')
+            
+            try:
+                settingsFile = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.xml'))
+                okDialog('PseudoTV Live is about to convert your plugin channels to the new format, please be patient, do not interrupt this process! You will be prompted when its finished.')
+                shutil.copy(settingsFile, xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.pre.convert.xml')))
+            except:
+                return
+                
             show_busy_dialog()
-            settingsFile = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.xml'))
-            shutil.copy(settingsFile, xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.pre.convert.xml')))
             self.updateListing()
     
     
@@ -76,9 +81,12 @@ class Main:
               
         hide_busy_dialog()
         REAL_SETTINGS.setSetting("convert","true")
-        settingsFile = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.xml'))  
-        shutil.copy(settingsFile, xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.post.convert.xml')))
-        xbmcvfs.rename(os.path.join(ADDON_PATH,'convert.py'), os.path.join(ADDON_PATH,'convert.old'))
+        try:
+            settingsFile = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.xml'))  
+            shutil.copy(settingsFile, xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.post.convert.xml')))
+            xbmcvfs.rename(os.path.join(ADDON_PATH,'convert.py'), os.path.join(ADDON_PATH,'convert.old'))
+        except:
+            pass
         setProperty("PseudoTVRunning", "False")
         okDialog('PseudoTV Live is finished converting your plugin channels.')
         self.log("updateListing return")
