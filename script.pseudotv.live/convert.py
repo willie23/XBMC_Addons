@@ -37,9 +37,12 @@ class Main:
             
             try:
                 settingsFile = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.xml'))
-                okDialog('PseudoTV Live is about to convert your plugin channels to the new format, please be patient, do not interrupt this process! You will be prompted when its finished.')
                 shutil.copy(settingsFile, xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.pre.convert.xml')))
+                okDialog('PseudoTV Live is about to convert your plugin channels to the new format, please be patient, do not interrupt this process! You will be prompted when its finished.')
             except:
+                xbmcvfs.rename(os.path.join(ADDON_PATH,'convert.py'), os.path.join(ADDON_PATH,'convert.old'))
+                REAL_SETTINGS.setSetting("convert","true")
+                setProperty("PseudoTVRunning", "False")
                 return
                 
             show_busy_dialog()
