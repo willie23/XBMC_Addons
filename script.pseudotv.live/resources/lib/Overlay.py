@@ -220,6 +220,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         self.maxChannels = 0
         self.timeStarted = 0
         self.channelDelay = 0
+        self.triggercount = 0
         self.notPlayingCount = 0 
         self.shortItemLength = 120
         self.runningActionChannel = 0
@@ -555,6 +556,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         self.getControl(1010).setLabel('Sleep')
         self.getControl(1011).setLabel('Exit')
         
+        GA_Request()
         setProperty("PTVL.OVERLAY_INIT","true")
         self.log('onInit return')
     
@@ -2520,8 +2522,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                 
     def playerTimerAction(self):
         self.logDebug("playerTimerAction")
-        GA_Request()
-        
+        self.triggercount += 1
         self.playerTimer = threading.Timer(self.ActionTimeInt, self.playerTimerAction)  
         self.playerTimer.name = "PlayerTimer"
 
@@ -2540,6 +2541,10 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         
         self.CloseDialog(['Dialogue OK'])
         self.playerTimer.start()
+        
+        if self.triggercount == 30:
+            self.triggercount = 0
+            GA_Request()
         
         if self.Player.isPlaybackValid():
             self.lastPlayTime = int(self.Player.getTime())

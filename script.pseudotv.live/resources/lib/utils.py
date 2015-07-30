@@ -17,7 +17,7 @@
 # along with PseudoTV.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import os, re, sys, time, zipfile, threading, requests
+import os, re, sys, time, zipfile, threading, requests, random
 import urllib, urllib2, base64, fileinput, shutil, socket, httplib, json
 import xbmc, xbmcgui, xbmcplugin, xbmcvfs, xbmcaddon
 import urlparse, time, _strptime, string, datetime, ftplib, hashlib, smtplib, feedparser, imp
@@ -564,7 +564,7 @@ def GA_Request():
         "",
         urllib.urlencode(DATA),
         ""))
-        urllib2.urlopen(URL).info()
+        print urllib2.urlopen(URL).info()
     except Exception,e:  
         log("GA_Request Failed" + str(e), xbmc.LOGERROR)
         
