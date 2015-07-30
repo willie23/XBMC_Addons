@@ -18,10 +18,9 @@
 
 
 import os, re, sys, time, zipfile, threading, requests
-import urllib, urllib2, base64, fileinput, shutil, socket, httplib
+import urllib, urllib2, base64, fileinput, shutil, socket, httplib, json
 import xbmc, xbmcgui, xbmcplugin, xbmcvfs, xbmcaddon
 import urlparse, time, _strptime, string, datetime, ftplib, hashlib, smtplib, feedparser, imp
-
 
 from Globals import * 
 from FileAccess import *  
@@ -33,7 +32,6 @@ from email.MIMEText import MIMEText
 from email import Encoders
 from xml.dom.minidom import parse, parseString
 from urllib import unquote
-
 socket.setdefaulttimeout(30)
 
 # Commoncache plugin import
@@ -109,7 +107,6 @@ def VersionCompare():
     link = source.read()
     source.close()
     match = re.compile('" version="(.+?)" name="PseudoTV Live"').findall(link)
-    setProperty("PseudoTVOutdated", "False")
     
     for vernum in match:
         log("utils: Current Version = " + str(vernum))
@@ -123,12 +120,13 @@ def VersionCompare():
     if len(match) > 0:
         print vernum, str(match)[0]
         if vernum != str(match[0]):
-            setProperty("PseudoTVOutdated", "True")
-            dialog = xbmcgui.Dialog()
-            confirm = xbmcgui.Dialog().yesno('[B]PseudoTV Live Update Available![/B]', "Your version is outdated." ,'The current available version is '+str(match[0]),'Would you like to install the PseudoTV Live repository to stay updated?',"Cancel","Install")
-            if confirm:
-                UpdateFiles()
-    return
+            if not isPlugin('repository.lunatixz'):
+                dialog = xbmcgui.Dialog()
+                confirm = xbmcgui.Dialog().yesno('[B]PseudoTV Live Update Available![/B]', "Your version is outdated." ,'The current available version is '+str(match[0]),'Would you like to install the PseudoTV Live repository to stay updated?',"Cancel","Install")
+                if confirm:
+                    UpdateFiles()
+            else:
+                get_Kodi_JSON('"method":"Addons.SetAddonEnabled","params":{"addonid":"repository.lunatixz","enabled":true}')
 
 def UpdateFiles():
     log('utils: UpdateFiles')
@@ -521,7 +519,55 @@ def GrabLogo(url, Chname):
 #######################
 # Communication Tools #
 #######################
-   
+
+def GA_Request():
+    log("GA_Request")
+    """
+    Simple proof of concept code to push data to Google Analytics.
+    Related blog posts:
+     * http://www.canb.net/2012/01/push-data-to-google-analytics-with.html
+     * https://medium.com/python-programming-language/80eb9691d61f
+    """
+    try:
+        PROPERTY_ID = os.environ.get("GA_PROPERTY_ID", "UA-45979766-1")
+
+        if not REAL_SETTINGS.getSetting('Visitor_GA'):
+            REAL_SETTINGS.setSetting('Visitor_GA', str(random.randint(0, 0x7fffffff)))
+        VISITOR = str(REAL_SETTINGS.getSetting("Visitor_GA"))
+        OPTIONS = ['PTVL',str(ADDON_VERSION),str(VISITOR)]
+        
+        if getProperty("Donor") == "true":
+            USER,PASS = (REAL_SETTINGS.getSetting('Donor_UP')).split(':')
+            OPTIONS = OPTIONS + ['Donor:'+USER]
+        else:
+            OPTIONS = OPTIONS+ ['FreeUser']
+        
+        if REAL_SETTINGS.getSetting('Hub') == 'true':  
+            OPTIONS = OPTIONS + ['Hub:True']
+        else:
+            OPTIONS = OPTIONS + ['Hub:False']
+        
+        if getProperty("PTVL.COM_APP") == "true":
+            USER = REAL_SETTINGS.getSetting('Gmail_User')
+            OPTIONS = OPTIONS + ['Com:'+USER]
+            
+        OPTIONLST = "/".join(OPTIONS)
+        DATA = {"utmwv": "5.2.2d",
+        "utmn": str(random.randint(1, 9999999999)),
+        "utmp": OPTIONLST,
+        "utmac": PROPERTY_ID,
+        "utmcc": "__utma=%s;" % ".".join(["1", VISITOR, "1", "1", "1", "1"])}
+ 
+        URL = urlparse.urlunparse(("http",
+        "www.google-analytics.com",
+        "/__utm.gif",
+        "",
+        urllib.urlencode(DATA),
+        ""))
+        urllib2.urlopen(URL).info()
+    except Exception,e:  
+        log("GA_Request Failed" + str(e), xbmc.LOGERROR)
+        
 def UpdateRSS():
     now  = datetime.datetime.today()
     try:
@@ -780,6 +826,7 @@ def requestDownload(url, fle):
     with open(fle, 'wb') as out_file:
         shutil.copyfileobj(response.raw, out_file)
     del response
+    
 def force_url(url):
     Con = True
     Count = 0
@@ -980,54 +1027,72 @@ def get_Kodi_JSON(params):
     json_query = unicode(json_query, 'utf-8', errors='ignore')
     return simplejson.loads(json_query)
     
-def addon_status(id):
-    check = xbmcaddon.Addon(id=id).getAddonInfo("name")
-    if not check == ADDON_NAME: return True
+def isPlugin(plugin):
+    if plugin[0:9] == 'plugin://':
+        plugin = plugin.replace("plugin://","")
+        # addon = os.path.split(plugin)[0]
+        # addon = (plugin.split('/?')[0]).replace("plugin://","")
+        addon = splitall(plugin)[0]
+        log("utils: plugin id = " + addon)
+    else:
+        addon = plugin
+    return xbmc.getCondVisibility('System.HasAddon(%s)' % addon) == 1
 
 def videoIsPlaying():
     return xbmc.getCondVisibility('Player.HasVideo')
 
 def getXBMCVersion():
     log("utils: getXBMCVersion")
-    # retrieve current installed version
-    try:
-        return int((xbmc.getInfoLabel('System.BuildVersion').split('.'))[0])
-    except:
-        return 14
-         
-# def getXBMCversionJson(self):
-    # json_query = uni('{ "jsonrpc": "2.0", "method": "Application.GetProperties", "params": {"properties": ["version", "name"]}, "id": 1 }')
-    # json_detail = self.sendJSON(json_query)
-    # detail = re.compile( "{(.*?)}", re.DOTALL ).findall(json_detail)
-    # try:
-        # for f in detail:
-            # majors = re.search('"major" *: *([0-9]*?),', f)
-            # if majors:
-                # major = int(majors.group(1))
-        # self.log('XBMCversion = ' + str(major))
-        # return major
-    # except Exception,e:
-        # self.log("XBMCversion, Failed! " + str(e))
-     
+    return int((xbmc.getInfoLabel('System.BuildVersion').split('.'))[0])
+ 
 def getPlatform():
+    log("utils: getPlatform")
     if xbmc.getCondVisibility('system.platform.osx'):
         return "OSX"
     elif xbmc.getCondVisibility('system.platform.atv2'):
+        REAL_SETTINGS.setSetting('os', "4")
         return "ATV2"
     elif xbmc.getCondVisibility('system.platform.ios'):
+        REAL_SETTINGS.setSetting('os', "5")
         return "iOS"
     elif xbmc.getCondVisibility('system.platform.windows'):
+        REAL_SETTINGS.setSetting('os', "11")
         return "Windows"
+    elif xbmc.getCondVisibility('system.platform.darwin'):
+        return "Darwin"
     elif xbmc.getCondVisibility('system.platform.linux'):
-        return "Linux/RPi"
+        return "Linux"
+    elif xbmc.getCondVisibility('system.platform.linux.raspberryPi'): 
+        REAL_SETTINGS.setSetting('os', "10")
+        return "rPi"
     elif xbmc.getCondVisibility('system.platform.android'): 
-        return "Linux/Android"
+        return "Android"
+    elif REAL_SETTINGS.getSetting("os") in ['0','1']: 
+        return "Android"
+    elif REAL_SETTINGS.getSetting("os") in ['2','3','4']: 
+        return "ATV2"
+    elif REAL_SETTINGS.getSetting("os") == "5": 
+        return "iOS"
+    elif REAL_SETTINGS.getSetting("os") in ['6','7']: 
+        return "Linux"
+    elif REAL_SETTINGS.getSetting("os") in ['8','9']: 
+        return "OSX"
+    elif REAL_SETTINGS.getSetting("os") == "10": 
+        return "rPi"
+    elif REAL_SETTINGS.getSetting("os") == "11": 
+        return "Windows"
     return "Unknown"
      
 #####################
 # String/File Tools #
 #####################
- 
+             
+def trim(content, limit, suffix):
+    if len(content) <= limit:
+        return content
+    else:
+        return content[:limit].rsplit(' ', 1)[0]+suffix
+        
 def closest(list, Number):
     aux = []
     for valor in list:
@@ -1104,7 +1169,7 @@ def splitall(path):
 def replaceXmlEntities(link):
     log('utils: replaceXmlEntities')   
     entities = (
-        ("%3A",":"),("%2F","/"),("%3D","="),("%3F","?"),("%26","&"),("%22","\""),("%7B","{"),("%7D",")"),("%2C",","),("%24","$"),("%23","#"),("%40","@")
+        ("%3A",":"),("%2F","/"),("%3D","="),("%3F","?"),("%26","&"),("%22","\""),("%7B","{"),("%7D",")"),("%2C",","),("%24","$"),("%23","#"),("%40","@"),("&#039;s","'s")
       );
     for entity in entities:
        link = link.replace(entity[0],entity[1]);
@@ -1124,59 +1189,6 @@ def copyanything(src, dst):
         if exc.errno == errno.ENOTDIR:
             shutil.copy(src, dst)
         else: raise
-
-##############
-# Menu Tools #
-##############
-# Adapted from program.super.favourites
-
-def UpdateKeymaps():
-    log('utils: UpdateKeymaps')
-    DeleteKeymap(KEYMAP_MENU)
-    VerifyKeymaps()
-        
-def DeleteKeymap(map):
-    log('utils: DeleteKeymap')
-    path = os.path.join('special://profile/keymaps', map)
-    DeleteFile(path)
-
-def DeleteFile(path):
-    log('utils: DeleteFile')
-    tries = 5
-    while FileAccess.exists(path) and tries > 0:
-        tries -= 1 
-        try: 
-            FileAccess.delete(path) 
-        except: 
-            xbmc.sleep(500)
-
-def VerifyKeymaps():
-    log('utils: VerifyKeymaps')
-    reload = False
-    if VerifyKeymapMenu():
-        reload = True
-    if not reload:
-        return
-    xbmc.sleep(1000)
-    xbmc.executebuiltin('Action(reloadkeymaps)')  
-
-def VerifyKeymapMenu():
-    log('utils: VerifyKeymapMenu')
-    context = REAL_SETTINGS.getSetting('CONTEXT')  == 'true'
-    if not context:
-        DeleteKeymap(KEYMAP_MENU)
-        return True
-
-    keymap = 'special://profile/keymaps'
-    dst    = os.path.join(keymap, KEYMAP_MENU)
-
-    if FileAccess.exists(dst):
-        return False
-
-    src = os.path.join(ADDON_PATH, 'resources', 'keymaps', KEYMAP_MENU)
-    FileAccess.makedirs(keymap)
-    FileAccess.copy(src, dst)
-    return True
 
 ##############
 # PTVL Tools #
@@ -1518,6 +1530,8 @@ def VideoWindowUninstall():
 
 def SyncXMLTV(force=False):
     log('utils: SyncXMLTV')
+    if REAL_SETTINGS.getSetting("SyncXMLTV_Enabled") != "true":
+        return
     now  = datetime.datetime.today()  
     try:
         if isDon() == True:
@@ -1564,7 +1578,6 @@ def SyncXMLTV(force=False):
     except:
         xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("Guidedata Update Failed!", "", 1000, THUMB) ) 
         pass
-    return
     
 def CHKCache():
     # Secondary Cache Control - Threaded cache functions can collide with filelist cache.
@@ -1658,4 +1671,124 @@ def HubCHK():
     else:
         if REAL_SETTINGS.getSetting("Verified_Hub") != "false": 
             REAL_SETTINGS.setSetting("AT_Hub","false") 
-            REAL_SETTINGS.setSetting("Verified_Hub","false") 
+            REAL_SETTINGS.setSetting("Verified_Hub","false")
+           
+def listXMLTV():
+    log("utils: listXMLTV")
+    xmltvLst = []   
+    EXxmltvLst = ['pvr','scheduledirect (Coming Soon)','zap2it (Coming Soon)']
+    dirs,files = xbmcvfs.listdir(XMLTV_CACHE_LOC)
+    dir,file = xbmcvfs.listdir(XMLTV_LOC)
+    xmltvcacheLst = [s.replace('.xml','') for s in files if s.endswith('.xml')] + EXxmltvLst
+    xmltvLst = sorted_nicely([s.replace('.xml','') for s in file if s.endswith('.xml')] + xmltvcacheLst)
+    select = selectDialog(xmltvLst, 'Select xmltv file')
+
+    if select != -1:
+        return xmltvLst[select]        
+        
+def xmltvFile(setting3):
+    log("utils: xmltvFile")                
+    if setting3[0:4] == 'http' or setting3.lower() == 'pvr' or setting3.lower() == 'scheduledirect' or setting3.lower() == 'zap2it':
+        xmltvFle = setting3
+    elif setting3.lower() == 'ptvlguide':
+        xmltvFle = PTVLXML
+    else:
+        xmltvFle = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('xmltvLOC'), str(setting3) +'.xml'))
+    return xmltvFle
+   
+def getOSPpath(OSplat):
+    log("utils: getOSPpath") 
+    if OSplat == '0':
+        return 'androidarm/rtmpdump'
+    elif OSplat == '1':
+        return 'android86/rtmpdump'
+    elif OSplat == '2':
+        return 'atv1linux/rtmpdump'
+    elif OSplat == '3':
+        return 'atv1stock/rtmpdump'
+    elif OSplat == '4':
+        return 'atv2/rtmpdump'
+    elif OSplat == '5':
+        return 'ios/rtmpdump'
+    elif OSplat == '6':
+        return 'linux32/rtmpdump'
+    elif OSplat == '7':
+        return 'linux64/rtmpdump'
+    elif OSplat == '8':
+        return 'mac32/rtmpdump'
+    elif OSplat == '9':
+        return 'mac64/rtmpdump'
+    elif OSplat == '10':
+        return 'pi/rtmpdump'
+    elif OSplat == '11':
+        return 'win/rtmpdump.exe'
+    elif OSplat == '12':
+        return '/usr/bin/rtmpdump'
+        
+def chkSources():
+    log("utils: chkSources") 
+    hasPVR = False
+    hasUPNP = False
+    try:
+        fle = xbmc.translatePath('special://userdata/sources.xml')
+        xml = FileAccess.open(fle, "r")
+        dom = parse(xml)
+        path = dom.getElementsByTagName('path')
+        xml.close()
+        for i in range(len(path)):
+            line = path[i].childNodes[0].nodeValue.lower()
+            if line in ['pvr://']:
+                hasPVR = True
+            elif line in ['upnp://']:
+                hasUPNP = True
+        if hasPVR + hasUPNP == 2:
+            return
+    except:
+        pass
+        
+def chkLowPower(): 
+    setProperty("PTVL.LOWPOWER","false") 
+    if getPlatform() in ['ATV2','iOS','rPi','Android']:
+        setProperty("PTVL.LOWPOWER","true") 
+        REAL_SETTINGS.setSetting('SFX_Enabled', "false")
+        REAL_SETTINGS.setSetting('Idle_Screensaver', "false")
+        REAL_SETTINGS.setSetting('EnhancedGuideData', "false")
+        if MEDIA_LIMIT > 250:
+            REAL_SETTINGS.setSetting('MEDIA_LIMIT', "3")
+    log("utils: chkLowPower = " + getProperty("PTVL.LOWPOWER"))
+            
+def chkChanges():
+    CURR_ENHANCED_DATA = REAL_SETTINGS.getSetting('EnhancedGuideData')
+    try:
+        LAST_ENHANCED_DATA = REAL_SETTINGS.getSetting('Last_EnhancedGuideData')
+    except:
+        REAL_SETTINGS.setSetting('Last_EnhancedGuideData', CURR_ENHANCED_DATA)
+        LAST_ENHANCED_DATA = REAL_SETTINGS.getSetting('Last_EnhancedGuideData')
+    
+    if CURR_ENHANCED_DATA != LAST_ENHANCED_DATA:
+        REAL_SETTINGS.setSetting('ForceChannelReset', "true")
+        REAL_SETTINGS.setSetting('Last_EnhancedGuideData', CURR_ENHANCED_DATA)
+        
+def getRSSFeed(genre):
+    log("utils: getRSSFeed, genre = " + genre)
+    feed = ''
+    if genre.lower() == 'news':
+        feed = 'http://feeds.bbci.co.uk/news/rss.xml'
+    # todo parse git list pair rss by genre
+    parseFeed(feed)
+    
+def parseFeed(link):
+    log("utils: parseFeed")
+    # RSSlst = ''
+    # try:
+        # feed = feedparser.parse(link)
+        # header = (feed['feed']['title'])
+        # title = feed['entries'][1].title
+        # description =  feed['entries'][1].summary,
+        # RSSlst = '[B]'+ header + "[/B]: "
+        # for i in range(0,len(feed['entries'])):
+            # RSSlst += ('[B]'+replaceXmlEntities(feed['entries'][i].title) + "[/B] - " + replaceXmlEntities((feed['entries'][i].summary).split('<')[0]))
+        # setProperty("RSS.FEED", utf(RSSlst))
+    # except Exception,e:
+        # log("getRSSFeed Failed!" + str(e))
+        # pass

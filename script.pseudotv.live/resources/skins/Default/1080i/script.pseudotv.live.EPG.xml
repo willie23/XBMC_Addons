@@ -1,6 +1,7 @@
 <window>
     <allowoverlay>yes</allowoverlay>   
     <onload>ActivateWindow(9506)</onload>
+    <onload>ActivateWindow(10004)</onload><!-- Activate random window, workaround for 9506 starting paused -->
     <onunload>ActivateWindow(12005)</onunload>
     <onload>SetProperty(PTVL.EPG_Opened,true,10000)</onload>
     <onunload>SetProperty(PTVL.EPG_Opened,false,10000)</onunload>
@@ -10,8 +11,8 @@
         <posx>0</posx>
         <posy>0</posy>
     </coordinates>
-    <animation effect="fade" time="500">WindowOpen</animation>
-    <animation effect="fade" time="250">WindowClose</animation>
+    <animation effect="fade" time="250">WindowOpen</animation>
+    <animation effect="fade" time="125">WindowClose</animation>
     <controls>
         <control type="button" id="99">
             <description>focused text color</description>
@@ -1026,21 +1027,21 @@
                 <label>|</label>
                 <font>font14</font>
                 <textcolor>C0C0C0C0</textcolor>
-                <visible>!IsEmpty(Window(home).Property(NextAired.1.Label))</visible>
+                <visible>!IsEmpty(Window(Home).Property(NextAired.1.Label))</visible>
             </control>  
             <!--Next Aired RSS-->
-            <control type="label" id="129">
+            <control type="label">
                 <width>1880</width>
                 <height>55</height>
-                <font>Font-RSS</font>
+                <font>font12</font>
                 <aligny>center</aligny>
                 <align>left</align>
                 <scroll>True</scroll>
                 <textcolor>C0C0C0C0</textcolor>
                 <scrollsuffix>  •  </scrollsuffix>
-                <visible>!IsEmpty(Window(home).Property(NextAired.1.Label))</visible>
                 <autoscroll time="1000" delay="1000" repeat="2000">True</autoscroll>
                 <scrollspeed>40</scrollspeed>
+                <visible>!IsEmpty(Window(Home).Property(NextAired.1.Label))</visible>
                 <label>[COLOR=C0C0C0C0][B]$INFO[Window(home).Property(NextAired.1.Label),,  ][/B][/COLOR]$INFO[Window(home).Property(NextAired.1.AirTime),,  ]$INFO[Window(home).Property(NextAired.1.NextDate),(,)  ]$INFO[Window(home).Property(NextAired.1.Network),on  ,  ]$INFO[Window(home).Property(NextAired.2.Label),  •    [COLOR=C0C0C0C0][B],[/B][/COLOR]  ]$INFO[Window(home).Property(NextAired.2.AirTime),,  ]$INFO[Window(home).Property(NextAired.2.NextDate),(,)  ]$INFO[Window(home).Property(NextAired.2.Network),on  ,  ]$INFO[Window(home).Property(NextAired.3.Label),  •    [COLOR=C0C0C0C0][B],[/B][/COLOR]  ]$INFO[Window(home).Property(NextAired.3.AirTime),,  ]$INFO[Window(home).Property(NextAired.3.NextDate),(,)  ]$INFO[Window(home).Property(NextAired.3.Network),on  ,  ]$INFO[Window(home).Property(NextAired.4.Label),  •    [COLOR=C0C0C0C0][B],[/B][/COLOR]  ]$INFO[Window(home).Property(NextAired.4.AirTime),,  ]$INFO[Window(home).Property(NextAired.4.NextDate),(,)  ]$INFO[Window(home).Property(NextAired.4.Network),on  ,  ]$INFO[Window(home).Property(NextAired.5.Label),  •    [COLOR=C0C0C0C0][B],[/B][/COLOR]  ]$INFO[Window(home).Property(NextAired.5.AirTime),,  ]$INFO[Window(home).Property(NextAired.5.NextDate),(,)  ]$INFO[Window(home).Property(NextAired.5.Network),on  ,  ]$INFO[Window(home).Property(NextAired.6.Label),  •    [COLOR=C0C0C0C0][B],[/B][/COLOR]  ]$INFO[Window(home).Property(NextAired.6.AirTime),,  ]$INFO[Window(home).Property(NextAired.6.NextDate),(,)  ]$INFO[Window(home).Property(NextAired.6.Network),on  ,  ]$INFO[Window(home).Property(NextAired.7.Label),  •    [COLOR=C0C0C0C0][B],[/B][/COLOR]  ]$INFO[Window(home).Property(NextAired.7.AirTime),,  ]$INFO[Window(home).Property(NextAired.7.NextDate),(,)  ]$INFO[Window(home).Property(NextAired.7.Network),on  ,  ]$INFO[Window(home).Property(NextAired.8.Label),  •    [COLOR=C0C0C0C0][B],[/B][/COLOR]  ]$INFO[Window(home).Property(NextAired.8.AirTime),,  ]$INFO[Window(home).Property(NextAired.8.NextDate),(,)  ]$INFO[Window(home).Property(NextAired.8.Network),on  ,  ]$INFO[Window(home).Property(NextAired.9.Label),  •    [COLOR=C0C0C0C0][B],[/B][/COLOR]  ]$INFO[Window(home).Property(NextAired.9.AirTime),,  ]$INFO[Window(home).Property(NextAired.9.NextDate),(,)  ]$INFO[Window(home).Property(NextAired.9.Network),on  ,  ]$INFO[Window(home).Property(NextAired.10.Label),  •    [COLOR=C0C0C0C0][B],[/B][/COLOR]  ]$INFO[Window(home).Property(NextAired.10.AirTime),,  ]$INFO[Window(home).Property(NextAired.10.NextDate),(,)  ]$INFO[Window(home).Property(NextAired.10.Network),on  ,  ]</label>
             </control>
            <control type="label">
@@ -1053,7 +1054,7 @@
                 <label>|</label>
                 <font>font14</font>
                 <textcolor>C0C0C0C0</textcolor>
-                <visible>!IsEmpty(Window(home).Property(NextAired.1.Label))</visible>
+                <visible>!IsEmpty(Window(Home).Property(NextAired.1.Label))</visible>
             </control>  
         </control>
 </controls>

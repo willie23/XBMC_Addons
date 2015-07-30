@@ -327,10 +327,9 @@ class Artdownloader:
                         self.logDebug('FindArtwork_NEW, RSS')
                         if dbid != '0':
                             return dbid.decode('base64')
-                        else:
-                            return self.SetDefaultArt_NEW(chname, mpath, arttypeEXT)
-                    else:
-                        return self.SetDefaultArt_NEW(chname, mpath, arttypeEXT)
+                    elif chtype == 8 and dbid != '0':
+                        return dbid.decode('base64')
+                    return self.SetDefaultArt_NEW(chname, mpath, arttypeEXT)
                 else:
                     self.logDebug('FindArtwork_NEW, Artwork Cache')
                     if FileAccess.exists(cachefile):

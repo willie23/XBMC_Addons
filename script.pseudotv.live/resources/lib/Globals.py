@@ -39,10 +39,6 @@ def uni(string, encoding = 'utf-8'):
         if not isinstance(string, unicode):
             string = unicode(string, encoding, 'ignore')
     return string
-      
-def ConStr(string, encoding = 'utf-8'):
-    string = string.encode(encoding, 'ignore')
-    return string
   
 def utf(string):
     if isinstance(string, basestring):
@@ -77,7 +73,7 @@ AUTOSTART_TIMER = [0,5,10,15,20]#in seconds
 ART_TIMER = [6,12,24,48,72]
 SHORT_CLIP_ENUM = [15,30,60,90,120,240,360,480]#in seconds
 INFOBAR_TIMER = [3,5,10,15,20,25]#in seconds
-MEDIA_LIMIT = [25,50,100,250,500,1000,0]#Media Per/Channel, 0 = Unlimited
+LIMIT_VALUES = [25,50,100,250,500,1000,5000,0]#Media Per/Channel, 0 = Unlimited
 REFRESH_INT = [14400,28800,43200,86400]#in seconds (4|8|12|24hrs)
 REFRESH_HOUR = [4,8,12,24]#in seconds (4|8|12|24hrs)
 TIMEOUT = 15 * 1000
@@ -125,6 +121,7 @@ LOGO_LOC = xbmc.translatePath(REAL_SETTINGS.getSetting('ChannelLogoFolder')) #Ch
 PVR_DOWNLOAD_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('PVR_Folder'))) #PVR Download location
 XMLTV_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('xmltvLOC'))) + '/'
 XSP_LOC = xbmc.translatePath("special://profile/playlists/video/")
+SFX_LOC = ('special://home/addons/script.pseudotv.live/resources/sfx/')
 
 #BASEURL
 try:
@@ -148,6 +145,7 @@ DEFAULT_LOGO_LOC = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'logos')) + '/'
 # CORE IMG FILENAMES
 THUMB = IMAGES_LOC + 'icon.png'
 INTRO = IMAGES_LOC + 'intro.mp4'
+INTRO_TUBE = 'Y8WlAhpHzkM'
 
 # EPG
 TIME_BAR = 'pstvlTimeBar.png'
@@ -219,12 +217,27 @@ SILENT = REAL_SETTINGS.getSetting('silent')
 DEBUG = REAL_SETTINGS.getSetting('enable_Debug')   
 SETTOP = REAL_SETTINGS.getSetting("EnableSettop") == "true"
 OS_SET = int(REAL_SETTINGS.getSetting("os"))   
+ENHANCED_DATA = REAL_SETTINGS.getSetting('EnhancedGuideData') == 'true'
 
 if REAL_SETTINGS.getSetting('EnableSettop') == 'true': 
     SETTOP_REFRESH = REFRESH_INT[int(REAL_SETTINGS.getSetting('REFRESH_INT'))] 
 else:
     SETTOP_REFRESH = 72000
 
+try:
+    MEDIA_LIMIT = LIMIT_VALUES[int(REAL_SETTINGS.getSetting('MEDIA_LIMIT'))]
+except:
+    MEDIA_LIMIT = 25
+    xbmc.log('Channel Media Limit Failed!')
+xbmc.log('Channel Media Limit is ' + str(MEDIA_LIMIT))
+
+try:
+    AT_LIMIT = LIMIT_VALUES[int(REAL_SETTINGS.getSetting('AT_LIMIT'))]
+except:
+    AT_LIMIT = 25
+    xbmc.log('Autotune Channel Limit Failed!')
+xbmc.log('Autotune Channel Limit is ' + str(AT_LIMIT))
+        
 # Common Cache types, Stacked and sorted for read performance?... todo convert to DB (local sqlite, mysql)? 
 # Cache is redundant to m3u's, but eliminates repetitive off-site parsing.
 # General
@@ -254,7 +267,6 @@ artwork5 = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "artwo
 artwork6 = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "artwork6",((24 * 7) * 4))       #Artwork Purge
 # Parsers
 parsers = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parsers",((24 * 7) * 4))         #No Purge (API Queries)
-parsersGD = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parsersGD",((24 * 7) * 4))     #No Purge (EnhancedGuideData)
 parsersGH = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parsersGH",((24 * 7) * 4))     #No Purge (Github)
 parserFANTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parserFANTV",((24 * 7) * 4)) #No Purge (FANART Queries)
 parserTVDB = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parserTVDB",((24 * 7) * 4))   #No Purge (TVDB Queries)
@@ -388,3 +400,6 @@ BYPASS_OVERLAY = ['PseudoCinema']
 # Superfavourites Unwanted strings
 SF_FILTER = ['isearch', 'iplay - kodi playlist manager','create new super folder','explore kodi favourites']
 EX_FILTER = SF_FILTER + ['video resolver settings','<<','back','previous','home','search','find','clips','seasons','trailers']
+
+# SFX
+MOVE_SFX = os.path.join(SFX_LOC, 'move.wav')

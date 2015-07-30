@@ -12,6 +12,7 @@
     <extension point="xbmc.service" library="service.py" start="startup"/>
     <extension point="xbmc.addon.metadata">
         <platform>all</platform>
+        <broken>deprecated</broken>
         <minversion></minversion>
         <summary lang="en">Channel surfing for your video library and online sources</summary>
         <description lang="en">PseudoTV Lite acts similar to normal broadcast or cable TV, complete with multiple preset and user-defined channels and an EPG.</description>

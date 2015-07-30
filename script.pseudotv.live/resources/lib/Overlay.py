@@ -16,15 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with PseudoTV.  If not, see <http://www.gnu.org/licenses/>.
 
-import xbmc, xbmcgui, xbmcaddon, FileAccess
-import os, sys, re, shutil
+import xbmc, xbmcgui, xbmcaddon
+import os, sys, re
 import datetime, time, threading, _strptime
 import random, traceback
-import urllib, urllib2, json, urlparse
 
 
-from Globals import *
-from hashlib import sha1
 from Playlist import Playlist
 from Globals import *
 from Channel import Channel
@@ -37,8 +34,6 @@ from Artdownloader import *
 from Upnp import Upnp
 from PVR import *
 from utils import *
-from urllib import unquote, quote
-from subprocess import Popen, PIPE, STDOUT
 
 try:
     from PIL import Image
@@ -68,24 +63,24 @@ class MyPlayer(xbmc.Player):
         log('Player: ' + msg, level)
     
   
-    def PlaybackValid(self):
+    def isPlaybackValid(self):
         PlaybackStatus = False
         xbmc.sleep(10)
         if self.isPlaying():
             PlaybackStatus = True
-        self.log('PlaybackValid, PlaybackStatus = ' + str(PlaybackStatus))
+        self.log('isPlaybackValid, PlaybackStatus = ' + str(PlaybackStatus))
         return PlaybackStatus
     
     
-    def is_playback_paused(self):
-        self.log('is_playback_paused')
+    def isPlaybackPaused(self):
+        self.log('isPlaybackPaused')
         return bool(xbmc.getCondVisibility("Player.Paused"))
 
     
-    def resume_playback(self):
-        self.log('resume_playback')
+    def resumePlayback(self):
+        self.log('resumePlayback')
         xbmc.sleep(10)
-        if self.is_playback_paused():
+        if self.isPlaybackPaused():
             xbmc.Player().pause()
 
     
@@ -106,11 +101,11 @@ class MyPlayer(xbmc.Player):
         if getProperty("PTVL.EPG_Opened") == "true" and self.overlay.VideoWindow == True and self.overlay.OnDemand == False:
             self.log('onPlayBackStarted, Force EPG Reload')
             self.overlay.myEPG.closeEPG() 
-            xbmc.sleep(525)
+            xbmc.sleep(255)
             self.overlay.myEPG.doModal()
             
-        self.resume_playback()
-        if self.PlaybackValid():
+        self.resumePlayback()
+        if self.isPlaybackValid():
             file = xbmc.Player().getPlayingFile()
             file = file.replace("\\\\","\\")
             
@@ -138,7 +133,6 @@ class MyPlayer(xbmc.Player):
                     self.overlay.PlayUPNP(file, self.overlay.seektime)  
                 except: 
                     self.overlay.Error('Video Mirroring configuration error','Please verify IP and Port of Kodi Client')
-                    pass
                             
             # Close epg after starting ondemand
             if getProperty("PTVL.EPG_Opened") == "true" and self.overlay.VideoWindow == True and self.overlay.OnDemand == True:
@@ -151,6 +145,7 @@ class MyPlayer(xbmc.Player):
                 
             self.overlay.setShowInfo()
             self.overlay.PrimeSetOnNow()
+            
             
     def onPlayBackEnded(self):
         self.log('onPlayBackEnded') 
@@ -198,11 +193,7 @@ class MyPlayer(xbmc.Player):
         except:
             pass
     
-    
-    def onPlayBackFailed(self):
-        self.log('onPlayBackFailed')
-    
-    
+
 # overlay window to catch events and change channels
 class TVOverlay(xbmcgui.WindowXMLDialog):
 
@@ -210,74 +201,70 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         xbmcgui.WindowXMLDialog.__init__(self, *args, **kwargs)
         self.log('__init__')
         # initialize all variables
-        self.channels = []
+        self.channels = []      
         self.Player = MyPlayer()
         self.Player.overlay = self
         self.inputChannel = -1
-        self.channelLabel = []            
-        self.OnNowTitleLst = []        
+        self.lastActionTime = 0        
+        self.OnNowTitleLst = []   
         self.OnNowArtLst = []
-        self.lastActionTime = 0
+        self.channelLabel = []     
         self.actionSemaphore = threading.BoundedSemaphore()
         self.channelThread = ChannelListThread()
         self.channelThread.myOverlay = self
-        self.timeStarted = 0
-        self.infoOnChange = True
-        self.showingPop = False
-        self.showingInfo = False
-        self.showingMoreInfo = False
-        self.showingMenu = False
-        self.showingStartover = False   
-        self.showingNextAired = False
-        self.showingMenuAlt = False
-        self.showingBrowse = False
-        self.OnAction = False
-        self.DisableOverlay = False
-        self.infoOffset = 0
-        self.invalidatedChannelCount = 0
-        self.showChannelBug = False
-        self.showNextItem = False
-        self.notificationLastChannel = 0
-        self.notificationLastShow = 0
-        self.notificationShowedNotif = False
-        self.PlayerTimedOut_Stopped = False
-        self.isExiting = False
-        self.maxChannels = 0
-        self.notPlayingCount = 0 
-        self.ignoreInfoAction = False
-        self.shortItemLength = 120
-        self.runningActionChannel = 0
-        self.channelDelay = 0
         self.channelbugcolor = CHANBUG_COLOR
-        self.showSeasonEpisode = REAL_SETTINGS.getSetting("ShowSeEp") == "true"
-        self.InfTimer = INFOBAR_TIMER[int(REAL_SETTINGS.getSetting('InfoTimer'))]
         self.Artdownloader = Artdownloader()
         self.notPlayingAction = 'Up'
+        self.Browse = ''
+        self.infoOffset = 0
+        self.maxChannels = 0
+        self.timeStarted = 0
+        self.channelDelay = 0
+        self.notPlayingCount = 0 
+        self.shortItemLength = 120
+        self.runningActionChannel = 0
+        self.notificationLastShow = 0
+        self.notificationLastChannel = 0
+        self.invalidatedChannelCount = 0
+        self.UPNP = False 
+        self.OnDemand = False 
+        self.OnAction = False
+        self.isExiting = False
+        self.showingPop = False
+        self.showingMenu = False
+        self.VideoWindow = False
+        self.showingInfo = False
+        self.infoOnChange = True
+        self.showNextItem = False
+        self.showingBrowse = False
+        self.showingMenuAlt = False
+        self.DisableOverlay = False
+        self.showChannelBug = False
+        self.showingMoreInfo = False
+        self.ignoreInfoAction = False
+        self.showingStartover = False   
+        self.showingNextAired = False   
+        self.notificationShowedNotif = False
+        self.showSeasonEpisode = REAL_SETTINGS.getSetting("ShowSeEp") == "true"
+        self.InfTimer = INFOBAR_TIMER[int(REAL_SETTINGS.getSetting('InfoTimer'))]
         self.ActionTimeInt = float(REAL_SETTINGS.getSetting("ActionTimeInt"))
         self.PlayTimeoutInt = float(REAL_SETTINGS.getSetting("PlayTimeoutInt"))
-        self.Browse = ''
-        self.MUTE = REAL_SETTINGS.getSetting('enable_mute') == "true"
-        self.Quickflip = REAL_SETTINGS.getSetting('quickflip') == "true"
-        self.OnDemand = False  
         self.FavChanLst = (REAL_SETTINGS.getSetting("FavChanLst")).split(',')
         self.DirectInput = REAL_SETTINGS.getSetting("DirectInput") == "true"
+        self.MUTE = REAL_SETTINGS.getSetting('enable_mute') == "true"
+        self.Quickflip = REAL_SETTINGS.getSetting('quickflip') == "true"
         setProperty("PTVL.BackgroundLoading_Finished","false") 
         
         if REAL_SETTINGS.getSetting("UPNP1") == "true" or REAL_SETTINGS.getSetting("UPNP2") == "true" or REAL_SETTINGS.getSetting("UPNP3") == "true":
             self.UPNP = True
-        else:
-            self.UPNP = False
-            
+
         if FileAccess.exists(os.path.join(XBMC_SKIN_LOC, 'custom_script.pseudotv.live_9506.xml')):
             self.VideoWindow = True
-        else:
-            self.VideoWindow = False
 
         for i in range(3):
             self.channelLabel.append(xbmcgui.ControlImage(50 + (50 * i), 50, 50, 50, IMAGES_LOC + 'solid.png', colorDiffuse = self.channelbugcolor))
             self.addControl(self.channelLabel[i])
             self.channelLabel[i].setVisible(False)
-            
         self.doModal()
         self.log('__init__ return')
 
@@ -290,7 +277,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
     # override the doModal function so we can setup everything first
     def onInit(self):
         self.log('onInit')
-        self.log('PTVL Version = ' + ADDON_VERSION)       
+        self.log('PTVL Version = ' + ADDON_VERSION)   
         self.background = self.getControl(101)
         self.background.setLabel('Please Wait')
         self.background.setVisible(True)
@@ -300,11 +287,10 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         self.getControl(119).setVisible(False)
         self.getControl(130).setVisible(False)
         self.getControl(120).setVisible(False)
-        
-        self.channelList = ChannelList()
-        self.Upnp = Upnp()
-        dlg = xbmcgui.Dialog()
 
+        self.Upnp = Upnp()
+        self.channelList = ChannelList()    
+        dlg = xbmcgui.Dialog()
         self.settingsFile = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.xml'))
         self.nsettingsFile = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.bak.xml'))
         self.atsettingsFile = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.pretune.xml'))
@@ -315,10 +301,9 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             REAL_SETTINGS.setSetting('Normal_Shutdown', "true")
             Normal_Shutdown = REAL_SETTINGS.getSetting('Normal_Shutdown') == "true"
             
-        json_query = ('{"jsonrpc": "2.0", "method": "JSONRPC.NotifyAll", "params": {"sender":"PTVL","message":"PseudoTV_Live - Starting"}, "id": 1}')
-        self.channelList.sendJSON(json_query)
+        self.egTrigger('PseudoTV_Live - Starting')
 
-        # Artwork types
+        # Artwork type1
         try:
             self.getControl(508).setImage(THUMB)
             self.Arttype1 = str(self.getControl(507).getLabel())
@@ -326,6 +311,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             setProperty("type1EXT_Overlay",self.type1EXT)
         except:
             pass
+        # Artwork type2
         try:
             self.getControl(510).setImage(THUMB)
             self.Arttype2 = str(self.getControl(509).getLabel())
@@ -333,6 +319,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             setProperty("type2EXT_Overlay",self.type2EXT)
         except:
             pass
+        # Artwork type3
         try:
             self.Arttype3 = str(self.getControl(121).getLabel())
             self.type3EXT = EXTtype(self.Arttype3)
@@ -380,17 +367,8 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             except:
                 self.Error('Unable to create the artwork directory')
                 return
-
-        if getProperty("PseudoTVOutdated") == "true":
-            json_query = ('{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","params":{"addonid":"script.pseudotv.live","enabled":true}, "id": 1}')
-            self.channelList.sendJSON(json_query)
-            okDialog('It is recommended you update your copy of PseudoTV Live')
         
-        if REAL_SETTINGS.getSetting("SyncXMLTV_Enabled") == "true":
-            self.background.setLabel('Initializing: XMLTV Service')
-            SyncXMLTV()
-                    
-        if self.UPNP:
+        if self.UPNP == True:
             self.background.setLabel('Initializing: Video Mirroring')
             self.StopUPNP()
             time.sleep(5)
@@ -413,7 +391,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         updateDialog.update(95, "Initializing", "PseudoTV Live")
         self.background.setLabel('Initializing: PseudoTV Live')
 
-        if self.isMaster:
+        if self.isMaster == True:
             migratemaster = Migrate()     
             migratemaster.migrate()
             
@@ -475,10 +453,6 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                 REAL_SETTINGS.setSetting("autoFindNetworks","true")
                 REAL_SETTINGS.setSetting("autoFindMovieGenres","true")
                 REAL_SETTINGS.setSetting("autoFindRecent","true")
-                REAL_SETTINGS.setSetting("autoFindCommunity_RSS","true")
-                REAL_SETTINGS.setSetting("autoFindCommunity_Youtube_Networks","true")
-                if REAL_SETTINGS.getSetting("SyncXMLTV_Enabled") == "true":
-                    REAL_SETTINGS.setSetting("autoFindUSTVNOW","true")
                 autoTune = True
                 
                 if autoTune:
@@ -590,9 +564,6 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         setProperty("PTVL.BackgroundLoading_Finished","false")
         curtime = time.time()
         
-        if REAL_SETTINGS.getSetting("SyncXMLTV_Enabled") == "true":
-            SyncXMLTV()
-            
         if CHANNEL_SHARING == True and self.isMaster:
             GlobalFileLock.unlockFile('MasterLock')
         
@@ -655,8 +626,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             self.channelThread.name = "ChannelThread"
             self.channelThread.start()
             
-        json_query = ('{"jsonrpc": "2.0", "method": "JSONRPC.NotifyAll", "params": {"sender":"PTVL","message":"PseudoTV_Live - Updating"}, "id": 1}')
-        self.channelList.sendJSON(json_query)
+        self.egTrigger('PseudoTV_Live - Refreshing Channels') 
         
         if NOTIFY == True:
             xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Settop Update Started", 1000, THUMB) )
@@ -1113,9 +1083,8 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         self.log("Finished, unmuting");
         if self.MUTE:
             xbmc.executebuiltin("Mute()");
-                  
-        json_query = ('{"jsonrpc": "2.0", "method": "JSONRPC.NotifyAll", "params": {"sender":"PTVL","message":"PseudoTV_Live - Loading: %s"}, "id": 1}' % (chname))
-        self.channelList.sendJSON(json_query)
+            
+        self.egTrigger('PseudoTV_Live - Loading: %s' % chname)
         self.showChannelLabel(self.currentChannel)
 
         if self.infoOnChange == True:
@@ -1352,15 +1321,12 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                 except:
                     pass
             else:
-                try:
-                    if self.GetPlayingTmpstrTimer.isAlive():
-                        self.GetPlayingTmpstrTimer.cancel()
-                except:
-                    pass
-                data = [chtype, chname, mediapath, position]
-                self.GetPlayingTmpstrTimer = threading.Timer(1.5, self.GetPlayingTmpstrThread, [data])
-                self.GetPlayingTmpstrTimer.name = "GetPlayingTmpstrTimer"  
-                self.GetPlayingTmpstrTimer.start()  
+                self.getTMPSTRTimer = threading.Timer(1.5, self.getTMPSTR_Thread, [chtype, chname, mediapath, position])
+                self.getTMPSTRTimer.name = "getTMPSTRTimer"  
+                
+                if self.getTMPSTRTimer.isAlive():
+                    self.getTMPSTRTimer.cancel()
+                self.getTMPSTRTimer.start()  
                 return
         else:
             title = (self.channels[self.currentChannel - 1].getItemTitle(position))
@@ -1369,22 +1335,18 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             genre = (self.channels[self.currentChannel - 1].getItemgenre(position))
             LiveID = (self.channels[self.currentChannel - 1].getItemLiveID(position))
             LiveID = self.channelList.unpackLiveID(LiveID)
-            
-            if FileAccess.exists(self.channelLogos + (self.channels[self.currentChannel - 1].name) + '.png'):
-                self.getControl(506).setImage(self.channelLogos + (self.channels[self.currentChannel - 1].name) + '.png') 
-            else:
-                self.getControl(506).setImage('logo.png')
+        
+        if FileAccess.exists(self.channelLogos + (self.channels[self.currentChannel - 1].name) + '.png'):
+            self.getControl(506).setImage(self.channelLogos + (self.channels[self.currentChannel - 1].name) + '.png') 
+        else:
+            self.getControl(506).setImage('logo.png')
         try:
             SEinfo = SEtitle.split(' -')[0]
             season = int(SEinfo.split('x')[0])
             episode = int(SEinfo.split('x')[1])
         except:
             season = 0
-            episode = 0  
-            
-        setProperty("Playing.Season",str(season))
-        setProperty("Playing.Episode",str(episode)) 
-            
+            episode = 0   
         try:
             if self.showSeasonEpisode and season != 0 and episode != 0:
                 eptitles = SEtitle.split('- ')
@@ -1410,7 +1372,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         year = self.channelList.getYear(type, title)
         
         #PVR Globals
-        setProperty("Playing.Title",title)
+        setProperty("Playing.Title",title.replace("*NEW*",""))
         setProperty("Playing.Chtype",str(chtype))
         setProperty("Playing.Mpath",mpath)
         setProperty("Playing.Mediapath",mediapath)
@@ -1420,13 +1382,16 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         setProperty("Playing.DBID",dbid)
         setProperty("Playing.EPID",epid)
         setProperty("Playing.ID",id)
-        setProperty("Playing.Type",type)
         setProperty("Playing.Year",str(year))
         setProperty("Playing.Description",Description)
         setProperty("Playing.Rating",rating)
         setProperty("Playing.Genre",genre)
         setProperty("Playing.Playcount",str(playcount))
-
+        setProperty("Playing.Season",str(season))
+        setProperty("Playing.Episode",str(episode)) 
+        self.isNew_Trigger()
+        getRSSFeed(genre)
+        
         #Dynamic Art1
         try:
             self.setArtwork1(type, chtype, chname, id, dbid, mpath, self.type1EXT)
@@ -1465,19 +1430,39 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             if FileAccess.exists(setImage) == False:
                 setImage = self.Artdownloader.SetDefaultArt_NEW(data[2], data[5], data[6])
             self.getControl(data[7]).setImage(setImage)
-            self.setNew(self.isNEW(int(getProperty("Playing.Chtype")), getProperty("Playing.Mediapath"), int(getProperty("Playing.Playcount"))))
         except Exception,e:
             self.log('FindArtwork_Thread, Failed!, ' + str(e))
             pass
         
+           
+    def isNEW_Thread(self):
+        try:
+            aired = self.isNEW(int(getProperty("Playing.Chtype")), getProperty("Playing.Mediapath"), int(getProperty("Playing.Playcount")))
+            if aired == True:
+                self.getControl(512).setImage(MEDIA_LOC + 'NEW.png')
+            else: 
+                self.getControl(512).setImage(MEDIA_LOC + 'OLD.png')
+        except Exception,e:
+            self.log('isNEW_Thread, Failed!,' + str(e))
         
-    def setNew(self, aired):
-        if aired == True:
-            self.getControl(512).setImage(MEDIA_LOC + 'NEW.png')
-        else: 
-            self.getControl(512).setImage(MEDIA_LOC + 'OLD.png')
-        
-        
+                
+    def isNew_Trigger(self):
+        self.log('isNew_Trigger')        
+        try:
+            try:
+                if self.isNew.isAlive():
+                    self.isNew.cancel()
+            except:
+                pass
+                
+            self.isNew = threading.Timer(0.1, self.isNEW_Thread)
+            self.isNew.name = "isNew"
+            self.isNew.start()
+        except Exception,e:
+            self.log('isNew_Trigger, Failed!, ' + str(e))
+            pass 
+            
+            
     def setArtwork1(self, type, chtype, chname, id, dbid, mpath, type1EXT):
         self.log('setArtwork1')        
         try:
@@ -2039,37 +2024,25 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         action = act.getId()
         self.log('onAction ' + str(action))
         self.OnAction = True
-        
-        try:
-            chtype = int(ADDON_SETTINGS.getSetting('Channel_' + str(self.currentChannel) + '_type'))
-        except:
-            # Threading issue? chtype fails to load proper chtype
-            try:
-                chtype = int(ADDON_SETTINGS.getSetting('Channel_' + str(self.currentChannel) + '_type'))
-            except:
-                chtype = 0
-                pass
-        try:
-            mediapath = self.channels[self.currentChannel - 1].getItemFilename(self.channels[self.currentChannel - 1].playlistPosition)
-            try:
-                plugchk = mediapath.split('/')[2]
-            except:
-                plugchk = mediapath
-                pass
-        except:
-            mediapath = ''
-            plugchk = ''
-            pass
-            
-        if self.Player.stopped:
-            self.log('Unable player is stopped')
-            return
 
         # Since onAction isnt always called from the same thread (weird),
         # ignore all actions if we're in the middle of processing one
         if self.actionSemaphore.acquire(False) == False:
             self.log('Unable to get semaphore')
             return
+        
+        if self.Player.stopped:
+            self.log('Unable player is stopped')
+            return
+
+        # if REAL_SETTINGS.getSetting("SFX_Enabled") == "true":
+            # self.playSFX(action)
+
+        try:
+            plugchk = (getProperty("Playing.Mediapath")).split('/')[2]
+        except:
+            plugchk = (getProperty("Playing.Mediapath"))
+            pass
             
         lastaction = time.time() - self.lastActionTime
 
@@ -2167,7 +2140,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                     self.MenuControl('Menu',self.InfTimer)
                 elif not self.showingMenu:
                     self.showInfo(self.InfTimer)
-            elif self.showingInfo == False and chtype != 8 and chtype != 9 and mediapath[0:4] != 'rtmp' and mediapath[0:4] != 'rtsp' and plugchk not in BYPASS_SEEK:
+            elif self.showingInfo == False and int(getProperty("Playing.Chtype")) != 8 and int(getProperty("Playing.Chtype")) != 9 and (getProperty("Playing.Mediapath"))[0:4] != 'rtmp' and (getProperty("Playing.Mediapath"))[0:4] != 'rtsp' and plugchk not in BYPASS_SEEK:
                 xbmc.executebuiltin("ActivateWindow(10115)")
                 xbmc.executebuiltin("PlayerControl(SmallSkipBackward)")
                 self.log("SmallSkipBackward")
@@ -2195,7 +2168,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                 self.infoOffset += 1
                 self.showInfo(self.InfTimer)
                 
-            elif chtype != 8 and chtype != 9 and mediapath[0:4] != 'rtmp' and mediapath[0:4] != 'rtsp' and plugchk not in BYPASS_SEEK:
+            elif int(getProperty("Playing.Chtype")) != 8 and int(getProperty("Playing.Chtype")) != 9 and (getProperty("Playing.Mediapath"))[0:4] != 'rtmp' and (getProperty("Playing.Mediapath"))[0:4] != 'rtsp' and plugchk not in BYPASS_SEEK:
                 xbmc.executebuiltin("ActivateWindow(10115)")
                 xbmc.executebuiltin("PlayerControl(SmallSkipForward)")
                 self.log("SmallSkipForward")
@@ -2367,16 +2340,11 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             xbmc.executebuiltin( "XBMC.AlarmClock(shutdowntimer,XBMC.Powerdown(),%d,false)" % ( 5.0, ) )
             self.end()
         elif self.sleepTimeMode == 4:
-            json_query = ('{"jsonrpc": "2.0", "method": "JSONRPC.NotifyAll", "params": {"sender":"PTVL","message":"PseudoTV_Live - Sleeping"}, "id": 1}')
-            self.channelList.sendJSON(json_query)
+            self.egTrigger('PseudoTV_Live - Sleeping')
         elif self.sleepTimeMode == 5:
-            # Adapted from service.sleepy.watchdog
-            cec = Popen('echo \"standby 0\" | cec-client -s', stdout=PIPE, shell=True).communicate()
-            for retstr in cec: self.log("sleepAction, " + (str(retstr).strip()))
-            self.notifyLog(str(retstr).strip())
-            # self.end()
+            xbmc.executebuiltin("CECStandby()"); 
             
-            
+
     # Run rules for a channel
     def runActions(self, action, channel, parameter):
         self.log("runActions " + str(action) + " on channel " + str(channel))
@@ -2535,28 +2503,24 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             json_query = '{"jsonrpc":"2.0","method":"Input.ExecuteAction","params":{"action":"select"},"id":1}'
             self.channelList.sendJSON(json_query);
             return True
-        return False
-    
-    
-    def CancelPending(self, type=['Working']):
-        curwindow = self.currentWindow()
-        self.logDebug("CancelPending, type = " + str(type) + ", currentwindow = " + curwindow)
-        if curwindow == "":# "Working" Busy dialogue doesn't report a label
-            if self.Player.ignoreNextStop == True:       
+        # "Working" Busy dialogue doesn't report a label.
+        elif curwindow == "":
+            if self.Player.ignoreNextStop == True and self.Player.isPlaybackValid() == False:
                 json_query = '{"jsonrpc":"2.0","method":"Input.ExecuteAction","params":{"action":"stop"},"id":1}'
                 self.channelList.sendJSON(json_query);
-    
-            
+                return True
+        return False
+
+        
     def PlayerTimedOut(self):
         self.logDebug("PlayerTimedOut, Playback Failed: STOPPING!")
-        if not self.CloseDialog():
-            self.CancelPending()
-        self.lastActionTrigger()
+        if self.CloseDialog() == True:
+            setProperty("PTVL.FORCED_STOP","true")
                 
                 
     def playerTimerAction(self):
         self.logDebug("playerTimerAction")
-        self.GA_Request()
+        GA_Request()
         
         self.playerTimer = threading.Timer(self.ActionTimeInt, self.playerTimerAction)  
         self.playerTimer.name = "PlayerTimer"
@@ -2572,12 +2536,12 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             self.IdleTimer()
    
         if int(getProperty("Playing.Chtype")) in [8, 9]:
-            self.Player.resume_playback()
+            self.Player.resumePlayback()
         
         self.CloseDialog(['Dialogue OK'])
         self.playerTimer.start()
         
-        if self.Player.PlaybackValid():
+        if self.Player.isPlaybackValid():
             self.lastPlayTime = int(self.Player.getTime())
             self.lastPlaylistPosition = xbmc.PlayList(xbmc.PLAYLIST_MUSIC).getposition()    
             self.notPlayingCount = 0    
@@ -2585,6 +2549,11 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             self.notPlayingCount += 1
             self.logDebug("Adding to notPlayingCount, " + str(self.notPlayingCount))
             
+            if getProperty("PTVL.FORCED_STOP") == "true":
+                self.lastActionTrigger()
+                setProperty("PTVL.FORCED_STOP","false")
+                return
+                
             if self.notPlayingCount > int(round((self.PlayTimeoutInt/2))):
                 self.PlayerTimedOutTimer.start()
 
@@ -2705,7 +2674,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         self.log('Resume')
         self.showInfo(self.InfTimer)
         
-        if action and self.Player.is_playback_paused():
+        if action and self.Player.isPlaybackPaused():
             json_query = ('{"jsonrpc":"2.0","method":"Player.PlayPause","params":{"playerid":1}, "id": 1}')
             self.channelList.sendJSON(json_query)
             
@@ -2739,271 +2708,41 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         
     def SetAutoJump(self, time, cleanTime, title, channel):
         self.log('SetAutoJump') 
-        try:
-            if self.AutoJumpThread.isAlive():
-                self.AutoJumpThread.cancel()
-                self.AutoJumpThread.join()
-        except:
-            pass
         self.AutoJumpThread = threading.Timer(float(time), self.AutoJump, [title, channel])
         self.AutoJumpThread.name = "AutoJumpThread"
+
+        if self.AutoJumpThread.isAlive():
+            self.AutoJumpThread.cancel()
+            self.AutoJumpThread.join()
+
         self.AutoJumpThread.start()
         xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live","Reminder Set for " + str(cleanTime), 4000, THUMB) )
     
     
     def AutoJump(self, title, channel):
         self.log('AutoJump') 
-        msg = title + ' starts in 1m'
-        if dlg.yesno("PseudoTV Live", msg, "Would you like to switch to channel " + str(channel) + ' ?'):
+        # msg = title + ' starts in 1m'
+        # if dlg.yesno("PseudoTV Live", msg, "Would you like to switch to channel " + str(channel) + ' ?'):
             # Kill Prompt after a minute, todo
             # self.KillAutoJump = threading.Timer(1.0, self.KillAutoJump)
             # self.KillAutoJump.name = "KillAutoJump"
             # self.KillAutoJump.start()
+            # Set Lastchannel recall, then jump
+            # self.setChannel(channel)
             
-            #Set Lastchannel recall, then jump
-            self.setChannel(channel)
+            
+    def KillAutoJump(self):
+        xbmc.executebuiltin("Dialog.Close(PseudoTV Live)")
     
     
-    # def KillAutoJump(self):
-        # xbmc.executebuiltin("Dialog.Close(PseudoTV Live)")
-    
-    
-    def GetPlayingTmpstrThread(self, data):
-        self.log('GetPlayingTmpstrThread') 
+    def getTMPSTR_Thread(self, chtype, chname, mediapath, position):
+        self.log('getTMPSTR_Thread') 
         json_query = ('{"jsonrpc":"2.0","method":"Player.GetItem","params":{"playerid":1,"properties":["title","year","mpaa","imdbnumber","description","season","episode","playcount","genre","duration","runtime","showtitle","album","artist","plot","plotoutline","tagline","tvshowid"]}, "id": 1}')
         json_folder_detail = self.channelList.sendJSON(json_query)
         file_detail = re.compile( "{(.*?)}", re.DOTALL ).findall(json_folder_detail)
-        fileList = []
-        seasoneplist = []
-        filecount = 0
-        LiveID = 'other|0|0|False|1|NR|'
-        
-        for f in file_detail:
-            tmpstr = ''
-            istvshow = False
-            Managed = False   
-            match = re.search('"file" *: *"(.*?)",', f)
-            try:
-                filecount += 1
-                seasonval = -1
-                epval = -1
-                titles = re.search('"label" *: *"(.*?)",', f)
-                showtitles = re.search('"showtitle" *: *"(.*?)",', f)
-                plots = re.search('"plot" *: *"(.*?)",', f)
-                plotoutlines = re.search('"plotoutline" *: *"(.*?)",', f)
-                years = re.search('"year" *: *([\d.]*\d+)', f)
-                genres = re.search('"genre" *: *\[(.*?)\],', f)
-                playcounts = re.search('"playcount" *: *([\d.]*\d+),', f)
-                imdbnumbers = re.search('"imdbnumber" *: *"(.*?)",', f)
-                ratings = re.search('"mpaa" *: *"(.*?)",', f)
-                descriptions = re.search('"description" *: *"(.*?)",', f)
-                
-                if showtitles != None and len(showtitles.group(1)) > 0:
-                    type = 'tvshow'
-                    dbids = re.search('"tvshowid" *: *([\d.]*\d+),', f)
-                    epids = re.search('"id" *: *([\d.]*\d+),', f)
-                else:
-                    type = 'movie'
-                    dbids = re.search('"id" *: *([\d.]*\d+),', f) 
-                    epids = None
-
-                # if possible find year by title
-                try:
-                    year = int(years.group(1))
-                except:
-                    try:
-                        if type == 'tvshow':
-                            year = int(((showtitles.group(1)).split(' ('))[1].replace(')',''))
-                        else:
-                            year = int(((titles.group(1)).split(' ('))[1].replace(')',''))
-                    except Exception,e:
-                        print str(e)
-                        year = 0
-                        pass
-
-                self.logDebug("GetPlayingTmpstrThread, year = " + str(year))  
-
-                if genres != None and len(genres.group(1)) > 0:
-                    genre = ((genres.group(1).split(',')[0]).replace('"',''))
-                else:
-                    genre = 'Unknown'
-                                
-                self.logDebug("GetPlayingTmpstrThread, genre = " + genre)  
-
-                if playcounts != None and len(playcounts.group(1)) > 0:
-                    playcount = int(playcounts.group(1))
-                else:
-                    playcount = 1
-                        
-                self.logDebug("GetPlayingTmpstr, playcount = " + str(playcount))  
-        
-                if ratings != None and len(ratings.group(1)) > 0:
-                    rating = self.channelList.cleanRating(ratings.group(1))
-                    if type == 'movie':
-                        rating = rating[0:5]
-                        try:
-                            rating = rating.split(' ')[0]
-                        except:
-                            pass
-                else:
-                    rating = 'NR'
-                
-                self.logDebug("GetPlayingTmpstrThread, rating = " + rating)  
-                
-                if imdbnumbers != None and len(imdbnumbers.group(1)) > 0:
-                    imdbnumber = imdbnumbers.group(1)
-                else:
-                    imdbnumber = 0
-                
-                self.logDebug("GetPlayingTmpstrThread, imdbnumber = " + str(imdbnumber))
-                            
-                                                    
-                if epids != None and len(epids.group(1)) > 0:
-                    epid = int((epids.group(1)).split(',')[0])
-                else:
-                    epid = 0
-                    
-                self.logDebug("GetPlayingTmpstrThread, epid = " + str(epid))
-                
-                if dbids != None and len(dbids.group(1)) > 0:
-                    dbid = int((dbids.group(1)).split(',')[0])
-                else:
-                    dbid = 0
-                    
-                self.logDebug("GetPlayingTmpstrThread, dbid = " + str(dbid))
-
-                if plots and len(plots.group(1)) > 0:
-                    theplot = (plots.group(1)).replace('\\','').replace('\n','')
-                elif descriptions and len(descriptions.group(1)) > 0:
-                    theplot = (descriptions.group(1)).replace('\\','').replace('\n','')
-                elif plotoutlines and len(plotoutlines.group(1)) > 0:
-                    theplot = (plotoutlines.group(1)).replace('\\','').replace('\n','')
-                else:
-                    theplot = (titles.group(1)).replace('\\','').replace('\n','')
-                
-                try:
-                    theplot = (self.channelList.trim(theplot, 350, '...'))
-                except Exception,e:
-                    theplot = (theplot[:350])
-
-                # This is a TV show
-                if showtitles != None and len(showtitles.group(1)) > 0:
-                    season = re.search('"season" *: *([0-9]*?),', f)
-                    episode = re.search('"episode" *: *([0-9]*?),', f)
-                    swtitle = (titles.group(1)).replace('\\','')
-                    swtitle = (swtitle.split('.', 1)[-1]).replace('. ','')
-                    dbid = str(dbid) +':'+ str(epid)
-                    
-                    try:
-                        seasonval = int(season.group(1))
-                        epval = int(episode.group(1))
-                        swtitle = (('0' if seasonval < 10 else '') + str(seasonval) + 'x' + ('0' if epval < 10 else '') + str(epval) + ' - ' + (swtitle)).replace('  ',' ')
-                    except Exception,e:
-                        self.log("Season/Episode formatting failed" + str(e))
-                        seasonval = -1
-                        epval = -1
-
-                    if REAL_SETTINGS.getSetting('EnhancedGuideData') == 'true':  
-                        self.log("GetPlayingTmpstrThread, Enhanced TV GuideData Enabled")  
-                        # try:
-                            # showtitle = label.split(' (')[0]
-                            # year = (label.split(' (')[1]).replace(')','')
-                        # except:
-                            # showtitle = label
-                            # year = 0
-                            # pass
-                            
-                        if year == 0:
-                            year = self.channelList.getYear(type, showtitles.group(1))
-                            
-                        if imdbnumber == 0:
-                            imdbnumber = self.channelList.getTVDBID(showtitles.group(1), year)                         
-
-                        if genre == 'Unknown':
-                            genre = self.channelList.getGenre(type, showtitles.group(1), year)
-                            
-                        if rating == 'NR':
-                            rating = self.channelList.getRating(type, showtitles.group(1), year)
-
-                        if imdbnumber != 0:
-                            Managed = self.channelList.sbManaged(imdbnumber)
-                    GenreLiveID = [genre, type, imdbnumber, dbid, Managed, playcount, rating] 
-                    genre, LiveID = self.channelList.packGenreLiveID(GenreLiveID)
-                    tmpstr += (showtitles.group(1)) + "//" + swtitle + "//" + theplot + "//" + genre + "////" + LiveID
-                    istvshow = True
-                else:                  
-                    album = re.search('"album" *: *"(.*?)"', f)
-                    # This is a movie
-                    if not album or len(album.group(1)) == 0:
-                    
-                        label = titles.group(1)  
-                        showtitle = label  
-                        dbid = str(dbid)
-                        
-                        if '(' in showtitle and year == 0:
-                            try:
-                                year = int(((showtitle.split('('))[1]).replace(')',''))
-                            except:
-                                pass
-                                
-                        taglines = re.search('"tagline" *: *"(.*?)"', f)
-                        if taglines and len(taglines.group(1)) > 0:
-                            tagline = (taglines.group(1)).replace('\\','')
-                        else:
-                            tagline = ''
-                        
-                        if REAL_SETTINGS.getSetting('EnhancedGuideData') == 'true':    
-                            self.log("GetPlayingTmpstrThread, Enhanced Movie GuideData Enabled")                                       
-                            try:
-                                label = showtitle.split(' (')[0]
-                            except:
-                                pass
-                                
-                            if year == 0:
-                                year = self.channelList.getYear(type, label)
-                                                
-                            self.logDebug("GetPlayingTmpstr, label = " + label)
-                                                            
-                            if imdbnumber == 0:
-                                imdbnumber = self.channelList.getIMDBIDmovie(label, year)
-                                                            
-                            if genre == 'Unknown':
-                                genre = self.channelList.getGenre(type, label, year)
-
-                            if rating == 'NR':
-                                rating = self.channelList.getRating(type, label, year)
-                            
-                            try:
-                                if not taglines and len(taglines.group(1)) == 0:
-                                    tagline = self.channelList.getTagline(label, year)
-                            except:
-                                tagline = ''
-                                
-                            if imdbnumber != 0:
-                                Managed = self.channelList.cpManaged(label, imdbnumber)
-                                
-                        if not '(' in label and year != 0:
-                            showtitle = label + ' ('+str(year)+')'
-                            
-                        GenreLiveID = [genre, type, imdbnumber, dbid, Managed, playcount, rating]
-                        genre, LiveID = self.channelList.packGenreLiveID(GenreLiveID)           
-                        tmpstr += showtitle + "//" + tagline + "//" + theplot + "//" + (genre) + "////" + (LiveID)
-                    
-                    else: #Music
-                        LiveID = 'music|0|0|False|1|NR|'
-                        artist = re.search('"artist" *: *"(.*?)"', f)
-                        tmpstr += album.group(1) + "//" + artist.group(1) + "//" + 'Music' + "////" + LiveID
-                
-                file = unquote(match.group(1))
-                tmpstr = tmpstr
-                tmpstr = tmpstr.replace("\\n", " ").replace("\\r", " ").replace("\\\"", "\"")
-                tmpstr = tmpstr + '\n' + file.replace("\\\\", "\\")
-                print tmpstr
-            except Exception,e:
-                self.log('GetPlayingTmpstrThread, failed...' + str(e))
-                pass
+        tmpstr = self.channelList.getFileList(file_detail, self.currentChannel, '1')
         setProperty("Playing.OnDemand_tmpstr",tmpstr)
-        return self.SetMediaInfo(data[0], data[1], data[2], data[3], tmpstr)
+        return self.SetMediaInfo(chtype, chname, mediapath, position, tmpstr)
 
         
     def EPGtypeToggle(self):
@@ -3025,8 +2764,8 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
 
             
     def end(self):
-        self.log('end')  
-        self.isExiting = True   
+        self.log('end')    
+        self.isExiting = True 
         self.background.setLabel('Exiting')
         # Prevent the player from setting the sleep timer
         self.Player.stopped = True
@@ -3125,8 +2864,8 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         except:
             pass
         try:
-            if self.GetPlayingTmpstrTimer.isAlive():
-                self.GetPlayingTmpstrTimer.cancel()
+            if self.getTMPSTRTimer.isAlive():
+                self.getTMPSTRTimer.cancel()
         except:
             pass
         try:
@@ -3180,6 +2919,12 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             if self.ArtThread3.isAlive():
                 self.ArtThread3.cancel()
                 self.ArtThread3.join()
+        except:
+            pass   
+        try:
+            if self.isNew.isAlive():
+                self.isNew.cancel()
+                self.isNew.join()
         except:
             pass   
         try:
@@ -3255,9 +3000,8 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                 self.storeFiles()
                 
         REAL_SETTINGS.setSetting('Normal_Shutdown', "true")
-        REAL_SETTINGS.setSetting('LogoDB_Override', "false")
-        json_query = ('{"jsonrpc": "2.0", "method": "JSONRPC.NotifyAll", "params": {"sender":"PTVL","message":"PseudoTV_Live - Stopping"}, "id": 1}')
-        self.channelList.sendJSON(json_query)
+        REAL_SETTINGS.setSetting('LogoDB_Override', "false")     
+        self.egTrigger('PseudoTV_Live - Stopping')
         self.background.setVisible(False)
         updateDialog.close()
         self.close()
@@ -3459,55 +3203,18 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         modifier = xbmc.PlayList(xbmc.PLAYLIST_MUSIC).getposition()
         self.Player.playselected(self.channels[self.currentChannel - 1].fixPlaylistIndex(self.infoOffset + modifier))
      
-     
-    def GA_Request(self):
-        self.log("GA_Request")
-        """
-        Simple proof of concept code to push data to Google Analytics.
-        Related blog posts:
-         * http://www.canb.net/2012/01/push-data-to-google-analytics-with.html
-         * https://medium.com/python-programming-language/80eb9691d61f
-        """
-        try:
-            PROPERTY_ID = os.environ.get("GA_PROPERTY_ID", "UA-45979766-1")
-
-            if not REAL_SETTINGS.getSetting('Visitor_GA'):
-                REAL_SETTINGS.setSetting('Visitor_GA', str(random.randint(0, 0x7fffffff)))
-            VISITOR = str(REAL_SETTINGS.getSetting("Visitor_GA"))
-            OPTIONS = ['PTVL',str(ADDON_VERSION),str(VISITOR)]
+    
+    def egTrigger(self, message, sender='PTVL'):
+        self.log("egTrigger")
+        json_query = ('{"jsonrpc": "2.0", "method": "JSONRPC.NotifyAll", "params": {"sender":"%s","message":"%s"}, "id": 1}' % (sender, message))
+        self.channelList.sendJSON(json_query)
             
-            if getProperty("Donor") == "true":
-                USER,PASS = (REAL_SETTINGS.getSetting('Donor_UP')).split(':')
-                OPTIONS = OPTIONS + ['Donor:'+USER]
-            else:
-                OPTIONS = OPTIONS+ ['FreeUser']
             
-            if REAL_SETTINGS.getSetting('Hub') == 'true':  
-                OPTIONS = OPTIONS + ['Hub:True']
-            else:
-                OPTIONS = OPTIONS + ['Hub:False']
-            
-            if getProperty("PTVL.COM_APP") == "true":
-                USER = REAL_SETTINGS.getSetting('Gmail_User')
-                OPTIONS = OPTIONS + ['Com:'+USER]
-                
-            OPTIONLST = "/".join(OPTIONS)
-            DATA = {"utmwv": "5.2.2d",
-            "utmn": str(random.randint(1, 9999999999)),
-            "utmp": OPTIONLST,
-            "utmac": PROPERTY_ID,
-            "utmcc": "__utma=%s;" % ".".join(["1", VISITOR, "1", "1", "1", "1"])}
-     
-            URL = urlparse.urlunparse(("http",
-            "www.google-analytics.com",
-            "/__utm.gif",
-            "",
-            urllib.urlencode(DATA),
-            ""))
-            urllib2.urlopen(URL).info()
-        except Exception,e:  
-            self.log("GA_Request Failed" + str(e), xbmc.LOGERROR)
-
+    def playSFX(self, action):
+        self.log("playSFX")
+        if action in [ACTION_MOVE_DOWN, ACTION_MOVE_UP, ACTION_MOVE_LEFT, ACTION_MOVE_RIGHT, ACTION_PAGEDOWN, ACTION_PAGEUP]:
+            print MOVE_SFX
+            xbmc.playSFX(MOVE_SFX)
      
         # call weather
         # http://localhost:9000/jsonrpc?request={"jsonrpc":"2.0","method":"GUI.ActivateWindow","params":{"window":"weather"},"id":18}

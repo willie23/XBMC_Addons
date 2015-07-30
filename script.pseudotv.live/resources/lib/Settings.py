@@ -159,7 +159,7 @@ class Settings:
 
     def repairSettings(self):
         self.log("repairSettings")
-        xbmcgui.Dialog().ok("PseudoTV Live", "[COLOR=red]Warning!![/COLOR] The repair process can, but rarely; damages your channel configurations.", "Its recommended you backup before continuing.")
+        xbmcgui.Dialog().ok("PseudoTV Live", "[COLOR=red]Warning!![/COLOR] The repair process can damage or alter your channel configurations.", "Its recommended you backup before continuing.")
         
         if xbmcgui.Dialog().yesno("PseudoTV Live", "Repair Channel Configurations?"):
             self.loadSettings()

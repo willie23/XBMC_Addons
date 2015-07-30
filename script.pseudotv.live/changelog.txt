@@ -1,3 +1,12 @@
+[*] "Find Missing Guidedata" only works as a background function. In-short it will runs when background channel or settop mode is enabled.
+[*] LiveTV now supports artwork found in xmltv file.
+[*] Code optimized for lowpower systems and for general performance, PseudoTV Lite is obsolete.
+[*] Chtype 15 (Plugin) - format change, automatic migration tool included.
+[*] Global Media Limits extended to 5000 and Unlimited.
+[*] Performance, Service and Autotuning Tweaks.
+[*] NEW! Global Context menu: "Export to PseudoTV Live", requires module "context.pseudotv.live.export" found in the Lunatixz repository and Kodi Isengard.
+    "Export to PseudoTV Live" - can be used to create channels easily... Just highlight a source and exporting it to PTVL. Currently Supports: Smartplaylists, PVR, TVShows, Directories and Plug-in Files and Folders.
+[*] [COLOR=blue][B]^ v.0.6.5 ^[/B][/COLOR]
 [*] Added dynamic "New" icon to epg/overlay, changes status based on Kodis watched status. Removed "(NEW)" label from EPG.
 [*] Reworked Sleep timer, Sidebar Menu features dynamic sleep notification. Launching EPG resets sleep timer, all other actions ignored.
 [*] Added "Skip ahead" to the overlay info bar. Tweaked failed playback handling...

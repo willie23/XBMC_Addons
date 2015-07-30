@@ -27,6 +27,7 @@ define(['.././ptvl'], function (ptvlControllers) {
         $scope.YtType = {};
 
         console.log($scope.channel.type);
+        console.log($scope.channel.rules.main[2]);
         if($scope.channel.type.value == 10) {
             // Binds the specific type the channel uses to the YtType object
             $scope.YtType = ruleFactory.getYtType($scope.channel.rules.main[2]);
@@ -95,7 +96,7 @@ define(['.././ptvl'], function (ptvlControllers) {
 
         $scope.undoSort = function ()
         {
-            var r = confirm("Are you sure you want to undo changing the plugin sort?");
+            var r = confirm("Are you sure you want to undo changing the youtube sort?");
             if(r == true) {
                 $scope.changed.sort = false;
                 $scope.changed.value = false;
@@ -119,7 +120,7 @@ define(['.././ptvl'], function (ptvlControllers) {
 
         $scope.undoLimit = function ()
         {
-            var r = confirm("Are you sure you want to undo changing the plugin sort?");
+            var r = confirm("Are you sure you want to undo changing the youtube limit?");
             if(r == true) {
                 $scope.changed.limit = false;
                 $scope.changed.value = false;
@@ -136,12 +137,12 @@ define(['.././ptvl'], function (ptvlControllers) {
         $scope.saveYouTube = function (channel, path)
         {
             channel.rules.main[1] = path;
-
-            if('limit' in $scope.changed) {
+            if (typeof $scope.changes.limit != 'undefined')
+            {
                 channel.rules.main[3] = $scope.changes.limit;
             }
-
-            if('sort' in $scope.changes) {
+            if (typeof $scope.changes.sort != 'undefined')
+            {
                 channel.rules.main[4] = $scope.changes.sort;
             }
 

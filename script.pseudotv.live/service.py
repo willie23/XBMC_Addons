@@ -32,12 +32,6 @@ ADDON_VERSION = REAL_SETTINGS.getAddonInfo('version')
 SETTINGS_LOC = REAL_SETTINGS.getAddonInfo('profile')
 THUMB = (xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'images')) + '/' + 'icon.png')
 
-def checkDisabled():
-    if xbmc.getCondVisibility('System.HasAddon(script.pseudotv.live)') == 0:
-        DeleteKeymap('ptvl_menu.xml')
-        return True
-    return False 
-    
 def autostart():
     xbmc.log('script.pseudotv.live-Service: autostart')   
     xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("AutoStart PseudoTV Live","Service Starting...", 4000, THUMB) )
@@ -46,37 +40,12 @@ def autostart():
     sleep(IDLE_TIME)
     xbmc.executebuiltin('RunScript("' + ADDON_PATH + '/default.py' + '")')
 
-# Startup tasks
-VerifyKeymaps()
-                            
 if REAL_SETTINGS.getSetting("Auto_Start") == "true":
     autostart()
-
-class MyMonitor(xbmc.Monitor):
-    def __init__(self):
-        xbmc.Monitor.__init__(self)
-        self.context = REAL_SETTINGS.getSetting('CONTEXT')  == 'true'
-
-    def cmCHK(self):
-        context = REAL_SETTINGS.getSetting('CONTEXT')  == 'true'
-        if self.context == context:
-            return
-        self.context = context
-        UpdateKeymaps()
-                 
-    def onSettingsChanged(self):
-        self.cmCHK()
-        
-monitor = MyMonitor()
-
+    
 while (not xbmc.abortRequested):
-    xbmc.sleep(1000)
-    if checkDisabled():
-        xbmc.sleep(1000)
-        xbmc.executebuiltin('Action(reloadkeymaps)')
 
     if xbmc.getCondVisibility('Window.IsActive(addonsettings)') != True:
-        # Disable PseudoTVRunning
         if getProperty("PseudoTVRunning") != "True":
             HubCHK()
             xbmc.sleep(1000)
@@ -84,8 +53,11 @@ while (not xbmc.abortRequested):
             xbmc.sleep(1000)
             DonCHK()
             
-    UpdateRSS()     
-                
-checkDisabled()
-        
-del monitor
+            try:
+                xbmc.executebuiltin("RunScript("+ADDON_PATH+"/convert.py)")
+            except:
+                pass
+                       
+    SyncXMLTV()         
+    UpdateRSS()
+    xbmc.sleep(10000)

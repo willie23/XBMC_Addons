@@ -15,11 +15,22 @@
             <align>center</align>
             <aligny>center</aligny>
         </control>
+        <control type="image">
+            <description>Channel Logo</description>
+            <width>480</width>
+            <height>1080</height>
+            <width>270</width>
+            <height>62</height>
+            <aspectratio>keep</aspectratio>
+            <align>center</align>
+            <aligny>center</aligny>
+            <texture>Control.GetLabel(506)</texture>
+            <visible>Control.IsVisible(101)</visible>
+        </control>
         <control type="label" id="101">
             <description>Background Text</description>
             <width>1920</width>
             <height>1080</height>
-            <label></label>
             <font>font30</font>
             <align>center</align>
             <aligny>center</aligny>
@@ -861,7 +872,7 @@
                     <textcolor>FFFFFFFF</textcolor>
                     <font>font12</font>
                 </control> 
-            </control>    
+            </control> 
         <!--Bottom bar-->   
         <control type="grouplist">
             <posx>18</posx>
@@ -869,7 +880,52 @@
             <align>left</align>
             <orientation>horizontal</orientation>
             <itemgap>8</itemgap>
-        </control> 
+        </control> <!--RSS-->   
+        <control type="grouplist">
+            <posx>10</posx>
+            <posy>60r</posy>
+            <align>left</align>
+            <orientation>horizontal</orientation>
+            <itemgap>1</itemgap>  
+           <control type="label">
+                <description>RSS Sep</description>
+                <width>10</width>
+                <height>55</height>
+                <aspectratio>keep</aspectratio>
+                <align>center</align>
+                <aligny>center</aligny>
+                <label>|</label>
+                <font>font14</font>
+                <textcolor>C0C0C0C0</textcolor>
+                <visible>!IsEmpty(Window(10000).Property(RSS.FEED))</visible>
+            </control>  
+            <control type="label">
+                <width>1880</width>
+                <height>55</height>
+                <font>font12</font>
+                <aligny>center</aligny>
+                <align>left</align>
+                <scroll>True</scroll>
+                <textcolor>C0C0C0C0</textcolor>
+                <scrollsuffix>  •  </scrollsuffix>
+                <autoscroll time="1000" delay="1000" repeat="2000">True</autoscroll>
+                <scrollspeed>40</scrollspeed>
+                <visible>!IsEmpty(Window(10000).Property(RSS.FEED))</visible>
+                <label>$INFO[Window(10000).Property(RSS.FEED)]</label>
+            </control>
+           <control type="label">
+                <description>RSS Sep</description>
+                <width>10</width>
+                <height>55</height>
+                <aspectratio>keep</aspectratio>
+                <align>center</align>
+                <aligny>center</aligny>
+                <label>|</label>
+                <font>font14</font>
+                <textcolor>C0C0C0C0</textcolor>
+                <visible>!IsEmpty(Window(10000).Property(RSS.FEED))</visible>
+            </control>  
+        </control>
     </control>
     <!-- Overlay Coming Up Next Popup -->
         <control type="group" id="120">

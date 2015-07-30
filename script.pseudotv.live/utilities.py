@@ -132,6 +132,8 @@ if sys.argv[1] == '-DDautopatch':
     DonorDownloader(True)   
 elif sys.argv[1] == '-DonorDownloader':
     DonorDownloader()   
+elif sys.argv[1] == '-ImportLink':
+    print 'ImportLink'
 elif sys.argv[1] == '-SimpleDownloader':
     xbmcaddon.Addon(id='script.module.simple.downloader').openSettings()  
 elif sys.argv[1] == '-showChangelog':

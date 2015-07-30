@@ -31,6 +31,38 @@ __cwd__        = __settings__.getAddonInfo('path')
 __version__    = __settings__.getAddonInfo('version')
 __language__   = __settings__.getLocalizedString
        
+def startPseudoTV():
+
+    # Check if Outdated/Install Repo
+    VersionCompare()
+
+    # VideoWindow Patch.
+    VideoWindow()
+             
+    # Clear filelist Caches    
+    if REAL_SETTINGS.getSetting("ClearCache") == "true" or REAL_SETTINGS.getSetting("ForceChannelReset") == "true":
+        ClearCache('Filelist')
+        
+    # Clear BCT Caches
+    if REAL_SETTINGS.getSetting("ClearBCT") == "true":
+        ClearCache('BCT')
+
+    # Clear Artwork Folders
+    if REAL_SETTINGS.getSetting("ClearLiveArt") == "true":
+        ClearCache('Art')
+
+    # Backup/Restore settings2
+    ChkSettings2()
+    
+    # Adjust settings based on sys platform
+    chkLowPower()
+        
+    # Check if changes require forced channel reset
+    chkChanges()
+        
+    #Start PseudoTV
+    PseudoTV()
+       
 def PseudoTV():
     import resources.lib.Overlay as Overlay
     setProperty("PseudoTVRunning", "True")
@@ -71,7 +103,7 @@ if getProperty("PseudoTVRunning") != "True":
         # ClearPlaylists()
         # REAL_SETTINGS.setSetting('ForceChannelReset', 'true')
         REAL_SETTINGS.setSetting("PTVL_Version", __version__)
-                
+      
         # VideoWindow Patch.
         VideoWindow()
         
@@ -83,30 +115,11 @@ if getProperty("PseudoTVRunning") != "True":
         
         # Check if autoplay is enabled
         CHKAutoplay()
+        
+        if getXBMCVersion() == 15:
+            okDialog('Kodi v.15 Detected, Its recommended you add "pvr://" and "upnp:// as a kodi video source"')
     else:
-        # Check if Outdated/Install Repo
-        VersionCompare()
-
-        # VideoWindow Patch.
-        VideoWindow()
-                 
-        # Clear filelist Caches    
-        if REAL_SETTINGS.getSetting("ClearCache") == "true" or REAL_SETTINGS.getSetting("ForceChannelReset") == "true":
-            ClearCache('Filelist')
-            
-        # Clear BCT Caches
-        if REAL_SETTINGS.getSetting("ClearBCT") == "true":
-            ClearCache('BCT')
-
-        # Clear Artwork Folders
-        if REAL_SETTINGS.getSetting("ClearLiveArt") == "true":
-            ClearCache('Art')
-
-        # Backup/Restore settings2
-        ChkSettings2()
-
-        #Start PseudoTV
-        PseudoTV()
+        startPseudoTV()
 else:
     log('default: Already running, exiting', xbmc.LOGERROR)
     xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Already running please wait and try again later.", 4000, THUMB) )

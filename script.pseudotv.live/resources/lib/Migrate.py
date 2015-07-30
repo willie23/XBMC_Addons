@@ -76,13 +76,6 @@ class Migrate:
         self.updateDialog.create("PseudoTV Live", "Auto Tune")
         Youtube = chanlist.youtube_player()
         
-        self.ATlimit = MEDIA_LIMIT[int(Globals.REAL_SETTINGS.getSetting('AT_MEDIA_LIMIT'))]
-        self.limit = MEDIA_LIMIT[int(Globals.REAL_SETTINGS.getSetting('MEDIA_LIMIT'))]
-        if self.limit == 0 or self.limit > 200:
-            self.limit = 200
-        elif self.limit < 25:
-            self.limit = 25
-            
         # Custom Playlists
         self.updateDialogProgress = 1
         if Globals.REAL_SETTINGS.getSetting("autoFindCustom") == "true" :
@@ -187,11 +180,12 @@ class Migrate:
                 PVRNameList, PVRPathList = chanlist.fillPVR()
 
                 for PVRnum in range(len(PVRNameList)):
+                    CHSetName = ''
+                    CHzapit = ''
                     PVRName = chanlist.CleanLabels(PVRNameList[PVRnum], 'upper')
                     chid = PVRName.split(' - ')[0]
                     CHname = PVRName.split(' - ')[1]
                     path = PVRPathList[PVRnum]
-                    inSet = False
                 
                     if Globals.REAL_SETTINGS.getSetting("PVR_Listing") == '1':
                         listing = 'xmltv'
@@ -199,40 +193,42 @@ class Migrate:
                         xmlTvFile = os.path.join(xmltvLOC, 'xmltv.xml')
                         if xbmcvfs.exists(xmlTvFile): 
                             CHSetName, CHzapit = chanlist.findZap2itID(CHname, xmlTvFile)
-                            inSet = True
                     else:
                         listing = 'pvr'
                         CHSetName, CHzapit = chanlist.findZap2itID(CHname, listing)
-                        inSet = True
-                        
-                    if inSet == True:    
-                        Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_type", "8")
-                        Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_time", "0")
-                        Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_1", CHzapit)
-                        Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_2", path)
-                        Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_3", listing)
-                        Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rulecount", "1")
-                        Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rule_1_id", "1")
-                        Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rule_1_opt_1", CHname + ' PVR')
-                        Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_changed", "true")                        
-                        self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding PVR Channels",CHname)  
-                        channelNum += 1 
+                    
+                    if not CHSetName:
+                        CHSetName = CHname
+                    if not CHzapit:
+                        CHzapit = "NA"
+
+                    Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_type", "8")
+                    Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_time", "0")
+                    Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_1", CHzapit)
+                    Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_2", path)
+                    Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_3", listing)
+                    Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rulecount", "1")
+                    Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rule_1_id", "1")
+                    Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rule_1_opt_1", CHname + ' PVR')
+                    Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_changed", "true")                        
+                    self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding PVR Channels",CHname)  
+                    channelNum += 1 
             except:
                 pass
         
         # LiveTV - HDHomeRun
         self.updateDialogProgress = 11
-        if Globals.REAL_SETTINGS.getSetting("autoFindLiveHD") != "0" and Globals.REAL_SETTINGS.getSetting("xmltvLOC") and Globals.REAL_SETTINGS.getSetting('autoFindLiveHDPath'):
+        if Globals.REAL_SETTINGS.getSetting("autoFindLiveHD") != "0":
             chanlist.cached_readXMLTV = []
             xmltvLOC = xbmc.translatePath(Globals.REAL_SETTINGS.getSetting("xmltvLOC"))
             xmlTvFile = os.path.join(xmltvLOC, 'xmltv.xml')
-            HDstrmPath = Globals.REAL_SETTINGS.getSetting('autoFindLiveHDPath') + '/'
-            HDSTRMnum = 0
             
             # LiveTV - HDHomeRun - STRM
-            if Globals.REAL_SETTINGS.getSetting("autoFindLiveHD") == "1":
+            if Globals.REAL_SETTINGS.getSetting("autoFindLiveHD") == "1" and Globals.REAL_SETTINGS.getSetting('autoFindLiveHDPath'):
                 self.log("autoTune, adding Live HDHomeRun Strm Channels")
                 self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding HDHomeRun STRM Channels"," ")
+                HDstrmPath = Globals.REAL_SETTINGS.getSetting('autoFindLiveHDPath') + '/'
+                HDSTRMnum = 0
                 
                 try:                
                     LocalLST = str(xbmcvfs.listdir(HDstrmPath)[1]).replace("[","").replace("]","").replace("'","")
@@ -243,26 +239,30 @@ class Migrate:
                             LocalFLE = (LocalLST[HDSTRMnum])
                             filename = (HDstrmPath + LocalFLE)
                             CHname = os.path.splitext(LocalFLE)[0]
-                            inSet = False
-                            
+                            CHSetName = ''
+                            CHzapit = ''
+                                    
                             if xbmcvfs.exists(xmlTvFile): 
                                 CHSetName, CHzapit = chanlist.findZap2itID(CHname, xmlTvFile)
-                                inSet = True
-
-                            if inSet == True:
-                                Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_type", "8")
-                                Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_time", "0")
-                                Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_1", CHzapit)
-                                Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_2", filename)
-                                Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_3", "xmltv")
-                                Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rulecount", "1")
-                                Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rule_1_id", "1")
-                                Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rule_1_opt_1", CHname + ' HDHR')   
-                                Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_changed", "true")                                                            
-                                self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding HDHomeRun STRM Channels",CHname)
-                                channelNum += 1
-                except:
-                    pass
+                                
+                            if not CHSetName:
+                                CHSetName = CHname
+                            if not CHzapit:
+                                CHzapit = "NA"
+                                
+                            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_type", "8")
+                            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_time", "0")
+                            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_1", CHzapit)
+                            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_2", filename)
+                            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_3", "xmltv")
+                            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rulecount", "1")
+                            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rule_1_id", "1")
+                            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rule_1_opt_1", CHname + ' HDHR')   
+                            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_changed", "true")                                                            
+                            self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding HDHomeRun STRM Channels",CHname)
+                            channelNum += 1
+                except Exception,e:
+                    self.log("autoFindLiveHD 1, Failed! " + str(e))
 
             # LiveTV - HDHomeRun - UPNP
             elif Globals.REAL_SETTINGS.getSetting("autoFindLiveHD") == "2":
@@ -276,6 +276,8 @@ class Migrate:
                     
                     for HDUPNPnum in range(len(HDHRNameList)):
                         HDHRname = HDHRNameList[HDUPNPnum]
+                        CHSetName = ''
+                        CHzapit = ''
 
                         CHid = HDHRname.split(' - ')[0]
                         CHname = HDHRname.split(' - ')[1]
@@ -284,20 +286,25 @@ class Migrate:
 
                         if xbmcvfs.exists(xmlTvFile): 
                             CHSetName, CHzapit = chanlist.findZap2itID(CHname, xmlTvFile)
-
-                            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_type", "8")
-                            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_time", "0")
-                            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_1", CHzapit)
-                            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_2", path)
-                            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_3", "xmltv")
-                            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rulecount", "1")
-                            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rule_1_id", "1")
-                            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rule_1_opt_1", CHname + ' HDHR')    
-                            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_changed", "true")                        
-                            self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding HDHomeRun UPNP Channels",CHname)  
-                            channelNum += 1 
+                                
+                        if not CHSetName:
+                            CHSetName = CHname
+                        if not CHzapit:
+                            CHzapit = "NA"
+                                
+                        Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_type", "8")
+                        Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_time", "0")
+                        Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_1", CHzapit)
+                        Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_2", path)
+                        Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_3", "xmltv")
+                        Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rulecount", "1")
+                        Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rule_1_id", "1")
+                        Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rule_1_opt_1", CHname + ' HDHR')    
+                        Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_changed", "true")                        
+                        self.updateDialog.update(self.updateDialogProgress,"AutoTuning","adding HDHomeRun UPNP Channels",CHname)  
+                        channelNum += 1 
                 except Exception,e:
-                    self.log("autoFindLiveHD, Failed! " + str(e))
+                    self.log("autoFindLiveHD 2, Failed! " + str(e))
              
         # LiveTV - USTVnow
         self.updateDialogProgress = 13
@@ -512,7 +519,7 @@ class Migrate:
                         Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_time", "0")
                         Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_1", "2")
                         Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_2", "Channel_" + str(i))
-                        Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_3", str(self.limit))
+                        Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_3", str(Globals.MEDIA_LIMIT))
                         Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_4", "1")
                         Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rulecount", "2")
                         Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rule_1_id", "1")
@@ -537,7 +544,7 @@ class Migrate:
                 Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_time", "0")
                 Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_1", "1")
                 Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_2", user)
-                Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_3", str(self.limit))
+                Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_3", str(Globals.MEDIA_LIMIT))
                 Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_4", "1")
                 Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rulecount", "3")
                 Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rule_1_id", "1")
@@ -597,7 +604,7 @@ class Migrate:
             Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_type", "7")
             Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_time", "0")
             Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_1", "" +LocalVideo+ "")
-            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_3", str(self.limit))
+            Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_3", str(Globals.MEDIA_LIMIT))
             Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_4", "1")
             Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rulecount", "1")
             Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rule_1_id", "1")
@@ -620,7 +627,7 @@ class Migrate:
                 Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_time", "0")
                 Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_1", Username)
                 Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_2", "3")
-                Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_3", str(self.limit))
+                Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_3", str(Globals.MEDIA_LIMIT))
                 Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_4", "0")
                 Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rulecount", "1")
                 Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rule_1_id", "1")
@@ -631,7 +638,7 @@ class Migrate:
                 Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_time", "0")
                 Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_1", Username)
                 Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_2", "4")
-                Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_3", str(self.limit))
+                Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_3", str(Globals.MEDIA_LIMIT))
                 Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_4", "0")
                 Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rulecount", "1")
                 Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rule_1_id", "1")
@@ -720,7 +727,7 @@ class Migrate:
                 Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_time", "0")
                 Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_1", month)
                 Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_2", "31")
-                Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_3", str(self.limit))
+                Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_3", str(Globals.MEDIA_LIMIT))
                 Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_4", "0")
                 Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rulecount", "2")
                 Globals.ADDON_SETTINGS.setSetting("Channel_" + str(channelNum) + "_rule_1_id", "1")
@@ -945,7 +952,7 @@ class Migrate:
                 channelNum += 1
                 filecount += 1
                 
-                if filecount > self.ATlimit:
+                if filecount > Globals.AT_LIMIT:
                     break
                 
             except Exception,e:

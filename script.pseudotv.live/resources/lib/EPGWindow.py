@@ -415,7 +415,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         return time.mktime(n.timetuple())
 
         
-    def GetEPGtype(self, genre):
+    def getEPGtype(self, genre):
         if genre in COLOR_RED_TYPE:
             return (EPGGENRE_LOC + 'COLOR_RED.png')
         elif genre in COLOR_GREEN_TYPE:
@@ -610,16 +610,16 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                             
                         if REAL_SETTINGS.getSetting('EPGcolor_enabled') == '1':
                             if type == 'movie' and REAL_SETTINGS.getSetting('EPGcolor_MovieGenre') == "false":
-                                self.textureButtonNoFocus = self.GetEPGtype('Movie')
+                                self.textureButtonNoFocus = self.getEPGtype('Movie')
                             else:
                                 mygenre = self.MyOverlayWindow.channels[curchannel - 1].getItemgenre(playlistpos)
-                                self.textureButtonNoFocus = self.GetEPGtype(mygenre)
+                                self.textureButtonNoFocus = self.getEPGtype(mygenre)
                                 
                         elif REAL_SETTINGS.getSetting('EPGcolor_enabled') == '2':
-                            self.textureButtonNoFocus = self.GetEPGtype(str(chtype))
+                            self.textureButtonNoFocus = self.getEPGtype(str(chtype))
                            
                         elif REAL_SETTINGS.getSetting('EPGcolor_enabled') == '3':
-                            self.textureButtonNoFocus = self.GetEPGtype(rating)
+                            self.textureButtonNoFocus = self.getEPGtype(rating)
                         else:   
                             self.textureButtonNoFocus = MEDIA_LOC + BUTTON_NO_FOCUS
                             
@@ -656,9 +656,12 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         if self.actionSemaphore.acquire(False) == False:
             self.log('Unable to get semaphore')
             return
-
+            
         action = act.getId()
         
+        # if REAL_SETTINGS.getSetting("SFX_Enabled") == "true":
+            # self.MyOverlayWindow.playSFX(action)
+            
         try:
             if action in ACTION_PREVIOUS_MENU:
                 if self.showingContext:    
@@ -895,6 +898,12 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             if self.ArtThread2.isAlive():
                 self.ArtThread2.cancel()
                 self.ArtThread2.join()
+        except:
+            pass   
+        try:
+            if self.isNew.isAlive():
+                self.isNew.cancel()
+                self.isNew.join()
         except:
             pass          
         try:
@@ -1312,20 +1321,19 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                 except:
                     pass
             else:
-                try:
-                    if self.MyOverlayWindow.GetPlayingTmpstrTimer.isAlive():
-                        self.MyOverlayWindow.GetPlayingTmpstrTimer.cancel()
-                except:
-                    pass
                 data = [chtype, chname, mediapath, plpos]
-                self.MyOverlayWindow.GetPlayingTmpstrTimer = threading.Timer(0.25, self.MyOverlayWindow.GetPlayingTmpstrThread, [data])
-                self.MyOverlayWindow.GetPlayingTmpstrTimer.name = "GetPlayingTmpstrTimer"  
-                self.MyOverlayWindow.GetPlayingTmpstrTimer.start()  
+                self.MyOverlayWindow.getTMPSTR_Thread = threading.Timer(0.25, self.MyOverlayWindow.getTMPSTR_Thread, [data])
+                self.MyOverlayWindow.getTMPSTR_Thread.name = "getTMPSTR_Thread"  
+
+                if self.MyOverlayWindow.getTMPSTR_Thread.isAlive():
+                    self.MyOverlayWindow.getTMPSTR_Thread.cancel()
+                self.MyOverlayWindow.getTMPSTR_Thread.start()  
                 return
         else:
             title = (self.MyOverlayWindow.channels[newchan - 1].getItemTitle(plpos))   
             SEtitle = self.MyOverlayWindow.channels[newchan - 1].getItemEpisodeTitle(plpos) 
             Description = self.MyOverlayWindow.channels[newchan - 1].getItemDescription(plpos)
+            genre = self.MyOverlayWindow.channels[newchan - 1].getItemgenre(plpos)
             timestamp = (self.MyOverlayWindow.channels[newchan - 1].getItemtimestamp(plpos))
             myLiveID = (self.MyOverlayWindow.channels[newchan - 1].getItemLiveID(plpos))      
             LiveID = self.chanlist.unpackLiveID(myLiveID)
@@ -1342,9 +1350,6 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             season = 0
             episode = 0  
             
-        setProperty("PVR.Season",str(season))
-        setProperty("PVR.Episode",str(episode))
-        
         try:
             if self.showSeasonEpisode:
                 eptitles = SEtitle.split('- ')
@@ -1366,10 +1371,11 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         dbid, epid = splitDBID(LiveID[2])
         Managed = LiveID[3]
         playcount = int(LiveID[4])
+        rating = LiveID[5]
         
         #PVR Globals
-        setProperty("PVR.Chtype",str(chtype))
         setProperty("PVR.Title",((title).replace("*NEW*","")))
+        setProperty("PVR.Chtype",str(chtype))
         setProperty("PVR.Mpath",mpath)
         setProperty("PVR.Mediapath",mediapath)
         setProperty("PVR.Chname",chname)
@@ -1378,12 +1384,16 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         setProperty("PVR.DBID",dbid)
         setProperty("PVR.EPID",epid)
         setProperty("PVR.ID",id)
-        setProperty("PVR.Type",type)
+        setProperty("PVR.Rating",rating)
+        setProperty("PVR.Genre",genre)
         setProperty("PVR.Playcount",str(playcount))
+        setProperty("PVR.Season",str(season))
+        setProperty("PVR.Episode",str(episode)) 
             
         #Notification Globals
         setProperty("PVR.ChanNum",str(newchan))
         setProperty("PVR.TimeStamp",str(timestamp))
+        self.isNew_Trigger()
         
         #Dynamic Art1
         try:
@@ -1414,7 +1424,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             self.log('setShowInfo, Label 511 not found')
             pass      
 
-            
+                  
     def FindArtwork_Thread(self, data):
         try:
             self.getControl(data[7]).setVisible(True)
@@ -1422,18 +1432,38 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             if FileAccess.exists(setImage) == False:
                 setImage = self.Artdownloader.SetDefaultArt_NEW(data[2], data[5], data[6])
             self.getControl(data[7]).setImage(setImage)
-            self.setNew(self.MyOverlayWindow.isNEW(int(getProperty("PVR.Chtype")), getProperty("PVR.Mediapath"), int(getProperty("PVR.Playcount"))))
         except Exception,e:
-            self.log('FindArtwork_Thread, Failed!,' + str(e))
+            self.log('FindArtwork_Thread, Failed!,' + str(e))    
+            
+    
+    def isNEW_Thread(self):
+        try:
+            aired = self.MyOverlayWindow.isNEW(int(getProperty("PVR.Chtype")), getProperty("PVR.Mediapath"), int(getProperty("PVR.Playcount")))
+            if aired == True:
+                self.getControl(512).setImage(MEDIA_LOC + 'NEW.png')
+            else: 
+                self.getControl(512).setImage(MEDIA_LOC + 'OLD.png')
+        except Exception,e:
+            self.log('isNEW_Thread, Failed!,' + str(e))
+            
+    
+    def isNew_Trigger(self):
+        self.log('isNew_Trigger')        
+        try:
+            try:
+                if self.isNew.isAlive():
+                    self.isNew.cancel()
+            except:
+                pass
+                
+            self.isNew = threading.Timer(0.1, self.isNEW_Thread)
+            self.isNew.name = "isNew"
+            self.isNew.start()
+        except Exception,e:
+            self.log('isNew_Trigger, Failed!, ' + str(e))
+            pass 
             
             
-    def setNew(self, aired):
-        if aired == True:
-            self.getControl(512).setImage(MEDIA_LOC + 'NEW.png')
-        else: 
-            self.getControl(512).setImage(MEDIA_LOC + 'OLD.png')
-        
-        
     def setArtwork1(self, type, chtype, chname, id, dbid, mpath, type1EXT):
         self.log('setArtwork1')
         try:

@@ -16,8 +16,9 @@
                 <setting id="EnableSettop" type="bool"   label="30998" default="false"/>
                 <setting id="REFRESH_INT" subsetting="true" visible="eq(-1,true)" type="enum"   label="31000" values="4|8|12|24" default="2"/>
                 <setting id="SettopUpdate" subsetting="true" visible="eq(-2,true)" type="bool"   label="30289" default="false"/>
-                <setting id="MEDIA_LIMIT"   label="30310" type="enum" values="25|50|100|250|500|1000|Unlimited" default="1"/>
+                <setting id="MEDIA_LIMIT"   label="30310" type="enum" values="25|50|100|250|500|1000|5000|Unlimited" default="1"/>
                 <setting id="notify" type="bool"   label="30046" default="true"/>
+                <setting id="SFX_Enabled" type="bool"   label="30056" visible="false" default="true"/>
     </category>
 <!--Tweaks-->
     <category label="30300">
@@ -35,9 +36,6 @@
         <setting id="HideClips" type="bool"   label="30215" default="true"/>
         <setting id="ClipLength" type="enum" subsetting="true"   label="30216" visible="eq(-1,true)" values="15|30|60|90|120|240|360|480" default="7"/>
         <setting id="enable_mute" type="bool"   label="30373" default="false"/>
-        <setting type="sep" visible="true" />
-        <setting id="CONTEXT"   label="30050" type="bool" default="false" />
-        <setting id="CONTEXT_STYLE"   label="30158" type="enum" values="Menu|Dialog" visible="eq(-1,true)"/>
     </category>
 <!--Visual-->
     <category label="30200">
@@ -53,11 +51,10 @@
         <!-- EPG -->
         <setting label="30210" type="lsep"/>
             <setting id="ClockMode" type="enum"   label="30211" default="0" values="12 Hour|24 Hour"/>
-            <setting id="EPGcolor_enabled"   label="30212" type="enum" values="Disabled|Genre|Chtype|Rating" default="0" />
+            <setting id="EPGcolor_enabled"   label="30212" type="enum" values="Disabled|Genre|Chtype|Rating" default="1" />
             <setting id="EPGcolor_MovieGenre" subsetting="true" type="bool"   label="30213" default="false" visible="eq(-1,1)" />
             <setting id="EPGTextEnable" type="enum"   label="30214" values="Logo|Text" default="0"/>
             <setting id="EPG.xInfo" type="bool"   label="30229" default="false" />
-            <setting id="VideoWindow" type="action"   label="30217" visible="false" option="close" action="RunScript($CWD/utilities.py, -videowindow)"/>
         <!-- Overlay -->
         <setting label="30220" type="lsep"/>
             <setting id="COLOR_CHANNUM" type="enum"   label="30203" values="Holo|Cyan|Green|Gray|Light Gray|White" default="0"/>
@@ -83,14 +80,7 @@
     </category>  
 <!--Autotune-->
     <category label="30070">
-        <!-- Autotune Options -->
-        <setting type="lsep"   label="30700"/>
-            <setting id="reserveChannels"                     type="bool"   label="30372" default="false"/>
-            <setting id="AT_MEDIA_LIMIT"                      type="enum"   label="33310" values="25|50|100|250|500" default="0"/>
-            <setting id="PVR_Listing"                         type="enum"   label="30699" values="PVR Backend|xmltv File|ScheduleDirect (Coming Soon)|Zap2it (Coming Soon)|TMSAPI (Coming Soon)" default="0" />
-            <setting id="SyncXMLTV_Enabled"                   type="bool"   label="30397" visible="eq(+25,true)" default="true"/>
-        <setting                                              type="sep"                  visible="true" />
-            <!-- Autotune Safety  -->
+            <!-- Autotune Enable  -->
             <setting id="Autotune"                            type="bool"   label="30071" default="false"/>
             <setting id="Warning1"                            type="bool"   label="30072" subsetting="true" visible="eq(-1,true)" default="false"/>
         <setting                                              type="lsep"   label="30099" visible="eq(-1,true)"/>
@@ -147,6 +137,13 @@
             <setting id="CN_News"                             type="bool"   label="30707" subsetting="true" visible="eq(-49,true)"                                                                               default="true" />
             <setting id="CN_Music"                            type="bool"   label="30712" subsetting="true" visible="eq(-50,true)"                                                                               default="true" />
             <setting id="CN_Other"                            type="bool"   label="30713" subsetting="true" visible="eq(-51,true)"                                                                             default="true" />  
+            <!-- Autotune Options -->
+        <setting type="lsep"   label="30700"/>
+            <setting id="reserveChannels"                     type="bool"   label="30372" default="false"/>
+            <setting id="AT_LIMIT"                      type="enum"   label="33310" values="25|50|100|250|500|1000" default="0"/>
+            <setting id="PVR_Listing"                         type="enum"   label="30699" values="PVR Backend|xmltv File|ScheduleDirect (Coming Soon)|Zap2it (Coming Soon)|TMSAPI (Coming Soon)" default="0" />
+            <setting id="SyncXMLTV_Enabled"                   type="bool"   label="30397" visible="eq(+25,true)" default="true"/>
+        <setting                                              type="sep"                  visible="true" />
     </category>
 <!--BCTs-->   
     <category label="30499">
