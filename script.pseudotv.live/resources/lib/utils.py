@@ -1427,19 +1427,16 @@ def CHKAutoplay():
   
 def VideoWindow():
     log("utils: VideoWindow, VWPath = " + str(VWPath))
-    FreshInstall = False
     #Copy VideoWindow Patch file
     try:
         if getProperty("PseudoTVRunning") != "True":
             if not FileAccess.exists(VWPath):
                 log("utils: VideoWindow, VWPath not found")
-                FreshInstall = True
                 xbmcvfs.copy(flePath, VWPath)
                 if FileAccess.exists(VWPath):
                     log('utils: custom_script.pseudotv.live_9506.xml Copied')
                     VideoWindowPatch()   
-                    if FreshInstall == True:
-                        xbmc.executebuiltin("ReloadSkin()")
+                    xbmc.executebuiltin("ReloadSkin()")
                 else:
                     raise
             else:

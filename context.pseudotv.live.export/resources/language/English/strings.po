@@ -19,3 +19,8 @@ msgstr ""
 msgctxt "#32000"
 msgid "Export to PseudoTV Live"
 msgstr ""
+
+msgctxt "#32001"
+msgid "PseudoTV Live Settings"
+msgstr ""
+
