@@ -2358,8 +2358,8 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         if self.triggercount == 30:
             self.triggercount = 0      
             UpdateRSS() 
-            if REAL_SETTINGS.getSetting('ga_disable') == 'false':
-                GA_Request()
+            # if REAL_SETTINGS.getSetting('ga_disable') == 'false':
+            GA_Request()
         
         if self.Player.isPlaybackValid():
             self.lastPlayTime = int(self.Player.getTime())

@@ -1362,11 +1362,6 @@ def ClearCache(type):
         daily.delete("%") 
         weekly.delete("%")
         monthly.delete("%")
-        liveTV.delete("%")
-        RSSTV.delete("%")
-        pluginTV.delete("%")
-        upnpTV.delete("%")
-        lastfm.delete("%")
         REAL_SETTINGS.setSetting('ClearCache', "false")
     elif type == 'BCT':
         bumpers.delete("%")
