@@ -32,7 +32,6 @@ from FileAccess import FileLock, FileAccess
 from Migrate import Migrate
 from Artdownloader import *
 from Upnp import Upnp
-from PVR import *
 from utils import *
 from Migrate import Migrate
 
