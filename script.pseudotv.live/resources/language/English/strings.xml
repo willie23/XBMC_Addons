@@ -27,7 +27,7 @@
     <string id="30303">Startup Channel</string> 
     <string id="30304">Enter Preferred Channel</string>
     <string id="30311">Disable Watch Flagging</string>
-	<string id="30405">Find Missing GuideData (Art/Info)</string>
+	<string id="30405">Find Missing GuideData (disable to boosts performance)</string>
     <string id="30408">Jump to Channel on Reminder</string>
     <string id="30215">Hide very short videos</string>
     <string id="30216">Duration of "short" videos (seconds)</string>  
@@ -36,6 +36,7 @@
     <string id="30379">Enable Direct Channel Input</string>
     <string id="30050">Enable global menu [Experimental]</string>
     <string id="30158">Menu style</string>
+    <string id="30159">Enable Automatic Channel Backup</string>
     
 <string id="30100">Sharing</string>
     <string id="30101">Channel Sharing:</string>
@@ -120,23 +121,24 @@
                             <string id="30113">Find Recommended Youtube Channels</string>
                             <string id="30114">Find Recommended Youtube Playlists</string>
                             <string id="30817">Find Seasonal Youtube Playlists</string>
-                            <string id="30090">Donor Exclusive:</string>  
+                            <string id="30090">Donor Extras:</string>  
                                 <string id="30116">Find LiveTV Channels</string>
                                 <string id="30117">Find InternetTV Channels</string>
                                 <string id="30111">Find Plugin Channels</string>
-                                <string id="30092">BringThePopcorn Movie Channel</string>
+                                <string id="30092">Popcorn Movie Channel</string>
                                 <string id="30950">PseudoCinema Movie Channel</string>  
                                 <string id="30908">PseudoCinema Experience</string>
-                                <string id="30965">Find IPTV Channels</string>
-                                <string id="30966">Select IPTV M3U File</string>
-                                <string id="30967">Enter IPTV URL</string>
-                                <string id="30968">Optional IPTV XMLTV Filename/URL</string>
-                                <string id="30969">Find Livestream Channels</string>
-                                <string id="30970">Select Livestream XML File</string>
-                                <string id="30971">Enter Livestream URL</string>
-                                <string id="30972">Find Navi-X Channels</string>
-                                <string id="30973">Select Navi-X PLX File</string>
-                                <string id="30974">Enter Navi-X URL</string>
+                            <string id="30782">3rd Party Playlist:</string>  
+                                <string id="30965">Find M3U Channels</string>
+                                <string id="30966">Select M3U File</string>
+                                <string id="30967">Enter M3U URL</string>
+                                <string id="30968">Optional M3U XMLTV Filename/URL</string>
+                                <string id="30969">Find XML Channels</string>
+                                <string id="30970">Select XML File</string>
+                                <string id="30971">Enter XML URL</string>
+                                <string id="30972">Find PLX Channels</string>
+                                <string id="30973">Select PLX File</string>
+                                <string id="30974">Enter PLX URL</string>
                    
     <string id="30700">AutoTune Options:</string>
     <string id="33310">AutoTune Limit Per Channel</string>
@@ -153,16 +155,15 @@
     <string id="30713">Other</string>
     
 <string id="30499">BCTs</string> 
-<string id="30911">* Exclusive to donors</string> 
     <string id="30500">(B)umpers:</string> 
         <string id="30501">Enable Bumpers</string>
-        <string id="30502">Select Bumpers Folder</string>
+        <string id="30502">Select Bumper Folder</string>
         <string id="30503">Number of Bumpers Between Shows</string>
         <string id="39504">Add Ratings Between Movies</string>
         <string id="30510">(C)ommercials:</string> 
             <string id="30511">Enable Commercials</string>
             <string id="30512">Select Commercials Folder</string>
-            <string id="30513">Enable Advertolog.com*</string>
+            <string id="30513">Enable Advert.com*</string>
             <string id="30514">Select Region</string>
             <string id="30515">Preferred Commercial Resolution</string>
             <string id="30516">Enable iSpot.tv*, Select Type</string>
@@ -184,7 +185,6 @@
     <string id="30777">Donor Verified:</string>
     <string id="30901">Enable Donor Features</string>
     <string id="30902">Enter Username:Password</string>
-    <string id="30904">[COLOR=orange]Activate/Update Donor Features[/COLOR]</string>
     <string id="30903">Thank you for your support!</string>
     <string id="30905">Enable Community List</string>
     <string id="30906">Enter your gmail address</string>
@@ -193,12 +193,11 @@
 <string id="31900">Utilities</string>
     <string id="31997">Clear Channel Favourites</string>
     <string id="31999">Channel Configuration Tools</string>
-    <string id="30909">Restore Pre-Autotune Configurations</string>
-    <string id="30069">Warning!! This will restore a previous channel configuration</string>  
-    <string id="31901">Backup Configurations (Coming Soon)</string>
-    <string id="31902">Restore Configurations (Coming Soon)</string>
+    <string id="31901">Backup Configurations</string>
+    <string id="31902">Restore Configurations</string>
     <string id="31903">Repair Configurations</string>                         
-    <string id="31904">Delete Configurations</string>   
+    <string id="31904">Clear Current Channel Configurations</string>                 
+    <string id="31905">Purge all Backups</string>
     <string id="31998">Cache Tools</string>
     <string id="30995">Clear BCT Cache</string>
     <string id="30996">Clear Artwork Cache</string>
@@ -225,4 +224,6 @@
     <string id="30991">Override Stream Validation</string>
     <string id="30981">Override Optimized OS Configurations</string>
     <string id="30992">Disable Google Analytics</string>
+    <string id="36996">Opting out? No personal information is ever tracked,</string>
+    <string id="36997">only data relevant to the continuation of this project.</string>
 </strings>

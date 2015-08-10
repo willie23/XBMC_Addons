@@ -1,4 +1,12 @@
-[*] "Find Missing Guidedata" only works as a background function. In-short it will runs when background channel or settop mode is enabled.
+[*] Added Youtube Playlist creation using Export to Context Menu and AddonscripterDE's Youtube Music plugin. Supports "Playlist".
+[*] NEW! Settings2 backup and restore utilities. 
+[*] Added Play shows in order as a default advanced rule for exported channels.
+[*] Added Youtube Channel creation using Export to Context Menu and bromix's Youtube Plugin. Supports "Browse Channels".
+[*] Added Export to Context Menu, Last Channel recall to improve usability.
+[*] Updated skin with info labels, Skinners can now control EPG row count. Example of row count control below.
+    http://www.ultraimg.com/images/wmABq.jpg
+[*] Major performance enhancements made to channel building, channel loading and artwork spooling.
+[*] [COLOR=blue][B]^ v.0.6.6 ^[/B][/COLOR]
 [*] LiveTV now supports artwork found in xmltv file.
 [*] Code optimized for lowpower systems and for general performance, PseudoTV Lite is obsolete.
 [*] Chtype 15 (Plugin) - format change, automatic migration tool included.
@@ -58,7 +66,7 @@
 [*] [COLOR=blue][B]^ v.0.6.2 ^[/B][/COLOR]
 [*] In-app Custom "Community Playlists" option. Preconfigured collection of Kodi smartplaylists (local media required).
 [*] Anonymous "Community List" channel submission is now available using in-app submit button. Available for LiveTV/InternetTV/Youtube/RSS/Plugin Chtypes.
-[*] Improved Donor features: "BringthePopcorn" parsing, various tweaks and added Superbowl 2015 commercials.
+[*] Improved Donor features: "Popcorn Movies" parsing, various tweaks and added Superbowl 2015 commercials.
 [*] Easy in-app channel number changing ('i' or info button) and Easy remove channel ('Del' or remove/delete button).
 [*] Added clear all channel configurations button(remove settings2.xml) under "Misc" settings.
 [*] Improved "OnNow" load times and LiveTV Parsing.
@@ -336,11 +344,11 @@
 [*] HDHomerun Autotune tweaks including network share support.
 [*] Updated Gotham Support.
 [*] Advertolog Commercial update.
-[*] Youtube "Raw gdata" switch, BringthePopcorn Autotune changes, EPG speed tweaks and various bug 
+[*] Youtube "Raw gdata" switch, Popcorn Movies Autotune changes, EPG speed tweaks and various bug 
     corrections.
 [*] Hdhomerun Strm Autotune w/EPG Info.
 [*] New Youtube types (User Favorites, Search Query w/SafeSearch).
-[*] BringthePopcorn Autotune and Chtype.  All skins include VideoWindow and "ConCast" skin added [size=x-small]*Thanks Redkiller223[/size].
+[*] Popcorn Movies Autotune and Chtype.  All skins include VideoWindow and "ConCast" skin added.
 [*] Autotune Backup/Restore Channel Configuration tweaks.
 [*] New Donor Activation/Update code, VideoWindow Patcher.
 [*] Non-English Characters and Directory Channel fix.

@@ -1,18 +1,17 @@
 <window>
     <allowoverlay>yes</allowoverlay>   
-    <onload>ActivateWindow(9506)</onload>
-    <onload>ActivateWindow(10004)</onload><!-- Activate random window, workaround for 9506 starting paused -->
+    <onload condition="StringCompare((Window(10000).Property(PTVL.VideoWindow)),true)">ActivateWindow(9506)</onload>
+    <onload condition="StringCompare((Window(10000).Property(PTVL.VideoWindow)),true)">ActivateWindow(10004)</onload><!-- Activate random window, workaround for 9506 starting paused -->
     <onunload>ActivateWindow(12005)</onunload>
     <onload>SetProperty(PTVL.EPG_Opened,true,10000)</onload>
     <onunload>SetProperty(PTVL.EPG_Opened,false,10000)</onunload>
-    <onload condition="System.HasAddon(script.tv.show.next.aired)">RunScript(script.tv.show.next.aired,backend=True)</onload>
     <coordinates>
         <system>1</system>
         <posx>0</posx>
         <posy>0</posy>
     </coordinates>
-    <animation effect="fade" time="250">WindowOpen</animation>
-    <animation effect="fade" time="125">WindowClose</animation>
+    <animation effect="fade" time="50">WindowOpen</animation>
+    <animation effect="fade" time="5">WindowClose</animation>
     <controls>
         <control type="button" id="99">
             <description>focused text color</description>
@@ -52,7 +51,7 @@
                 <align>center</align>
                 <scroll>true</scroll>
                 <scrollspeed>40</scrollspeed>
-                <label>$INFO[Window(10000).Property(Playing.Title)]</label>
+                <label>$INFO[Window(10000).Property(OVERLAY.Title)]</label>
                 <visible>Control.IsVisible(523)</visible>
                 <aligny>center</aligny>
             </control>   
@@ -66,6 +65,7 @@
                 <aligny>center</aligny>
                 <aspectratio>keep</aspectratio>
                 <visible>Control.IsVisible(523)</visible>
+                <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
             </control>
             <!-- PATCH END -->
             <!-- ################################################################## -->
@@ -84,7 +84,7 @@
                 <align>center</align>
                 <scroll>true</scroll>
                 <scrollspeed>40</scrollspeed>
-                <label>$INFO[Window(10000).Property(Playing.Title)]</label>
+                <label>$INFO[Window(10000).Property(OVERLAY.Title)]</label>
                 <visible>!Control.IsVisible(523)</visible>
                 <aligny>center</aligny>
             </control>
@@ -145,6 +145,7 @@
                     <align>center</align>
                     <aligny>center</aligny>
                     <label>$INFO[Window(Home).Property(NextAired.4.Label)]</label>
+                    <animation effect="fade" time="2005">WindowOpen</animation>
                     <textcolor>C0C0C0C0</textcolor>
                     <fadetime>2000</fadetime>
                 </control> 
@@ -156,6 +157,7 @@
                     <aspectratio>keep</aspectratio>
                     <texture fallback="landscape.png">$INFO[Window(Home).Property(NextAired.4.Art(fanart)]</texture>
                     <visible>IsEmpty(Window(Home).Property(NextAired.4.Art(landscape))</visible>
+                    <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
                     <fadetime>2000</fadetime>
                 </control>
                 <control type="image">
@@ -165,6 +167,7 @@
                     <aligny>center</aligny>
                     <aspectratio>keep</aspectratio>
                     <texture>$INFO[Window(Home).Property(NextAired.4.Art(landscape)]</texture>
+                    <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
                     <fadetime>2000</fadetime>
                 </control>
             </control>
@@ -182,6 +185,7 @@
                     <align>center</align>
                     <aligny>center</aligny>
                     <label>$INFO[Window(Home).Property(NextAired.3.Label)]</label>
+                    <animation effect="fade" time="1505">WindowOpen</animation>
                     <textcolor>C0C0C0C0</textcolor>
                     <fadetime>1500</fadetime>
                 </control> 
@@ -193,6 +197,7 @@
                     <aspectratio>keep</aspectratio>
                     <texture fallback="landscape.png">$INFO[Window(Home).Property(NextAired.3.Art(fanart)]</texture>
                     <visible>IsEmpty(Window(Home).Property(NextAired.3.Art(landscape))</visible>
+                    <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
                     <fadetime>1500</fadetime>
                 </control>
                 <control type="image">
@@ -202,6 +207,7 @@
                     <aligny>center</aligny>
                     <aspectratio>keep</aspectratio>
                     <texture>$INFO[Window(Home).Property(NextAired.3.Art(landscape)]</texture>
+                    <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
                     <fadetime>1500</fadetime>
                 </control>
             </control>
@@ -219,6 +225,7 @@
                     <align>center</align>
                     <aligny>center</aligny>
                     <label>$INFO[Window(Home).Property(NextAired.2.Label)]</label>
+                    <animation effect="fade" time="1005">WindowOpen</animation>
                     <textcolor>C0C0C0C0</textcolor>
                     <fadetime>1000</fadetime>
                 </control> 
@@ -230,6 +237,7 @@
                     <aspectratio>keep</aspectratio>
                     <texture fallback="landscape.png">$INFO[Window(Home).Property(NextAired.2.Art(fanart)]</texture>
                     <visible>IsEmpty(Window(Home).Property(NextAired.2.Art(landscape))</visible>
+                    <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
                     <fadetime>1000</fadetime>
                 </control>
                 <control type="image">
@@ -239,6 +247,7 @@
                     <aligny>center</aligny>
                     <aspectratio>keep</aspectratio>
                     <texture>$INFO[Window(Home).Property(NextAired.2.Art(landscape)]</texture>
+                    <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
                     <fadetime>1000</fadetime>
                 </control>
             </control>
@@ -255,6 +264,7 @@
                     <align>center</align>
                     <aligny>center</aligny>
                     <label>$INFO[Window(Home).Property(NextAired.1.Label)]</label>
+                    <animation effect="fade" time="505">WindowOpen</animation>
                     <textcolor>C0C0C0C0</textcolor>
                     <fadetime>500</fadetime>
                 </control> 
@@ -266,6 +276,7 @@
                     <aspectratio>keep</aspectratio>
                     <texture fallback="landscape.png">$INFO[Window(Home).Property(NextAired.1.Art(fanart)]</texture>
                     <visible>IsEmpty(Window(Home).Property(NextAired.1.Art(landscape))</visible>
+                    <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
                     <fadetime>500</fadetime>
                 </control>
                 <control type="image">
@@ -275,6 +286,7 @@
                     <aligny>center</aligny>
                     <aspectratio>keep</aspectratio>
                     <texture>$INFO[Window(Home).Property(NextAired.1.Art(landscape)]</texture>
+                    <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
                     <fadetime>500</fadetime>
                 </control>
             </control> 
@@ -802,43 +814,31 @@
             <height>452</height>
             <aspectratio>keep</aspectratio>
         </control> 
-        <control type="group">
-            <control type="button" id="507">
-                <description>Dynamic art1 - Info Overlay</description>
-                <label>landscape</label>
-                <visible>false</visible>
-            </control>
-            <control type="image" id="508">
-                <description>Dynamic art1 - Info Overlay</description>
-                <animation effect="fade" time="500">VisibleChange</animation> 
-                <posx>35</posx>
-                <posy>270r</posy>  
-                <width>360</width>      
-                <height>180</height>
-                <align>center</align>
-                <aspectratio>keep</aspectratio>
-                <texture fallback="logo.png"></texture>
-            </control>
-        </control> 
-        <control type="group">
-            <control type="button" id="509">
-                <description>Dynamic art2 - Info Overlay</description>
-                <label>poster</label>
-                <visible>false</visible>
-            </control>
-            <control type="image" id="510">
-                <description>Dynamic art2 - Info Overlay</description>
-                <animation effect="fade" time="500">VisibleChange</animation> 
-                <posx>35</posx>
-                <posy>270r</posy>  
-                <width>360</width>      
-                <height>180</height>
-                <align>center</align>
-                <aspectratio>keep</aspectratio>
-                <texture fallback="poster.png"></texture>
-                <visible>false</visible>
-            </control>
-        </control>            
+        <control type="image" id="508">
+            <description>Dynamic art1 - Info Overlay</description>
+            <animation effect="fade" time="500">VisibleChange</animation> 
+            <posx>35</posx>
+            <posy>270r</posy>  
+            <width>360</width>      
+            <height>180</height>
+            <align>center</align>
+            <aspectratio>keep</aspectratio>
+            <texture fallback="landscape.jpg">$INFO[Window(10000).Property(EPG.type1ART)]</texture>
+            <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
+        </control>
+        <control type="image" id="510">
+            <description>Dynamic art2 - Info Overlay</description>
+            <animation effect="fade" time="500">VisibleChange</animation> 
+            <posx>35</posx>
+            <posy>270r</posy>  
+            <width>360</width>      
+            <height>180</height>
+            <align>center</align>
+            <aspectratio>keep</aspectratio>
+            <visible>false</visible>
+            <texture fallback="poster.jpg">$INFO[Window(10000).Property(EPG.type2ART)]</texture>
+            <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
+        </control>          
         <control type="image" id="511">
             <description>Sickbeard/Couchpotato image</description>   
             <posx>345</posx>
@@ -847,6 +847,7 @@
             <height>32</height>
             <aspectratio>keep</aspectratio>
             <visible>true</visible>
+            <texture>$INFO[Window(10000).Property(EPG.Managed)]</texture>
         </control> 
         <control type="image" id="512">
             <description>Unaired "NEW" image</description>         
@@ -855,7 +856,8 @@
             <width>50</width>
             <height>50</height>
             <aspectratio>keep</aspectratio>
-            <visible></visible>
+            <visible>true</visible>
+            <texture>$INFO[Window(10000).Property(EPG.isNew)]</texture>
         </control>
         <!--line 1 -->
         <control type="grouplist">

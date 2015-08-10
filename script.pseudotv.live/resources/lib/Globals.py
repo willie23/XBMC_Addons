@@ -122,6 +122,7 @@ PVR_DOWNLOAD_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('PVR
 XMLTV_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('xmltvLOC'))) + '/'
 XSP_LOC = xbmc.translatePath("special://profile/playlists/video/")
 SFX_LOC = ('special://home/addons/script.pseudotv.live/resources/sfx/')
+BACKUP_LOC = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'backups'))
 
 #BASEURL
 try:
@@ -131,11 +132,6 @@ except:
 
 BASEURL = 'http://pseudotvlive.com/ptvl/'
 PTVLURL = 'http://%s@pseudotvlive.com/ptvl/' %UPASS
-KEYMAP_MENU = 'ptvl_menu.xml'
-
-#DonorDownload  
-DonorPath = (os.path.join(ADDON_PATH, 'resources', 'lib', 'Donor.pyo'))
-DL_DonorPath = (os.path.join(ADDON_PATH, 'resources', 'lib', 'Donor.py'))
 
 # Core Default Image Locations
 DEFAULT_MEDIA_LOC =  xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', 'Default', 'media')) + '/'
@@ -246,12 +242,6 @@ bidaily = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "bidail
 daily = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "daily",24)                         #System Purge, ForceReset
 weekly = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "weekly",24 * 7)                   #System Purge, ForceReset
 monthly = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "monthly",((24 * 7) * 4))         #System Purge, ForceReset
-# FileLists
-liveTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "liveTV",24)                       #System Purge, ForceReset
-RSSTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "RSSTV",24)                         #System Purge, ForceReset
-pluginTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "pluginTV",24)                   #System Purge, ForceReset
-upnpTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "playonTV",24)                     #System Purge, ForceReset
-lastfm = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "lastfm",24)                       #System Purge, ForceReset
 # BCTs
 bumpers = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "bumpers",((24 * 7) * 4))         #BCT Purge
 ratings = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "ratings",((24 * 7) * 4))         #BCT Purge

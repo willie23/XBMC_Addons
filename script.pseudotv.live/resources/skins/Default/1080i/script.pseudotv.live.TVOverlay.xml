@@ -1,5 +1,12 @@
 <window>
     <allowoverlay>yes</allowoverlay>
+    <onload>SetProperty(OVERLAY.type1EXT,landscape,10000)</onload><!-- label 508 artwork -->
+    <onload>SetProperty(OVERLAY.type2EXT,poster,10000)</onload><!-- label 510 artwork -->
+    <onload>SetProperty(OVERLAY.type3EXT,landscape,10000)</onload><!-- onnow artwork -->
+    <onload>SetProperty(OVERLAY.type4EXT,landscape,10000)</onload><!-- popup coming up next -->
+    <onload>SetProperty(EPG.type1EXT,landscape,10000)</onload><!-- epg.xml label 508 artwork -->
+    <onload>SetProperty(EPG.type2EXT,poster,10000)</onload><!-- epg.xml label 510 artwork -->
+    <onload>SetProperty(PTVL.EPG_rowCount,6,10000)</onload><!-- epg row count -->
     <coordinates>
         <system>1</system>
         <posx>0</posx>
@@ -17,14 +24,15 @@
         </control>
         <control type="image">
             <description>Channel Logo</description>
+            <posx>725</posx>
+            <posy>225</posy>
             <width>480</width>
-            <height>1080</height>
-            <width>270</width>
-            <height>62</height>
+            <height>270</height>
             <aspectratio>keep</aspectratio>
             <align>center</align>
             <aligny>center</aligny>
-            <texture>Control.GetLabel(506)</texture>
+            <texture>$INFO[Window(10000).Property(OVERLAY.LOGOART)]</texture>
+            <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
             <visible>Control.IsVisible(101)</visible>
         </control>
         <control type="label" id="101">
@@ -42,7 +50,8 @@
             <width>150</width>
             <height>150</height>
             <aspectratio>keep</aspectratio>
-            <animation effect="fade" start="50" end="50" condition="True">Conditional</animation>
+            <visible>!Control.IsVisible(101)</visible>
+            <animation effect="fade" start="25" end="25" condition="True">Conditional</animation>
         </control>  
         <!-- Seekbar -->
         <!-- <control type="group">
@@ -254,7 +263,6 @@
             <posy>0</posy>            
             <!-- Time/Weather -->
             <control type="label">
-                <animation effect="fade" time="500">VisibleChange</animation> 
                 <description>Time/Weather</description>
                 <posx>430r</posx>
                 <posy>30</posy>
@@ -265,21 +273,25 @@
                 <align>left</align>
                 <aligny>center</aligny>
                 <textcolor>FFFFFFFF</textcolor>
-            </control>
+            </control>            
+<!--             <control type="image">
+                <texture flipy="true">fade.png</texture>
+                <posx>0</posx>
+                <posy>560r</posy>
+                <width>1920</width>
+                <height>520</height>
+                <animation effect="fade" end="85" time="5">VisibleChange</animation>
+                <visible>Control.IsVisible(222)</visible>
+            </control> -->
             <control type="image">
                 <description>MoreInfo Overlay</description>
                 <width>1920</width>
                 <height>1080</height>
                 <texture>pstvlMoreInfoBackground.png</texture>
-            </control>    
-            <control type="button" id="509">
-                <description>Dynamic art2 - MoreInfo</description>
-                <label>poster</label>
-                <visible>false</visible>
+                <animation effect="slide" start="0,-1080" end="0,1080" time="500">VisibleChange</animation>
             </control>      
             <control type="image" id="510">
                 <description>Dynamic art2  - MoreInfo</description>
-                <animation effect="fade" time="500">VisibleChange</animation> 
                 <posx>35</posx>
                 <posy>475r</posy>  
                 <width>360</width> 
@@ -287,7 +299,8 @@
                 <align>center</align>
                 <aligny>center</aligny>
                 <aspectratio>keep</aspectratio>
-                <texture fallback="poster.png"></texture>
+                <texture fallback="poster.jpg">$INFO[Window(10000).Property(OVERLAY.type2ART)]</texture>
+                <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
             </control>        
             <control type="image">
                 <description>Unaired "NEW" image</description>         
@@ -438,7 +451,7 @@
                         <wrapmultiline>true</wrapmultiline>
                         <textcolor>FFFFFFFF</textcolor>
                         <font>font12</font>
-                        <label>$INFO[Window(10000).Property(Playing.Genre),Genre: ]</label>
+                        <label>$INFO[Window(10000).Property(OVERLAY.Genre),Genre: ]</label>
                     </control> 
                     <control type="label">
                         <description>Show Info</description>
@@ -479,7 +492,7 @@
                         <align>left</align>
                         <aligny>bottom</aligny>
                         <aspectratio>keep</aspectratio>
-                        <texture fallback="flags/rating/MPAA_NR_Certificate_US.png" colordiffuse="ffffffff">$INFO[Window(10000).Property(Playing.Rating),flags/mpaa/,.png]</texture>
+                        <texture fallback="flags/rating/MPAA_NR_Certificate_US.png" colordiffuse="ffffffff">$INFO[Window(10000).Property(OVERLAY.Rating),flags/mpaa/,.png]</texture>
                     </control>
                     <control type="image">
                         <width>100</width>
@@ -638,14 +651,24 @@
             </control>  
         </control>            
         <!-- info overlay -->
-        <control type="group" id="102">
-            <animation effect="slide" start="0,-1080" end="0,1080" time="500">VisibleChange</animation>
+        <control type="group" id="102">     
+<!--             <control type="image">
+                <texture>fade.png</texture>
+                <posx>0</posx>
+                <posy>295r</posy>
+                <width>1920</width>
+                <height>785</height>
+                <animation effect="fade" end="85" time="5">VisibleChange</animation>
+                <visible>Control.IsVisible(102)</visible>
+            </control> -->
             <control type="image">
                 <description>Info Overlay </description>
                 <width>1920</width>
                 <height>1080</height>
                 <texture>pstvlInfoBackground.png</texture>
-                <visible>!Control.IsVisible(104)</visible>
+                <visible>!Control.IsVisible(104)</visible>                
+                <animation effect="slide" end="0,0" time="500">WindowOpen</animation>
+                <animation effect="slide" end="0,0" time="50">WindowClose</animation>
             </control>
             <!-- Time/Weather -->
              <control type="label">
@@ -694,27 +717,22 @@
                     <aligny>bottom</aligny>
                     <aspectratio>keep</aspectratio>
                     <texture>sel.png</texture>
+                    <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
                     <visible>Control.IsVisible(104)</visible>
                 </control>
             </control>
-            <control type="group">
-                <control type="button" id="507">
-                    <description>Dynamic art1 - Info Overlay</description>
-                    <label>landscape</label>
-                    <visible>false</visible>
-                </control>
-                <control type="image" id="508">
-                    <description>Dynamic art1 - Info Overlay</description>
-                    <animation effect="fade" time="500">VisibleChange</animation> 
-                    <posx>35</posx>
-                    <posy>270r</posy>  
-                    <width>360</width>      
-                    <height>180</height>
-                    <align>center</align>
-                    <aspectratio>keep</aspectratio>
-                    <texture fallback="logo.png"></texture>
-                </control>
-            </control>            
+            <control type="image" id="508">
+                <description>Dynamic art1 - Info Overlay</description>
+                <animation effect="fade" time="500">VisibleChange</animation> 
+                <posx>35</posx>
+                <posy>270r</posy>  
+                <width>360</width>      
+                <height>180</height>
+                <align>center</align>
+                <aspectratio>keep</aspectratio>
+                <texture fallback="logo.png">$INFO[Window(10000).Property(OVERLAY.type1ART)]</texture>
+                <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
+            </control>         
             <control type="image" id="511">
                 <description>Sickbeard/Couchpotato image</description>   
                 <posx>345</posx>
@@ -723,6 +741,7 @@
                 <height>32</height>
                 <aspectratio>keep</aspectratio>
                 <visible>true</visible>
+                <texture>$INFO[Window(10000).Property(OVERLAY.Managed)]</texture>
             </control> 
             <control type="image" id="512">
                 <description>Unaired "NEW" image</description>         
@@ -732,6 +751,7 @@
                 <height>50</height>
                 <aspectratio>keep</aspectratio>
                 <visible>true</visible>
+                <texture>$INFO[Window(10000).Property(OVERLAY.isNew)]</texture>
             </control>
             <!--line 1 -->
             <control type="grouplist">
@@ -938,11 +958,6 @@
                 <texture>pstvlPopupWindow.png</texture>
             </control>
             <control type="group">       
-                <control type="button" id="121">
-                    <description>Dynamic art3 - Popup</description>
-                    <label>landscape</label>
-                    <visible>false</visible>
-                </control>
                 <control type="image" id="122">
                     <description>Dynamic art3 - Popup</description>
                     <posx>480r</posx>
@@ -951,7 +966,8 @@
                     <height>180</height>
                     <align>center</align>
                     <aspectratio>keep</aspectratio>
-                    <texture fallback="logo.png"></texture>
+                    <texture fallback="logo.png">$INFO[Window(10000).Property(OVERLAY.type4ART)]</texture>
+                    <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
                 </control>
                 <control type="fadelabel">
                     <description>Popup fadelabel</description>
@@ -1000,19 +1016,39 @@
             <posx>0</posx>
             <posy>0</posy>
             <control type="image">
-                <animation effect="slide" start="-1920,0" end="1920,0" time="500">VisibleChange</animation>
+                <texture flipy="true">fadeh.png</texture>
+                <posx>292</posx>
+                <posy>0</posy>
+                <width>1625</width>
+                <height>1080</height>
+                <animation effect="fade" end="85" time="5">VisibleChange</animation>
+                <visible>Control.IsVisible(119)</visible>
+            </control>
+            <control type="image">
                 <description>Background Image</description>
                 <width>1920</width>
                 <height>1080</height>
                 <texture>pstvlMenuWindow.png</texture>
                 <visible>Control.IsVisible(119)</visible>
+                <animation effect="slide" end="0,0" time="500">VisibleChange</animation>
+                <animation effect="slide" end="0,0" time="50">VisibleChange</animation>
+            </control>
+            <control type="image">
+                <texture flipy="true">fadeh.png</texture>
+                <posx>687</posx>
+                <posy>0</posy>
+                <width>1230</width>
+                <height>1080</height>
+                <animation effect="fade" end="85" time="5">VisibleChange</animation>
+                <visible>Control.IsVisible(130)</visible>
             </control>
             <control type="image" id="130">
                 <description>Background Image</description>
-                <animation effect="slide" start="-1920,0" end="1920,0" time="500">VisibleChange</animation>
                 <width>1920</width>
                 <height>1080</height>
                 <texture>pstvlMenuWindowAlt.png</texture>
+                <animation effect="slide" end="0,0" time="500">VisibleChange</animation>
+                <animation effect="slide" end="0,0" time="50">VisibleChange</animation>
             </control>   
             <control type="image">
                 <description>Sidebar - Logo</description>
@@ -1028,13 +1064,14 @@
             </control>      
             <control type="image" id="131">
                 <description>Onnow Art</description>
-                <animation effect="fade" time="500">VisibleChange</animation> 
                 <posx>310</posx>
                 <posy>15</posy>
                 <width>360</width>      
                 <height>180</height>
                 <aspectratio>keep</aspectratio>
                 <visible>Control.IsVisible(130)</visible>
+                <texture>$INFO[Window(10000).Property(OVERLAY.type3ART)]</texture>
+                <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
             </control>
             <control type="label" id="132">
                 <description>Onnow Controls</description>

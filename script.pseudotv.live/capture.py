@@ -80,7 +80,7 @@ class Main:
     def ImportChannel(self):
         self.log("ImportChannel")
         show_busy_dialog()
-        
+        self.chnlst = ChannelList()
         self.chantype = 9999
         self.setting1 = ''
         self.setting2 = ''
@@ -97,22 +97,29 @@ class Main:
         self.updateListing()
         hide_busy_dialog()
         available = False
+        try:
+            Lastchan = int(getProperty("PTVL.CM.LASTCHAN"))
+            self.log("ImportChannel, Lastchan = " + str(Lastchan))
+            self.nitemlst = self.itemlst
+            self.itemlst = self.nitemlst[Lastchan:] + self.nitemlst[:Lastchan]
+        except:
+            pass
         while not available:
-            # try:
-                # Lastchan = int(getProperty("PTVL.CM.LASTCHAN"))
-                # self.log("ImportChannel, Lastchan = " + str(Lastchan))
-                # self.itemlst = self.itemlst[Lastchan:] + self.itemlst[:Lastchan]
-            # except:
-                # pass
             select = selectDialog(self.itemlst, 'Select Channel Number')
-            
             if select != -1:
-                self.channel = select + 1
+                # self.channel = select + 1
+                self.channel = int(self.chnlst.CleanLabels((self.itemlst[select]).split(' - ')[0]))
                 if not (self.itemlst[select]).startswith('[COLOR=dimgrey]'):
                     available = True
                     
                     if self.Path[-3:].lower() == 'xsp':
                         self.chantype = 0
+                    elif self.Path.lower().startswith('plugin://plugin.video.youtube/channel'):
+                        self.chantype = 10
+                        self.YTtype = 1
+                    elif self.Path.lower().startswith('plugin://plugin.video.spotitube/?limit&mode=listyoutubeplaylist'):
+                        self.chantype = 10
+                        self.YTtype = 2
                     elif self.Path.lower().startswith(('plugin', 'http', 'rtmp', 'pvr')):
                         if self.isPlayable == 'True':
                             if dlg.yesno("PseudoTV Live", 'Add source as', yeslabel="LiveTV", nolabel="InternetTV"):
@@ -144,7 +151,6 @@ class Main:
         if self.chantype == 0:
             self.setting1 = xbmc.translatePath(self.Path)
             self.channame = self.getSmartPlaylistName(self.Path)
-            
         elif self.chantype == 6:
             self.setting1 = self.Label
             self.setting2 = '4'
@@ -171,6 +177,18 @@ class Main:
             self.setting3 = self.Label
             self.setting4 = self.Description
             self.channame = self.Label +' - '+ self.AddonName
+            
+        elif self.chantype == 10:
+            if self.YTtype == 1:
+                YTstring = 'plugin://plugin.video.youtube/channel/'
+            elif self.YTtype == 2:
+                YTstring = 'plugin://plugin.video.spotitube/?limit&mode=listyoutubeplaylist&type=browse&url='
+            
+            self.setting1 = ((self.Path.lower()).replace(YTstring,'')).replace('/','')
+            self.setting2 = str(self.YTtype)
+            self.setting3 = str(MEDIA_LIMIT)
+            self.setting4 = '0'
+            self.channame = self.Label
             
         elif self.chantype == 15:
             self.setting1 = self.Path
@@ -303,9 +321,10 @@ class Main:
         ADDON_SETTINGS.setSetting(setting3, self.setting3)
         ADDON_SETTINGS.setSetting(setting4, self.setting4)
         ADDON_SETTINGS.setSetting(setting4, self.setting4)
-        ADDON_SETTINGS.setSetting("Channel_" + chan + "_rulecount", "1")
+        ADDON_SETTINGS.setSetting("Channel_" + chan + "_rulecount", "2")
         ADDON_SETTINGS.setSetting("Channel_" + chan + "_rule_1_id", "1")
-        ADDON_SETTINGS.setSetting(channame, self.channame)
+        ADDON_SETTINGS.setSetting(channame, self.channame)           
+        ADDON_SETTINGS.setSetting("Channel_" + chan + "_rule_2_id", "12")        
         ADDON_SETTINGS.setSetting("Channel_" + chan + "_changed", "True")
         self.log("saveSettings return")
                 

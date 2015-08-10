@@ -18,20 +18,20 @@
 
 
 import os, re, sys, time, zipfile, threading, requests, random
-import urllib, urllib2, base64, fileinput, shutil, socket, httplib, json
+import urllib, urllib2, base64, fileinput, shutil, socket, httplib, json, urlparse, HTMLParser
 import xbmc, xbmcgui, xbmcplugin, xbmcvfs, xbmcaddon
-import urlparse, time, _strptime, string, datetime, ftplib, hashlib, smtplib, feedparser, imp
+import time, _strptime, string, datetime, ftplib, hashlib, smtplib, feedparser, imp
 
 from Globals import * 
-from FileAccess import *  
+from FileAccess import FileAccess 
 from Queue import Queue
-from HTMLParser import HTMLParser
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEBase import MIMEBase
 from email.MIMEText import MIMEText
 from email import Encoders
 from xml.dom.minidom import parse, parseString
-from urllib import unquote
+from urllib import unquote, quote
+
 socket.setdefaulttimeout(30)
 
 # Commoncache plugin import
@@ -40,7 +40,12 @@ try:
 except Exception,e:
     import storageserverdummy as StorageServer
 
-# Globals    
+# Globals  
+settingFileAccess = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.xml'))
+nsettingFileAccess = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.lastrun.xml'))
+atsettingFileAccess = xbmc.translatePath(os.path.join(BACKUP_LOC, 'settings2.pretune.xml'))
+bksettingFileAccess = os.path.join(BACKUP_LOC, 'settings2.' + (str(datetime.datetime.now()).split('.')[0]).replace(' ','.').replace(':','.') + '.xml')
+ 
 Path = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', 'Default', '1080i')) #Path to Default PTVL skin, location of mod file.
 fle = 'custom_script.pseudotv.live_9506.xml' #mod file, copy to xbmc skin folder
 VWPath = xbmc.translatePath(os.path.join(XBMC_SKIN_LOC, fle))
@@ -64,13 +69,49 @@ z = '</defaultcontrol>\n    <visible>Window.IsActive(fullscreenvideo) + !Window.
 # Github Tools #
 ################
      
-def fillGithubItems(url, ext, removeEXT=False):
+def isKodiRepo(plugin=''):
+    log("utils: isKodiRepo")
+    # parse kodi repo, collect video, music plugins
+    # if necessary limit plugins to kodi approved.
+    if plugin[0:9] == 'plugin://':
+        plugin = plugin.replace("plugin://","")
+        addon = splitall(plugin)[0]
+    else:
+        addon = plugin  
+    dharma = 'https://github.com/xbmc/repo-plugins/tree/dharma'
+    eden = 'https://github.com/xbmc/repo-plugins/tree/eden'
+    frodo = 'https://github.com/xbmc/repo-plugins/tree/frodo'
+    gotham = 'https://github.com/xbmc/repo-plugins/tree/gotham'
+    helix = 'https://github.com/xbmc/repo-plugins/tree/helix'
+    isengard = 'https://github.com/xbmc/repo-plugins/tree/isengard'
+    jarvis = 'https://github.com/xbmc/repo-plugins/tree/jarvis'
+    
+    repoItems = []
+    repoItems = fillGithubItems(dharma)
+    repoItems += fillGithubItems(eden)
+    repoItems += fillGithubItems(frodo)
+    repoItems += fillGithubItems(gotham)
+    repoItems += fillGithubItems(helix)
+    repoItems += fillGithubItems(isengard)
+    repoItems += fillGithubItems(jarvis)
+    
+    RepoPlugins = []
+    for i in range(len(repoItems)):
+        if (repoItems[i]).lower().startswith('plugin.video.'):
+            RepoPlugins.append((repoItems[i]).split(' ')[0])
+        elif (repoItems[i]).lower().startswith('plugin.music.'):
+            RepoPlugins.append((repoItems[i]).split(' ')[0])
+    print addon, RepoPlugins
+    if addon in RepoPlugins:
+        return True
+    else:
+        return False
+
+def fillGithubItems(url, ext=None, removeEXT=False):
     log("utils: fillGithubItems Cache")
     if CHKCache() == True:
         try:
-            setProperty("PTVL.CHKCache", "false")
             result = parsersGH.cacheFunction(fillGithubItems_NEW, url, ext, removeEXT)
-            setProperty("PTVL.CHKCache", "true")
         except:
             result = fillGithubItems_NEW(url, ext, removeEXT)
             pass
@@ -90,10 +131,11 @@ def fillGithubItems_NEW(url, ext, removeEXT=False):
         for i in range(len(catlink)):
             link = catlink[i]
             name = (catlink[i]).lower()
-            if ([x.lower for x in ext if name.endswith(x)]):
-                if removeEXT == True:
-                    link = os.path.splitext(os.path.basename(link))[0]
-                list.append(link.replace('&amp;','&'))
+            if ext != None:
+                if ([x.lower for x in ext if name.endswith(x)]):
+                    if removeEXT == True:
+                        link = os.path.splitext(os.path.basename(link))[0]
+            list.append(link.replace('&amp;','&'))
         Sortlist = sorted_nicely(list) 
     except Exception,e:
         print str(e)
@@ -177,7 +219,7 @@ def UpdateFiles():
                 # chname = (self.channels[i - 1].name)
                 # fle = xbmc.translatePath(os.path.join(LOCK_LOC, ("channel_" + str(i) + '.m3u')))  
             # except Exception,e:
-                # chtype = -1
+                # chtype = 9999
                 # fle = ''
                 # pass
             
@@ -188,28 +230,16 @@ def UpdateFiles():
                     # lineLST.pop(0) #Remove unwanted first line '#EXTM3U'
                     # for n in range(len(lineLST)):
                         # line = lineLST[n]
-                        
                         # if line[0:7] == '#EXTINF':
                             # liveid = line.rsplit('//',1)[1]
                             # type = liveid.split('|')[0]
                             # id = liveid.split('|')[1]
-                            # dbid = liveid.split('|')[2]
-                            
+                            # dbid, epid = splitDBID(liveid.split('|')[2])
                         # elif line[0:7] not in exclude:
-                            # if id != -1:
-                                # if line[0:5] == 'stack':
-                                    # smpath = (line.split(' , ')[0]).replace('stack://','').replace('rar://','')
-                                    # mpath = (os.path.split(smpath)[0]) + '/'
-                                # elif line[0:6] == 'plugin':
-                                    # mpath = 'plugin://' + line.split('/')[2] + '/'
-                                # elif line[0:4] == 'upnp':
-                                    # mpath = 'upnp://' + line.split('/')[2] + '/'
-                                # else:
-                                    # mpath = (os.path.split(line)[0]) + '/'
-
-                                # if type and mpath:
-                                    # newLST = [type, chtype, chname, id, dbid, mpath]
-                                    # ArtLST.append(newLST)
+                            # mpath = getMpath(line)
+                        # if type and mpath:
+                            # newLST = [type, chtype, chname, id, dbid, mpath]
+                            # ArtLST.append(newLST)
         # except:
             # pass
     # # shuffle list to evenly distribute queue
@@ -376,16 +406,12 @@ def FindLogo_Threading(data):
 def FindLogo(chtype, chname, mediapath=None):
     log("utils: FindLogo")
     try:
-        try:
-            if FindLogoThread.isAlive():
-                FindLogoThread.cancel()
-                FindLogoThread.join()
-        except:
-            pass
-            
         data = [chtype, chname, mediapath]
         FindLogoThread = threading.Timer(0.5, FindLogo_Threading, [data])
         FindLogoThread.name = "FindLogoThread"
+        if FindLogoThread.isAlive():
+            FindLogoThread.cancel()
+            FindLogoThread.join()            
         FindLogoThread.start()
     except Exception,e:
         log('utils: FindLogo, Failed!,' + str(e))
@@ -420,9 +446,7 @@ def findLogodb(chname, user_region, user_type, useMix=True, useAny=True):
     log("utils: findLogodb Cache")   
     if CHKCache() == True:
         try:
-            setProperty("PTVL.CHKCache", "false")
             result = daily.cacheFunction(findLogodb_NEW, chname, user_region, user_type, useMix, useAny)
-            setProperty("PTVL.CHKCache", "true")
         except:
             result = findLogodb_NEW(chname, user_region, user_type, useMix, useAny)
             pass
@@ -525,7 +549,6 @@ def GA_Request():
     """
     Simple proof of concept code to push data to Google Analytics.
     Related blog posts:
-     * http://www.canb.net/2012/01/push-data-to-google-analytics-with.html
      * https://medium.com/python-programming-language/80eb9691d61f
     """
     try:
@@ -533,23 +556,23 @@ def GA_Request():
 
         if not REAL_SETTINGS.getSetting('Visitor_GA'):
             REAL_SETTINGS.setSetting('Visitor_GA', str(random.randint(0, 0x7fffffff)))
-        VISITOR = str(REAL_SETTINGS.getSetting("Visitor_GA"))
+        VISITOR = REAL_SETTINGS.getSetting("Visitor_GA")
         OPTIONS = ['PTVL',str(ADDON_VERSION),str(VISITOR)]
         
-        if getProperty("Donor") == "true":
-            USER,PASS = (REAL_SETTINGS.getSetting('Donor_UP')).split(':')
-            OPTIONS = OPTIONS + ['Donor:'+USER]
+        if getProperty("Verified_Donor") == "True":
+            OPTIONS = OPTIONS + ['Donor:'+(REAL_SETTINGS.getSetting('Donor_UP')).split(':')[0]]
         else:
             OPTIONS = OPTIONS+ ['FreeUser']
         
-        if REAL_SETTINGS.getSetting('Hub') == 'true':  
-            OPTIONS = OPTIONS + ['Hub:True']
+        if getProperty("Verified_Community") == "True":
+            OPTIONS = OPTIONS + ['Com:'+REAL_SETTINGS.getSetting('Gmail_User')]
         else:
-            OPTIONS = OPTIONS + ['Hub:False']
-        
-        if getProperty("PTVL.COM_APP") == "true":
-            USER = REAL_SETTINGS.getSetting('Gmail_User')
-            OPTIONS = OPTIONS + ['Com:'+USER]
+            OPTIONS = OPTIONS+ ['Com:False']
+                    
+        if isPlugin('context.pseudotv.live.export'):
+            OPTIONS = OPTIONS + ['CM:True']
+        else:
+            OPTIONS = OPTIONS + ['CM:False']
             
         OPTIONLST = "/".join(OPTIONS)
         DATA = {"utmwv": "5.2.2d",
@@ -564,11 +587,24 @@ def GA_Request():
         "",
         urllib.urlencode(DATA),
         ""))
-        print urllib2.urlopen(URL).info()
+        urllib2.urlopen(URL).info()
     except Exception,e:  
         log("GA_Request Failed" + str(e), xbmc.LOGERROR)
-        
+
 def UpdateRSS():
+    log('utils: UpdateRSS')
+    try:
+        UpdateRSSthread = threading.Timer(0.5, UpdateRSS_Thread)
+        UpdateRSSthread.name = "UpdateRSSthread"
+        if UpdateRSSthread.isAlive():
+            UpdateRSSthread.cancel()      
+        UpdateRSSthread.start()
+    except Exception,e:
+        log('utils: UpdateRSS, Failed!,' + str(e))
+        pass   
+          
+def UpdateRSS_Thread():
+    log('utils: UpdateRSS_Thread')
     now  = datetime.datetime.today()
     try:
         UpdateRSS_LastRun = getProperty("UpdateRSS_NextRun")
@@ -729,19 +765,15 @@ def download_silent_threading(data):
 def download_silent(url, dest):
     log('download_silent')
     try:
-        try:
-            if download_silentThread.isAlive():
-                download_silentThread.cancel()
-                download_silentThread.join()
-        except:
-            pass
-            
         data = [url, dest]
         download_silentThread = threading.Timer(0.5, download_silent_threading, [data])
         download_silentThread.name = "download_silentThread"
+        if download_silentThread.isAlive():
+            download_silentThread.cancel()
+            download_silentThread.join()
         download_silentThread.start()
         # Sleep between Download, keeps cpu usage down and reduces the number of simultaneous threads.
-        xbmc.sleep(1000)
+        xbmc.sleep(500)
     except Exception,e:
         log('utils: download_silent, Failed!,' + str(e))
         pass   
@@ -749,6 +781,7 @@ def download_silent(url, dest):
 def open_url(url):        
     try:
         f = urllib2.urlopen(url)
+        f.close
         return f
     except urllib2.URLError as e:
         pass
@@ -770,9 +803,7 @@ def open_url_up(url, userpass):
 def readline_url_cached(url, userpass=False): 
     if CHKCache() == True:
         try:
-            setProperty("PTVL.CHKCache", "false")
             result = daily.cacheFunction(readline_url, url, userpass)
-            setProperty("PTVL.CHKCache", "true")
         except:
             result = readline_url(url, userpass)
             pass
@@ -788,6 +819,7 @@ def readline_url(url, userpass=False):
             f = open_url_up(url, userpass)
         else:
             f = open_url(url)
+        f.close
         return f.readlines()
     except urllib2.URLError as e:
         pass   
@@ -796,9 +828,7 @@ def request_url_cached(url):
     log('request_url_cached')
     if CHKCache() == True:
         try:
-            setProperty("PTVL.CHKCache", "false")
             result = daily.cacheFunction(request_url, url)
-            setProperty("PTVL.CHKCache", "true")
         except:
             result = request_url(url)
             pass
@@ -892,6 +922,7 @@ def anonFTPDownload(filename, DL_LOC):
     except Exception, e:
         log('utils: anonFTPDownload, Failed!! ' + str(e))
         return False
+        
 ##################
 # Zip Tools #
 ##################
@@ -1019,9 +1050,6 @@ def verifyScript(cmd):
         pass
     return True
 
-def isATV():
-    return xbmc.getCondVisibility('System.Platform.ATV2') == 1
-
 def get_Kodi_JSON(params):
     json_query = xbmc.executeJSONRPC('{"jsonrpc": "2.0", %s, "id": 1}' % params)
     json_query = unicode(json_query, 'utf-8', errors='ignore')
@@ -1030,8 +1058,6 @@ def get_Kodi_JSON(params):
 def isPlugin(plugin):
     if plugin[0:9] == 'plugin://':
         plugin = plugin.replace("plugin://","")
-        # addon = os.path.split(plugin)[0]
-        # addon = (plugin.split('/?')[0]).replace("plugin://","")
         addon = splitall(plugin)[0]
         log("utils: plugin id = " + addon)
     else:
@@ -1086,7 +1112,40 @@ def getPlatform():
 #####################
 # String/File Tools #
 #####################
-             
+    
+def tidy(cmd):
+    cmd = cmd.replace('&quot;', '')
+    cmd = cmd.replace('&amp;', '&')
+    if cmd.startswith('RunScript'):
+        cmd = cmd.replace('?content_type=', '&content_type=')
+        cmd = re.sub('/&content_type=(.+?)"\)', '")', cmd)
+    if cmd.endswith('/")'):
+        cmd = cmd.replace('/")', '")')
+    if cmd.endswith(')")'):
+        cmd = cmd.replace(')")', ')')
+    return cmd
+
+def cleanHTML(string):  
+    html_parser = HTMLParser.HTMLParser()
+    return html_parser.unescape(string)
+    
+def getTitleYear(showtitle):  
+    # extract year from showtitle then return
+    try:
+        labelshowtitle = re.compile('(.+?) [(](\d{4})[)]$').findall(showtitle)
+        title = labelshowtitle[0][0]
+        year = int(labelshowtitle[0][1])
+    except Exception,e:
+        try:
+            year = int(((title.split('('))[1]).replace(')',''))
+            title = ((title.split('('))[0])
+        except:
+            title = showtitle
+            year = 0
+    if year != 0:
+        showtitle = title + ' ('+str(year)+')'  
+    return year, title, showtitle
+
 def trim(content, limit, suffix):
     if len(content) <= limit:
         return content
@@ -1194,6 +1253,17 @@ def copyanything(src, dst):
 # PTVL Tools #
 ##############
      
+def getDonlist(list):
+    nlist = []
+    list = readline_url_cached(BASEURL + list, UPASS)
+    for i in range(len(list)):
+        try:
+            nline = (list[i]).replace('\r\n','')
+            nlist.append(nline)
+        except:
+            pass
+    return nlist
+    
 def writeCache(thelist, thepath, thefile):
     log("writeCache")  
     now = datetime.datetime.today()
@@ -1283,38 +1353,7 @@ def getMpath(mediapath):
         return mpath
     except:
         pass
-                
-def ChkSettings2():   
-    log('utils: ChkSettings2')
-    #Back/Restore Settings2
-    settingFileAccess = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.xml'))
-    nsettingFileAccess = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.bak.xml'))
-    atsettingFileAccess = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.pretune.xml'))
-    bksettingFileAccess = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'backups', 'settings2.' + str(datetime.datetime.now()).split('.')[0] + '.xml'))
-    
-    try:
-        Normal_Shutdown = REAL_SETTINGS.getSetting('Normal_Shutdown') == "true"
-    except:
-        REAL_SETTINGS.setSetting('Normal_Shutdown', "true")
-        Normal_Shutdown = REAL_SETTINGS.getSetting('Normal_Shutdown') == "true"
-            
-    if REAL_SETTINGS.getSetting("ATRestore") == "true" and REAL_SETTINGS.getSetting("Warning2") == "true":
-        log('utils: ChkSettings2, Setting2 ATRestore')
-        if getSize(atsettingFileAccess) > 100:
-            REAL_SETTINGS.setSetting("ATRestore","false")
-            REAL_SETTINGS.setSetting("Warning2","false")
-            REAL_SETTINGS.setSetting('ForceChannelReset', 'true')
-            Restore(atsettingFileAccess, settingFileAccess) 
-    elif Normal_Shutdown == False:
-        log('utils: ChkSettings2, Setting2 Restore') 
-        if getSize(settingFileAccess) < 100 and getSize(nsettingFileAccess) > 100:
-            Restore(nsettingFileAccess, settingFileAccess)
-    else:
-        log('utils: ChkSettings2, Setting2 Backup') 
-        if getSize(settingFileAccess) > 100:
-            Backup(settingFileAccess, nsettingFileAccess)
-            Backup(settingFileAccess, bksettingFileAccess)
-
+           
 def ClearCache(type):
     log('utils: ClearCache ' + type)  
     if type == 'Filelist':
@@ -1361,16 +1400,49 @@ def makeSTRM(mediapath):
         return filepath
 
 def EXTtype(arttype): 
+    arttype = arttype.replace('.png','').replace('.jpg','')
     JPG = ['banner', 'fanart', 'folder', 'landscape', 'poster']
     PNG = ['character', 'clearart', 'logo', 'disc']
-    
     if arttype in JPG:
         arttypeEXT = (arttype + '.jpg')
     else:
         arttypeEXT = (arttype + '.png')
     log('utils: EXTtype = ' + str(arttypeEXT))
     return arttypeEXT
+     
+def ChkSettings2():   
+    log('utils: ChkSettings2')
+    #Back/Restore Settings2
+    # check if ptvl shutdown correctly
+    try:
+        Normal_Shutdown = REAL_SETTINGS.getSetting('Normal_Shutdown') == "true"
+    except:
+        REAL_SETTINGS.setSetting('Normal_Shutdown', "true")
+        Normal_Shutdown = REAL_SETTINGS.getSetting('Normal_Shutdown') == "true"
+                 
+    if FileAccess.exists(BACKUP_LOC) == False:
+        try:
+            FileAccess.makedirs(BACKUP_LOC)
+        except:
+            self.Error('Unable to create the backup directory')
+            
+    if Normal_Shutdown == False:
+        log('utils: ChkSettings2, Setting2 Restore') 
+        if getSize(settingFileAccess) < 100 and getSize(nsettingFileAccess) > 100:
+            Restore(nsettingFileAccess, settingFileAccess)    
+            xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Restore Complete, Restarting...", 1000, THUMB) )
 
+    else:
+        log('utils: ChkSettings2, Setting2 Backup') 
+        if getSize(settingFileAccess) > 100:
+            Backup(settingFileAccess, nsettingFileAccess)
+            if REAL_SETTINGS.getSetting("AutoBackup") == "true":
+                Backup(settingFileAccess, bksettingFileAccess)
+   
+def backupSettings2():
+    log('utils: backupSettings2')
+    Backup(settingFileAccess, bksettingFileAccess)
+    
 def Backup(org, bak):
     log('utils: Backup ' + str(org) + ' - ' + str(bak))
     if FileAccess.exists(org):
@@ -1380,10 +1452,22 @@ def Backup(org, bak):
             except:
                 pass
         FileAccess.copy(org, bak)
-    
-    if NOTIFY == 'true':
         xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Backup Complete", 1000, THUMB) )
        
+def restoreSettings2():
+    log('utils: restoreSettings2')
+    dirs,files = xbmcvfs.listdir(BACKUP_LOC)
+    dir,file = xbmcvfs.listdir(XMLTV_LOC)
+    backuplist = [s.replace('.xml','') for s in files if s.endswith('.xml')]
+    if len(backuplist) == 0:
+        xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "No Backups found", 1000, THUMB) )
+        return
+    select = selectDialog(backuplist, 'Select backup to restore')   
+    if select != -1:
+        if dlg.yesno("PseudoTV Live", 'Restoring will remove current channel configurations, Are you sure?'):                        
+            Restore(((backuplist[select])+'.xml'), settingFileAccess)
+            xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Restore Complete", 1000, THUMB) )
+    
 def Restore(bak, org):
     log('utils: Restore ' + str(bak) + ' - ' + str(org))
     if FileAccess.exists(bak):
@@ -1393,8 +1477,18 @@ def Restore(bak, org):
             except:
                 pass
         xbmcvfs.rename(bak, org)
-    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Restore Complete, Restarting...", 1000, THUMB) )
 
+def purgeSettings2():
+    log('utils: purgeSettings2')
+    if dlg.yesno("PseudoTV Live", 'Are you sure you want to remove all previous backups?'):       
+        dirs,files = xbmcvfs.listdir(BACKUP_LOC)
+        for i in range(len(files)):
+            try:
+                FileAccess.delete(os.path.join(BACKUP_LOC,files[i]))
+            except:
+                pass
+        xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Backup Purge Complete", 1000, THUMB) )
+             
 def ClearPlaylists():
     log('utils: ClearPlaylists')
     for i in range(999):
@@ -1432,7 +1526,7 @@ def VideoWindow():
         if getProperty("PseudoTVRunning") != "True":
             if not FileAccess.exists(VWPath):
                 log("utils: VideoWindow, VWPath not found")
-                xbmcvfs.copy(flePath, VWPath)
+                FileAccess.copy(flePath, VWPath)
                 if FileAccess.exists(VWPath):
                     log('utils: custom_script.pseudotv.live_9506.xml Copied')
                     VideoWindowPatch()   
@@ -1450,21 +1544,22 @@ def VideoWindow():
     
 def VideoWindowPatch():
     log("utils: VideoWindowPatch")
-    #Patch Videowindow/Seekbar
     try:
+        #Patch Videowindow, by un-commenting code in epg.xml 
         f = open(PTVL_SKIN_SELECT_FLE, "r")
         linesLST = f.readlines()  
         f.close()
         
         for i in range(len(linesLST)):
             lines = linesLST[i]
-            if b in lines:
+            if lines == b:
                 replaceAll(PTVL_SKIN_SELECT_FLE,b,a)        
                 log('utils: script.pseudotv.live.EPG.xml Patched b,a')
-            elif d in lines:
+            elif lines == d:
                 replaceAll(PTVL_SKIN_SELECT_FLE,d,c)           
                 log('utils: script.pseudotv.live.EPG.xml Patched d,c') 
-
+                
+        #Patch dialogseekbar to ignore OSD for PTVL.
         f = open(DSPath, "r")
         lineLST = f.readlines()            
         f.close()
@@ -1488,17 +1583,17 @@ def VideoWindowPatch():
    
 def VideoWindowUnpatch():
     log("utils: VideoWindowUnpatch")
-    #unpatch videowindow
     try:
+        #unpatch videowindow
         f = open(PTVL_SKIN_SELECT_FLE, "r")
         linesLST = f.readlines()    
         f.close()
         for i in range(len(linesLST)):
             lines = linesLST[i]
-            if a in lines:
+            if lines == a:
                 replaceAll(PTVL_SKIN_SELECT_FLE,a,b)
                 log('utils: script.pseudotv.live.EPG.xml UnPatched a,b')
-            elif c in lines:
+            elif lines == c:
                 replaceAll(PTVL_SKIN_SELECT_FLE,c,d)          
                 log('utils: script.pseudotv.live.EPG.xml UnPatched c,d')
                 
@@ -1527,76 +1622,61 @@ def VideoWindowUninstall():
 
 def SyncXMLTV(force=False):
     log('utils: SyncXMLTV')
-    if REAL_SETTINGS.getSetting("SyncXMLTV_Enabled") != "true":
-        return
+    try:
+        SyncXMLTVthread = threading.Timer(0.5, SyncXMLTV_Thread, [force])
+        SyncXMLTVthread.name = "SyncXMLTVthread"
+        if SyncXMLTVthread.isAlive():
+            SyncXMLTVthread.cancel()      
+        SyncXMLTVthread.start()
+    except Exception,e:
+        log('utils: SyncXMLTV, Failed!,' + str(e))
+        pass   
+         
+def SyncXMLTV_Thread(force):
+    log('utils: SyncXMLTV_Thread')
     now  = datetime.datetime.today()  
     try:
-        if isDon() == True:
-            try:
-                SyncPTV_LastRun = REAL_SETTINGS.getSetting('SyncPTV_NextRun')
-                if not SyncPTV_LastRun or FileAccess.exists(PTVLXML) == False or force == True:
-                    raise
-            except:
-                SyncPTV_LastRun = "1970-01-01 23:59:00.000000"
-                REAL_SETTINGS.setSetting("SyncPTV_NextRun",SyncPTV_LastRun)
-
-            try:
-                SyncPTV = datetime.datetime.strptime(SyncPTV_LastRun, "%Y-%m-%d %H:%M:%S.%f")
-            except:
-                SyncPTV_LastRun = "1970-01-01 23:59:00.000000"
-                SyncPTV = datetime.datetime.strptime(SyncPTV_LastRun, "%Y-%m-%d %H:%M:%S.%f")
-            if now > SyncPTV:         
-                #Remove old file before download
-                if FileAccess.exists(PTVLXML):
-                    try:
-                        FileAccess.delete(PTVLXML)
-                        log('utils: SyncPTVL, Removed old PTVLXML')
-                    except:
-                        log('utils: SyncPTVL, Removing old PTVLXML Failed!')
-                        
-                #Download new file from ftp, then http backup.
-                if retrieve_url_up((BASEURL + 'ptvlguide.zip'), UPASS, (xbmc.translatePath(PTVLXMLZIP))):
-                    if FileAccess.exists(PTVLXMLZIP):
-                        all(PTVLXMLZIP,XMLTV_CACHE_LOC,'')
-                        try:
-                            FileAccess.delete(PTVLXMLZIP)
-                            log('utils: SyncPTVL, Removed PTVLXMLZIP')
-                        except:
-                            log('utils: SyncPTVL, Removing PTVLXMLZIP Failed!')
-                    
-                    if FileAccess.exists(os.path.join(XMLTV_CACHE_LOC,'ptvlguide.xml')):
-                        log('utils: SyncPTVL, ptvlguide.xml download successful!')  
-                        xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live","Guidedata Update Complete", 1000, THUMB) )  
-                        SyncPTV_NextRun = ((now + datetime.timedelta(hours=24)).strftime("%Y-%m-%d %H:%M:%S.%f"))
-                        log('utils: SyncPTVL, Now = ' + str(now) + ', SyncPTV_NextRun = ' + str(SyncPTV_NextRun))
-                        REAL_SETTINGS.setSetting("SyncPTV_NextRun",str(SyncPTV_NextRun))   
-                else:
-                    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("Guidedata Update Failed!", "", 1000, THUMB) )  
+        SyncPTV_LastRun = REAL_SETTINGS.getSetting('SyncPTV_NextRun')
+        if not SyncPTV_LastRun or FileAccess.exists(PTVLXML) == False or force == True:
+            raise
     except:
-        xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("Guidedata Update Failed!", "", 1000, THUMB) ) 
-        pass
+        SyncPTV_LastRun = "1970-01-01 23:59:00.000000"
+        REAL_SETTINGS.setSetting("SyncPTV_NextRun",SyncPTV_LastRun)
+
+    try:
+        SyncPTV = datetime.datetime.strptime(SyncPTV_LastRun, "%Y-%m-%d %H:%M:%S.%f")
+    except:
+        SyncPTV_LastRun = "1970-01-01 23:59:00.000000"
+        SyncPTV = datetime.datetime.strptime(SyncPTV_LastRun, "%Y-%m-%d %H:%M:%S.%f")
+    if now > SyncPTV:         
+        #Remove old file before download
+        if FileAccess.exists(PTVLXML):
+            try:
+                FileAccess.delete(PTVLXML)
+                log('utils: SyncPTVL, Removed old PTVLXML')
+            except:
+                log('utils: SyncPTVL, Removing old PTVLXML Failed!')
+                
+        #Download new file from ftp, then http backup.
+        if retrieve_url_up((BASEURL + 'ptvlguide.zip'), UPASS, (xbmc.translatePath(PTVLXMLZIP))):
+            if FileAccess.exists(PTVLXMLZIP):
+                all(PTVLXMLZIP,XMLTV_CACHE_LOC,'')
+                try:
+                    FileAccess.delete(PTVLXMLZIP)
+                    log('utils: SyncPTVL, Removed PTVLXMLZIP')
+                except:
+                    log('utils: SyncPTVL, Removing PTVLXMLZIP Failed!')
+            
+            if FileAccess.exists(os.path.join(XMLTV_CACHE_LOC,'ptvlguide.xml')):
+                log('utils: SyncPTVL, ptvlguide.xml download successful!')  
+                xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live","Guidedata Update Complete", 1000, THUMB) )  
+                SyncPTV_NextRun = ((now + datetime.timedelta(hours=24)).strftime("%Y-%m-%d %H:%M:%S.%f"))
+                log('utils: SyncPTVL, Now = ' + str(now) + ', SyncPTV_NextRun = ' + str(SyncPTV_NextRun))
+                REAL_SETTINGS.setSetting("SyncPTV_NextRun",str(SyncPTV_NextRun))   
     
 def CHKCache():
-    # Secondary Cache Control - Threaded cache functions can collide with filelist cache.
-    if getProperty("PTVL.BackgroundLoading_Finished") == "true":
-        log('utils: CHKCache = ' + getProperty("PTVL.CHKCache"))
-        return getProperty("PTVL.CHKCache") == "true"
-    
-def tidy(cmd):
-    cmd = cmd.replace('&quot;', '')
-    cmd = cmd.replace('&amp;', '&')
-
-    if cmd.startswith('RunScript'):
-        cmd = cmd.replace('?content_type=', '&content_type=')
-        cmd = re.sub('/&content_type=(.+?)"\)', '")', cmd)
-
-    if cmd.endswith('/")'):
-        cmd = cmd.replace('/")', '")')
-
-    if cmd.endswith(')")'):
-        cmd = cmd.replace(')")', ')')
-
-    return cmd
+    # Secondary Cache Control - avoid threaded cache functions from colliding.
+    return getProperty("PTVL.BackgroundLoading_Finished") == "true"
 
 def help(chtype):
     log('utils: help, ' + chtype)
@@ -1609,18 +1689,6 @@ def help(chtype):
     text = f.read()
     showText(title, text)
     
-def DonorDel(all=False):
-    log('utils: DonorDel')
-    FileAccess.delete(xbmc.translatePath(DL_DonorPath))   
-    if all == True:
-        FileAccess.delete(xbmc.translatePath(DonorPath))
-        REAL_SETTINGS.setSetting("AT_Donor", "false")
-        REAL_SETTINGS.setSetting("COM_Donor", "false")
-        REAL_SETTINGS.setSetting("TRL_Donor", "false")
-        REAL_SETTINGS.setSetting("Verified_Donor", "false")
-        REAL_SETTINGS.setSetting("Donor_Verified", "0")
-    return True
-        
 def isDon():
     val = REAL_SETTINGS.getSetting("Verified_Donor") == "true"
     setProperty("Verified_Donor", str(val))
@@ -1632,22 +1700,26 @@ def isCom():
     setProperty("Verified_Community", str(val))
     log('utils: isCom = ' + str(val))
     return val
-    
-def isHub():
-    val = REAL_SETTINGS.getSetting("Verified_Hub") == "true"
-    setProperty("Verified_Hub", str(val))
-    log('utils: isHub = ' + str(val))
-    return val
         
 def DonCHK():
+    # Access tv meta, commercials, adverts and various custom videos from a private server.
     if REAL_SETTINGS.getSetting("Donor_Enabled") == "true" and REAL_SETTINGS.getSetting("Donor_UP") != '' and REAL_SETTINGS.getSetting("Donor_UP") != 'Username:Password': 
-        if REAL_SETTINGS.getSetting("Verified_Donor") != "true": 
-            xbmc.executebuiltin("RunScript("+ADDON_PATH+"/utilities.py,-DDautopatch)")
+        if REAL_SETTINGS.getSetting("Verified_Donor") != "true":      
+            REAL_SETTINGS.setSetting("AT_Donor", "true")
+            REAL_SETTINGS.setSetting("COM_Donor", "true")
+            REAL_SETTINGS.setSetting("Verified_Donor", "true")
+            REAL_SETTINGS.setSetting("Donor_Verified", "1")
     else:
         if REAL_SETTINGS.getSetting("Verified_Donor") != "false":      
-            DonorDel(True)
+            REAL_SETTINGS.setSetting("AT_Donor", "false")
+            REAL_SETTINGS.setSetting("COM_Donor", "false")
+            REAL_SETTINGS.setSetting("Verified_Donor", "false")
+            REAL_SETTINGS.setSetting("Donor_Verified", "0")
             
 def ComCHK():
+    # Community users are required to supply gmail info in-order to use the community submission tool, SEE DISCLAIMER!!
+    # Submission tool uses emails to submit channel configurations, which are then added to a public (github) list: https://github.com/Lunatixz/PseudoTV_Lists
+    # Community lists includes: Youtube, Vimeo, RSS, Smartplaylists, LiveTV (legal feeds ONLY!), InternetTV (legal feeds ONLY!) and User installed and Kodi repository plugins (see isKodiRepo, isPlugin).
     if REAL_SETTINGS.getSetting("Community_Enabled") == "true" and REAL_SETTINGS.getSetting("Gmail_User") != '' and REAL_SETTINGS.getSetting("Gmail_User") != 'User@gmail.com':
         if REAL_SETTINGS.getSetting("Verified_Community") != "true": 
             REAL_SETTINGS.setSetting("AT_Community","true")
@@ -1659,17 +1731,7 @@ def ComCHK():
             REAL_SETTINGS.setSetting("AT_Community","false")
             REAL_SETTINGS.setSetting("Verified_Community", "false")
             REAL_SETTINGS.setSetting("Community_Verified", "0")
-
-def HubCHK():
-    if xbmc.getCondVisibility('System.HasAddon(plugin.program.addoninstaller)') == 1:
-        if REAL_SETTINGS.getSetting("Verified_Hub") != "true": 
-            REAL_SETTINGS.setSetting("AT_Hub","true")
-            REAL_SETTINGS.setSetting("Verified_Hub","true") 
-    else:
-        if REAL_SETTINGS.getSetting("Verified_Hub") != "false": 
-            REAL_SETTINGS.setSetting("AT_Hub","false") 
-            REAL_SETTINGS.setSetting("Verified_Hub","false")
-           
+    
 def listXMLTV():
     log("utils: listXMLTV")
     xmltvLst = []   
@@ -1734,12 +1796,12 @@ def chkSources():
         xml.close()
         for i in range(len(path)):
             line = path[i].childNodes[0].nodeValue.lower()
-            if line in ['pvr://']:
+            if line == 'pvr://':
                 hasPVR = True
-            elif line in ['upnp://']:
+            elif line == 'upnp://':
                 hasUPNP = True
         if hasPVR + hasUPNP == 2:
-            return
+            return True
     except:
         pass
         
@@ -1755,6 +1817,8 @@ def chkLowPower():
     log("utils: chkLowPower = " + getProperty("PTVL.LOWPOWER"))
             
 def chkChanges():
+    log("utils: chkChanges")
+    # todo add bcts, medialimit
     CURR_ENHANCED_DATA = REAL_SETTINGS.getSetting('EnhancedGuideData')
     try:
         LAST_ENHANCED_DATA = REAL_SETTINGS.getSetting('Last_EnhancedGuideData')
@@ -1789,3 +1853,4 @@ def parseFeed(link):
     # except Exception,e:
         # log("getRSSFeed Failed!" + str(e))
         # pass
+        

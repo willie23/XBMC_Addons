@@ -54,7 +54,7 @@ def startPseudoTV():
     # Backup/Restore settings2
     ChkSettings2()
     
-    # Adjust settings based on sys platform
+    # Optimize settings based on sys.platform
     chkLowPower()
         
     # Check if changes require forced channel reset
@@ -107,9 +107,6 @@ if getProperty("PseudoTVRunning") != "True":
         # VideoWindow Patch.
         VideoWindow()
         
-        # Donor Download
-        xbmc.executebuiltin("RunScript("+__cwd__+"/utilities.py,-DDautopatch)")
-
         # Call showChangeLog like this to workaround bug in openElec, *Thanks spoyser
         xbmc.executebuiltin("RunScript("+__cwd__+"/utilities.py,-showChangelog)") 
         

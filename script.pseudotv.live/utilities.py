@@ -65,43 +65,6 @@ def showInfo(addonID=None, type='changelog'):
     except:
         pass      
 
-def DonorDownloader(auto=False):
-    log('utilities: DonorDownloader')
-    if REAL_SETTINGS.getSetting("Donor_Enabled") == "true":
-        if auto == True:
-            MSG = 'Update'
-            Install = True
-        else: 
-            MSG = 'Activate'
-            InstallStatusMSG = 'Activate'
-            Install = False
-            
-            if xbmcvfs.exists(DonorPath) or xbmcvfs.exists(DL_DonorPath):
-                InstallStatusMSG = 'Update'
-            if dlg.yesno("PseudoTV Live", str(InstallStatusMSG) + " Donor Features?"):
-                Install = True
-                    
-        if Install:
-            if DonorDel(True):              
-                try:
-                    retrieve_url_up((BASEURL + 'Donor.py'), UPASS, (xbmc.translatePath(DL_DonorPath)))
-                    if xbmcvfs.exists(DL_DonorPath):
-                        log('utilities: DonorDownloader, DL_DonorPath Downloaded')
-                        REAL_SETTINGS.setSetting("AT_Donor", "true")
-                        REAL_SETTINGS.setSetting("COM_Donor", "true")
-                        REAL_SETTINGS.setSetting("TRL_Donor", "true")
-                        REAL_SETTINGS.setSetting("Verified_Donor", "true")
-                        REAL_SETTINGS.setSetting("Donor_Verified", "1")
-                        xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Donor Features "+MSG+"d", 1000, THUMB) ) 
-                except Exception,e:
-                    log('utilities: DonorDownloader Failed!, ' + str(e))
-                    MSG = 'Failed to ' + MSG
-                    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Donor Features "+MSG, 1000, THUMB) ) 
-                
-        if auto == False:
-            # Return to PTVL Settings
-            REAL_SETTINGS.openSettings()
-                   
 def DeleteSettings2():
     log('utilities: DeleteSettings2')
     if xbmcvfs.exists(os.path.join(SETTINGS_LOC, 'settings2.xml')):
@@ -128,13 +91,7 @@ def showChtype():
     if select != -1:
         help(ChtypeLst[select])
                    
-if sys.argv[1] == '-DDautopatch':
-    DonorDownloader(True)   
-elif sys.argv[1] == '-DonorDownloader':
-    DonorDownloader()   
-elif sys.argv[1] == '-ImportLink':
-    print 'ImportLink'
-elif sys.argv[1] == '-SimpleDownloader':
+if sys.argv[1] == '-SimpleDownloader':
     xbmcaddon.Addon(id='script.module.simple.downloader').openSettings()  
 elif sys.argv[1] == '-showChangelog':
     showInfo(ADDON_ID, 'changelog') 
@@ -148,6 +105,12 @@ elif sys.argv[1] == '-showDisclaimer':
     showInfo(ADDON_ID, 'disclaimer') 
 elif sys.argv[1] == '-DeleteSettings2':
     DeleteSettings2()
+elif sys.argv[1] == '-backupSettings2':
+    backupSettings2()
+elif sys.argv[1] == '-restoreSettings2':
+    restoreSettings2()
+elif sys.argv[1] == '-purgeSettings2':
+    purgeSettings2()
 elif sys.argv[1] == '-repairSettings2':
     from resources.lib.Settings import *
     Setfun = Settings()

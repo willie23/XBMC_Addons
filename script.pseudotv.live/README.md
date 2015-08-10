@@ -5,17 +5,11 @@ PseudoTV Live
  
 - Find support @ "ORG" http://forum.xbmc.org/showthread.php?tid=169032
 
-- --------------------------------- OR --------------------------------------
-
-- Find support @ "HUB" http://www.xbmchub.com/forums/forums/170-PSEUDOTV-LIVE
-
 ------------------
 Special thanks to:
 ------------------
 
 - XBMC - Foundation
-
-- XBMCHUB - Forum, and home to extremely talented developers.
 
 - jason102, angrycamel, jtucker1972 - Original code and project inspiration.
 
@@ -225,13 +219,13 @@ Understanding Chtypes
 (11). - RSS Feed
 (12). - Music Genres
 (13). - Music Videos
-(14). - Donor Exclusive Content
+(14). - Donor Extras Content
 (15). - Plugin generated channel (not for single source).
 (16). - UPNP generated channel (not for single source).
 
-------------------------------------
-Manual Configuration Examples
-------------------------------------
+----------------------------------------
+Manual Configuration Examples - OUTDATED
+----------------------------------------
 
 [b][u]Configuration Examples:[/u][/b]
 [size=x-small]# = PTV Channel Number[/size]
@@ -462,9 +456,9 @@ _opt_1" value="LastFM" --- Channel Name
 [hr]
 
 Extras:
-[color=#FF0000]Donor Exclusive![/color]
+[color=#FF0000]Donor Extras![/color]
 
-Bring The Popcorn
+Popcorn Movies
 [list]
 [code]
 <setting id="Channel_#_type" value="14" />
@@ -475,15 +469,15 @@ Bring The Popcorn
 <setting id="Channel_#_changed" value="True" />
 <setting id="Channel_#_rulecount" value="1" />
 <setting id="Channel_#_rule_1_id" value="1" />
-<setting id="Channel_#_rule_1_opt_1" value="BringthePopcorn" />
+<setting id="Channel_#_rule_1_opt_1" value="Popcorn Movies" />
 [/code]
 
 _type" value="14" --- Extras Chtype (Donor Exclusive Media aggregation).
-_1" value="popcorn" --- 'popcorn' indicates Media Source "Bring The Popcorn". More sources to coming soon!
+_1" value="popcorn" --- 'popcorn' indicates Media Source "Popcorn Movies". More sources to coming soon!
 _2" value="pop|action"  --- 'pop|' indicates filter by Popularity, "action" = Genre, [url=http://forum.xbmc.org/showthread.php?tid=169032&pid=1637449#pid1637449]examples include.[/url]
 _3" value="480"  --- Resolution to parse, [url=http://forum.xbmc.org/showthread.php?tid=169032&pid=1637449#pid1637449]examples include.[/url]
 _4" value="2010-Now" --- Year to parse movies by, [url=http://forum.xbmc.org/showthread.php?tid=169032&pid=1637449#pid1637449]examples include.[/url]
-_opt_1" value="BringthePopcorn " --- Channel Name
+_opt_1" value="Popcorn Movies " --- Channel Name
 [/list]
 
 Cinema Experience
@@ -642,8 +636,41 @@ COLOR_YELLOW_TYPE = ['1', '3', '6', 'TV-Y7', 'TV-Y', 'TV-G', 'G', 'Classic TV', 
 COLOR_GRAY_TYPE = ['Auto', 'Collectibles', 'Travel', 'Shopping', 'House Garden', 'Home & Garden', 'Home and Garden', 'Gardening', 'Fitness Health', 'Fitness', 'Home Improvement', 'How-To', 'Cooking', 'Fashion', 'Beauty & Fashion', 'Aviation', 'Dance', 'Auction', 'Art', 'Exercise', 'Parenting', 'Food', 'Health & Fitness']
 COLOR_ltGRAY_TYPE = ['0', '7', 'NR', 'Consumer', 'Game Show', 'Other', 'Unknown', 'Religious', 'Anthology', 'None']
 
+
+OVERLAY/EPG info labels:
+$INFO[Window(10000).Property()
+
+EPG.Chtype
+EPG.Mediapath
+EPG.Playcount
+EPG.Title
+EPG.Mpath
+EPG.Chname
+EPG.SEtitle
+EPG.Type
+EPG.DBID
+EPG.EPID
+EPG.Description
+EPG.Season
+EPG.Episode
+EPG.Year
+EPG.ID
+EPG.Genre
+EPG.Rating
+EPG.Managed
+EPG.Tagline
+
+OVERLAY/EPG info pictures:
+EPG.isNew
+EPG.Managed
+OVERLAY.LOGOART
+OVERLAY.type1ART
+OVERLAY.type2ART
+OVERLAY.type3ART - Onnow artwork
+OVERLAY.type4ART
+
 # Id's:
-All Id's must remain the same and present in each skin, but you can change their visibility without issue.
+All Id's must remain in skin, but you can change their visibility without issue.
 
 # EPG.xml:
 99  - EPG focused text color
@@ -665,9 +692,7 @@ All Id's must remain the same and present in each skin, but you can change their
 118 - EPG future epg event fading
 119 - EPG past epg event fading
 120 - EPG vertical time bar
-507 - Dynamic art1 type
 508 - Dynamic art1 image
-509 - Dynamic art2 type
 510 - Dynamic art2 image
 511 - SB/CP logo (SB.png,CP.png)
 512 - Unaired/New logo (NEW.png,OLD.png)

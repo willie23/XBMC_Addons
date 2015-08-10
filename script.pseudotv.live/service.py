@@ -47,17 +47,10 @@ while (not xbmc.abortRequested):
 
     if xbmc.getCondVisibility('Window.IsActive(addonsettings)') != True:
         if getProperty("PseudoTVRunning") != "True":
-            HubCHK()
-            xbmc.sleep(1000)
             ComCHK()
-            xbmc.sleep(1000)
             DonCHK()
-            
-            try:
-                xbmc.executebuiltin("RunScript("+ADDON_PATH+"/convert.py)")
-            except:
-                pass
-                       
-    SyncXMLTV()         
-    UpdateRSS()
-    xbmc.sleep(10000)
+            # try:
+                # xbmc.executebuiltin("RunScript("+ADDON_PATH+"/convert.py)")
+            # except:
+                # pass    
+    xbmc.sleep(100)
