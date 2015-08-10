@@ -39,7 +39,11 @@ try:
     import StorageServer
 except Exception,e:
     import storageserverdummy as StorageServer
-
+    
+if sys.version_info < (2, 7):
+    import simplejson as json
+else:
+    import json
 # Globals  
 settingFileAccess = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.xml'))
 nsettingFileAccess = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.lastrun.xml'))
@@ -167,8 +171,8 @@ def VersionCompare():
                 confirm = xbmcgui.Dialog().yesno('[B]PseudoTV Live Update Available![/B]', "Your version is outdated." ,'The current available version is '+str(match[0]),'Would you like to install the PseudoTV Live repository to stay updated?',"Cancel","Install")
                 if confirm:
                     UpdateFiles()
-            else:
-                get_Kodi_JSON('"method":"Addons.SetAddonEnabled","params":{"addonid":"repository.lunatixz","enabled":true}')
+            # else:
+                # get_Kodi_JSON('"method":"Addons.SetAddonEnabled","params":{"addonid":"repository.lunatixz","enabled":true}')
 
 def UpdateFiles():
     log('utils: UpdateFiles')
@@ -1053,7 +1057,7 @@ def verifyScript(cmd):
 def get_Kodi_JSON(params):
     json_query = xbmc.executeJSONRPC('{"jsonrpc": "2.0", %s, "id": 1}' % params)
     json_query = unicode(json_query, 'utf-8', errors='ignore')
-    return simplejson.loads(json_query)
+    return json.loads(json_query)
     
 def isPlugin(plugin):
     if plugin[0:9] == 'plugin://':

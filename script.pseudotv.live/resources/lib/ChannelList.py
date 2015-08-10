@@ -673,7 +673,7 @@ class ChannelList:
         # Direct UPNP
         elif chtype == 16:
             self.log("Building UPNP Channel, " + setting1 + "...")
-            fileList = self.BuildUPNPFileList(setting1, setting2, setting3, setting4, limit)  
+            fileList = self.buildUPNPFileList(setting1, setting2, setting3, setting4, limit)  
                 
         # LocalTV
         else:
@@ -1185,7 +1185,7 @@ class ChannelList:
     
     def cleanRating(self, rating):
         self.log("cleanRating")
-        rating = rating.replace('Rated ','').replace('US:','').replace('UK:','').replace('Unrated','NR').replace('NotRated','NR').replace('N/A','NR').replace('NA','NR').replace('APPROVED','NR').replace('Approved','NR').replace('not rated','NR').replace('UNRAT','NR')
+        rating = rating.replace('Rated ','').replace('US:','').replace('UK:','').replace('Unrated','NR').replace('NotRated','NR').replace('N/A','NR').replace('NA','NR').replace('APPROVED','NR').replace('Approved','NR').replace('not rated','NR').replace('UNRAT','NR').replace('NOT','NR').replace('not','NR')
         return rating
         # rating = rating.replace('Unrated','NR').replace('NotRated','NR').replace('N/A','NR').replace('Approved','NR')
     
@@ -1574,6 +1574,33 @@ class ChannelList:
         self.log('buildPluginFileList, excludeLST = ' + str(excludeLST))
         fileList = self.getFileList(self.requestList(setting1), self.settingChannel, limit, excludeLST)
         self.log("buildPluginFileList return")
+        return fileList
+        
+        
+    def buildUPNPFileList(self, setting1, setting2, setting3, setting4, limit):
+        self.log('buildUPNPFileList')
+        self.dircount = 0
+        self.filecount = 0
+        fileList = []  
+        self.file_detail_CHK = []
+        
+        if self.background == False:
+            self.updateDialog.update(self.updateDialogProgress, "Updating channel " + str(self.settingChannel), "adding Videos, parsing upnp")
+        
+        if setting1.endswith('/'):
+            setting1 = setting1[:-1]
+                    
+        try:
+            excludeLST = setting2.split(',')
+        except:
+            excludeLST = []
+            pass
+  
+        excludeLST += EX_FILTER
+        excludeLST = ([x.lower() for x in excludeLST if x != ''])
+        self.log('buildUPNPFileList, excludeLST = ' + str(excludeLST))
+        fileList = self.getFileList(self.requestList(setting1), self.settingChannel, limit, excludeLST)
+        self.log("buildUPNPFileList return")
         return fileList
           
                
@@ -2964,8 +2991,7 @@ class ChannelList:
 
 
     def getffprobeLength(filename):
-        self.FFpath = self.OSpath.replace('rtmpdump','ffprobe')
-        FFPROBE = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'lib', 'rtmpdump', self.FFpath))
+        FFPROBE = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'lib', 'ffprobe', self.FFpath))
         result = subprocess.Popen([FFPROBE, filename],
         stdout = subprocess.PIPE, stderr = subprocess.STDOUT)
         return [x for x in result.stdout.readlines() if "Duration" in x]
@@ -4145,7 +4171,6 @@ class ChannelList:
                 items = []
 
                 for i, video in enumerate(videos):
-                    print video
                     if resolution in video.get('resolutions'):
                         source = video['source']
                         url = video['resolutions'][resolution]
@@ -4549,7 +4574,6 @@ class ChannelList:
                             
                             if logo[0:4] == 'http' and ENHANCED_DATA == True:
                                 self.GrabLogo(logo, title)
-                    print title, link
                     LSTVlist.append(title+'@#@'+link)
                 except:
                     pass
@@ -5138,7 +5162,7 @@ class ChannelList:
         
     def getEnhancedEPGdata(self, type, showtitle, year, genre, rating):
         if ENHANCED_DATA == True:
-            if year == 0:
+            if year == 0 or year == '0':
                 year = self.getYear(type, showtitle)
             if genre == 'Unknown':
                 genre = self.getGenre(type, showtitle, year) 
@@ -5154,12 +5178,12 @@ class ChannelList:
             genre, rating, year = self.getEnhancedEPGdata(type, showtitle, year, genre, rating)
                  
             if type == 'movie': 
-                if imdbnumber == 0:
+                if imdbnumber == 0 or imdbnumber == '0':
                     imdbnumber = self.getIMDBIDmovie(showtitle, year)
                 if not tagline:
                     tagline = self.getTagline(showtitle, year)
             else:
-                if imdbnumber == 0:
+                if imdbnumber == 0 or imdbnumber == '0':
                     imdbnumber = self.getTVDBID(showtitle, year)  
                 tagline = ''
                 # tagline = seasontitle and info todo
@@ -5247,7 +5271,7 @@ class ChannelList:
                 files = re.search('"file" *: *"(.*?)",', f)
                 
                 if files:
-                    if not files.group(1).startswith("plugin") and (files.group(1).endswith("/") or files.group(1).endswith("\\")):
+                    if not files.group(1).startswith(("plugin", "upnp")) and (files.group(1).endswith("/") or files.group(1).endswith("\\")):
                         fileList.extend(self.buildFileList(files.group(1), channel, limit))
                     else:
                         f = self.runActions(RULES_ACTION_JSON, channel, f)

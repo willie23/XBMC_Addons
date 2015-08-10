@@ -1,3 +1,4 @@
+[*] Fixed UPNP Channels, Kodi Favorites and other various issues.
 [*] Added Youtube Playlist creation using Export to Context Menu and AddonscripterDE's Youtube Music plugin. Supports "Playlist".
 [*] NEW! Settings2 backup and restore utilities. 
 [*] Added Play shows in order as a default advanced rule for exported channels.

@@ -1028,7 +1028,6 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         elif chantype == 15:
             # Clear browse
             self.clearLabel(281)
-            
             # Find and fill Plugin name and path
             try:
                 PlugPath = (chansetting1.replace('plugin://','')).split('/')[0]
@@ -1044,7 +1043,8 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             self.getControl(285).setLabel(self.findItemInList(self.SortOrderList, chansetting4))
         
         elif chantype == 16:
-            self.getControl(292).setLabel(chansetting1)
+            self.getControl(291).setLabel(chansetting1)#path
+            self.getControl(292).setLabel(chansetting1)#set1
             self.getControl(293).setLabel(chansetting2)
             self.getControl(294).setLabel(self.findItemInList(self.MediaLimitList, chansetting3))
             self.getControl(295).setLabel(self.findItemInList(self.SortOrderList, chansetting4))

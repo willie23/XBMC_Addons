@@ -759,35 +759,20 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                     
             elif action == ACTION_TELETEXT_RED:
                 self.log('ACTION_TELETEXT_RED')
-                # self.closeDVR()
-                # self.closeOndemand()
-                # self.closeAPPS()
-                self.MyOverlayWindow.myepg.doModal()
+                self.windowSwap('EPG')
                 
             elif action == ACTION_TELETEXT_GREEN:
                 self.log('ACTION_TELETEXT_GREEN')
-                # self.closeEPG() 
-                # self.closeOndemand()
-                # self.closeAPPS()
-                self.MyOverlayWindow.myDVR.doModal()
+                self.windowSwap('DVR')
 
-            
             elif action == ACTION_TELETEXT_YELLOW:
                 self.log('ACTION_TELETEXT_YELLOW')
-                # self.closeEPG() 
-                # self.closeDVR()
-                # self.closeAPPS()
-                self.MyOverlayWindow.myOndemand.doModal()
-
-                    
+                self.windowSwap('ONDEMAND')
+           
             elif action == ACTION_TELETEXT_BLUE:
                 self.log('ACTION_TELETEXT_BLUE') 
-                # self.closeEPG()           
-                # self.closeOndemand()    
-                # self.closeDVR()
-                self.MyOverlayWindow.myApps.doModal()
-                
-  
+                self.windowSwap('APPS')
+
             elif action >= ACTION_NUMBER_0 and action <= ACTION_NUMBER_9:
                 if self.inputChannel < 0:
                     self.inputChannel = action - ACTION_NUMBER_0
@@ -831,34 +816,32 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             self.removeControl(self.contextButton)
         except:
             pass     
-                
-                
-    def closeAPPS(self):
-        self.log('closeAPPS')
-        try:
-            setProperty("PTVL.OnDemand_Opened","false") 
-            self.MyOverlayWindow.myApps.close()
-        except:
-            pass
-        
-        
-    def closeDVR(self):
-        self.log('closeDVR')
-        try:
-            setProperty("PTVL.OnDemand_Opened","false") 
-            self.MyOverlayWindow.myDVR.close()
-        except:
-            pass
                
-               
-    def closeOndemand(self):
-        self.log('closeOndemand')
-        try:
-            setProperty("PTVL.OnDemand_Opened","false") 
-            self.MyOverlayWindow.myOndemand.close()
-        except:
-            pass
-        
+
+    def windowSwap(self, window):
+        self.log('windowSwap')    
+        # open new window
+        if window == 'EPG':
+            self.log('closeEPG_ignored')
+        elif window == 'DVR':
+            self.MyOverlayWindow.myDVR.doModal()
+        elif window == 'ONDEMAND':
+            self.MyOverlayWindow.myOndemand.doModal()
+        elif window == 'APPS':
+            self.MyOverlayWindow.myApps.doModal()
+          
+        # close open window
+        if getProperty("PTVL.EPG_Opened") == "true":
+            # self.closeEPG()
+            self.log('closeEPG_ignored')   
+        elif getProperty("PTVL.DVR_Opened") == "true":
+            self.closeDVR()
+        elif getProperty("PTVL.OnDemand_Opened") == "true":
+            self.closeOndemand()
+        elif getProperty("PTVL.APPS_Opened") == "true":
+            self.closeAPPS()
+            
+             
     def closeEPG(self):
         self.log('closeEPG')
         self.closeContext()
@@ -880,11 +863,36 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             self.MyOverlayWindow.startSleepTimer()
         except:
             pass
-            
         self.close()
             
+          
+    def closeDVR(self):
+        self.log('closeDVR')
+        try:
+            setProperty("PTVL.OnDemand_Opened","false") 
+            self.MyOverlayWindow.myDVR.close()
+        except:
+            pass
+           
+           
+    def closeOndemand(self):
+        self.log('closeOndemand')
+        try:
+            setProperty("PTVL.OnDemand_Opened","false") 
+            self.MyOverlayWindow.myOndemand.close()
+        except:
+            pass
 
-
+            
+    def closeAPPS(self):
+        self.log('closeAPPS')
+        try:
+            setProperty("PTVL.OnDemand_Opened","false") 
+            self.MyOverlayWindow.myApps.close()
+        except:
+            pass
+        
+         
     def onControl(self, control):
         self.log('onControl')
 
