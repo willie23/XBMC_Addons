@@ -1,3 +1,4 @@
+[*] USTVnow autotuning fixed.
 [*] Fixed UPNP Channels, Kodi Favorites and other various issues.
 [*] Added Youtube Playlist creation using Export to Context Menu and AddonscripterDE's Youtube Music plugin. Supports "Playlist".
 [*] NEW! Settings2 backup and restore utilities. 

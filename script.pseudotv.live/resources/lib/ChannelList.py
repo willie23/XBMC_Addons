@@ -5134,21 +5134,6 @@ class ChannelList:
         
         
     def getTVDBIDbyZap2it(self, dd_progid):
-        self.log("getTVDBIDbyZap2it")
-        if Primary_Cache_Enabled == True:
-            try:
-                result = parsers.cacheFunction(self.getTVDBIDbyZap2it_NEW, dd_progid)
-            except:
-                result = self.getTVDBIDbyZap2it_NEW(dd_progid)
-                pass
-        else:
-            result = self.getTVDBIDbyZap2it_NEW(dd_progid)
-        if not result:
-            result = 0
-        return result  
-    
-
-    def getTVDBIDbyZap2it_NEW(self, dd_progid):
         self.log("getTVDBIDbyZap2it cache")
         try:
             tvdbid = self.tvdbAPI.getIdByZap2it(dd_progid)

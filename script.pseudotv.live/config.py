@@ -1649,10 +1649,10 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                     # if retval and len(retval) > 0:
                     xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Please Edit Playlist Name.", 4000, THUMB) )
         else:
-            # prevent plugins not in kodis repo from being submitted.
-            if type in ['8','9','15'] and setting1.startswith('plugin'):
-                if isKodiRepo(setting1) == False:
-                    return
+            # # prevent plugins not in kodis repo from being submitted.
+            # if type in ['8','9','15'] and setting1.startswith('plugin'):
+                # if isKodiRepo(setting1) == False:
+                    # return
             select = selectDialog(self.GenreLst, 'Select Submission Genre Type')
             if select != -1:
                 genre = self.GenreLst[select]

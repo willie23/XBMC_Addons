@@ -70,9 +70,7 @@ class fanarttv:
     def get_data(self, url, data_type ='json'):
         xbmc.log('script.pseudotv.live-fanarttv: self.get_data')
         if CHKCache() == True:
-            setProperty("PTVL.CHKCache", "false")
             result = parserFANTV.cacheFunction(self.get_data_new, url, data_type)
-            setProperty("PTVL.CHKCache", "true")
         else:
             result = self.get_data_new(url, data_type)
         if not result:

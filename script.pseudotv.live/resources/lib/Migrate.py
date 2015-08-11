@@ -330,7 +330,7 @@ class Migrate:
                         if files and labels:
                             file = files.group(1)
                             label = labels.group(1)
-                            CHname = str(label.split(' - ')[1])
+                            CHname = label.split(' - ')[0]
                             inSet = False
                                     
                             if thumbnails != None and len(thumbnails.group(1)) > 0:

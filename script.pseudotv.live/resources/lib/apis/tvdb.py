@@ -57,9 +57,7 @@ class TVDB(object):
 
     def getIdByZap2it(self, zap2it_id):
         if Primary_Cache_Enabled == True:
-            setProperty("PTVL.CHKCache", "false")
             result = parserTVDB.cacheFunction(self.getIdByZap2it_NEW, zap2it_id)
-            setProperty("PTVL.CHKCache", "true")
         else:
             result = self.getIdByZap2it_NEW(zap2it_id)
         if not result:
@@ -80,9 +78,7 @@ class TVDB(object):
 
     def getIdByIMDB(self, imdb_id):
         if Primary_Cache_Enabled == True:
-            setProperty("PTVL.CHKCache", "false")
             result = parserTVDB.cacheFunction(self.getIdByIMDB_NEW, imdb_id)
-            setProperty("PTVL.CHKCache", "true")
         else:
             result = self.getIdByIMDB_NEW(imdb_id)
         if not result:
@@ -104,9 +100,7 @@ class TVDB(object):
 
     def getEpisodeByAirdate(self, tvdbid, airdate):
         if Primary_Cache_Enabled == True:
-            setProperty("PTVL.CHKCache", "false")
             result = parserTVDB.cacheFunction(self.getEpisodeByAirdate_NEW, tvdbid, airdate)
-            setProperty("PTVL.CHKCache", "true")
         else:
             result = self.getEpisodeByAirdate_NEW(tvdbid, airdate)
         if not result:
@@ -122,9 +116,7 @@ class TVDB(object):
 
     def getEpisodeByID(self, tvdbid):
         if Primary_Cache_Enabled == True:
-            setProperty("PTVL.CHKCache", "false")
             result = parserTVDB.cacheFunction(self.getEpisodeByID_NEW, tvdbid)
-            setProperty("PTVL.CHKCache", "true")
         else:
             result = self.getEpisodeByID_NEW(tvdbid)
         if not result:
@@ -141,9 +133,7 @@ class TVDB(object):
     def getIdByShowName(self, showName):
         if Primary_Cache_Enabled == True:
             try:
-                setProperty("PTVL.CHKCache", "false")
                 result = parserTVDB.cacheFunction(self.getIdByShowName_NEW, showName)
-                setProperty("PTVL.CHKCache", "true")
             except:
                 result = self.getIdByShowName_NEW(showName)
                 pass
@@ -167,10 +157,8 @@ class TVDB(object):
             return 'Empty'
 
     def getBannerByID(self, tvdbid, type):
-        if Primary_Cache_Enabled == True:
-            setProperty("PTVL.CHKCache", "false")
+        if CHKCache() == True:
             result = parserTVDB.cacheFunction(self.getBannerByID_NEW, tvdbid, type)
-            setProperty("PTVL.CHKCache", "true")
         else:
             result = self.getBannerByID_NEW(tvdbid, type)
         if not result:
@@ -207,9 +195,7 @@ class TVDB(object):
     def getIMDBbyShowName(self, showName):
         if Primary_Cache_Enabled == True:
             try:
-                setProperty("PTVL.CHKCache", "false")
                 result = parserTVDB.cacheFunction(self.getIMDBbyShowName_NEW, showName)
-                setProperty("PTVL.CHKCache", "true")
             except:
                 result = self.getIMDBbyShowName_NEW(showName)
                 pass
@@ -314,9 +300,7 @@ class TVDB(object):
     # Retrieve JSON data from cache function
     def get_data(url, data_type ='json'):
         if CHKCache() == True:
-            setProperty("PTVL.CHKCache", "false")
             result = parserFANTV.cacheFunction(get_data_new, url, data_type)
-            setProperty("PTVL.CHKCache", "true")
         else:
             result = get_data_new(url, data_type)
         if not result:

@@ -73,9 +73,7 @@ class TMDB(object):
     def getMovie(self, movieName, year):
         if Primary_Cache_Enabled == True:
             try:
-                setProperty("PTVL.CHKCache", "false")
                 result = parserTMDB.cacheFunction(self.getMovie_NEW, movieName, year)
-                setProperty("PTVL.CHKCache", "true")
             except:
                 result = self.getMovie_NEW(movieName, year)
                 pass                
@@ -104,9 +102,7 @@ class TMDB(object):
     def getMPAA(self, imdbid):
         if Primary_Cache_Enabled == True:
             try:
-                setProperty("PTVL.CHKCache", "false")
                 result = parserTMDB.cacheFunction(self.getMPAA_NEW, imdbid)
-                setProperty("PTVL.CHKCache", "true")
             except:
                 result = self.getMPAA_NEW(imdbid)
                 pass               
@@ -273,9 +269,7 @@ class TMDB(object):
         log('Downloader: get_data - Cache')
         if CHKCache() == True:
             try:
-                setProperty("PTVL.CHKCache", "false")
                 result = parserTMDB.cacheFunction(self.get_data_new, url, data_type)
-                setProperty("PTVL.CHKCache", "true")
             except:
                 result = self.get_data_new(url, data_type)
                 pass
