@@ -759,19 +759,19 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                     
             elif action == ACTION_TELETEXT_RED:
                 self.log('ACTION_TELETEXT_RED')
-                self.windowSwap('EPG')
+                self.MyOverlayWindow.windowSwap('EPG')
                 
             elif action == ACTION_TELETEXT_GREEN:
                 self.log('ACTION_TELETEXT_GREEN')
-                self.windowSwap('DVR')
+                self.MyOverlayWindow.windowSwap('DVR')
 
             elif action == ACTION_TELETEXT_YELLOW:
                 self.log('ACTION_TELETEXT_YELLOW')
-                self.windowSwap('ONDEMAND')
+                self.MyOverlayWindow.windowSwap('ONDEMAND')
            
             elif action == ACTION_TELETEXT_BLUE:
                 self.log('ACTION_TELETEXT_BLUE') 
-                self.windowSwap('APPS')
+                self.MyOverlayWindow.windowSwap('APPS')
 
             elif action >= ACTION_NUMBER_0 and action <= ACTION_NUMBER_9:
                 if self.inputChannel < 0:
@@ -811,36 +811,12 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         self.showingContext = False
         try:
             self.removeControl(self.contextButtonB)
-            self.removeControl(self.contextButtonC)
+            self.removeControl(self.contextButtonC)       
             self.removeControl(self.contextButtonF)
             self.removeControl(self.contextButton)
         except:
             pass     
                
-
-    def windowSwap(self, window):
-        self.log('windowSwap')    
-        # open new window
-        if window == 'EPG':
-            self.log('closeEPG_ignored')
-        elif window == 'DVR':
-            self.MyOverlayWindow.myDVR.doModal()
-        elif window == 'ONDEMAND':
-            self.MyOverlayWindow.myOndemand.doModal()
-        elif window == 'APPS':
-            self.MyOverlayWindow.myApps.doModal()
-          
-        # close open window
-        if getProperty("PTVL.EPG_Opened") == "true":
-            # self.closeEPG()
-            self.log('closeEPG_ignored')   
-        elif getProperty("PTVL.DVR_Opened") == "true":
-            self.closeDVR()
-        elif getProperty("PTVL.OnDemand_Opened") == "true":
-            self.closeOndemand()
-        elif getProperty("PTVL.APPS_Opened") == "true":
-            self.closeAPPS()
-            
              
     def closeEPG(self):
         self.log('closeEPG')
@@ -865,37 +841,10 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             pass
         self.close()
             
-          
-    def closeDVR(self):
-        self.log('closeDVR')
-        try:
-            setProperty("PTVL.OnDemand_Opened","false") 
-            self.MyOverlayWindow.myDVR.close()
-        except:
-            pass
-           
-           
-    def closeOndemand(self):
-        self.log('closeOndemand')
-        try:
-            setProperty("PTVL.OnDemand_Opened","false") 
-            self.MyOverlayWindow.myOndemand.close()
-        except:
-            pass
-
-            
-    def closeAPPS(self):
-        self.log('closeAPPS')
-        try:
-            setProperty("PTVL.OnDemand_Opened","false") 
-            self.MyOverlayWindow.myApps.close()
-        except:
-            pass
-        
-         
+                   
     def onControl(self, control):
         self.log('onControl')
-
+        
 
     # Run when a show is selected, so close the epg and run the show
     def onClick(self, controlid):
@@ -1352,23 +1301,12 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             dbid, epid = splitDBID(LiveID[2])
             playcount = int(LiveID[4])
             rating = LiveID[5]
-
-            try:
-                year = int(((title.split('('))[1]).replace(')',''))
-                title = ((title.split('('))[0])
-            except:
-                year =  0
-            
+            year, title, showtitle = getTitleYear(title)
             # SetProperties
-            try:
-                self.MyOverlayWindow.setProp(title, year, chtype, id, genre, rating, mpath, mediapath, chname, SEtitle, type, dbid, epid, Description, playcount, season, episode, 'EPG')
-            except Exception,e:
-                self.log('setProp Failed!' + str(e))
-                pass
+            self.MyOverlayWindow.setProp(showtitle, year, chtype, id, genre, rating, mpath, mediapath, chname, SEtitle, type, dbid, epid, Description, playcount, season, episode, 'EPG')
         except:
-            return
-
-                
+            pass  
+   
     # using the currently selected button, play the proper shows
     def selectShow(self):
         self.log('selectShow')    

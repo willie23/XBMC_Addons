@@ -31,7 +31,7 @@ except:
     pass
       
       
-class Ondemand(xbmcgui.WindowXMLDialog):
+class APPS(xbmcgui.WindowXMLDialog):
     def __init__(self, *args, **kwargs):
         self.log('__init__')
 
@@ -58,28 +58,22 @@ class Ondemand(xbmcgui.WindowXMLDialog):
         
         if action == ACTION_TELETEXT_RED:
             self.log('ACTION_TELETEXT_RED')
-            self.MyOverlayWindow.myepg.doModal()
-            self.closeOndemand()
+            self.MyOverlayWindow.windowSwap('EPG')
         
         elif action == ACTION_TELETEXT_GREEN:
             self.log('ACTION_TELETEXT_GREEN')
-            self.MyOverlayWindow.myDVR.doModal()
-            self.closeOndemand()
+            self.MyOverlayWindow.windowSwap('DVR')
         
         elif action == ACTION_TELETEXT_YELLOW:
             self.log('ACTION_TELETEXT_YELLOW')
-            self.MyOverlayWindow.myOndemand.doModal()
-            self.closeOndemand()
+            self.MyOverlayWindow.windowSwap('ONDEMAND')
                 
         elif action == ACTION_TELETEXT_BLUE:
             self.log('ACTION_TELETEXT_BLUE')
-            self.MyOverlayWindow.myApps.doModal()
-            self.closeOndemand()
+            self.MyOverlayWindow.windowSwap('APPS')
             
         if action in ACTION_PREVIOUS_MENU:
             print 'ACTION_PREVIOUS_MENU'
-            self.MyOverlayWindow.myepg.doModal()
-            self.closeOndemand()
         
         elif action == ACTION_MOVE_DOWN: 
             print 'ACTION_MOVE_DOWN'
@@ -106,7 +100,7 @@ class Ondemand(xbmcgui.WindowXMLDialog):
         self.log('closeAPPS')
         try:
             setProperty("PTVL.OnDemand_Opened","false") 
-            self.MyOverlayWindow.myApps.close()
+            self.close()
         except:
             pass
         

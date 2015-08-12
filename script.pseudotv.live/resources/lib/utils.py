@@ -1133,7 +1133,7 @@ def cleanHTML(string):
     html_parser = HTMLParser.HTMLParser()
     return html_parser.unescape(string)
     
-def getTitleYear(showtitle):  
+def getTitleYear(showtitle, showyear=0):  
     # extract year from showtitle then return
     try:
         labelshowtitle = re.compile('(.+?) [(](\d{4})[)]$').findall(showtitle)
@@ -1146,6 +1146,8 @@ def getTitleYear(showtitle):
         except:
             title = showtitle
             year = 0
+    if year == 0 and showyear !=0:
+        year = showyear
     if year != 0:
         showtitle = title + ' ('+str(year)+')'  
     return year, title, showtitle

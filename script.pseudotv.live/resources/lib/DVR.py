@@ -18,13 +18,60 @@
 
 from Globals import *
 
-class PVR:
-
-    def __init__(self): 
-        print '__init__'
+class DVR(xbmcgui.WindowXMLDialog):
+    def __init__(self, *args, **kwargs):
+        self.log('__init__')
         self.Reminder = SETTINGS_LOC + '/' + 'reminders.ini'
+
+             
+    def onInit(self):
+        self.log('onInit')
         
         
+    def onAction(self, act):
+        self.logDebug('onAction ' + str(act.getId()))
+        action = act.getId()
+        
+        if action == ACTION_TELETEXT_RED:
+            self.log('ACTION_TELETEXT_RED')
+            self.MyOverlayWindow.windowSwap('EPG')
+        
+        elif action == ACTION_TELETEXT_GREEN:
+            self.log('ACTION_TELETEXT_GREEN')
+            self.MyOverlayWindow.windowSwap('DVR')
+        
+        elif action == ACTION_TELETEXT_YELLOW:
+            self.log('ACTION_TELETEXT_YELLOW')
+            self.MyOverlayWindow.windowSwap('ONDEMAND')
+                
+        elif action == ACTION_TELETEXT_BLUE:
+            self.log('ACTION_TELETEXT_BLUE')
+            self.MyOverlayWindow.windowSwap('APPS')
+            
+        if action in ACTION_PREVIOUS_MENU:
+            print 'ACTION_PREVIOUS_MENU'
+        
+        elif action == ACTION_MOVE_DOWN: 
+            print 'ACTION_MOVE_DOWN'
+                
+        elif action == ACTION_MOVE_UP:
+            print 'ACTION_MOVE_UP'
+
+        elif action == ACTION_MOVE_LEFT: 
+            print 'ACTION_MOVE_LEFT'
+        
+        elif action == ACTION_MOVE_RIGHT:
+            print 'ACTION_MOVE_RIGHT'
+            
+        elif action == ACTION_PAGEDOWN: 
+            print 'ACTION_PAGEDOWN'
+                 
+        elif action == ACTION_PAGEUP: 
+            print 'ACTION_PAGEUP'
+ 
+        elif action == ACTION_SELECT_ITEM:
+            print 'ACTION_SELECT_ITEM'
+                
     def log(self, msg, level = xbmc.LOGDEBUG):
         log('PVR: ' + msg, level)
 
@@ -53,14 +100,15 @@ class PVR:
         print 'queryreminder'
         # find upcoming reminder
 
+
     def closeDVR(self):
         self.log('closeDVR')
         try:
             setProperty("PTVL.OnDemand_Opened","false") 
-            self.MyOverlayWindow.myDVR.close()
+            self.close()
         except:
             pass
-               
+           
 
 
 

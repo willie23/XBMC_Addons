@@ -374,12 +374,8 @@ ACTION_TELETEXT_BLUE = 218
 #UTC XMLTV - XMLTV that uses UTC w/ Offset timing (not local time).
 UTC_XMLTV = []
 
-#Dynamic Artwork for plugins - #Media title format must be "Title (Year)" or "Title" or "Title - Episode"
-DYNAMIC_PLUGIN_TV = ['plugin.video.crackler','plugin.video.playonbrowser', 'plugin.video.simply.player', 'plugin.video.1channel', 'plugin.video.GOtv', 'plugin.video.genesis', 'PlayOn', 'UPNP', 'plugin.video.ororotv', 'plugin.video.F.T.V', 'plugin.video.salts']
-DYNAMIC_PLUGIN_MOVIE = ['plugin.video.crackler','plugin.video.playonbrowser', 'plugin.video.prime_instant', 'plugin.video.simply.player', 'plugin.video.1channel', 'plugin.video.iwannawatch', 'plugin.video.viooz.co', 'plugin.video.glowmovies.hd', 'plugin.video.genesis', 'plugin.video.yifymovies.hd', 'plugin.video.GOmovies', 'plugin.video.muchmovies.hd', 'plugin.video.cartoonhd', 'PlayOn', 'UPNP', 'plugin.video.F.T.V', 'plugin.video.salts']
-
 # Plugin seek blacklist - Plugins that are known to use rtmp source which lockup xbmc during seek
-BYPASS_SEEK = ['plugin.video.vevo_tv','plugin.video.g4tv','plugin.video.ustvnow', 'plugin.video.mystreamstv.beta']
+BYPASS_SEEK = ['plugin.video.vevo_tv','plugin.video.g4tv','plugin.video.ustvnow']
 
 # Bypass EPG (paused/stacked) by channel name - Removed "(Stacked)" from EPG
 BYPASS_EPG = ['PseudoCinema']

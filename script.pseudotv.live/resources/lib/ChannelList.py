@@ -1834,12 +1834,8 @@ class ChannelList:
                                                 year = 0      
                                         else:
                                             year = 0
-                                            
-                                        # sloppy! extract year from title, parse, then reattach year to title
-                                        # year, title, showtitle = getTitleYear(showtitle)  
-                                        # genre, rating, year = self.getEnhancedEPGdata(type, showtitle, year, genre, rating) 
-                                        year, title, showtitle = getTitleYear(showtitle)
-                                                           
+
+                                        year, title, showtitle = getTitleYear(showtitle, year)            
                                         if type == 'tvshow':
                                             #Decipher the TVDB ID by using the Zap2it ID in dd_progid
                                             episodeNumList = elem.findall("episode-num")
@@ -2130,11 +2126,8 @@ class ChannelList:
                                 
                                 if subtitle == 'LiveTV':
                                     tagline = ''
-
-                                # sloppy! extract year from title, parse, then reattach year to title
-                                # year, title, showtitle = getTitleYear(showtitle)   
-                                # genre, rating, year = self.getEnhancedEPGdata(type, showtitle, year, genre, rating)
-                                year, title, showtitle = getTitleYear(showtitle)   
+                                    
+                                year, title, showtitle = getTitleYear(showtitle, year) 
                                 
                         if seasonNumber > 0:
                             seasonNumber = '%02d' % int(seasonNumber)
@@ -3225,11 +3218,10 @@ class ChannelList:
 
                             if ENHANCED_DATA == True: 
                                 print 'EnhancedGuideData'    
-                                # sloppy! extract year from title, parse, then reattach year to title
+                                # sloppy! extract year from title, parse, then reattach year to title           
                                 year, title, showtitle = getTitleYear(title)
-                                genre, rating, year = self.getEnhancedEPGdata('movie', showtitle, year, genre, rating)
-                                year, title, showtitle = getTitleYear(title)
-                                year, title, showtitle = getTitleYear(showtitle)
+                                genre, rating, year = self.getEnhancedEPGdata('movie', title, year, genre, rating)
+                                year, title, showtitle = getTitleYear(showtitle, year)
                                 showtitle = self.CleanLabels(showtitle) 
                                 description = self.CleanLabels(description) 
                             
@@ -5172,7 +5164,8 @@ class ChannelList:
                     imdbnumber = self.getTVDBID(showtitle, year)  
                 tagline = ''
                 # tagline = seasontitle and info todo
-                
+        if imdbnumber == 0:
+            imdbnumber = str(imdbnumber)
         self.logDebug("getEnhancedGuideData, return: showtitle = " + showtitle + ", year = " + str(year) + ", id = " + str(imdbnumber) + ", genre = " + genre + ", rating = " + rating + ", tagline = " + tagline)
         return year, imdbnumber, genre, rating, tagline
 
@@ -5474,10 +5467,10 @@ class ChannelList:
                                                 showtitle = labels.group(1)
                                             
                                             # sloppy! extract year from title, parse, then reattach year to title
-                                            year, title, showtitle = getTitleYear(showtitle)
-                                            genre, rating, year = self.getEnhancedEPGdata(type, showtitle, year, genre, rating)
-                                            year, title, showtitle = getTitleYear(showtitle)
-                                            showtitle = self.CleanLabels(showtitle) 
+                                            year, title, showtitle = getTitleYear(showtitle, year)
+                                            genre, rating, year = self.getEnhancedEPGdata(type, title, year, genre, rating)
+                                            year, title, showtitle = getTitleYear(showtitle, year)
+                                            showtitle = self.CleanLabels(title) 
                                             swtitle = self.CleanLabels(swtitle)  
                                             theplot = self.CleanLabels(theplot)  
                                             GenreLiveID = [genre, type, imdbnumber, dbid, False, playcount, rating] 
@@ -5501,9 +5494,9 @@ class ChannelList:
                                                     tagline = 'PluginTV'
                                                 
                                                 # sloppy! extract year from title, parse, then reattach year to title
-                                                year, title, showtitle = getTitleYear(showtitle)   
-                                                genre, rating, year = self.getEnhancedEPGdata(type, showtitle, year, genre, rating)
-                                                year, title, showtitle = getTitleYear(showtitle)   
+                                                year, title, showtitle = getTitleYear(showtitle, year)
+                                                genre, rating, year = self.getEnhancedEPGdata(type, title, year, genre, rating)
+                                                year, title, showtitle = getTitleYear(showtitle, year) 
                                                 showtitle = self.CleanLabels(showtitle) 
                                                 tagline = self.CleanLabels(tagline)  
                                                 theplot = self.CleanLabels(theplot)

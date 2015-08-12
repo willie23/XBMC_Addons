@@ -18,6 +18,7 @@
                 <setting id="SettopUpdate" subsetting="true" visible="eq(-2,true)" type="bool"   label="30289" default="false"/>
                 <setting id="MEDIA_LIMIT"   label="30310" type="enum" values="25|50|100|250|500|1000|5000|Unlimited" default="1"/>
                 <setting id="notify" type="bool"   label="30046" default="true"/>
+                <setting id="AutoBackup" type="bool"   label="30159" default="false"/>
                 <setting id="SFX_Enabled" type="bool"   label="30056" visible="false" default="true"/>
     </category>
 <!--Tweaks-->
@@ -36,7 +37,6 @@
         <setting id="HideClips" type="bool"   label="30215" default="true"/>
         <setting id="ClipLength" type="enum" subsetting="true"   label="30216" visible="eq(-1,true)" values="15|30|60|90|120|240|360|480" default="7"/>
         <setting id="enable_mute" type="bool"   label="30373" default="false"/>
-        <setting id="AutoBackup" type="bool"   label="30159" default="false"/>
     </category>
 <!--Visual-->
     <category label="30200">
@@ -235,7 +235,7 @@
     <category label="30900">  
         <setting label="30990" type="lsep"/>
         <setting id="ActionTimeInt" type="slider"   label="30309" range="1,1,60" option="int" default="2"/>
-        <setting id="PlayTimeoutInt" type="slider"   label="30319" range="2,2,60" option="int" default="10"/>
+        <setting id="PlayTimeoutInt" type="slider"   label="30319" range="2,2,60" option="int" default="30"/>
         <setting id="enable_Debug" type="bool"   label="30993" default="false"/>
         <setting id="Override_ok" type="bool"   label="30991" default="true"/>
         <setting id="Cache_Enabled"   label="39999" type="bool" default="true" />

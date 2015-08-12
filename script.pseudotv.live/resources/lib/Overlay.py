@@ -26,6 +26,9 @@ from Playlist import Playlist
 from Globals import *
 from Channel import Channel
 from EPGWindow import EPGWindow
+from DVR import DVR
+from Ondemand import Ondemand
+from APPS import APPS
 from ChannelList import ChannelList
 from ChannelListThread import ChannelListThread
 from FileAccess import FileLock, FileAccess
@@ -105,6 +108,7 @@ class MyPlayer(xbmc.Player):
             
         self.resumePlayback()
         if self.isPlaybackValid():
+            self.overlay.setShowInfo()
             self.overlay.background.setVisible(False)
             try:
                 self.overlay.seektime = xbmc.Player().getTime()
@@ -376,11 +380,11 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         
         try:
             self.myEPG = EPGWindow("script.pseudotv.live.EPG.xml", ADDON_PATH, Skin_Select)
-            self.myDVR = EPGWindow("script.pseudotv.live.DVR.xml", ADDON_PATH, Skin_Select)
-            self.myOndemand = EPGWindow("script.pseudotv.live.Ondemand.xml", ADDON_PATH, Skin_Select)
-            self.myApps = EPGWindow("script.pseudotv.live.Apps.xml", ADDON_PATH, Skin_Select)
+            self.myDVR = DVR("script.pseudotv.live.DVR.xml", ADDON_PATH, Skin_Select)
+            self.myOndemand = Ondemand("script.pseudotv.live.Ondemand.xml", ADDON_PATH, Skin_Select)
+            self.myApps = APPS("script.pseudotv.live.Apps.xml", ADDON_PATH, Skin_Select)
         except:
-            pass  
+            return  
             
         self.myEPG.MyOverlayWindow = self
         self.myDVR.MyOverlayWindow = self
@@ -407,7 +411,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             if dlg.yesno("No Channels Configured", "Would you like PseudoTV Live to Auto Tune Channels?"):
                 REAL_SETTINGS.setSetting("Autotune","true")
                 REAL_SETTINGS.setSetting("Warning1","true")
-                REAL_SETTINGS.setSetting("MEDIA_LIMIT","0")
+                REAL_SETTINGS.setSetting("MEDIA_LIMIT","1")
                 REAL_SETTINGS.setSetting("PVR_Listing","0")
                 REAL_SETTINGS.setSetting("autoFindLivePVR","true")
                 REAL_SETTINGS.setSetting("autoFindNetworks","true")
@@ -1075,7 +1079,6 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
     def PlayUPNP(self, file, seektime):
         self.log("PlayUPNP")
         #UPNP
-        print file, seektime
         # if seektime == 0.0:
             # seektime = 0
         # print file, seektime
@@ -1298,25 +1301,11 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             dbid, epid = splitDBID(LiveID[2])
             playcount = int(LiveID[4])  
             rating = LiveID[5]
-
-
-
-
-            try:
-                year = int(((title.split('('))[1]).replace(')',''))
-                title = ((title.split('('))[0])
-            except:
-                year =  0
-            
+            year, title, showtitle = getTitleYear(title)
             # SetProperties
-            try:
-                self.setProp(title, year, chtype, id, genre, rating, mpath, mediapath, chname, SEtitle, type, dbid, epid, Description, playcount, season, episode)
-            except Exception,e:
-                self.log('setProp Failed!' + str(e))
-                pass
+            self.setProp(showtitle, year, chtype, id, genre, rating, mpath, mediapath, chname, SEtitle, type, dbid, epid, Description, playcount, season, episode)
         except:
-            pass
-             
+            pass         
             
     # Display the current channel based on self.currentChannel.
     # Start the timer to hide it.
@@ -1711,7 +1700,6 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             action = ACTION_INVALID
 
         if getProperty("OVERLAY.Type") == 'tvshow':
-            print getProperty("OVERLAY.Season"), getProperty("OVERLAY.Episode")
             if getProperty("OVERLAY.Season") != '0' and getProperty("OVERLAY.Episode") != '0':
                 info = 'seasoninfo'
                 # traktinfo = 'similar'
@@ -1911,7 +1899,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                     self.hidePOP()
                     self.newChannel = 0
                     # self.close
-                    self.myEPG.doModal()
+                    self.windowSwap('EPG')
 
                     if self.channelThread.isAlive():
                         self.channelThread.unpause()
@@ -2328,6 +2316,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
     def PlayerTimedOut(self):
         self.logDebug("PlayerTimedOut, Playback Failed: STOPPING!")
         if self.CloseDialog() == True and self.Player.isPlaybackValid() == False:
+            self.notPlayingCount = 0    
             self.lastActionTrigger()
                 
                 
@@ -2764,7 +2753,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
    
     def setProp_thread(self, title, year, chtype, id, genre, rating, mpath, mediapath, chname, SEtitle, type, dbid, epid, Description, playcount, season, episode, pType):
         self.log("setProp_thread")
-
+        
         # core info
         setProperty("%s.Chtype"%pType,str(chtype))
         setProperty("%s.Mediapath"%pType,mediapath)
@@ -2785,12 +2774,11 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         # getEnhancedGuideData, else use LiveID
         year, id, genre, rating, tagline = self.channelList.getEnhancedGuideData(title, year, id, genre, rating, type)
         setProperty("%s.Year"%pType,str(year))
-        setProperty("%s.ID"%pType,id)
+        setProperty("%s.ID"%pType,str(id))
         setProperty("%s.Genre"%pType,genre)
         setProperty("%s.Rating"%pType,rating)
         setProperty("%s.Tagline"%pType,tagline)
         getRSSFeed(getProperty("OVERLAY.Genre"))
-                    
         self.findArtwork_Thread(type, chtype, chname, id, dbid, mpath, EXTtype(getProperty(("%s.type1EXT")%pType)), 'type1ART', pType)
         self.findArtwork_Thread(type, chtype, chname, id, dbid, mpath, EXTtype(getProperty(("%s.type2EXT")%pType)), 'type2ART', pType)     
         self.isNEW_Thread(pType)
@@ -3173,16 +3161,39 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         updateDialog.close()
         self.close()
 
-        
-        
-        
-        
-        # call weather
-        # http://localhost:9000/jsonrpc?request={"jsonrpc":"2.0","method":"GUI.ActivateWindow","params":{"window":"weather"},"id":18}
-        # set fullscreen
-        # http://localhost:9000/jsonrpc?request={"jsonrpc":"2.0","method":"GUI.SetFullscreen","params":{"fullscreen":true},"id":19}
-        # call vod
-        # http://localhost:9000/jsonrpc?request={"jsonrpc":"2.0","method":"GUI.ActivateWindow","params":{"window":"videoosd"},"id":5}
-        # call a/settings2
-        # http://localhost:9000/jsonrpc?request={"jsonrpc":"2.0","method":"GUI.ActivateWindow","params":{"window":"osdaudiosettings"},"id":17}
-        # http://localhost:9000/jsonrpc?request={"jsonrpc":"2.0","method":"GUI.ActivateWindow","params":{"window":"osdvideosettings"},"id":16}
+
+    def windowSwap(self, window):
+        self.log('windowSwap')  
+        # open new window
+        if window == 'EPG':
+            self.myEPG.doModal()
+        elif window == 'DVR':
+            self.myDVR.doModal()
+        elif window == 'ONDEMAND':
+            self.myOndemand.doModal()
+        elif window == 'APPS':
+            self.myApps.doModal()
+            
+        # close open window
+        if getProperty("PTVL.EPG_Opened") == "true":
+            self.myEPG.closeEPG() 
+        elif getProperty("PTVL.DVR_Opened") == "true":
+            self.myDVR.closeDVR()
+        elif getProperty("PTVL.OnDemand_Opened") == "true":
+            self.myOndemand.closeOndemand()
+        elif getProperty("PTVL.APPS_Opened") == "true":
+            self.myApps.closeAPPS()
+            
+
+            
+            
+            
+# call weather
+# http://localhost:9000/jsonrpc?request={"jsonrpc":"2.0","method":"GUI.ActivateWindow","params":{"window":"weather"},"id":18}
+# set fullscreen
+# http://localhost:9000/jsonrpc?request={"jsonrpc":"2.0","method":"GUI.SetFullscreen","params":{"fullscreen":true},"id":19}
+# call vod
+# http://localhost:9000/jsonrpc?request={"jsonrpc":"2.0","method":"GUI.ActivateWindow","params":{"window":"videoosd"},"id":5}
+# call a/settings2
+# http://localhost:9000/jsonrpc?request={"jsonrpc":"2.0","method":"GUI.ActivateWindow","params":{"window":"osdaudiosettings"},"id":17}
+# http://localhost:9000/jsonrpc?request={"jsonrpc":"2.0","method":"GUI.ActivateWindow","params":{"window":"osdvideosettings"},"id":16}
