@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addons>
-<addon id="context.pseudotv.live.export" name="PseudoTV Live Export" version="1.0.2" provider-name="Lunatixz">
+<addon id="context.pseudotv.live.export" name="PseudoTV Live Export" version="1.0.3" provider-name="Lunatixz">
   <requires>
     <import addon="xbmc.python" version="2.20.0"/>
     <import addon="script.pseudotv.live" version="0.6.5"/>
@@ -8,25 +8,29 @@
     <extension point="kodi.context.item" library="settings.py">
       <item>
         <label>32001</label>
-        <visible>[System.HasAddon(ListItem.Property(Addon.ID))|SubString(ListItem.FileName,xsp)|StringCompare(ListItem.dbtype,tvshow)|Container.Content(files)|Container.Content(plugins)|Container.Content(addons)]+[ListItem.Property(IsPlayable)|ListItem.IsFolder|!Library.HasContent(music)]|[Window.IsVisible(MyPVRChannels.xml)|Window.IsVisible(MyPVRGuide.xml)]</visible>
+        <visible>[System.HasAddon(ListItem.Property(Addon.ID))|SubString(ListItem.FileName,xsp)|StringCompare(ListItem.dbtype,tvshow)|Container.Content(movies)|Container.Content(tvshows)|Container.Content(files)|Container.Content(plugins)|Container.Content(addons)]+[ListItem.Property(IsPlayable)|ListItem.IsFolder|!Library.HasContent(music)]|[Window.IsVisible(MyPVRChannels.xml)|Window.IsVisible(MyPVRGuide.xml)]</visible>
       </item>
     </extension>
     <extension point="kodi.context.item" library="addon.py">
       <item>
         <label>32000</label>
-        <visible>[System.HasAddon(ListItem.Property(Addon.ID))|SubString(ListItem.FileName,xsp)|StringCompare(ListItem.dbtype,tvshow)|Container.Content(files)|Container.Content(plugins)|Container.Content(addons)]+[ListItem.Property(IsPlayable)|ListItem.IsFolder|!Library.HasContent(music)]|[Window.IsVisible(MyPVRChannels.xml)|Window.IsVisible(MyPVRGuide.xml)]</visible>
+        <visible>[System.HasAddon(ListItem.Property(Addon.ID))|SubString(ListItem.FileName,xsp)|StringCompare(ListItem.dbtype,tvshow)|Container.Content(movies)|Container.Content(tvshows)|Container.Content(files)|Container.Content(plugins)|Container.Content(addons)]+[ListItem.Property(IsPlayable)|ListItem.IsFolder|!Library.HasContent(music)]|[Window.IsVisible(MyPVRChannels.xml)|Window.IsVisible(MyPVRGuide.xml)]</visible>
       </item>
     </extension>
   <extension point="xbmc.addon.metadata">
     <description lang="en">Export sources to PseudoTV Live for easy channel creation.</description>
     <description lang="en_US">>Export sources to PseudoTV Live for easy channel creation.</description>
     <platform>all</platform>
-    <forum></forum>
-    <source></source>
+    <language>en</language>
+    <license>GNU GENERAL PUBLIC LICENSE. Version 3, June 2007</license>
+    <source>https://github.com/Lunatixz/XBMC_Addons/tree/master/context.pseudotv.live.export</source>
+    <email>pseudotvlive@gmail.com</email>
+    <website>www.pseudotvlive.com</website>
+    <forum>http://forum.kodi.tv/showthread.php?tid=233143</forum>
   </extension>
 </addon>
 
-<addon id="plugin.video.playonbrowser" name="Playon Browser" version="1.0.2" provider-name="Sytone, Lunatixz">
+<addon id="plugin.video.playonbrowser" name="Playon Browser" version="1.0.3" provider-name="Sytone, Lunatixz">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.parsedom" version="2.5.2"/>
@@ -43,7 +47,7 @@
     <disclaimer lang="en"></disclaimer>
     <language></language>
     <platform>all</platform>
-    <license></license>
+    <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
     <forum>http://forum.kodi.tv/showthread.php?tid=233136</forum>
     <website></website>
     <email></email>
