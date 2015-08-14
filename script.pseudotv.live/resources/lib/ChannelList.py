@@ -51,6 +51,12 @@ from BeautifulSoup import BeautifulSoup
 
 socket.setdefaulttimeout(30)
 
+# Commoncache plugin import
+try:
+    import StorageServer
+except Exception,e:
+    import storageserverdummy as StorageServer
+        
 try:
     from metahandler import metahandlers
 except Exception,e:  
@@ -105,6 +111,8 @@ class ChannelList:
         self.tmdbAPI = tmdb.TMDB(TMDB_API_KEY)  
         self.sbAPI = sickbeard.SickBeard(REAL_SETTINGS.getSetting('sickbeard.baseurl'),REAL_SETTINGS.getSetting('sickbeard.apikey'))
         self.cpAPI = couchpotato.CouchPotato(REAL_SETTINGS.getSetting('couchpotato.baseurl'),REAL_SETTINGS.getSetting('couchpotato.apikey'))
+        self.OSpath = getOSPpath(REAL_SETTINGS.getSetting('os'))
+        self.Enable_FindLogo = REAL_SETTINGS.getSetting('Enable_FindLogo') == "true"
         self.findMaxChannels()
         
         if self.backgroundUpdating > 0:
@@ -132,15 +140,17 @@ class ChannelList:
     def setupList(self, silent=False):
         self.log("setupList")
         self.readConfig()
-        self.background = True
-        if silent == False:
+        if not silent:
             self.updateDialog.create("PseudoTV Live", "Updating channel list")
             self.updateDialog.update(0, "Updating channel list", "")
             self.updateDialogProgress = 0
-            self.background = False
-        self.log("setupList, background = " + str(self.background))
         foundvalid = False
         makenewlists = False
+        
+        if silent == False:
+            self.background = False
+        else:
+            self.background = True
         
         if self.backgroundUpdating > 0 and self.myOverlay.isMaster == True:
             makenewlists = True
@@ -228,8 +238,8 @@ class ChannelList:
                     
             if self.forceReset and (chtype != 9999):
                 ADDON_SETTINGS.setSetting('Channel_' + str(i + 1) + '_changed', "True")
-                
-            if REAL_SETTINGS.getSetting('Enable_FindLogo') == "true":
+
+            if self.Enable_FindLogo == True:
                 if self.background == False:
                     self.myOverlay.background.setLabel('Searching for Channel logos (' + str((i + 1)/10) + '%)')
 
@@ -2303,16 +2313,31 @@ class ChannelList:
         except Exception,e:
             pass
     
-
+    
     def getVimeoMeta(self, VMID):
-        self.log('getVimeoMeta')
+        self.log('getVimeoMeta_Cache')
+        if Primary_Cache_Enabled == True:
+            try:
+                result = parserYT.cacheFunction(self.getVimeoMeta_NEW, VMID)
+            except:
+                result = self.getVimeoMeta_NEW(VMID)
+                pass
+        else:
+            result = self.getVimeoMeta_NEW(VMID)
+        if not result:
+            result = []
+        return result  
+        
+        
+    def getVimeoMeta_NEW(self, VMID):
+        self.log('getVimeoMeta_NEW')
         api = 'http://vimeo.com/api/v2/video/%s.xml' % VMID
         title = ''
         description = ''
         duration = 0
         thumburl = 0
         try:
-            file = open_url_cached(api, 31)
+            file = open_url(api)
             data = file.read()
             file.close()
             dom = parseString(data)
@@ -2328,12 +2353,27 @@ class ChannelList:
             pass
         return title, description, duration, thumburl
 
-
+        
     def getYoutubeMeta(self, YTID):
-        self.log('getYoutubeMeta ' + YTID)
+        self.log('getYoutubeMeta_Cache')
+        if Primary_Cache_Enabled == True:
+            try:
+                result = parserYT.cacheFunction(self.getYoutubeMeta_NEW, YTID)
+            except:
+                result = self.getYoutubeMeta_NEW(YTID)
+                pass
+        else:
+            result = self.getYoutubeMeta_NEW(YTID)
+        if not result:
+            result = []
+        return result  
+        
+
+    def getYoutubeMeta_NEW(self, YTID):
+        self.log('getYoutubeMeta_NEW ' + YTID)
         try:
             YT_URL_Video = ('https://www.googleapis.com/youtube/v3/videos?key=%s&id=%s&part=snippet,id,statistics,contentDetails' % (YT_API_KEY, YTID))
-            f = readline_url_cached(YT_URL_Video, 31)
+            f = request_url(YT_URL_Video)
             detail = re.compile("},(.*?)}", re.DOTALL ).findall(f)
             title = ''
             description = ''
@@ -2405,7 +2445,7 @@ class ChannelList:
                 except:
                     Genre = 'Unknown'
                     
-                self.log("getYoutubeMeta, return")
+                self.log("getYoutubeMeta_NEW, return")
                 return [title, description, duration, thumbnail, Chname, Genre]
         except:
             pass
@@ -3017,10 +3057,25 @@ class ChannelList:
         else:
             return False
 
-           
-    # parse legal movies from youtube.
+            
     def popcorn(self, setting2, setting3, setting4, channel):
-        self.log("popcorn")   
+        self.log("popcorn_cache")  
+        if Primary_Cache_Enabled == True: 
+            try:
+                result = weekly.cacheFunction(self.popcorn_NEW, setting2, setting3, setting4, channel)
+            except:
+                result = self.popcorn_NEW(setting2, setting3, setting4, channel)
+                pass
+        else:
+            result = self.popcorn_NEW(setting2, setting3, setting4, channel)
+        if not result:
+            result = []
+        return result  
+
+        
+    # parse legal movies from youtube.
+    def popcorn_NEW(self, setting2, setting3, setting4, channel):
+        self.log("popcorn_NEW")   
         showList = []
         youtube_plugin = self.youtube_player()
         filecount = 0
@@ -3087,7 +3142,11 @@ class ChannelList:
 
                     #Parse Movie info for watch link
                     try:
-                        link = request_url_cached(link, 7)
+                        req = urllib2.Request(link)
+                        req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
+                        response = urllib2.urlopen(req)
+                        link = response.read()
+                        response.close()
                         soup = BeautifulSoup(link)
                         imdbid = str(re.compile('<a href="http://www.imdb.com/title/(.+?)"').findall(link)) 
                         imdbid = imdbid.replace("['", "").replace("']", "")
@@ -3099,11 +3158,15 @@ class ChannelList:
 
                     #Parse watch link for youtube link
                     try:
-                        link = request_url_cached(watch, 7)
+                        req = urllib2.Request(watch)
+                        req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
+                        response = urllib2.urlopen(req)
+                        link = response.read()
+                        response.close()
                         soup = BeautifulSoup(link)
                         tubelink = str(re.compile('self.location = "(.+?)"').findall(link)[0])
                         xbmclink = tubelink.replace("https://", "").replace("http://", "").replace("www.youtube.com/watch?v=", youtube_plugin).replace("http://www.youtube.com/watch?hd=1&v=", youtube_plugin)
-                        self.log("popcorn, xbmclink = " + xbmclink)   
+                        self.log("popcorn_NEW, xbmclink = " + xbmclink)   
                     except Exception,e:
                         pass
 
@@ -3112,7 +3175,7 @@ class ChannelList:
                     tubeAPI = 'http://gdata.youtube.com/feeds/api/videos?max-results=1&q=' + tubeID
                     tubefeed = feedparser.parse(tubeAPI)
                     if tubefeed: 
-                        self.log("popcorn, tubeAPI = " + tubeAPI)   
+                        self.log("popcorn_NEW, tubeAPI = " + tubeAPI)   
                         # parse missing info from youtube
                         if title == None:
                             try:
@@ -3138,7 +3201,7 @@ class ChannelList:
                         try:
                             description = uni(trim(description, 350, '...'))
                         except Exception,e:
-                            self.log("popcorn, description Trim failed")
+                            self.log("popcorn_NEW, description Trim failed")
                             description = uni(description[:350])
                                         
                         if duration == 0:
@@ -3173,7 +3236,7 @@ class ChannelList:
                             tmpstr = tmpstr.replace("\\n", " ").replace("\\r", " ").replace("\\\"", "\"")
                             showList.append(tmpstr)
                 except Exception,e:
-                    self.log("popcorn, Failed! " + str(e))                        
+                    self.log("popcorn_NEW, Failed! " + str(e))                        
         
         if len(showList) > 0:
             random.shuffle(showList)   
@@ -3428,18 +3491,33 @@ class ChannelList:
             newFileList.append(File)
         return newFileList
         
- 
+    
     def getBumperList(self, BumpersType, chname):
-        self.log("getBumperList")
+        self.log("getBumperList_Cache")
+        if Primary_Cache_Enabled == True:
+            try:
+                result = bumpers.cacheFunction(self.getBumperList_NEW, BumpersType, chname)
+            except:
+                result = self.getBumperList_NEW(BumpersType, chname)
+                pass
+        else:
+            result = self.getBumperList_NEW(BumpersType, chname)
+        if not result:
+            result = []
+        return result  
+    
+    
+    def getBumperList_NEW(self, BumpersType, chname):
+        self.log("getBumperList_NEW")
         BumperLST = []
         duration = 0
         
         #Local
         if BumpersType == "1":  
-            self.log("getBumperList, Local - " + chname)
+            self.log("getBumperList_NEW, Local - " + chname)
             PATH = REAL_SETTINGS.getSetting('bumpersfolder')
             PATH = xbmc.translatePath(os.path.join(PATH,chname,''))
-            self.log("getBumperList, Local - PATH = " + PATH)
+            self.log("getBumperList_NEW, Local - PATH = " + PATH)
             
             if FileAccess.exists(PATH):
                 try:
@@ -3461,7 +3539,7 @@ class ChannelList:
                     pass
         #Internet
         elif BumpersType == "2":
-            self.log("getBumperList - Internet")
+            self.log("getBumperList_NEW - Internet")
             self.vimeo_ok = self.plugin_ok('plugin.video.vimeo')
             self.youtube_ok = self.youtube_player()
             duration = 15
@@ -3469,7 +3547,7 @@ class ChannelList:
                 try:
                     InternetBumperLST = []
                     Bumper_List = 'http://raw.github.com/Lunatixz/PseudoTV_Lists/master/bumpers.xml'
-                    linesLST = readline_url_cached(Bumper_List, 7)
+                    linesLST = readline_url_cached(Bumper_List)
 
                     for i in range(len(Bumper_List)):    
                         include = False                    
@@ -3644,9 +3722,24 @@ class ChannelList:
             CommercialLST.extend(InternetCommercialLST)  
         return CommercialLST 
    
-        
+         
     def InternetCommercial(self, Advert, Advert_Region, Advert_Resolution, adverts2_type):
         self.log("InternetCommercial")
+        if Primary_Cache_Enabled == True: 
+            try:
+                result = commercials.cacheFunction(self.InternetCommercial_NEW, Advert, Advert_Region, Advert_Resolution, adverts2_type)
+            except:
+                result = self.InternetCommercial_NEW(Advert, Advert_Region, Advert_Resolution, adverts2_type)
+                pass
+        else:
+            result = self.InternetCommercial_NEW(Advert, Advert_Region, Advert_Resolution, adverts2_type)
+        if not result:
+            result = []
+        return result  
+
+        
+    def InternetCommercial_NEW(self, Advert, Advert_Region, Advert_Resolution, adverts2_type):
+        self.log("InternetCommercial_NEW")
         InternetCommercialLST1 = []
         InternetCommercialLST2 = []
         CommercialLST = []
@@ -3660,7 +3753,7 @@ class ChannelList:
             return
                 
         if REAL_SETTINGS.getSetting("Advert") == 'true' and REAL_SETTINGS.getSetting("commercials") == '3':
-            self.log("InternetCommercial, advert")
+            self.log("InternetCommercial_NEW, advert")
             baseurl = (line[0])
             AdResNum = {}
             AdResNum['0'] = '360p'
@@ -3678,7 +3771,7 @@ class ChannelList:
             AdRegionNum['6'] = 'Asia Pacific'
             AdRegionNum['7'] = 'Africa'
             AdRegion = (AdRegionNum[REAL_SETTINGS.getSetting('Advert_Region')])    
-            link=request_url_cached(baseurl + (line[1]), 7)
+            link=request_url(baseurl + (line[1]))
             countries=re.compile('<a href="'+(line[1])+'(.+?)">(.+?)</a>').findall(link)
             RegionLST = []
             
@@ -3690,7 +3783,7 @@ class ChannelList:
             match = match.split("', '")
             MatchRegionURL = match[1]
             MatchRegionURL = MatchRegionURL.split("/')]")[0]
-            link = request_url_cached(MatchRegionURL, 7)
+            link = request_url(MatchRegionURL)
             link = link.decode('utf-8')
             soup = BeautifulSoup(link,convertEntities=BeautifulSoup.HTML_ENTITIES)
             catlink = re.compile((line[2])).findall(link)
@@ -3717,7 +3810,7 @@ class ChannelList:
                             AdInfo1 = AdInfo.split(', ')
                             for i in range(len(AdInfo1)):
                                 AdInfoURL = AdInfo1[i]
-                            link = request_url_cached(AdInfoURL, 7)
+                            link = request_url(AdInfoURL)
                             soup = BeautifulSoup(link)
                             image = re.compile((line[3])).findall(link)
                             if image:
@@ -3761,12 +3854,12 @@ class ChannelList:
                             InternetCommercial = (str(duration) + ',' + str(MatchResURL))
                             InternetCommercialLST1.append(InternetCommercial)
                         except Exception,e:
-                            self.log("InternetCommercial, adverts Failed!" + str(e), xbmc.LOGERROR)
+                            self.log("InternetCommercial_NEW, adverts Failed!" + str(e), xbmc.LOGERROR)
                             pass
             CommercialLST.extend(InternetCommercialLST1)
 
         if REAL_SETTINGS.getSetting("adverts2_type") != '0' and REAL_SETTINGS.getSetting("commercials") == '3':
-            self.log("InternetCommercial, adverts")        
+            self.log("InternetCommercial_NEW, adverts")        
             
             try:
                 baseurl = (line[6])
@@ -3778,7 +3871,7 @@ class ChannelList:
              
                 #PageParse
                 adverts2URL = adverts2[REAL_SETTINGS.getSetting('adverts2_type')]   
-                link = request_url_cached(adverts2URL, 7)
+                link = request_url(adverts2URL)
                 soup = BeautifulSoup(link)
                 catlink = re.compile('<a href="/ad/(.+?)">').findall(link)
 
@@ -3790,7 +3883,7 @@ class ChannelList:
                     
                     #VideoParse
                     try:
-                        link = request_url_cached(link, 7)
+                        link = request_url(link)
                         soup = BeautifulSoup(link)
                         mF = (re.compile("{var mF = '(.+?)';").findall(link))[0]
                         mE = (re.compile("var mE = '(.+?)';").findall(link))[0]
@@ -3807,16 +3900,31 @@ class ChannelList:
                         pass
                 CommercialLST.extend(InternetCommercialLST2) 
             except Exception,e:
-                self.log("InternetCommercial, Failed!" + str(e), xbmc.LOGERROR)
+                self.log("InternetCommercial_NEW, Failed!" + str(e), xbmc.LOGERROR)
                 pass
                    
         if len(CommercialLST) > 0:
             random.shuffle(CommercialLST)
         return CommercialLST       
 
-    
+   
     def getTrailerList(self, chtype, chname, TrailersType, trailersgenre, trailersHDnetType, trailerschannel):
-        self.log("getTrailerList")
+        self.log("getTrailerList_Cache")
+        if Primary_Cache_Enabled == True:
+            try:
+                result = trailers.cacheFunction(self.getTrailerList_NEW, chtype, chname, TrailersType, trailersgenre, trailersHDnetType, trailerschannel)
+            except:
+                result = self.getTrailerList_NEW(chtype, chname, TrailersType, trailersgenre, trailersHDnetType, trailerschannel)
+                pass
+        else:
+            result = self.getTrailerList_NEW(chtype, chname, TrailersType, trailersgenre, trailersHDnetType, trailerschannel)
+        if not result:
+            result = []
+        return result   
+    
+    
+    def getTrailerList_NEW(self, chtype, chname, TrailersType, trailersgenre, trailersHDnetType, trailerschannel):
+        self.log("getTrailerList_NEW")
         TrailerLST = []
         duration = 0
         genre = ''
@@ -3832,7 +3940,7 @@ class ChannelList:
         if TrailersType == '1': 
             PATH = REAL_SETTINGS.getSetting('trailersfolder')
             PATH = xbmc.translatePath(os.path.join(PATH,''))
-            self.log("getTrailerList, Local - PATH = " + PATH)
+            self.log("getTrailerList_NEW, Local - PATH = " + PATH)
             
             if FileAccess.exists(PATH):
                 try:
@@ -3860,11 +3968,11 @@ class ChannelList:
                                 
                     TrailerLST.extend(LocalTrailerLST)                
                 except Exception,e:
-                    self.log("getTrailerList Failed!" + str(e), xbmc.LOGERROR)
+                    self.log("getTrailerList_NEW Failed!" + str(e), xbmc.LOGERROR)
                     
         #XBMC Library - Local Json
         if TrailersType == '2':
-            self.log("getTrailerList, Local Json")
+            self.log("getTrailerList_NEW, Local Json")
             JsonTrailerLST = []
             json_query = ('{"jsonrpc":"2.0","method":"VideoLibrary.GetMovies","params":{"properties":["genre","trailer","runtime"]}, "id": 1}')
             genre = ascii(chname)
@@ -3919,11 +4027,11 @@ class ChannelList:
                                     JsonTrailerLST.append(JsonTrailer)
                         TrailerLST.extend(JsonTrailerLST)     
                 except Exception,e:
-                    self.log("getTrailerList Failed!" + str(e), xbmc.LOGERROR)
+                    self.log("getTrailerList_NEW Failed!" + str(e), xbmc.LOGERROR)
                     
         #Youtube
         if TrailersType == '3':
-            self.log("getTrailerList, Youtube")
+            self.log("getTrailerList_NEW, Youtube")
             try:
                 YoutubeTrailerLST = []
                 YoutubeTrailers = REAL_SETTINGS.getSetting('trailerschannel') # info,type,limit
@@ -3948,22 +4056,37 @@ class ChannelList:
                         YoutubeTrailerLST.append(YoutubeTrailer)
                 TrailerLST.extend(YoutubeTrailerLST)
             except Exception,e:
-                self.log("getTrailerList Failed!" + str(e), xbmc.LOGERROR)
+                self.log("getTrailerList_NEW Failed!" + str(e), xbmc.LOGERROR)
                 
         #Internet
         if TrailersType == '4':
-            self.log("getTrailerList, Internet")
+            self.log("getTrailerList_NEW, Internet")
             try:   
                 if self.background == False:
                     self.updateDialog.update(self.updateDialogProgress, "Updating channel " + str(channel), "adding Internet Trailers")
                 TrailerLST = self.InternetTrailer()
             except Exception,e:
-                self.log("getTrailerList Failed!" + str(e), xbmc.LOGERROR)
+                self.log("getTrailerList_NEW Failed!" + str(e), xbmc.LOGERROR)
         return TrailerLST
+
+
+    def InternetTrailer(self, Cinema=False):
+        self.log("InternetTrailer_Cache")
+        if Primary_Cache_Enabled == True: 
+            try:
+                result = trailers.cacheFunction(self.InternetTrailer_NEW, Cinema)
+            except:
+                result = self.InternetTrailer_NEW(Cinema)
+                pass
+        else:
+            result = self.InternetTrailer_NEW(Cinema)
+        if not result:
+            result = []
+        return result   
         
       
-    def InternetTrailer(self, Cinema):
-        self.log("InternetTrailer, Cinema = " + str(Cinema))
+    def InternetTrailer_NEW(self, Cinema):
+        self.log("InternetTrailer_NEW, Cinema = " + str(Cinema))
         InternetTrailersLST1 = []
         TrailerLST = []
         duration = 0
@@ -4056,7 +4179,7 @@ class ChannelList:
                             InternetTrailersLST1.append(InternetTrailers)
                 TrailerLST.extend(InternetTrailersLST1)
         except Exception,e:
-            self.log("InternetTrailer Failed! " + str(e))
+            self.log("InternetTrailer_NEW Failed! " + str(e))
             pass
         TrailerLST = sorted_nicely(TrailerLST)
         if TrailerLST and len(TrailerLST) > 0:

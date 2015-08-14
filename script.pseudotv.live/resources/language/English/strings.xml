@@ -27,7 +27,7 @@
     <string id="30303">Startup Channel</string> 
     <string id="30304">Enter Preferred Channel</string>
     <string id="30311">Disable Watch Flagging</string>
-	<string id="30405">Find Missing GuideData</string>
+	<string id="30405">Find Missing GuideData (disable to boosts performance)</string>
     <string id="30408">Jump to Channel on Reminder</string>
     <string id="30215">Hide very short videos</string>
     <string id="30216">Duration of "short" videos (seconds)</string>  
@@ -226,5 +226,4 @@
     <string id="30992">Disable Google Analytics</string>
     <string id="36996">Opting out? No personal information is ever tracked,</string>
     <string id="36997">only data relevant to the continuation of this project.</string>
-    <string id="30943">Override Optimized Settings.</string>
 </strings>

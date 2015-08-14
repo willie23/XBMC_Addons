@@ -1215,6 +1215,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                     epochBeginDate += self.channels[self.currentChannel - 1].getCurrentDuration()
                     self.channels[self.currentChannel - 1].addShowPosition(1)
                     position = self.channels[self.currentChannel - 1].playlistPosition
+            
             else: #original code
                 position = xbmc.PlayList(xbmc.PLAYLIST_MUSIC).getposition() + self.infoOffset
             mediapath = (self.channels[self.currentChannel - 1].getItemFilename(position))   
@@ -2324,26 +2325,24 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         self.triggercount += 1
         self.playerTimer = threading.Timer(self.ActionTimeInt, self.playerTimerAction)  
         self.playerTimer.name = "PlayerTimer"
+        
         if self.playerTimer.isAlive():
             self.playerTimer.cancel()
             
         # Check idle
         if REAL_SETTINGS.getSetting("Idle_Screensaver") == "true":
             self.IdleTimer()
-        
-        # Resume playback
+            
         try:
             if int(getProperty("OVERLAY.Chtype")) in [8, 9]:
                 self.Player.resumePlayback()
         except:
             pass
             
-        if getProperty("PTVL.LOWPOWER") != "true":
-            if self.CloseDialog(['Dialogue OK']) == True and self.Player.isPlaybackValid() == False:
-                self.lastActionTrigger()
+        if self.CloseDialog(['Dialogue OK']) == True and self.Player.isPlaybackValid() == False:
+            self.lastActionTrigger()
         self.playerTimer.start()
         
-        # lazy 60-120 second cron
         if self.triggercount == 30:
             self.triggercount = 0      
             UpdateRSS() 
@@ -2779,13 +2778,13 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         setProperty("%s.Genre"%pType,genre)
         setProperty("%s.Rating"%pType,rating)
         setProperty("%s.Tagline"%pType,tagline)
+        getRSSFeed(getProperty("OVERLAY.Genre"))
         self.findArtwork_Thread(type, chtype, chname, id, dbid, mpath, EXTtype(getProperty(("%s.type1EXT")%pType)), 'type1ART', pType)
         self.findArtwork_Thread(type, chtype, chname, id, dbid, mpath, EXTtype(getProperty(("%s.type2EXT")%pType)), 'type2ART', pType)     
         self.isNEW_Thread(pType)
         self.isManaged_Thread(pType)
-        getRSSFeed(getProperty("OVERLAY.Genre"))
 
-        
+
     def setProp(self, title, year, chtype, id, genre, rating, mpath, mediapath, chname, SEtitle, type, dbid, epid, Description, playcount, season, episode, pType='OVERLAY'):
         self.log("setProp")
         try:
@@ -2828,29 +2827,28 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
     def isNEW_Thread(self, pType):
         self.log("isNEW_Thread")
         try:
-            if getProperty("PTVL.LOWPOWER") != "true":
-                chtype = int(getProperty("%s.Chtype"%pType))
-                mediapath = getProperty("%s.Mediapath"%pType)
-                playcount = int(getProperty("%s.Playcount"%pType))
-                
-                if playcount > 0:
-                    return setProperty("%s.isNEW"%pType,MEDIA_LOC + 'OLD.png')
-                elif chtype == 8 and playcount == 0:
-                    return setProperty("%s.isNEW"%pType,MEDIA_LOC + 'NEW.png')
-                elif chtype < 7:
-                    json_query = ('{"jsonrpc":"2.0","method":"Files.GetFileDetails","params":{"file":"%s","media":"video","properties":["playcount"]}, "id": 1 }' % mediapath)
-                    json_folder_detail = self.channelList.sendJSON(json_query)
-                    file_detail = re.compile( "{(.*?)}", re.DOTALL ).findall(json_folder_detail)
-                    for f in file_detail:
-                        try:
-                            playcounts = re.search('"playcount" *: *([\d.]*\d+),', f)
-                            if playcounts != None and len(playcounts.group(1)) > 0:
-                                playcount = int(playcounts.group(1))
-                                if playcount == 0:
-                                    return setProperty("%s.isNEW"%pType,MEDIA_LOC + 'NEW.png')
-                        except Exception,e:
-                            pass 
-                # todo parse youtube watched status? create custom db to track watched status?
+            chtype = int(getProperty("%s.Chtype"%pType))
+            mediapath = getProperty("%s.Mediapath"%pType)
+            playcount = int(getProperty("%s.Playcount"%pType))
+            
+            if playcount > 0:
+                return setProperty("%s.isNEW"%pType,MEDIA_LOC + 'OLD.png')
+            elif chtype == 8 and playcount == 0:
+                return setProperty("%s.isNEW"%pType,MEDIA_LOC + 'NEW.png')
+            elif chtype < 7:
+                json_query = ('{"jsonrpc":"2.0","method":"Files.GetFileDetails","params":{"file":"%s","media":"video","properties":["playcount"]}, "id": 1 }' % mediapath)
+                json_folder_detail = self.channelList.sendJSON(json_query)
+                file_detail = re.compile( "{(.*?)}", re.DOTALL ).findall(json_folder_detail)
+                for f in file_detail:
+                    try:
+                        playcounts = re.search('"playcount" *: *([\d.]*\d+),', f)
+                        if playcounts != None and len(playcounts.group(1)) > 0:
+                            playcount = int(playcounts.group(1))
+                            if playcount == 0:
+                                return setProperty("%s.isNEW"%pType,MEDIA_LOC + 'NEW.png')
+                    except Exception,e:
+                        pass 
+            # todo parse youtube watched status? create custom db to track watched status?
         except:
             pass
         return setProperty("%s.isNEW"%pType,MEDIA_LOC + 'OLD.png')
@@ -2871,7 +2869,6 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
      
     def isManaged_Thread(self, pType):
         self.log("isManaged_Thread")
-        # if getProperty("PTVL.LOWPOWER") != "true":
         # setProperty("%s.Managed"%pType,str(Managed))
             # if imdbnumber != 0:
         # Managed = self.cpManaged(showtitles, imdbnumber)   

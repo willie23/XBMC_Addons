@@ -20,7 +20,6 @@
 import json, urllib2
 import xbmcaddon, xbmc, xbmcgui, xbmcvfs
 
-from resources.lib.utils import *
 from BeautifulSoup import BeautifulSoup
 from urllib2 import HTTPError, URLError
 
@@ -175,8 +174,11 @@ def __format_date(date_str):
 
 
 def __get_tree(url):
+##    log('__get_tree opening url: %s' % url)
+    headers = {'User-Agent': USER_AGENT}
+    req = urllib2.Request(url, None, headers)
     try:
-        html = request_url_cached(url, 7)
+        html = urllib2.urlopen(req).read()
     except urllib2.HTTPError, error:
         raise NetworkError('HTTPError: %s' % error)
 ##    log('__get_tree got %d bytes' % len(html))
@@ -186,8 +188,10 @@ def __get_tree(url):
 
 def __get_json(url):
 ##    log('__get_json opening url: %s' % url)
+    headers = {'User-Agent': USER_AGENT}
+    req = urllib2.Request(url, None, headers)
     try:
-        response = request_url_cached(url, 7)
+        response = urllib2.urlopen(req).read()
     except urllib2.HTTPError, error:
         raise NetworkError('HTTPError: %s' % error)
     return json.loads(response)

@@ -32,33 +32,40 @@ __version__    = __settings__.getAddonInfo('version')
 __language__   = __settings__.getLocalizedString
        
 def startPseudoTV():
+
     # Check if Outdated/Install Repo
     VersionCompare()
 
+    # VideoWindow Patch.
+    VideoWindow()
+             
     # Clear filelist Caches    
     if REAL_SETTINGS.getSetting("ClearCache") == "true" or REAL_SETTINGS.getSetting("ForceChannelReset") == "true":
         ClearCache('Filelist')
+        
+    # Clear BCT Caches
+    if REAL_SETTINGS.getSetting("ClearBCT") == "true":
+        ClearCache('BCT')
 
     # Clear Artwork Folders
     if REAL_SETTINGS.getSetting("ClearLiveArt") == "true":
         ClearCache('Art')
 
-    # Optimize settings based on sys.platform
-    chkLowPower()
-        
-    # VideoWindow Patch.
-    VideoWindow()
-             
     # Backup/Restore settings2
     ChkSettings2()
     
+    # Optimize settings based on sys.platform
+    chkLowPower()
+        
+    # Check if changes require forced channel reset
+    chkChanges()
+        
     #Start PseudoTV
     PseudoTV()
        
 def PseudoTV():
     import resources.lib.Overlay as Overlay
     setProperty("PseudoTVRunning", "True")
-    setProperty("PTVL.CACHE_IDLE","true")
     
     try:
         MyOverlayWindow = Overlay.TVOverlay("script.pseudotv.live.TVOverlay.xml", __cwd__, Skin_Select)
@@ -97,9 +104,6 @@ if getProperty("PseudoTVRunning") != "True":
         # REAL_SETTINGS.setSetting('ForceChannelReset', 'true')
         REAL_SETTINGS.setSetting("PTVL_Version", __version__)
       
-        # Optimize settings based on sys.platform
-        chkLowPower()
-        
         # VideoWindow Patch.
         VideoWindow()
         

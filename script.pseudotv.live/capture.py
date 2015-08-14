@@ -31,7 +31,6 @@ class Main:
     def __init__(self):
         self._parse_argv()
     
-    
     def log(self, msg, level = xbmc.LOGDEBUG):
         log('capture: ' + msg, level)
 
@@ -75,10 +74,6 @@ class Main:
             ADDON = xbmcaddon.Addon(id=self.AddonName)
             ADDON_ID = ADDON.getAddonInfo('id')
             self.AddonName = ADDON.getAddonInfo('name')
-        self.chnlst = ChannelList()
-        self.Label = self.chnlst.CleanLabels(self.Label)
-        self.Description  = self.chnlst.CleanLabels(self.Description)
-        self.AddonName = self.chnlst.CleanLabels(self.AddonName)
         self.ImportChannel()
         
         

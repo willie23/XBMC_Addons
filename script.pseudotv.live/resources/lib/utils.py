@@ -31,7 +31,6 @@ from email.MIMEText import MIMEText
 from email import Encoders
 from xml.dom.minidom import parse, parseString
 from urllib import unquote, quote
-from urllib2 import HTTPError, URLError
 
 socket.setdefaulttimeout(30)
 
@@ -60,9 +59,9 @@ DSPath = xbmc.translatePath(os.path.join(XBMC_SKIN_LOC, 'DialogSeekBar.xml'))
 
 # Videowindow Patch
 a = '<!-- PATCH START -->'
-b = '<!-- PATCH START --><!--'
+b = '<!-- PATCH START --> <!--'
 c = '<!-- PATCH END -->'
-d = '--><!-- PATCH END -->'
+d = '--> <!-- PATCH END -->'
 
 # Seekbar Patch
 v = ' '
@@ -112,12 +111,26 @@ def isKodiRepo(plugin=''):
     else:
         return False
 
-def fillGithubItems(url, ext, removeEXT=False):
-    log("utils: fillGithubItems")
+def fillGithubItems(url, ext=None, removeEXT=False):
+    log("utils: fillGithubItems Cache")
+    if CHKCache() == True:
+        try:
+            result = parsersGH.cacheFunction(fillGithubItems_NEW, url, ext, removeEXT)
+        except:
+            result = fillGithubItems_NEW(url, ext, removeEXT)
+            pass
+    else:
+        result = fillGithubItems_NEW(url, ext, removeEXT)
+    if not result:
+        result = []
+    return result  
+    
+def fillGithubItems_NEW(url, ext, removeEXT=False):
+    log("utils: fillGithubItems_NEW")
     Sortlist = []
     try:
         list = []
-        response = request_url_cached(url, 1)
+        response = request_url(url)
         catlink = re.compile('title="(.+?)">').findall(response)
         for i in range(len(catlink)):
             link = catlink[i]
@@ -433,16 +446,29 @@ def findGithubLogo(chname):
                 break
     return url
            
-
 def findLogodb(chname, user_region, user_type, useMix=True, useAny=True):
+    log("utils: findLogodb Cache")   
+    if CHKCache() == True:
+        try:
+            result = daily.cacheFunction(findLogodb_NEW, chname, user_region, user_type, useMix, useAny)
+        except:
+            result = findLogodb_NEW(chname, user_region, user_type, useMix, useAny)
+            pass
+    else:
+        result = findLogodb_NEW(chname, user_region, user_type, useMix, useAny)
+    if not result:
+        result = ''
+    return result  
+     
+def findLogodb_NEW(chname, user_region, user_type, useMix=True, useAny=True):
     try:
         clean_chname = (CleanCHname(chname))
         urlbase = 'http://www.thelogodb.com/api/json/v1/%s/tvchannel.php?s=' % LOGODB_API_KEY
         chanurl = (urlbase+clean_chname).replace(' ','%20')
-        log("utils: findLogodb, chname = " + chname + ', clean_chname = ' + clean_chname + ', url = ' + chanurl)
+        log("utils: findLogodb_NEW, chname = " + chname + ', clean_chname = ' + clean_chname + ', url = ' + chanurl)
         typelst =['strLogoSquare','strLogoSquareBW','strLogoWide','strLogoWideBW','strFanart1']
         user_type = typelst[int(user_type)]   
-        response = request_url_cached(chanurl, 1)
+        response = request_url(chanurl)
         detail = re.compile("{(.*?)}", re.DOTALL ).findall(response)
         MatchLst = []
         mixRegionMatch = []
@@ -637,7 +663,7 @@ def UpdateRSS_Thread():
         except:
             pass
             
-        UpdateRSS_NextRun = ((now + datetime.timedelta(hours=3)).strftime("%Y-%m-%d %H:%M:%S.%f"))
+        UpdateRSS_NextRun = ((now + datetime.timedelta(hours=6)).strftime("%Y-%m-%d %H:%M:%S.%f"))
         log('utils: UpdateRSS, Now = ' + str(now) + ', UpdateRSS_NextRun = ' + str(UpdateRSS_NextRun))
         setProperty("UpdateRSS_NextRun",str(UpdateRSS_NextRun))
         setProperty("twitter.1.label", pushlist)
@@ -756,27 +782,6 @@ def download_silent(url, dest):
         log('utils: download_silent, Failed!,' + str(e))
         pass   
 
-def open_url_cached(url, life=1):
-    log('open_url_cached')
-    if CHKCache() == True:
-        setProperty("PTVL.CACHE_IDLE","false")
-        try:
-            if life == 1:
-                result = daily.cacheFunction(open_url, url)
-            elif life == 7:
-                result = weekly.cacheFunction(open_url, url)
-            else:
-                result = monthly.cacheFunction(open_url, url)
-        except:
-            result = open_url(url)
-            pass
-    else:
-        result = open_url(url)
-    if not result:
-        result = []
-    setProperty("PTVL.CACHE_IDLE","true")
-    return result 
-        
 def open_url(url):        
     try:
         f = urllib2.urlopen(url)
@@ -801,7 +806,6 @@ def open_url_up(url, userpass):
         
 def readline_url_cached(url, userpass=False): 
     if CHKCache() == True:
-        setProperty("PTVL.CACHE_IDLE","false")
         try:
             result = daily.cacheFunction(readline_url, url, userpass)
         except:
@@ -810,8 +814,7 @@ def readline_url_cached(url, userpass=False):
     else:
         result = readline_url(url, userpass)
     if not result:
-        result = [] 
-    setProperty("PTVL.CACHE_IDLE","true")
+        result = []
     return result 
            
 def readline_url(url, userpass=False):        
@@ -825,17 +828,11 @@ def readline_url(url, userpass=False):
     except urllib2.URLError as e:
         pass   
      
-def request_url_cached(url, life=1):
+def request_url_cached(url):
     log('request_url_cached')
     if CHKCache() == True:
-        setProperty("PTVL.CACHE_IDLE","false")
         try:
-            if life == 1:
-                result = daily.cacheFunction(request_url, url)
-            elif life == 7:
-                result = weekly.cacheFunction(request_url, url)
-            else:
-                result = monthly.cacheFunction(request_url, url)
+            result = daily.cacheFunction(request_url, url)
         except:
             result = request_url(url)
             pass
@@ -843,7 +840,6 @@ def request_url_cached(url, life=1):
         result = request_url(url)
     if not result:
         result = []
-    setProperty("PTVL.CACHE_IDLE","true")
     return result     
            
 def request_url(url):
@@ -854,9 +850,9 @@ def request_url(url):
         link=response.read()
         response.close()
         return link
-    except urllib2.HTTPError, error:
-        raise NetworkError('HTTPError: %s' % error)
-        
+    except:
+        pass   
+
 def requestDownload(url, fle):
     log('utils: requestDownload')
     # requests = requests.Session()
@@ -1373,6 +1369,12 @@ def ClearCache(type):
         weekly.delete("%")
         monthly.delete("%")
         REAL_SETTINGS.setSetting('ClearCache', "false")
+    elif type == 'BCT':
+        bumpers.delete("%")
+        ratings.delete("%")
+        commercials.delete("%")
+        trailers.delete("%")
+        REAL_SETTINGS.setSetting('ClearBCT', "false")
     elif type == 'Art':
         try:    
             shutil.rmtree(ART_LOC)
@@ -1522,8 +1524,6 @@ def VideoWindow():
     log("utils: VideoWindow, VWPath = " + str(VWPath))
     #Copy VideoWindow Patch file
     try:
-        if getProperty("PTVL.LOWPOWER") == "true":
-            raise
         if getProperty("PseudoTVRunning") != "True":
             if not FileAccess.exists(VWPath):
                 log("utils: VideoWindow, VWPath not found")
@@ -1547,21 +1547,21 @@ def VideoWindowPatch():
     log("utils: VideoWindowPatch")
     try:
         #Patch Videowindow, by un-commenting code in epg.xml 
-        f = FileAccess.open(PTVL_SKIN_SELECT_FLE, "r")
+        f = open(PTVL_SKIN_SELECT_FLE, "r")
         linesLST = f.readlines()  
         f.close()
         
         for i in range(len(linesLST)):
             lines = linesLST[i]
-            if lines in b:
+            if lines == b:
                 replaceAll(PTVL_SKIN_SELECT_FLE,b,a)        
                 log('utils: script.pseudotv.live.EPG.xml Patched b,a')
-            elif lines in d:
+            elif lines == d:
                 replaceAll(PTVL_SKIN_SELECT_FLE,d,c)           
                 log('utils: script.pseudotv.live.EPG.xml Patched d,c') 
                 
         #Patch dialogseekbar to ignore OSD for PTVL.
-        f = FileAccess.open(DSPath, "r")
+        f = open(DSPath, "r")
         lineLST = f.readlines()            
         f.close()
         
@@ -1586,20 +1586,20 @@ def VideoWindowUnpatch():
     log("utils: VideoWindowUnpatch")
     try:
         #unpatch videowindow
-        f = FileAccess.open(PTVL_SKIN_SELECT_FLE, "r")
+        f = open(PTVL_SKIN_SELECT_FLE, "r")
         linesLST = f.readlines()    
         f.close()
         for i in range(len(linesLST)):
             lines = linesLST[i]
-            if lines in a:
+            if lines == a:
                 replaceAll(PTVL_SKIN_SELECT_FLE,a,b)
                 log('utils: script.pseudotv.live.EPG.xml UnPatched a,b')
-            elif lines in c:
+            elif lines == c:
                 replaceAll(PTVL_SKIN_SELECT_FLE,c,d)          
                 log('utils: script.pseudotv.live.EPG.xml UnPatched c,d')
                 
         #unpatch seekbar
-        f = FileAccess.open(DSPath, "r")
+        f = open(DSPath, "r")
         lineLST = f.readlines()            
         f.close()
         for i in range(len(lineLST)):
@@ -1676,13 +1676,9 @@ def SyncXMLTV_Thread(force):
                 REAL_SETTINGS.setSetting("SyncPTV_NextRun",str(SyncPTV_NextRun))   
     
 def CHKCache():
-    # CommonCache Control - avoid threaded cache functions from colliding.
-    if Primary_Cache_Enabled == True:
-        log('CHKCache: PTVL.CACHE_IDLE = ' + getProperty("PTVL.CACHE_IDLE"))
-        return getProperty("PTVL.CACHE_IDLE") == "true"
-    else:
-        return False
-        
+    # Secondary Cache Control - avoid threaded cache functions from colliding.
+    return getProperty("PTVL.BackgroundLoading_Finished") == "true"
+
 def help(chtype):
     log('utils: help, ' + chtype)
     HelpBaseURL = 'http://raw.github.com/Lunatixz/XBMC_Addons/master/script.pseudotv.live/resources/help/help_'
@@ -1759,7 +1755,36 @@ def xmltvFile(setting3):
     else:
         xmltvFle = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('xmltvLOC'), str(setting3) +'.xml'))
     return xmltvFle
-           
+   
+def getOSPpath(OSplat):
+    log("utils: getOSPpath") 
+    if OSplat == '0':
+        return 'androidarm/rtmpdump'
+    elif OSplat == '1':
+        return 'android86/rtmpdump'
+    elif OSplat == '2':
+        return 'atv1linux/rtmpdump'
+    elif OSplat == '3':
+        return 'atv1stock/rtmpdump'
+    elif OSplat == '4':
+        return 'atv2/rtmpdump'
+    elif OSplat == '5':
+        return 'ios/rtmpdump'
+    elif OSplat == '6':
+        return 'linux32/rtmpdump'
+    elif OSplat == '7':
+        return 'linux64/rtmpdump'
+    elif OSplat == '8':
+        return 'mac32/rtmpdump'
+    elif OSplat == '9':
+        return 'mac64/rtmpdump'
+    elif OSplat == '10':
+        return 'pi/rtmpdump'
+    elif OSplat == '11':
+        return 'win/rtmpdump.exe'
+    elif OSplat == '12':
+        return '/usr/bin/rtmpdump'
+        
 def chkSources():
     log("utils: chkSources") 
     hasPVR = False
@@ -1783,24 +1808,18 @@ def chkSources():
         
 def chkLowPower(): 
     setProperty("PTVL.LOWPOWER","false") 
-    if REAL_SETTINGS.getSetting("Override.LOWPOWER") == "false":
-        if getPlatform() in ['ATV2','iOS','rPi','Android']:
-            setProperty("PTVL.LOWPOWER","true") 
-            REAL_SETTINGS.setSetting('SFX_Enabled', "false")
-            REAL_SETTINGS.setSetting('Enable_FindLogo', "false")
-            REAL_SETTINGS.setSetting('Idle_Screensaver', "false")
-            REAL_SETTINGS.setSetting('EnhancedGuideData', "false")
-            if MEDIA_LIMIT > 250:
-                REAL_SETTINGS.setSetting('MEDIA_LIMIT', "3")
-            if NOTIFY == True:
-                xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Settings Optimized For Performance", 1000, THUMB) )
+    if getPlatform() in ['ATV2','iOS','rPi','Android']:
+        setProperty("PTVL.LOWPOWER","true") 
+        REAL_SETTINGS.setSetting('SFX_Enabled', "false")
+        REAL_SETTINGS.setSetting('Idle_Screensaver', "false")
+        REAL_SETTINGS.setSetting('EnhancedGuideData', "false")
+        if MEDIA_LIMIT > 250:
+            REAL_SETTINGS.setSetting('MEDIA_LIMIT', "3")
     log("utils: chkLowPower = " + getProperty("PTVL.LOWPOWER"))
             
 def chkChanges():
     log("utils: chkChanges")
-    ComCHK()
-    DonCHK()
-    # todo add bcts
+    # todo add bcts, medialimit
     CURR_ENHANCED_DATA = REAL_SETTINGS.getSetting('EnhancedGuideData')
     try:
         LAST_ENHANCED_DATA = REAL_SETTINGS.getSetting('Last_EnhancedGuideData')
@@ -1811,17 +1830,6 @@ def chkChanges():
     if CURR_ENHANCED_DATA != LAST_ENHANCED_DATA:
         REAL_SETTINGS.setSetting('ForceChannelReset', "true")
         REAL_SETTINGS.setSetting('Last_EnhancedGuideData', CURR_ENHANCED_DATA)
-        
-    CURR_MEDIA_LIMIT = REAL_SETTINGS.getSetting('MEDIA_LIMIT')
-    try:
-        LAST_MEDIA_LIMIT = REAL_SETTINGS.getSetting('Last_MEDIA_LIMIT')
-    except:
-        REAL_SETTINGS.setSetting('Last_MEDIA_LIMIT', CURR_MEDIA_LIMIT)
-        LAST_MEDIA_LIMIT = REAL_SETTINGS.getSetting('Last_MEDIA_LIMIT')
-    
-    if CURR_MEDIA_LIMIT != LAST_MEDIA_LIMIT:
-        REAL_SETTINGS.setSetting('ForceChannelReset', "true")
-        REAL_SETTINGS.setSetting('Last_MEDIA_LIMIT', CURR_MEDIA_LIMIT)
         
 def getRSSFeed(genre):
     log("utils: getRSSFeed, genre = " + genre)
