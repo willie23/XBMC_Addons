@@ -94,34 +94,8 @@
                 <align>center</align>
                 <aligny>center</aligny>
                 <aspectratio>keep</aspectratio>
-                <texture>$INFO[Player.Art(fanart)]</texture>
-                <visible>!Control.IsVisible(523)</visible>
-            </control>
-            <control type="image">
-                <width>360</width>      
-                <height>180</height>
-                <align>center</align>
-                <aligny>center</aligny>
-                <aspectratio>keep</aspectratio>
-                <texture>$INFO[Player.Art(landscape)]</texture>
-                <visible>!Control.IsVisible(523)</visible>
-            </control>
-            <control type="image">
-                <width>360</width>      
-                <height>180</height>
-                <align>center</align>
-                <aligny>center</aligny>
-                <aspectratio>keep</aspectratio>
-                <texture>$INFO[Player.Art(TVShow.fanart)]</texture>
-                <visible>!Control.IsVisible(523)</visible>
-            </control>
-            <control type="image">
-                <width>360</width>      
-                <height>180</height>
-                <align>center</align>
-                <aligny>center</aligny>
-                <aspectratio>keep</aspectratio>
-                <texture>$INFO[Player.Art(TVShow.landscape)]</texture>
+                <texture fallback="landscape.jpg">$INFO[Window(10000).Property(OVERLAY.type1ART)]</texture>
+                <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
                 <visible>!Control.IsVisible(523)</visible>
             </control>
         </control>   
@@ -155,7 +129,7 @@
                     <align>center</align>
                     <aligny>center</aligny>
                     <aspectratio>keep</aspectratio>
-                    <texture fallback="landscape.png">$INFO[Window(Home).Property(NextAired.4.Art(fanart)]</texture>
+                    <texture fallback="landscape.jpg">$INFO[Window(Home).Property(NextAired.4.Art(fanart)]</texture>
                     <visible>IsEmpty(Window(Home).Property(NextAired.4.Art(landscape))</visible>
                     <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
                     <fadetime>2000</fadetime>
@@ -195,7 +169,7 @@
                     <align>center</align>
                     <aligny>center</aligny>
                     <aspectratio>keep</aspectratio>
-                    <texture fallback="landscape.png">$INFO[Window(Home).Property(NextAired.3.Art(fanart)]</texture>
+                    <texture fallback="landscape.jpg">$INFO[Window(Home).Property(NextAired.3.Art(fanart)]</texture>
                     <visible>IsEmpty(Window(Home).Property(NextAired.3.Art(landscape))</visible>
                     <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
                     <fadetime>1500</fadetime>
@@ -235,7 +209,7 @@
                     <align>center</align>
                     <aligny>center</aligny>
                     <aspectratio>keep</aspectratio>
-                    <texture fallback="landscape.png">$INFO[Window(Home).Property(NextAired.2.Art(fanart)]</texture>
+                    <texture fallback="landscape.jpg">$INFO[Window(Home).Property(NextAired.2.Art(fanart)]</texture>
                     <visible>IsEmpty(Window(Home).Property(NextAired.2.Art(landscape))</visible>
                     <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
                     <fadetime>1000</fadetime>
@@ -274,7 +248,7 @@
                     <align>center</align>
                     <aligny>center</aligny>
                     <aspectratio>keep</aspectratio>
-                    <texture fallback="landscape.png">$INFO[Window(Home).Property(NextAired.1.Art(fanart)]</texture>
+                    <texture fallback="landscape.jpg">$INFO[Window(Home).Property(NextAired.1.Art(fanart)]</texture>
                     <visible>IsEmpty(Window(Home).Property(NextAired.1.Art(landscape))</visible>
                     <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
                     <fadetime>500</fadetime>
@@ -404,18 +378,6 @@
             <label>Current Date</label>
             <font>font12</font>
             <textcolor>FFFFFFFF</textcolor>
-        </control>
-        <!--Time Button-->
-        <control type="label" id="106">
-            <posx>420</posx>
-            <posy>300</posy>
-            <width min="128" max="400">auto</width>
-            <height>38</height>
-            <fadetime>250</fadetime>
-            <textcolor>FFFFFFFF</textcolor>
-            <font>font12</font>
-            <align>center</align>
-            <aligny>center</aligny>
         </control>
         <control type="image" id="109">
             <posx>410</posx>
@@ -805,6 +767,18 @@
             <aspectratio>scale</aspectratio>
             <texture>pstvlTimeFadeP.png</texture>
         </control>  
+        <!--Time Button-->
+        <control type="label" id="106">
+            <posx>420</posx>
+            <posy>300</posy>
+            <width min="128" max="400">auto</width>
+            <height>38</height>
+            <fadetime>250</fadetime>
+            <textcolor>FFFFFFFF</textcolor>
+            <font>font12</font>
+            <align>center</align>
+            <aligny>center</aligny>
+        </control>
         <!-- Timebar -->
         <control type="image" id="120">
             <description>Timebar line</description>

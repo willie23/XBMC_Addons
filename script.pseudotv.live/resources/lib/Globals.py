@@ -112,14 +112,14 @@ IPP3 = (REAL_SETTINGS.getSetting("UPNP3_IPP"))
 
 #LOCATIONS
 SETTINGS_LOC = REAL_SETTINGS.getAddonInfo('profile') #LOCKED
-CHANNELS_LOC = os.path.join(SETTINGS_LOC, 'cache') + '/' #LOCKED
-MADE_CHAN_LOC = os.path.join(CHANNELS_LOC, 'stored') + '/' #LOCKED
-GEN_CHAN_LOC = os.path.join(CHANNELS_LOC, 'generated') + '/' #LOCKED
-IMAGES_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'images')) + '/'
-PTVL_SKIN_LOC = os.path.join(ADDON_PATH, 'resources', 'skins') #Path to PTVL Skin folder
+CHANNELS_LOC = os.path.join(SETTINGS_LOC, 'cache','') #LOCKED
+MADE_CHAN_LOC = os.path.join(CHANNELS_LOC, 'stored','') #LOCKED
+GEN_CHAN_LOC = os.path.join(CHANNELS_LOC, 'generated','') #LOCKED
+IMAGES_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'images',''))
+PTVL_SKIN_LOC = os.path.join(ADDON_PATH, 'resources', 'skins', '') #Path to PTVL Skin folder
 LOGO_LOC = xbmc.translatePath(REAL_SETTINGS.getSetting('ChannelLogoFolder')) #Channel Logo location   
 PVR_DOWNLOAD_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('PVR_Folder'))) #PVR Download location
-XMLTV_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('xmltvLOC'))) + '/'
+XMLTV_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('xmltvLOC'),''))
 XSP_LOC = xbmc.translatePath("special://profile/playlists/video/")
 SFX_LOC = ('special://home/addons/script.pseudotv.live/resources/sfx/')
 BACKUP_LOC = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'backups'))
@@ -134,9 +134,9 @@ BASEURL = 'http://pseudotvlive.com/ptvl/'
 PTVLURL = 'http://%s@pseudotvlive.com/ptvl/' %UPASS
 
 # Core Default Image Locations
-DEFAULT_MEDIA_LOC =  xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', 'Default', 'media')) + '/'
-DEFAULT_EPGGENRE_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', 'Default', 'media', 'epg-genres')) + '/'
-DEFAULT_LOGO_LOC = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'logos')) + '/'
+DEFAULT_MEDIA_LOC =  xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', 'Default', 'media',''))
+DEFAULT_EPGGENRE_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', 'Default', 'media', 'epg-genres',''))
+DEFAULT_LOGO_LOC = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'logos',''))
 
 # CORE IMG FILENAMES
 THUMB = IMAGES_LOC + 'icon.png'
@@ -156,16 +156,16 @@ BUTTON_NO_FOCUS_ALT = 'pstvlButtonNoFocusAlt.png'
 #Channel Sharing location
 if REAL_SETTINGS.getSetting('ChannelSharing') == "true":
     CHANNEL_SHARING = True
-    LOCK_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('SettingsFolder'), 'cache')) + '/'
-    XMLTV_CACHE_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('SettingsFolder'), 'cache', 'xmltv')) + '/'
-    STRM_CACHE_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('SettingsFolder'), 'cache', 'strm','')) 
-    ART_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('SettingsFolder'), 'cache', 'artwork')) + '/' #Missing Artwork cache location
+    LOCK_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('SettingsFolder'), 'cache',''))
+    XMLTV_CACHE_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('SettingsFolder'), 'cache', 'xmltv',''))
+    STRM_CACHE_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('SettingsFolder'), 'cache', 'strm','','')) 
+    ART_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('SettingsFolder'), 'cache', 'artwork','')) #Missing Artwork cache location
 else:
     CHANNEL_SHARING = False  
-    LOCK_LOC = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'cache')) + '/'
-    XMLTV_CACHE_LOC = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'cache', 'xmltv')) + '/'
+    LOCK_LOC = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'cache',''))
+    XMLTV_CACHE_LOC = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'cache', 'xmltv',''))
     STRM_CACHE_LOC = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'cache', 'strm','')) 
-    ART_LOC = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'cache', 'artwork')) + '/' #Missing Artwork cache location
+    ART_LOC = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'cache', 'artwork','')) #Missing Artwork cache location
 
 #XMLTV FILENAME
 PTVLXML = (os.path.join(XMLTV_CACHE_LOC, 'ptvlguide.xml'))
@@ -173,8 +173,8 @@ PTVLXMLZIP = (os.path.join(LOCK_LOC, 'ptvlguide.zip'))
 
 # SKIN SELECT
 Skin_Select = 'Default'
-MEDIA_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media')) + '/'       
-EPGGENRE_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media', 'epg-genres')) + '/'  
+MEDIA_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media',''))   
+EPGGENRE_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', Skin_Select, 'media', 'epg-genres','')) 
 
 #Double check core image folders
 if not xbmcvfs.exists(MEDIA_LOC):
@@ -192,9 +192,9 @@ else:
     
 # Find PTVL selected skin folder 720 or 1080i ?
 if xbmcvfs.exists(os.path.join(PTVL_SKIN_LOC, Skin_Select, '720p','')):
-    PTVL_SKIN_SELECT = xbmc.translatePath(os.path.join(PTVL_SKIN_LOC, Skin_Select, '720p')) + '/'
+    PTVL_SKIN_SELECT = xbmc.translatePath(os.path.join(PTVL_SKIN_LOC, Skin_Select, '720p', ''))
 else:
-    PTVL_SKIN_SELECT = xbmc.translatePath(os.path.join(PTVL_SKIN_LOC, Skin_Select, '1080i')) + '/'
+    PTVL_SKIN_SELECT = xbmc.translatePath(os.path.join(PTVL_SKIN_LOC, Skin_Select, '1080i', ''))
 
 # Primary Cache Control - Channellist/Filelist
 if REAL_SETTINGS.getSetting("Cache_Enabled") == 'true':
@@ -235,18 +235,13 @@ except:
 xbmc.log('Autotune Channel Limit is ' + str(AT_LIMIT))
         
 # Common Cache types, Stacked and sorted for read performance?... todo convert to DB (local sqlite, mysql)? 
-# Cache is redundant to m3u's, but eliminates repetitive off-site parsing.
+# filelist caching is redundant to m3u's, but eliminates repetitive off-site parsing.
 # General
 quarterly = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "quarterly",6)                  #System Purge, ForceReset
 bidaily = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "bidaily",12)                     #System Purge, ForceReset
 daily = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "daily",24)                         #System Purge, ForceReset
 weekly = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "weekly",24 * 7)                   #System Purge, ForceReset
 monthly = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "monthly",((24 * 7) * 4))         #System Purge, ForceReset
-# BCTs
-bumpers = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "bumpers",((24 * 7) * 4))         #BCT Purge
-ratings = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "ratings",((24 * 7) * 4))         #BCT Purge
-commercials = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "commercials",((24 * 7) * 4)) #BCT Purge
-trailers = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "trailers",((24 * 7) * 4))       #BCT Purge
 # Artwork
 artwork = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "artwork",((24 * 7) * 4))         #Artwork Purge
 artwork1 = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "artwork1",((24 * 7) * 4))       #Artwork Purge
@@ -257,11 +252,10 @@ artwork5 = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "artwo
 artwork6 = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "artwork6",((24 * 7) * 4))       #Artwork Purge
 # Parsers
 parsers = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parsers",((24 * 7) * 4))         #No Purge (API Queries)
-parsersGH = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parsersGH",((24 * 7) * 4))     #No Purge (Github)
 parserFANTV = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parserFANTV",((24 * 7) * 4)) #No Purge (FANART Queries)
 parserTVDB = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parserTVDB",((24 * 7) * 4))   #No Purge (TVDB Queries)
 parserTMDB = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parserTMDB",((24 * 7) * 4))   #No Purge (TMDB Queries)
-parserYT = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parserYT",((24 * 7) * 4))       #No Purge (Youtube Queries)
+parserYT = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "parserYT",((24 * 7) * 4))       #No Purge (Youtube/Viemo Queries)
 
 # HEX COLOR OPTIONS 4 (Overlay CHANBUG, EPG Genre & CHtype) 
 # http://www.w3schools.com/html/html_colornames.asp

@@ -71,7 +71,8 @@ class TMDB(object):
         # return '%s%s%s' % (self.imagebaseurl, 'w92/', filename)
 
     def getMovie(self, movieName, year):
-        if Primary_Cache_Enabled == True:
+        if CHKCache() == True:
+            setProperty("PTVL.CACHE_IDLE","false")
             try:
                 result = parserTMDB.cacheFunction(self.getMovie_NEW, movieName, year)
             except:
@@ -80,7 +81,8 @@ class TMDB(object):
         else:
             result = self.getMovie_NEW(movieName, year)
         if not result:
-            result = 0
+            result = 'Empty'
+        setProperty("PTVL.CACHE_IDLE","true")
         return result 
 
     def getMovie_NEW(self, movieName, year):
@@ -100,7 +102,8 @@ class TMDB(object):
         return response
         
     def getMPAA(self, imdbid):
-        if Primary_Cache_Enabled == True:
+        if CHKCache() == True:
+            setProperty("PTVL.CACHE_IDLE","false")
             try:
                 result = parserTMDB.cacheFunction(self.getMPAA_NEW, imdbid)
             except:
@@ -110,6 +113,7 @@ class TMDB(object):
             result = self.getMPAA_NEW(imdbid)
         if not result:
             result = 'NA'
+        setProperty("PTVL.CACHE_IDLE","true")
         return result 
         
     def getMPAA_NEW(self, imdbid):
@@ -268,6 +272,7 @@ class TMDB(object):
     def get_data(self, url, data_type ='json'):
         log('Downloader: get_data - Cache')
         if CHKCache() == True:
+            setProperty("PTVL.CACHE_IDLE","false")
             try:
                 result = parserTMDB.cacheFunction(self.get_data_new, url, data_type)
             except:
@@ -279,6 +284,7 @@ class TMDB(object):
             result = 'Empty'
             
         log('Downloader: result = ' + str(result))
+        setProperty("PTVL.CACHE_IDLE","true")
         return result
 
     # Retrieve JSON data from site
@@ -303,5 +309,3 @@ class TMDB(object):
             
         log('Downloader: data = ' + str(data))
         return data
-
-

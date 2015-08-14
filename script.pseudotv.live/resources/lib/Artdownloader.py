@@ -199,14 +199,15 @@ class Artdownloader:
                         return artSeason
                     elif FileAccess.exists(artSeason_fallback):
                         return artSeason_fallback    
-
-                self.logDebug('FindArtwork_NEW, chtype <= 7 - JSON/DBID')
-                SetImage = self.JsonArt(type, chname, mpath, arttypeEXT)
-                if not SetImage and dbid != '0':
-                    SetImage = self.dbidArt(type, chname, mpath, dbid, arttypeEXT)
-                if FileAccess.exists(SetImage):
-                    return SetImage
-                if ENHANCED_DATA == True: 
+            
+                if getProperty("PTVL.LOWPOWER") != "true":
+                    self.logDebug('FindArtwork_NEW, chtype <= 7 - JSON/DBID')
+                    SetImage = self.JsonArt(type, chname, mpath, arttypeEXT)
+                    if not SetImage and dbid != '0':
+                        SetImage = self.dbidArt(type, chname, mpath, dbid, arttypeEXT)
+                    if FileAccess.exists(SetImage):
+                        return SetImage
+                    if ENHANCED_DATA == True: 
                         self.logDebug('FindArtwork_NEW, Artwork Download')
                         self.DownloadArt(type, id, arttype, cachefile, chname, mpath, arttypeEXT)
             else:

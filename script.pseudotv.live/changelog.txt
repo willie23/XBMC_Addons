@@ -1,12 +1,11 @@
-[*] USTVnow autotuning fixed.
-[*] Fixed UPNP Channels, Kodi Favorites and other various issues.
+[*] Fixed Logo downloading, tweaked low power profiles and cache functions.
+[*] USTVnow autotuning fixed, Fixed UPNP Channels, Kodi Favorites and other various issues.
 [*] Added Youtube Playlist creation using Export to Context Menu and AddonscripterDE's Youtube Music plugin. Supports "Playlist".
 [*] NEW! Settings2 backup and restore utilities. 
 [*] Added Play shows in order as a default advanced rule for exported channels.
 [*] Added Youtube Channel creation using Export to Context Menu and bromix's Youtube Plugin. Supports "Browse Channels".
 [*] Added Export to Context Menu, Last Channel recall to improve usability.
-[*] Updated skin with info labels, Skinners can now control EPG row count. Example of row count control below.
-    http://www.ultraimg.com/images/wmABq.jpg
+[*] Updated skin with info labels, Skinners can now control EPG row count. Example of row count control http://www.ultraimg.com/images/wmABq.jpg
 [*] Major performance enhancements made to channel building, channel loading and artwork spooling.
 [*] [COLOR=blue][B]^ v.0.6.6 ^[/B][/COLOR]
 [*] LiveTV now supports artwork found in xmltv file.

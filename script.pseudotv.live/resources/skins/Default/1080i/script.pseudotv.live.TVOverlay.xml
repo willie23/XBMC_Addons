@@ -730,7 +730,7 @@
                 <height>180</height>
                 <align>center</align>
                 <aspectratio>keep</aspectratio>
-                <texture fallback="logo.png">$INFO[Window(10000).Property(OVERLAY.type1ART)]</texture>
+                <texture fallback="landscape.jpg">$INFO[Window(10000).Property(OVERLAY.type1ART)]</texture>
                 <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
             </control>         
             <control type="image" id="511">
@@ -966,7 +966,7 @@
                     <height>180</height>
                     <align>center</align>
                     <aspectratio>keep</aspectratio>
-                    <texture fallback="logo.png">$INFO[Window(10000).Property(OVERLAY.type4ART)]</texture>
+                    <texture fallback="landscape.jpg">$INFO[Window(10000).Property(OVERLAY.type4ART)]</texture>
                     <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
                 </control>
                 <control type="fadelabel">
@@ -1070,7 +1070,7 @@
                 <height>180</height>
                 <aspectratio>keep</aspectratio>
                 <visible>Control.IsVisible(130)</visible>
-                <texture>$INFO[Window(10000).Property(OVERLAY.type3ART)]</texture>
+                <texture fallback="landscape.jpg">$INFO[Window(10000).Property(OVERLAY.type3ART)]</texture>
                 <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
             </control>
             <control type="label" id="132">
