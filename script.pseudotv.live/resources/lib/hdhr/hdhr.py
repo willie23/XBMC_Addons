@@ -25,7 +25,6 @@ DEVICE_AUTH = 0x29
 
 LINEUP_URL_BASE = 'http://{ip}/lineup.json'
 
-
 class DiscoveryResponse(object):
     def __init__(self,packet,address):
         self.ip, self.port = address

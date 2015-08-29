@@ -22,7 +22,6 @@ import os, sys, time, urllib
 from resources.lib.Globals import *
 from resources.lib.utils import *
 
-# showInfo
 def showText(heading, text):
     log('utilities: showText')
     id = 10147

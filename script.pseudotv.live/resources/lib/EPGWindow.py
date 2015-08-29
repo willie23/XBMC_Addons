@@ -64,7 +64,6 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         self.infoOffset = 0
         self.infoOffsetV = 0
         self.showSeasonEpisode = REAL_SETTINGS.getSetting("ShowSeEp") == "true"
-        self.PVRTimeOffset = 0
         self.Artdownloader = Artdownloader()
         self.inputChannel = -1
         self.channelLabel = []    
@@ -105,7 +104,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
 
     
     def logDebug(self, msg, level = xbmc.LOGDEBUG):
-        if DEBUG == 'true':
+        if isDebug() == True:
             log('EPGWindow: ' + msg, level)
                 
     
@@ -580,10 +579,14 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
 
                     if shouldskip == False and width >= 30:
                         mylabel = self.MyOverlayWindow.channels[curchannel - 1].getItemTitle(playlistpos)
+                        timestamp = self.MyOverlayWindow.channels[curchannel - 1].getItemtimestamp(playlistpos)
                         myLiveID = self.MyOverlayWindow.channels[curchannel - 1].getItemLiveID(playlistpos)
                         LiveID = self.chanlist.unpackLiveID(myLiveID)
                         type = LiveID[0]
                         rating = LiveID[5]
+                        
+                        if self.MyOverlayWindow.isReminder(timestamp, mylabel, curchannel) == True:
+                            mylabel = mylabel + ' ' + u'\U0001F551'
                         
                         if REAL_SETTINGS.getSetting("EPG.xInfo") == "true":                  
                             
@@ -727,7 +730,8 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                     elif pos == 2:
                         Comingsoon()
                     elif pos == 3:
-                        Comingsoon()
+                        self.MyOverlayWindow.setReminder(getProperty("EPG.TimeStamp"), getProperty("EPG.Title"), int(getProperty("EPG.Chnum")))
+                        self.closeContext()   
                 else:
                     lastaction = time.time() - self.lastActionTime           
                     if self.showingInfo:
@@ -1232,8 +1236,9 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         setProperty("EPG.Chtype",str(chtype))
         setProperty("EPG.Mediapath",mediapath)
         setProperty("EPG.Chname",chname)
+        setProperty("EPG.Chnum",str(newchan))
         setProperty("EPG.Mpath",mpath)  
-        
+
         if plpos == -999:
             if len(getProperty("OVERLAY.OnDemand_tmpstr")) > 0:
                 tmpstr = (getProperty("OVERLAY.OnDemand_tmpstr")).split('//')
@@ -1303,7 +1308,8 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             rating = LiveID[5]
             year, title, showtitle = getTitleYear(title)
             # SetProperties
-            self.MyOverlayWindow.setProp(showtitle, year, chtype, id, genre, rating, mpath, mediapath, chname, SEtitle, type, dbid, epid, Description, playcount, season, episode, 'EPG')
+            setProperty("EPG.TimeStamp",timestamp)
+            self.MyOverlayWindow.setProp(showtitle, 0, chtype, id, genre, rating, mpath, mediapath, chname, SEtitle, type, dbid, epid, Description, playcount, season, episode, 'EPG')
         except:
             pass  
    
@@ -1360,8 +1366,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                     t = time.strptime(tmpDate, '%Y-%m-%d %H:%M:%S')
                 except:
                     t = time.strptime(tmpDate, '%Y-%m-%d %H:%M:%S')
-                    pass
-                    
+                         
                 epochBeginDate = time.mktime(t)
                 #beginDate = datetime.datetime(t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec)
                 #loop till we get to the current show  
@@ -1373,7 +1378,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             # adjust the show and time offsets to properly position inside the playlist
             else:
                 while showoffset + timedif > self.MyOverlayWindow.channels[newchan - 1].getItemDuration(pos):
-                    self.log('duration ' + str(self.MyOverlayWindow.channels[newchan - 1].getItemDuration(pos)))
+                    self.logDebug('duration ' + str(self.MyOverlayWindow.channels[newchan - 1].getItemDuration(pos)))
                     timedif -= self.MyOverlayWindow.channels[newchan - 1].getItemDuration(pos) - showoffset
                     pos = self.MyOverlayWindow.channels[newchan - 1].fixPlaylistIndex(pos + 1)
                     showoffset = 0
@@ -1385,29 +1390,28 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                     return
 
                 if chtype == 8 and len(self.MyOverlayWindow.channels[newchan - 1].getItemtimestamp(pos)) > 0:
-                    tmpDate = int(getProperty("EPG.TimeStamp"))
-                    try:#sloppy fix, for threading issue with strptime.
-                        t = time.strptime(tmpDate, '%Y-%m-%d %H:%M:%S')
-                    except:
-                        t = time.strptime(tmpDate, '%Y-%m-%d %H:%M:%S')
-                        pass
-                    Notify_Time = time.strftime('%I:%M%p, %A', t)
                     self.log('selectShow return current LiveTV channel')
                     return
             
             if pos != plpos:
                 if chtype == 8 and len(self.MyOverlayWindow.channels[newchan - 1].getItemtimestamp(pos)) > 0:
-                    tmpDate = int(getProperty("EPG.TimeStamp"))
+                    self.log('selectShow return different LiveTV channel')
+                    tmpDate = self.MyOverlayWindow.channels[newchan - 1].getItemtimestamp(pos)
+                    self.log("selectshow tmpdate " + str(tmpDate))
+                    
                     try:#sloppy fix, for threading issue with strptime.
                         t = time.strptime(tmpDate, '%Y-%m-%d %H:%M:%S')
                     except:
                         t = time.strptime(tmpDate, '%Y-%m-%d %H:%M:%S')
-                        pass
-                    Notify_Time = time.strftime('%I:%M%p, %A', t)
-                    self.log('selectShow return different LiveTV channel')
-                    return
+                             
+                    epochBeginDate = time.mktime(t)
+                    #beginDate = datetime.datetime(t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec)
+                    #loop till we get to the current show  
+                    while epochBeginDate + self.MyOverlayWindow.channels[newchan - 1].getItemDuration(pos) <  time.time():
+                        epochBeginDate += self.MyOverlayWindow.channels[newchan - 1].getItemDuration(pos)
+                        pos = self.MyOverlayWindow.channels[newchan - 1].fixPlaylistIndex(pos + 1)
+                        self.log('live tv while loop')
                 else:
-                    Notify_Time = self.PVRTimeOffset
                     self.MyOverlayWindow.channels[newchan - 1].setShowPosition(plpos)
                     self.MyOverlayWindow.channels[newchan - 1].setShowTime(0)
                     self.MyOverlayWindow.channels[newchan - 1].setAccessTime(time.time())
@@ -1513,7 +1517,6 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         ChanButtonx, ChanButtony = self.channelButtons[self.focusRow][self.focusIndex].getPosition()
         ChanButtonw = self.channelButtons[self.focusRow][self.focusIndex].getWidth()
         ChanButtonh = self.channelButtons[self.focusRow][self.focusIndex].getHeight()
-        
         self.contextButtonB = xbmcgui.ControlImage(0, 0, 1920, 1080, self.ButtonContextGauss)
         self.addControl(self.contextButtonB)
         self.contextButtonC = xbmcgui.ControlImage(ChanButtonx-4, ChanButtony+71, 258, 308, self.ButtonContextBackground)
@@ -1523,27 +1526,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         self.contextButton = xbmcgui.ControlList(ChanButtonx, ChanButtony+75, 250, 1000, self.textfont, self.textcolor, self.ButtonContextNoFocus, self.textureButtonFocus, self.focusedcolor, 0, 0, 0, 0, 75, 0, 4)
         self.addControl(self.contextButton)
         self.ContextList = ['More Info','Find Similar','Record Show','Set Reminder']
+        if self.MyOverlayWindow.isReminder(getProperty("EPG.TimeStamp"), getProperty("EPG.Title"), int(getProperty("EPG.Chnum"))) == True:
+            self.ContextList = replaceStringElem(self.ContextList,'Set Reminder','Remove Reminder')
         self.contextButton.addItems(items=self.ContextList)
         self.setFocus(self.contextButton)
-           
-           
-    def setReminder(self, tmpDate, cleanDate, title, channel):
-        self.log('setReminder')
-        jump = REAL_SETTINGS.getSetting("AutoJump") == "true"
-        
-        try:#sloppy fix, for threading issue with strptime.
-            t = time.strptime(tmpDate, '%Y-%m-%d %H:%M:%S')
-        except:
-            t = time.strptime(tmpDate, '%Y-%m-%d %H:%M:%S')
-            pass
-            
-        epochBeginDate = time.mktime(t)
-        now = time.time()
-        reminder_time = round(((epochBeginDate - now) / 60) - 1)
-        reminder_threadtime = round(((epochBeginDate - now) / 60) - 1) * 60
-        msg = title + 'on Channel ' + str(channel) +' starts in 1m'
-        
-        if jump == False:
-            xbmc.executebuiltin('XBMC.AlarmClock(PseudoTV Live, XBMC.Notification("PseudoTV Live",'+ msg +',4000,'+ THUMB +'),'+ str(reminder_time) + ',false)')
-        else:
-            self.MyOverlayWindow.setJumpTimer(reminder_threadtime, cleanDate, title, channel)

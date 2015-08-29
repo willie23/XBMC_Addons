@@ -32,7 +32,7 @@
             <align>center</align>
             <aligny>center</aligny>
             <texture>$INFO[Window(10000).Property(OVERLAY.LOGOART)]</texture>
-            <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
+            <animation effect="fade" start="95" end="95" condition="True">Conditional</animation>
             <visible>Control.IsVisible(101)</visible>
         </control>
         <control type="label" id="101">
@@ -300,7 +300,7 @@
                 <aligny>center</aligny>
                 <aspectratio>keep</aspectratio>
                 <texture fallback="poster.jpg">$INFO[Window(10000).Property(OVERLAY.type2ART)]</texture>
-                <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
+                <animation effect="fade" start="95" end="95" condition="True">Conditional</animation>
             </control>        
             <control type="image">
                 <description>Unaired "NEW" image</description>         
@@ -600,8 +600,8 @@
                     <aligny>center</aligny>
                     <font>font12</font>
                     <textcolor>ffffffff</textcolor>
-                    <texturefocus>pstvlButtonFocus.png</texturefocus>
-                    <texturenofocus>pstvlButtonNoFocus.png</texturenofocus>
+                    <texturefocus>pstvlButtonFocus.png.png</texturefocus>
+                    <texturenofocus>pstvlButtonNoFocusAlt.png</texturenofocus>
                     <onup>1015</onup>
                     <ondown>1013</ondown>
                     <visible>!IsEmpty(Control.GetLabel(1012))</visible>
@@ -614,8 +614,8 @@
                     <aligny>center</aligny>
                     <font>font12</font>
                     <textcolor>ffffffff</textcolor>
-                    <texturefocus>pstvlButtonFocus.png</texturefocus>
-                    <texturenofocus>pstvlButtonNoFocus.png</texturenofocus>
+                    <texturefocus>pstvlButtonFocus.png.png</texturefocus>
+                    <texturenofocus>pstvlButtonNoFocusAlt.png</texturenofocus>
                     <onup>1012</onup>
                     <ondown>1014</ondown>
                     <visible>!IsEmpty(Control.GetLabel(1013))</visible>
@@ -628,8 +628,8 @@
                     <aligny>center</aligny>
                     <font>font12</font>
                     <textcolor>ffffffff</textcolor>
-                    <texturefocus>pstvlButtonFocus.png</texturefocus>
-                    <texturenofocus>pstvlButtonNoFocus.png</texturenofocus>
+                    <texturefocus>pstvlButtonFocus.png.png</texturefocus>
+                    <texturenofocus>pstvlButtonNoFocusAlt.png</texturenofocus>
                     <onup>1013</onup>
                     <ondown>1015</ondown>
                     <visible>!IsEmpty(Control.GetLabel(1014))</visible>
@@ -642,8 +642,8 @@
                     <aligny>center</aligny>
                     <font>font12</font>
                     <textcolor>ffffffff</textcolor>
-                    <texturefocus>pstvlButtonFocus.png</texturefocus>
-                    <texturenofocus>pstvlButtonNoFocus.png</texturenofocus>
+                    <texturefocus>pstvlButtonFocus.png.png</texturefocus>
+                    <texturenofocus>pstvlButtonNoFocusAlt.png</texturenofocus>
                     <onup>1014</onup>
                     <ondown>1012</ondown>
                     <visible>!IsEmpty(Control.GetLabel(1014))</visible>
@@ -717,7 +717,7 @@
                     <aligny>bottom</aligny>
                     <aspectratio>keep</aspectratio>
                     <texture>sel.png</texture>
-                    <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
+                    <animation effect="fade" start="95" end="95" condition="True">Conditional</animation>
                     <visible>Control.IsVisible(104)</visible>
                 </control>
             </control>
@@ -730,8 +730,8 @@
                 <height>180</height>
                 <align>center</align>
                 <aspectratio>keep</aspectratio>
-                <texture fallback="logo.png">$INFO[Window(10000).Property(OVERLAY.type1ART)]</texture>
-                <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
+                <texture fallback="landscape.jpg">$INFO[Window(10000).Property(OVERLAY.type1ART)]</texture>
+                <animation effect="fade" start="95" end="95" condition="True">Conditional</animation>
             </control>         
             <control type="image" id="511">
                 <description>Sickbeard/Couchpotato image</description>   
@@ -966,8 +966,8 @@
                     <height>180</height>
                     <align>center</align>
                     <aspectratio>keep</aspectratio>
-                    <texture fallback="logo.png">$INFO[Window(10000).Property(OVERLAY.type4ART)]</texture>
-                    <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
+                    <texture fallback="landscape.jpg">$INFO[Window(10000).Property(OVERLAY.type4ART)]</texture>
+                    <animation effect="fade" start="95" end="95" condition="True">Conditional</animation>
                 </control>
                 <control type="fadelabel">
                     <description>Popup fadelabel</description>
@@ -1070,8 +1070,8 @@
                 <height>180</height>
                 <aspectratio>keep</aspectratio>
                 <visible>Control.IsVisible(130)</visible>
-                <texture>$INFO[Window(10000).Property(OVERLAY.type3ART)]</texture>
-                <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
+                <texture fallback="landscape.jpg">$INFO[Window(10000).Property(OVERLAY.type3ART)]</texture>
+                <animation effect="fade" start="95" end="95" condition="True">Conditional</animation>
             </control>
             <control type="label" id="132">
                 <description>Onnow Controls</description>

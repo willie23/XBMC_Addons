@@ -62,7 +62,7 @@ class Upnp:
                 milliseconds = int(Mseconds.split(".")[1])
                 milliseconds = int(str(milliseconds)[:3])
             except:
-                pass
+                milliseconds = 0
                 
             millisecondOFFSET = float(REAL_SETTINGS.getSetting("UPNP_OFFSET"))
             milliseconds + millisecondOFFSET

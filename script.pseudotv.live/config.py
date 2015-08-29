@@ -144,58 +144,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             curchan = self.listcontrol.getSelectedPosition() + 1
             self.changeChanNum(curchan)
             self.updateListing(curchan)
-            
-    # def KodiVideoSources(self):
-        # sourcepath = xbmc.translatePath(os.path.join('special://masterprofile/','sources.xml'))
-        # self.log("KodiVideoSources, sources.xml = " + sourcepath)
-        # json_query = ('{"jsonrpc":"2.0","method":"Files.GetSources","params":{"media":"video"},"id":1}')
-        # json_folder_detail = self.chnlst.sendJSON(json_query)
-        # file_detail = re.compile( "{(.*?)}", re.DOTALL ).findall(json_folder_detail)
-        # PVR = False
-        # UPNP = False
-        # HDHR = False
-        # Restart = False
-        # a = '<video>'
-        # b = '<video>\n'
 
-        # for f in file_detail:
-            # match = re.search('"file" *: *"(.*?)",', f)
-            # if match:
-                # if match.group(1) == 'pvr://':
-                    # PVR = True
-                # elif match.group(1) == 'upnp://':
-                    # UPNP = True
-                # elif match.group(1) == 'hdhomerun://':
-                    # HDHR = True         
-            # self.log("KodiVideoSources, PVR = " + str(PVR) + " UPNP = " + str(UPNP) + " HDHR = " + str(HDHR))
-        
-            # if PVR == False:
-                # b = b + '<source>\n<name>PVR</name>\n<path pathversion="1">pvr://</path>\n<allowsharing>true</allowsharing>\n</source>\n'
-            # if UPNP == False:
-                # b = b + '<source>\n<name>UPnP Media Servers (Auto-Discover)</name>\n<path pathversion="1">upnp://</path>\n<allowsharing>true</allowsharing>\n</source>\n'
-            # if HDHR == False:
-                # b = b + '<source>\n<name>HDHomerun Devices</name>\n<path pathversion="1">hdhomerun://</path>\n<allowsharing>true</allowsharing>\n</source>\n'
-        
-        # if FileAccess.exists(sourcepath):
-            # try:
-                # f = open(sourcepath, "r")
-                # linesLST = f.readlines()  
-                # f.close()
-
-                # for i in range(len(linesLST)):
-                    # line = linesLST[i]
-                    # if a in line:
-                        # self.log("KodiVideoSources, a found replacing with b = " + b)
-                        # replaceAll(sourcepath,a,b)     
-                        # break
-            # except:
-                # self.log("KodiVideoSources, sources.xml missing")
-                # # todo write missing sources.xml Restart = True
-
-        # if Restart:
-            # if dlg.yesno("PseudoTV Live", "Updated Kodi video sources, reboot recommend! Exit XBMC?"):
-                # xbmc.executebuiltin( "XBMC.AlarmClock(shutdowntimer,XBMC.Quit(),%d,true)" % ( 0.5, ) )      
-            
             
     def saveSettings(self):
         self.log("saveSettings channel " + str(self.channel))

@@ -71,18 +71,23 @@ LANGUAGES = {'Albanian' : 'sq',
             'Serbian (Cyrillic)': 'sr',
             'Chinese (Traditional)' : 'zh',
             'Chinese (Simplified)'  : 'zh'}
-
-def get_abbrev():
-    language = xbmcaddon.Addon().getSetting('limit_preferred_language')
-    if language in LANGUAGES:
-        return LANGUAGES[language]
+       
+def get_abbrev(lang_string):
+    try:
+        language_abbrev = xbmc.convertLanguage(lang_string, xbmc.ISO_639_1)
+    except:
+        language_abbrev = REAL_SETTINGS.getSetting('limit_preferred_language')
+    if language_abbrev in LANGUAGES:
+        return LANGUAGES[language_abbrev]
     else:
-        ### Default to English
-        return 'en'
-        
-def get_language(abbrev):
+        language_abbrev = 'en' ### Default to English if conversion fails
+    return language_abbrev
+    
+def get_language(abbrev):    
     try:
         lang_string = (key for key,value in LANGUAGES.items() if value == abbrev).next()
-    except StopIteration:
+    except:
+        lang_string = xbmc.convertLanguage(abbrev, xbmc.ENGLISH_NAME)
+    if not lang_string:
         lang_string = 'n/a'
     return lang_string

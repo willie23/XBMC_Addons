@@ -35,14 +35,9 @@ REPLACES = (
     (PASS, "user:password"),
     (USER, "user:password"),
     (REAL_SETTINGS.getSetting('Gmail_Pass'),'PASSWORD'),
-)
-
-# # Open Settings on first run
-# if not REAL_SETTINGS.getSetting('already_shown') == 'true':
-#     REAL_SETTINGS.openSettings()
-#     REAL_SETTINGS.setSetting('already_shown', 'true')
 
 class LogUploader(object):
+
 
     def __init__(self):
         self.log('started')
@@ -59,12 +54,14 @@ class LogUploader(object):
             self.report_mail(self.email_address, uploaded_logs)
             pass
 
+            
     def get_settings(self):
         self.email_address = REAL_SETTINGS.getSetting('Gmail_User')
         self.log('settings: len(email)=%d' % len(self.email_address))
         self.skip_oldlog = REAL_SETTINGS.getSetting('skip_oldlog') == 'true'
         self.log('settings: skip_oldlog=%s' % self.skip_oldlog)
 
+        
     def upload_file(self, filepath):
         self.log('reading log...')
         file_content = open(filepath, 'r').read()
@@ -96,6 +93,7 @@ class LogUploader(object):
         else:
             self.log('upload failed with response: %s' % repr(response))
 
+            
     def ask_upload(self, logfile):
         Dialog = xbmcgui.Dialog()
         msg1 = 'Do you want to upload "%s"?' % logfile
@@ -105,6 +103,7 @@ class LogUploader(object):
             msg2 = 'No email will be sent (No gmail is configured)'
         return Dialog.yesno(ADDON_NAME, msg1, '', msg2)
 
+        
     def report_msg(self, paste_id):
         url = UPLOAD_LINK % paste_id
         Dialog = xbmcgui.Dialog()
@@ -112,6 +111,7 @@ class LogUploader(object):
         msg2 = 'URL: [B]%s[/B]' % url
         return Dialog.ok(ADDON_NAME, msg1, '', msg2)
 
+        
     # def report_mail(self, mail_address, uploaded_logs):
         # print 'report_mail'
         # print mail_address, uploaded_logs
@@ -134,6 +134,7 @@ class LogUploader(object):
         # if DEBUG:
             # print response
 
+            
     def report_mail(self, recipient, body):
         self.log("script.pseudotv.live-utils: sendGmail")
         sender = REAL_SETTINGS.getSetting('Gmail_User')
@@ -163,7 +164,8 @@ class LogUploader(object):
             xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Email Sent", 1000, THUMB) )
         except:
             xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Email Failed!", 1000, THUMB) )
-            
+        
+        
     def __get_logs(self):
         log_path = translate('special://logpath')
         crashlog_path = None
@@ -212,10 +214,12 @@ class LogUploader(object):
             })
         return found_logs
 
+        
     def __sort_files_by_date(self, path, files):
         files.sort(key=lambda f: os.path.getmtime(os.path.join(path, f)))
         return files
 
+        
     def log(self, msg):
         xbmc_log(u'%s: %s' % (ADDON_NAME, msg))
 
@@ -226,7 +230,6 @@ def _(string_id):
     else:
         xbmc_log('String is missing: %s' % string_id)
         return string_id
-
 
 if __name__ == '__main__':
     Uploader = LogUploader()

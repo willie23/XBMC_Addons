@@ -45,7 +45,7 @@ class Ondemand(xbmcgui.WindowXMLDialog):
 
     
     def logDebug(self, msg, level = xbmc.LOGDEBUG):
-        if DEBUG == 'true':
+        if isDebug() == True:
             log('Ondemand: ' + msg, level)
                 
     def onInit(self):

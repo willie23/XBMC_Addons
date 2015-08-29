@@ -17,7 +17,7 @@
 # along with PseudoTV.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import os, re, sys, time, zipfile, threading, requests, random
+import os, re, sys, time, zipfile, threading, requests, random, traceback, pyfscache
 import urllib, urllib2, base64, fileinput, shutil, socket, httplib, json, urlparse, HTMLParser
 import xbmc, xbmcgui, xbmcplugin, xbmcvfs, xbmcaddon
 import time, _strptime, string, datetime, ftplib, hashlib, smtplib, feedparser, imp
@@ -31,6 +31,7 @@ from email.MIMEText import MIMEText
 from email import Encoders
 from xml.dom.minidom import parse, parseString
 from urllib import unquote, quote
+from urllib2 import HTTPError, URLError
 
 socket.setdefaulttimeout(30)
 
@@ -39,17 +40,19 @@ try:
     import StorageServer
 except Exception,e:
     import storageserverdummy as StorageServer
-    
+
 if sys.version_info < (2, 7):
     import simplejson as json
 else:
     import json
-# Globals  
+
+# Settings2 filepaths
 settingFileAccess = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.xml'))
 nsettingFileAccess = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.lastrun.xml'))
 atsettingFileAccess = xbmc.translatePath(os.path.join(BACKUP_LOC, 'settings2.pretune.xml'))
 bksettingFileAccess = os.path.join(BACKUP_LOC, 'settings2.' + (str(datetime.datetime.now()).split('.')[0]).replace(' ','.').replace(':','.') + '.xml')
- 
+
+# Videowindow filepaths
 Path = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', 'Default', '1080i')) #Path to Default PTVL skin, location of mod file.
 fle = 'custom_script.pseudotv.live_9506.xml' #mod file, copy to xbmc skin folder
 VWPath = xbmc.translatePath(os.path.join(XBMC_SKIN_LOC, fle))
@@ -59,9 +62,9 @@ DSPath = xbmc.translatePath(os.path.join(XBMC_SKIN_LOC, 'DialogSeekBar.xml'))
 
 # Videowindow Patch
 a = '<!-- PATCH START -->'
-b = '<!-- PATCH START --> <!--'
+b = '<!-- PATCH START --><!--'
 c = '<!-- PATCH END -->'
-d = '--> <!-- PATCH END -->'
+d = '--><!-- PATCH END -->'
 
 # Seekbar Patch
 v = ' '
@@ -82,6 +85,8 @@ def isKodiRepo(plugin=''):
         addon = splitall(plugin)[0]
     else:
         addon = plugin  
+        
+    # kodi repo urls
     dharma = 'https://github.com/xbmc/repo-plugins/tree/dharma'
     eden = 'https://github.com/xbmc/repo-plugins/tree/eden'
     frodo = 'https://github.com/xbmc/repo-plugins/tree/frodo'
@@ -112,26 +117,11 @@ def isKodiRepo(plugin=''):
         return False
 
 def fillGithubItems(url, ext=None, removeEXT=False):
-    log("utils: fillGithubItems Cache")
-    if CHKCache() == True:
-        try:
-            result = parsersGH.cacheFunction(fillGithubItems_NEW, url, ext, removeEXT)
-        except:
-            result = fillGithubItems_NEW(url, ext, removeEXT)
-            pass
-    else:
-        result = fillGithubItems_NEW(url, ext, removeEXT)
-    if not result:
-        result = []
-    return result  
-    
-def fillGithubItems_NEW(url, ext, removeEXT=False):
-    log("utils: fillGithubItems_NEW")
+    log("utils: fillGithubItems")
     Sortlist = []
     try:
         list = []
-        response = request_url(url)
-        catlink = re.compile('title="(.+?)">').findall(response)
+        catlink = re.compile('title="(.+?)">').findall(read_url_cached(url))
         for i in range(len(catlink)):
             link = catlink[i]
             name = (catlink[i]).lower()
@@ -142,14 +132,14 @@ def fillGithubItems_NEW(url, ext, removeEXT=False):
             list.append(link.replace('&amp;','&'))
         Sortlist = sorted_nicely(list) 
     except Exception,e:
-        print str(e)
-        pass
+        log("utils: fillGithubItems, Failed! " + str(e))
+        log(traceback.format_exc(), xbmc.LOGERROR)
     return Sortlist
 
 def VersionCompare():
     log('utils: VersionCompare')
     curver = xbmc.translatePath(os.path.join(ADDON_PATH,'addon.xml'))    
-    source = open(curver, mode = 'r')
+    source = open(curver, mode='r')
     link = source.read()
     source.close()
     match = re.compile('" version="(.+?)" name="PseudoTV Live"').findall(link)
@@ -157,7 +147,7 @@ def VersionCompare():
     for vernum in match:
         log("utils: Current Version = " + str(vernum))
     try:
-        link = request_url('https://raw.githubusercontent.com/Lunatixz/XBMC_Addons/master/script.pseudotv.live/addon.xml')  
+        link = open_url('https://raw.githubusercontent.com/Lunatixz/XBMC_Addons/master/script.pseudotv.live/addon.xml').read() 
         link = link.replace('\r','').replace('\n','').replace('\t','').replace('&nbsp;','')
         match = re.compile('" version="(.+?)" name="PseudoTV Live"').findall(link)
     except:
@@ -355,11 +345,14 @@ def UpdateFiles():
 ##############
 # LOGO Tools #
 ##############
+
 def CleanCHname(text):
     text = text.replace(" (uk)", "")
     text = text.replace(" (UK)", "")
     text = text.replace(" (us)", "")
     text = text.replace(" (US)", "")
+    text = text.replace(" (ca)", "")
+    text = text.replace(" (CA)", "")
     text = text.replace(" (en)", "")
     text = text.replace(" (EN)", "")
     text = text.replace(" hd", "")
@@ -371,8 +364,8 @@ def CleanCHname(text):
     text = text.replace(" USTVNOW", "")  
     return text
 
-def FindLogo_Threading(data):
-    log("utils: FindLogo_Threading")
+def FindLogo_Thread(data):
+    log("utils: FindLogo_Thread, " + str(data))
     chtype = data[0]
     chname = data[1]
     mpath = getMpath(data[2])
@@ -395,7 +388,7 @@ def FindLogo_Threading(data):
             url = findGithubLogo(chname)
             if url:
                 return GrabLogo(url, chname) 
-        if mpath and (chtype == 6 or chtype == 7):
+        if mpath and (chtype == 6):
             smpath = mpath.rsplit('/',2)[0] #Path Above mpath ie Series folder
             artSeries = xbmc.translatePath(os.path.join(smpath, 'logo.png'))
             artSeason = xbmc.translatePath(os.path.join(mpath, 'logo.png'))
@@ -405,13 +398,12 @@ def FindLogo_Threading(data):
                 url = artSeason
             if url:
                 return GrabLogo(url, chname) 
-
-            
+  
 def FindLogo(chtype, chname, mediapath=None):
     log("utils: FindLogo")
     try:
         data = [chtype, chname, mediapath]
-        FindLogoThread = threading.Timer(0.5, FindLogo_Threading, [data])
+        FindLogoThread = threading.Timer(0.5, FindLogo_Thread, [data])
         FindLogoThread.name = "FindLogoThread"
         if FindLogoThread.isAlive():
             FindLogoThread.cancel()
@@ -447,28 +439,14 @@ def findGithubLogo(chname):
     return url
            
 def findLogodb(chname, user_region, user_type, useMix=True, useAny=True):
-    log("utils: findLogodb Cache")   
-    if CHKCache() == True:
-        try:
-            result = daily.cacheFunction(findLogodb_NEW, chname, user_region, user_type, useMix, useAny)
-        except:
-            result = findLogodb_NEW(chname, user_region, user_type, useMix, useAny)
-            pass
-    else:
-        result = findLogodb_NEW(chname, user_region, user_type, useMix, useAny)
-    if not result:
-        result = ''
-    return result  
-     
-def findLogodb_NEW(chname, user_region, user_type, useMix=True, useAny=True):
     try:
         clean_chname = (CleanCHname(chname))
         urlbase = 'http://www.thelogodb.com/api/json/v1/%s/tvchannel.php?s=' % LOGODB_API_KEY
         chanurl = (urlbase+clean_chname).replace(' ','%20')
-        log("utils: findLogodb_NEW, chname = " + chname + ', clean_chname = ' + clean_chname + ', url = ' + chanurl)
+        log("utils: findLogodb, chname = " + chname + ', clean_chname = ' + clean_chname + ', url = ' + chanurl)
         typelst =['strLogoSquare','strLogoSquareBW','strLogoWide','strLogoWideBW','strFanart1']
         user_type = typelst[int(user_type)]   
-        response = request_url(chanurl)
+        response = read_url_cached(chanurl)
         detail = re.compile("{(.*?)}", re.DOTALL ).findall(response)
         MatchLst = []
         mixRegionMatch = []
@@ -502,19 +480,18 @@ def findLogodb_NEW(chname, user_region, user_type, useMix=True, useAny=True):
             if useMix == True and len(mixRegionMatch) > 0:
                 random.shuffle(mixRegionMatch)
                 image = mixRegionMatch[0]
-                log('utils: findLogodb_NEW, Logo NOMATCH useMix: ' + str(image))
+                log('utils: findLogodb, Logo NOMATCH useMix: ' + str(image))
             if not image and useAny == True and len(mixTypeMatch) > 0:
                 random.shuffle(mixTypeMatch)
                 image = mixTypeMatch[0]
-                log('utils: findLogodb_NEW, Logo NOMATCH useAny: ' + str(image))
+                log('utils: findLogodb, Logo NOMATCH useAny: ' + str(image))
         else:
             random.shuffle(MatchLst)
             image = MatchLst[0]
-            log('utils: findLogodb_NEW, Logo Match: ' + str(image))
-        return image
-        
+            log('utils: findLogodb, Logo Match: ' + str(image))
+        return image 
     except Exception,e:
-        log("utils: findLogodb_NEW, Failed! " + str(e))
+        log("utils: findLogodb, Failed! " + str(e))
 
 def GrabLogo(url, Chname):
     log("utils: GrabLogo")
@@ -550,6 +527,7 @@ def GrabLogo(url, Chname):
 
 def GA_Request():
     log("GA_Request")
+    # if REAL_SETTINGS.getSetting('ga_disable') == 'false':
     """
     Simple proof of concept code to push data to Google Analytics.
     Related blog posts:
@@ -626,16 +604,14 @@ def UpdateRSS_Thread():
     
     if now > SyncUpdateRSS:
         ##Push MSG
-        pushlist = ''
         try:
             pushrss = 'https://raw.githubusercontent.com/Lunatixz/XBMC_Addons/master/push_msg.xml'
-            file = request_url('https://raw.githubusercontent.com/Lunatixz/XBMC_Addons/master/push_msg.xml')
+            file = open_url(pushrss).read()
             pushlist = file.read()
             file.close()
         except:
-            pass
+            pushlist = ''
         ##Github RSS
-        gitlist = ''
         try:
             gitrss = 'https://github.com/Lunatixz.atom'
             d = feedparser.parse(gitrss)
@@ -648,11 +624,11 @@ def UpdateRSS_Thread():
                     gitlist += (header + ' - ' + title + ": " + date + "   ").replace('&amp;','&')
                     break
         except:
-            pass
+            gitlist = ''
         ##Twitter RSS
-        twitlist = ''
         try:
-            twitrss ='http://feedtwit.com/f/pseudotv_live'
+            # twitrss ='http://feedtwit.com/f/pseudotv_live'
+            twitrss = 'https://twitrss.me/twitter_user_to_rss/?user=pseudotv_live'
             e = feedparser.parse(twitrss)
             header = ((e['feed']['title']) + ' - ')
             twitlist = header
@@ -661,9 +637,9 @@ def UpdateRSS_Thread():
                     date = time.strftime("%m.%d.%Y @ %I:%M %p", tost.published_parsed)
                     twitlist += (date + ": " + tost.title + "   ").replace('&amp;','&')
         except:
-            pass
+            twitlist = ''
             
-        UpdateRSS_NextRun = ((now + datetime.timedelta(hours=6)).strftime("%Y-%m-%d %H:%M:%S.%f"))
+        UpdateRSS_NextRun = ((now + datetime.timedelta(hours=3)).strftime("%Y-%m-%d %H:%M:%S.%f"))
         log('utils: UpdateRSS, Now = ' + str(now) + ', UpdateRSS_NextRun = ' + str(UpdateRSS_NextRun))
         setProperty("UpdateRSS_NextRun",str(UpdateRSS_NextRun))
         setProperty("twitter.1.label", pushlist)
@@ -718,7 +694,7 @@ def sendGmail(subject, body, attach):
         session.quit()
      
 ##################
-# Download Tools #
+#   URL Tools    #
 ##################
 
 def _pbhook(numblocks, blocksize, filesize, dp, start_time):
@@ -742,7 +718,6 @@ def _pbhook(numblocks, blocksize, filesize, dp, start_time):
     if dp.iscanceled(): 
         dp.close() 
   
-  
 def download(url, dest, dp = None):
     log('download')
     if not dp:
@@ -756,163 +731,76 @@ def download(url, dest, dp = None):
         print str(e)
         pass
      
-     
-def download_silent_threading(data):
-    log('download_silent_threading')
+def download_silent_thread(data):
+    log('download_silent_thread')
     try:
         urllib.urlretrieve(data[0], data[1])
     except Exception,e:
         print str(e)
         pass
-     
-     
+         
 def download_silent(url, dest):
     log('download_silent')
     try:
         data = [url, dest]
-        download_silentThread = threading.Timer(0.5, download_silent_threading, [data])
+        download_silentThread = threading.Timer(0.5, download_silent_thread, [data])
         download_silentThread.name = "download_silentThread"
         if download_silentThread.isAlive():
             download_silentThread.cancel()
             download_silentThread.join()
         download_silentThread.start()
-        # Sleep between Download, keeps cpu usage down and reduces the number of simultaneous threads.
-        xbmc.sleep(500)
+        # Sleep between Download, keeps cpu/memory usage down and reduces the number of simultaneous threads.
+        xbmc.sleep(50)
     except Exception,e:
         log('utils: download_silent, Failed!,' + str(e))
-        pass   
-
-def open_url(url):        
+        
+@cache_weekly
+def read_url_cached(url, userpass=False, return_type='read'):
+    log("utils: read_url_cached")
     try:
-        f = urllib2.urlopen(url)
+        if return_type == 'readlines':
+            response = (open_url(url, userpass)).readlines()
+        else:
+            response = (open_url(url, userpass)).read()
+        if not response:
+            response = 'Empty'
+    except Exception,e:
+        log('utils: read_url_cached, Failed!,' + str(e))
+        response = 'Empty'
+    return response
+        
+def open_url(url, userpass=None):
+    log("utils: open_url, url = " + str(url))
+    try:
+        request = urllib2.Request(url)
+        if userpass:
+            userpass = userpass.split(':')
+            base64string = base64.encodestring('%s:%s' % (userpass[0], userpass[1])).replace('\n', '')
+            request.add_header("Authorization", "Basic %s" % base64string) 
+        else:
+            # TMDB needs a header to be able to read the data
+            if url.startswith("http://api.themoviedb.org"):
+                request.add_header("Accept", "application/json")
+            else:
+                request.add_header('User-Agent','Magic Browser')         
+        f = urllib2.urlopen(request)
         f.close
         return f
     except urllib2.URLError as e:
-        pass
-    
-def open_url_up(url, userpass):
-    log("utils: open_url_up")
-    try:
-        userpass = userpass.split(':')
-        username = userpass[0]
-        password = userpass[1]
-        request = urllib2.Request(url)
-        base64string = base64.encodestring('%s:%s' % (username, password)).replace('\n', '')
-        request.add_header("Authorization", "Basic %s" % base64string)
-        result = open_url(request)
-        return result
-    except:
-        pass
-        
-def readline_url_cached(url, userpass=False): 
-    if CHKCache() == True:
-        try:
-            result = daily.cacheFunction(readline_url, url, userpass)
-        except:
-            result = readline_url(url, userpass)
-            pass
-    else:
-        result = readline_url(url, userpass)
-    if not result:
-        result = []
-    return result 
-           
-def readline_url(url, userpass=False):        
-    try:
-        if userpass != False:
-            f = open_url_up(url, userpass)
-        else:
-            f = open_url(url)
-        f.close
-        return f.readlines()
-    except urllib2.URLError as e:
-        pass   
-     
-def request_url_cached(url):
-    log('request_url_cached')
-    if CHKCache() == True:
-        try:
-            result = daily.cacheFunction(request_url, url)
-        except:
-            result = request_url(url)
-            pass
-    else:
-        result = request_url(url)
-    if not result:
-        result = []
-    return result     
-           
-def request_url(url):
-    try:
-        req=urllib2.Request(url)
-        req.add_header('User-Agent','Magic Browser')
-        response=urllib2.urlopen(req)
-        link=response.read()
-        response.close()
-        return link
-    except:
-        pass   
+        log("utils: open_url, Failed! " + str(e))   
 
-def requestDownload(url, fle):
-    log('utils: requestDownload')
-    # requests = requests.Session()
-    response = requests.get(url, stream=True)
-    with open(fle, 'wb') as out_file:
-        shutil.copyfileobj(response.raw, out_file)
-    del response
-    
-def force_url(url):
-    Con = True
-    Count = 0
-    while Con:
-        if Count > 3:
-            Con = False
-        try:
-            req = urllib2.Request(url, headers={'User-Agent' : "Magic Browser"})
-            return urllib2.urlopen(req)
-            Con = False
-        except URLError, e:
-            print "Oops, timed out?"
-            Con = True
-        except socket.timeout:
-            print "Timed out!"
-            Con = True
-            pass 
-        Count += 1
-     
-def retrieve_url_up(url, userpass, dest):
-    log("utils: retrieve_url_up")
+def retrieve_url(url, userpass, dest):
+    log("utils: retrieve_url")
     try:
-        username, password = userpass.split(':')
-        request = urllib2.Request(url)
-        base64string = base64.encodestring('%s:%s' % (username, password)).replace('\n', '')
-        request.add_header("Authorization", "Basic %s" % base64string)
-        resource = open_url(request)
+        resource = open_url(url, userpass)
         output = FileAccess.open(dest, 'w')
         output.write(resource.read())  
         output.close()
         return True
-    except:
-        pass
-
-def download_url(_in, _out): 
-    Finished = False    
-    
-    if FileAccess.exists(_out):
-        try:
-            os.remove(_out)
-        except:
-            pass
-    try:
-        resource = urllib.urlopen(_in)
-        output = FileAccess.open(_out, 'w')
-        output.write(resource.read())
-        Finished = True    
-        output.close()
-    except:
-        pass
-    return Finished  
-
+    except Exception, e:
+        log("utils: retrieve_url, Failed! " + str(e))  
+        return False 
+        
 def anonFTPDownload(filename, DL_LOC):
     log('utils: anonFTPDownload, ' + filename + ' - ' + DL_LOC)
     try:
@@ -926,6 +814,35 @@ def anonFTPDownload(filename, DL_LOC):
     except Exception, e:
         log('utils: anonFTPDownload, Failed!! ' + str(e))
         return False
+        
+@cache_monthly
+def get_data(url, data_type ='json'):
+    log('utils: get_data')
+    data = []
+    try:
+        req = read_url_cached(url)
+        if data_type == 'json':
+            data = json.loads(req)
+            if not data:
+                data = 'Empty'
+        else:
+            data = req
+    except HTTPError, e:
+        if e.code == 400:
+            raise HTTP400Error(url)
+        elif e.code == 404:
+            raise HTTP404Error(url)
+        elif e.code == 503:
+            raise HTTP503Error(url)
+        else:
+            raise DownloadError(str(e))
+    except URLError:
+        raise HTTPTimeout(url)
+    except socket.timeout, e:
+        raise HTTPTimeout(url)
+    except:
+        data = 'Empty'
+    return data
         
 ##################
 # Zip Tools #
@@ -962,6 +879,29 @@ def allWithProgress(_in, _out, dp):
 ##################
 # GUI Tools #
 ##################
+
+def handle_wait(time_to_wait,header,title): #*Thanks enen92
+    dlg = xbmcgui.DialogProgress()
+    dlg.create("PseudoTV Live", header)
+    secs=0
+    percent=0
+    increment = int(100 / time_to_wait)
+    cancelled = False
+    while secs < time_to_wait:
+        secs += 1
+        percent = increment*secs
+        secs_left = str((time_to_wait - secs))
+        remaining_display = "Starts In " + str(secs_left) + " seconds, Cancel Channel Change?" 
+        dlg.update(percent,title,remaining_display)
+        xbmc.sleep(1000)
+        if (dlg.iscanceled()):
+            cancelled = True
+            break
+    if cancelled == True:
+        return False
+    else:
+        dlg.close()
+        return True
 
 def Comingsoon():
     xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Coming Soon", 1000, THUMB) )
@@ -1003,6 +943,10 @@ def infoDialog(str, header=ADDON_NAME, time=4000):
 def Notify(header=ADDON_NAME, message="", icon=THUMB, time=5000, sound=False):
     xbmcgui.Dialog().notification(heading=header, message=message, icon=icon, time=time, sound=sound)
 
+def DebugNotify(string):
+    if DEBUG:
+        xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "DEBUGGING: " + string, 1000, THUMB))
+    
 def okDialog(str1, str2='', header=ADDON_NAME):
     xbmcgui.Dialog().ok(header, str1, str2)
 
@@ -1134,22 +1078,27 @@ def cleanHTML(string):
     return html_parser.unescape(string)
     
 def getTitleYear(showtitle, showyear=0):  
-    # extract year from showtitle then return
+    # extract year from showtitle, merge then return
     try:
         labelshowtitle = re.compile('(.+?) [(](\d{4})[)]$').findall(showtitle)
         title = labelshowtitle[0][0]
         year = int(labelshowtitle[0][1])
     except Exception,e:
         try:
-            year = int(((title.split('('))[1]).replace(')',''))
-            title = ((title.split('('))[0])
-        except:
-            title = showtitle
-            year = 0
-    if year == 0 and showyear !=0:
-        year = showyear
-    if year != 0:
-        showtitle = title + ' ('+str(year)+')'  
+            year = int(((showtitle.split(' ('))[1]).replace(')',''))
+            title = ((showtitle.split('('))[0])
+        except Exception,e:
+            if showyear != 0:
+                showtitle = showtitle + ' ('+str(showyear)+')'
+                year, title, showtitle = getTitleYear(showtitle, showyear)
+            else:
+                title = showtitle
+                year = 0
+    if year == 0 and int(showyear) !=0:
+        year = int(showyear)
+    if year != 0 and '(' not in title:
+        showtitle = title + ' ('+str(year)+')' 
+    log("utils: getTitleYear, return " + str(year) +', '+ title +', '+ showtitle) 
     return year, title, showtitle
 
 def trim(content, limit, suffix):
@@ -1166,6 +1115,9 @@ def closest(list, Number):
     
 def removeStringElem(lst,string=''):
     return ([x for x in lst if x != string])
+    
+def replaceStringElem(lst,old='',new=''):
+    return ([x.replace(old,new) for x in lst])
            
 def sorted_nicely(lst): 
     log('utils: sorted_nicely')
@@ -1261,7 +1213,7 @@ def copyanything(src, dst):
      
 def getDonlist(list):
     nlist = []
-    list = readline_url_cached(BASEURL + list, UPASS)
+    list = read_url_cached(PTVLURL + list, UPASS, return_type='readlines')
     for i in range(len(list)):
         try:
             nline = (list[i]).replace('\r\n','')
@@ -1270,14 +1222,14 @@ def getDonlist(list):
             pass
     return nlist
     
-def writeCache(thelist, thepath, thefile):
+def writeCache(theitem, thepath, thefile):
     log("writeCache")  
     now = datetime.datetime.today()
 
     if not FileAccess.exists(os.path.join(thepath)):
         FileAccess.makedirs(os.path.join(thepath))
     
-    thefile = uni(thepath + thefile)        
+    thefile = os.path.join(thepath,thefile)
     try:
         fle = FileAccess.open(thefile, "w")
         fle.write("%s\n" % now)
@@ -1285,33 +1237,29 @@ def writeCache(thelist, thepath, thefile):
             fle.write("%s\n" % item)
         fle.close()
     except Exception,e:
-        pass
+        log("writeCache, Failed " + str(e))
     
 def readCache(thepath, thefile):
     log("readCache") 
-    thelist = []  
-    thefile = (thepath + thefile)
+    thefile = os.path.join(thepath,thefile)
     
     if FileAccess.exists(thefile):
         try:
             fle = FileAccess.open(thefile, "r")
-            thelist = fle.readlines()
-            LastItem = len(thelist) - 1
-            thelist.pop(LastItem)#remove last line (empty line)
-            thelist.pop(0)#remove first line (datetime)
+            theitems = fle.readlines()
+            theitems.pop(len(theitems) - 1)#remove last line (empty line)
+            theitems.pop(0)#remove first line (datetime)
             fle.close()
+            return theitems
         except Exception,e:
-            pass
-            
-        log("readCache, thelist.count = " + str(len(thelist)))
-        return thelist
+            log("readCache, Failed " + str(e))
 
-def Cache_ok(thepath, thefile):
-    log("Cache_ok")   
+def Cache_Expired(thepath, thefile, life=31):
+    log("Cache_Expired")   
     CacheExpired = False
-    thefile = (thepath + thefile)
+    thefile = os.path.join(thepath,thefile)
     now = datetime.datetime.today()
-    log("Cache_ok, now = " + str(now))
+    log("Cache_Expired, now = " + str(now))
     
     if FileAccess.exists(thefile):
         try:
@@ -1320,19 +1268,19 @@ def Cache_ok(thepath, thefile):
             cacheDate = str(cacheline[0])
             cacheDate = cacheDate.split('.')[0]
             cacheDate = datetime.datetime.strptime(cacheDate, '%Y-%m-%d %H:%M:%S')
-            log("Cache_ok, cacheDate = " + str(cacheDate))
-            cacheDateEXP = (cacheDate + datetime.timedelta(days=30))
-            log("Cache_ok, cacheDateEXP = " + str(cacheDateEXP))
+            log("Cache_Expired, cacheDate = " + str(cacheDate))
+            cacheDateEXP = (cacheDate + datetime.timedelta(days=life))
+            log("Cache_Expired, cacheDateEXP = " + str(cacheDateEXP))
             fle.close()  
             
             if now >= cacheDateEXP or len(cacheline) == 2:
                 CacheExpired = True         
         except Exception,e:
-            log("Cache_ok, exception")
+            log("Cache_Expired, Failed " + str(e))
     else:
         CacheExpired = True    
         
-    log("Cache_ok, CacheExpired = " + str(CacheExpired))
+    log("Cache_Expired, CacheExpired = " + str(CacheExpired))
     return CacheExpired
       
 def splitDBID(dbid):
@@ -1363,18 +1311,7 @@ def getMpath(mediapath):
 def ClearCache(type):
     log('utils: ClearCache ' + type)  
     if type == 'Filelist':
-        quarterly.delete("%") 
-        bidaily.delete("%") 
-        daily.delete("%") 
-        weekly.delete("%")
-        monthly.delete("%")
         REAL_SETTINGS.setSetting('ClearCache', "false")
-    elif type == 'BCT':
-        bumpers.delete("%")
-        ratings.delete("%")
-        commercials.delete("%")
-        trailers.delete("%")
-        REAL_SETTINGS.setSetting('ClearBCT', "false")
     elif type == 'Art':
         try:    
             shutil.rmtree(ART_LOC)
@@ -1410,7 +1347,26 @@ def EXTtype(arttype):
         arttypeEXT = (arttype + '.png')
     log('utils: EXTtype = ' + str(arttypeEXT))
     return arttypeEXT
-     
+    
+def ChkSettings(): 
+    log('utils: ChkSettings')
+    # Check if Outdated/Install Repo
+    VersionCompare()
+
+    # Clear filelist Caches    
+    if REAL_SETTINGS.getSetting("ClearCache") == "true" or REAL_SETTINGS.getSetting("ForceChannelReset") == "true":
+        ClearCache('Filelist')
+
+    # Clear Artwork Folders
+    if REAL_SETTINGS.getSetting("ClearLiveArt") == "true":
+        ClearCache('Art')
+
+    # Optimize settings based on sys.platform
+    chkLowPower()
+        
+    # VideoWindow Patch.
+    VideoWindow()
+            
 def ChkSettings2():   
     log('utils: ChkSettings2')
     #Back/Restore Settings2
@@ -1439,6 +1395,9 @@ def ChkSettings2():
             Backup(settingFileAccess, nsettingFileAccess)
             if REAL_SETTINGS.getSetting("AutoBackup") == "true":
                 Backup(settingFileAccess, bksettingFileAccess)
+   
+def isDebug():
+    return REAL_SETTINGS.getSetting('enable_Debug') == "true"
    
 def backupSettings2():
     log('utils: backupSettings2')
@@ -1524,6 +1483,8 @@ def VideoWindow():
     log("utils: VideoWindow, VWPath = " + str(VWPath))
     #Copy VideoWindow Patch file
     try:
+        if isLowPower == True:
+            raise
         if getProperty("PseudoTVRunning") != "True":
             if not FileAccess.exists(VWPath):
                 log("utils: VideoWindow, VWPath not found")
@@ -1547,21 +1508,21 @@ def VideoWindowPatch():
     log("utils: VideoWindowPatch")
     try:
         #Patch Videowindow, by un-commenting code in epg.xml 
-        f = open(PTVL_SKIN_SELECT_FLE, "r")
+        f = FileAccess.open(PTVL_SKIN_SELECT_FLE, "r")
         linesLST = f.readlines()  
         f.close()
         
         for i in range(len(linesLST)):
             lines = linesLST[i]
-            if lines == b:
+            if lines in b:
                 replaceAll(PTVL_SKIN_SELECT_FLE,b,a)        
                 log('utils: script.pseudotv.live.EPG.xml Patched b,a')
-            elif lines == d:
+            elif lines in d:
                 replaceAll(PTVL_SKIN_SELECT_FLE,d,c)           
                 log('utils: script.pseudotv.live.EPG.xml Patched d,c') 
                 
         #Patch dialogseekbar to ignore OSD for PTVL.
-        f = open(DSPath, "r")
+        f = FileAccess.open(DSPath, "r")
         lineLST = f.readlines()            
         f.close()
         
@@ -1586,20 +1547,20 @@ def VideoWindowUnpatch():
     log("utils: VideoWindowUnpatch")
     try:
         #unpatch videowindow
-        f = open(PTVL_SKIN_SELECT_FLE, "r")
+        f = FileAccess.open(PTVL_SKIN_SELECT_FLE, "r")
         linesLST = f.readlines()    
         f.close()
         for i in range(len(linesLST)):
             lines = linesLST[i]
-            if lines == a:
+            if lines in a:
                 replaceAll(PTVL_SKIN_SELECT_FLE,a,b)
                 log('utils: script.pseudotv.live.EPG.xml UnPatched a,b')
-            elif lines == c:
+            elif lines in c:
                 replaceAll(PTVL_SKIN_SELECT_FLE,c,d)          
                 log('utils: script.pseudotv.live.EPG.xml UnPatched c,d')
                 
         #unpatch seekbar
-        f = open(DSPath, "r")
+        f = FileAccess.open(DSPath, "r")
         lineLST = f.readlines()            
         f.close()
         for i in range(len(lineLST)):
@@ -1620,7 +1581,7 @@ def VideoWindowUninstall():
     except Exception:
         Error = True
         pass
-
+       
 def SyncXMLTV(force=False):
     log('utils: SyncXMLTV')
     try:
@@ -1633,7 +1594,7 @@ def SyncXMLTV(force=False):
         log('utils: SyncXMLTV, Failed!,' + str(e))
         pass   
          
-def SyncXMLTV_Thread(force):
+def SyncXMLTV_Thread(force=False):
     log('utils: SyncXMLTV_Thread')
     now  = datetime.datetime.today()  
     try:
@@ -1649,36 +1610,32 @@ def SyncXMLTV_Thread(force):
     except:
         SyncPTV_LastRun = "1970-01-01 23:59:00.000000"
         SyncPTV = datetime.datetime.strptime(SyncPTV_LastRun, "%Y-%m-%d %H:%M:%S.%f")
+    
     if now > SyncPTV:         
         #Remove old file before download
         if FileAccess.exists(PTVLXML):
             try:
                 FileAccess.delete(PTVLXML)
-                log('utils: SyncPTVL, Removed old PTVLXML')
+                log('utils: SyncXMLTV, Removed old PTVLXML')
             except:
-                log('utils: SyncPTVL, Removing old PTVLXML Failed!')
+                log('utils: SyncXMLTV, Removing old PTVLXML Failed!')
                 
-        #Download new file from ftp, then http backup.
-        if retrieve_url_up((BASEURL + 'ptvlguide.zip'), UPASS, (xbmc.translatePath(PTVLXMLZIP))):
+        if retrieve_url(PTVLXMLURL, UPASS, PTVLXMLZIP):
             if FileAccess.exists(PTVLXMLZIP):
-                all(PTVLXMLZIP,XMLTV_CACHE_LOC,'')
+                all(PTVLXMLZIP,XMLTV_CACHE_LOC)
                 try:
                     FileAccess.delete(PTVLXMLZIP)
-                    log('utils: SyncPTVL, Removed PTVLXMLZIP')
+                    log('utils: SyncXMLTV, Removed PTVLXMLZIP')
                 except:
-                    log('utils: SyncPTVL, Removing PTVLXMLZIP Failed!')
+                    log('utils: SyncXMLTV, Removing PTVLXMLZIP Failed!')
             
             if FileAccess.exists(os.path.join(XMLTV_CACHE_LOC,'ptvlguide.xml')):
-                log('utils: SyncPTVL, ptvlguide.xml download successful!')  
+                log('utils: SyncXMLTV, ptvlguide.xml download successful!')  
                 xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live","Guidedata Update Complete", 1000, THUMB) )  
                 SyncPTV_NextRun = ((now + datetime.timedelta(hours=24)).strftime("%Y-%m-%d %H:%M:%S.%f"))
-                log('utils: SyncPTVL, Now = ' + str(now) + ', SyncPTV_NextRun = ' + str(SyncPTV_NextRun))
+                log('utils: SyncXMLTV, Now = ' + str(now) + ', SyncPTV_NextRun = ' + str(SyncPTV_NextRun))
                 REAL_SETTINGS.setSetting("SyncPTV_NextRun",str(SyncPTV_NextRun))   
-    
-def CHKCache():
-    # Secondary Cache Control - avoid threaded cache functions from colliding.
-    return getProperty("PTVL.BackgroundLoading_Finished") == "true"
-
+        
 def help(chtype):
     log('utils: help, ' + chtype)
     HelpBaseURL = 'http://raw.github.com/Lunatixz/XBMC_Addons/master/script.pseudotv.live/resources/help/help_'
@@ -1755,36 +1712,7 @@ def xmltvFile(setting3):
     else:
         xmltvFle = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('xmltvLOC'), str(setting3) +'.xml'))
     return xmltvFle
-   
-def getOSPpath(OSplat):
-    log("utils: getOSPpath") 
-    if OSplat == '0':
-        return 'androidarm/rtmpdump'
-    elif OSplat == '1':
-        return 'android86/rtmpdump'
-    elif OSplat == '2':
-        return 'atv1linux/rtmpdump'
-    elif OSplat == '3':
-        return 'atv1stock/rtmpdump'
-    elif OSplat == '4':
-        return 'atv2/rtmpdump'
-    elif OSplat == '5':
-        return 'ios/rtmpdump'
-    elif OSplat == '6':
-        return 'linux32/rtmpdump'
-    elif OSplat == '7':
-        return 'linux64/rtmpdump'
-    elif OSplat == '8':
-        return 'mac32/rtmpdump'
-    elif OSplat == '9':
-        return 'mac64/rtmpdump'
-    elif OSplat == '10':
-        return 'pi/rtmpdump'
-    elif OSplat == '11':
-        return 'win/rtmpdump.exe'
-    elif OSplat == '12':
-        return '/usr/bin/rtmpdump'
-        
+           
 def chkSources():
     log("utils: chkSources") 
     hasPVR = False
@@ -1805,21 +1733,33 @@ def chkSources():
             return True
     except:
         pass
+                
+def isLowPower():
+    return getProperty("PTVL.LOWPOWER") == "true"
         
 def chkLowPower(): 
     setProperty("PTVL.LOWPOWER","false") 
-    if getPlatform() in ['ATV2','iOS','rPi','Android']:
-        setProperty("PTVL.LOWPOWER","true") 
-        REAL_SETTINGS.setSetting('SFX_Enabled', "false")
-        REAL_SETTINGS.setSetting('Idle_Screensaver', "false")
-        REAL_SETTINGS.setSetting('EnhancedGuideData', "false")
-        if MEDIA_LIMIT > 250:
-            REAL_SETTINGS.setSetting('MEDIA_LIMIT', "3")
+    if REAL_SETTINGS.getSetting("Override.LOWPOWER") == "false":
+        if getPlatform() in ['ATV2','iOS','rPi','Android']:
+            setProperty("PTVL.LOWPOWER","true") 
+            REAL_SETTINGS.setSetting('SFX_Enabled', "false")
+            REAL_SETTINGS.setSetting('Enable_FindLogo', "false")
+            REAL_SETTINGS.setSetting('Idle_Screensaver', "false")
+            REAL_SETTINGS.setSetting('EnhancedGuideData', "false")
+            if MEDIA_LIMIT > 250:
+                REAL_SETTINGS.setSetting('MEDIA_LIMIT', "3")
+            if NOTIFY == True:
+                xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Settings Optimized For Performance", 1000, THUMB) )
+            if isDebug() == True:
+                if yesnoDialog('Its recommended you disable debug logging for standard use','Disable Debugging?') == True:
+                    REAL_SETTINGS.setSetting('enable_Debug', "false")
     log("utils: chkLowPower = " + getProperty("PTVL.LOWPOWER"))
             
 def chkChanges():
     log("utils: chkChanges")
-    # todo add bcts, medialimit
+    ComCHK()
+    DonCHK()
+    # todo add bcts
     CURR_ENHANCED_DATA = REAL_SETTINGS.getSetting('EnhancedGuideData')
     try:
         LAST_ENHANCED_DATA = REAL_SETTINGS.getSetting('Last_EnhancedGuideData')
@@ -1831,6 +1771,17 @@ def chkChanges():
         REAL_SETTINGS.setSetting('ForceChannelReset', "true")
         REAL_SETTINGS.setSetting('Last_EnhancedGuideData', CURR_ENHANCED_DATA)
         
+    CURR_MEDIA_LIMIT = REAL_SETTINGS.getSetting('MEDIA_LIMIT')
+    try:
+        LAST_MEDIA_LIMIT = REAL_SETTINGS.getSetting('Last_MEDIA_LIMIT')
+    except:
+        REAL_SETTINGS.setSetting('Last_MEDIA_LIMIT', CURR_MEDIA_LIMIT)
+        LAST_MEDIA_LIMIT = REAL_SETTINGS.getSetting('Last_MEDIA_LIMIT')
+    
+    if CURR_MEDIA_LIMIT != LAST_MEDIA_LIMIT:
+        REAL_SETTINGS.setSetting('ForceChannelReset', "true")
+        REAL_SETTINGS.setSetting('Last_MEDIA_LIMIT', CURR_MEDIA_LIMIT)
+
 def getRSSFeed(genre):
     log("utils: getRSSFeed, genre = " + genre)
     feed = ''
@@ -1854,4 +1805,3 @@ def parseFeed(link):
     # except Exception,e:
         # log("getRSSFeed Failed!" + str(e))
         # pass
-        

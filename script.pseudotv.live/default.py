@@ -32,34 +32,12 @@ __version__    = __settings__.getAddonInfo('version')
 __language__   = __settings__.getLocalizedString
        
 def startPseudoTV():
-
-    # Check if Outdated/Install Repo
-    VersionCompare()
-
-    # VideoWindow Patch.
-    VideoWindow()
-             
-    # Clear filelist Caches    
-    if REAL_SETTINGS.getSetting("ClearCache") == "true" or REAL_SETTINGS.getSetting("ForceChannelReset") == "true":
-        ClearCache('Filelist')
-        
-    # Clear BCT Caches
-    if REAL_SETTINGS.getSetting("ClearBCT") == "true":
-        ClearCache('BCT')
-
-    # Clear Artwork Folders
-    if REAL_SETTINGS.getSetting("ClearLiveArt") == "true":
-        ClearCache('Art')
-
+    # Run Prestart functions
+    ChkSettings()
+    
     # Backup/Restore settings2
     ChkSettings2()
-    
-    # Optimize settings based on sys.platform
-    chkLowPower()
-        
-    # Check if changes require forced channel reset
-    chkChanges()
-        
+
     #Start PseudoTV
     PseudoTV()
        
@@ -100,10 +78,17 @@ if getProperty("PseudoTVRunning") != "True":
         PTVL_Version = REAL_SETTINGS.getSetting("PTVL_Version") 
     
     if PTVL_Version != __version__:
-        # ClearPlaylists()
-        # REAL_SETTINGS.setSetting('ForceChannelReset', 'true')
         REAL_SETTINGS.setSetting("PTVL_Version", __version__)
+        
+        # Remove m3u playlists
+        # ClearPlaylists()
+        
+        # Force Channel rebuild
+        # REAL_SETTINGS.setSetting('ForceChannelReset', 'true')
       
+        # Optimize settings based on sys.platform
+        chkLowPower()
+        
         # VideoWindow Patch.
         VideoWindow()
         
@@ -112,9 +97,6 @@ if getProperty("PseudoTVRunning") != "True":
         
         # Check if autoplay is enabled
         CHKAutoplay()
-        
-        if getXBMCVersion() == 15:
-            okDialog('Kodi v.15 Detected, Its recommended you add "pvr://" and "upnp:// as a kodi video source"')
     else:
         startPseudoTV()
 else:

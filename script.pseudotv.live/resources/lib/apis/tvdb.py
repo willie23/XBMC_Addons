@@ -28,149 +28,97 @@ import resources.lib.Globals
 from urllib2 import HTTPError, URLError
 from language import *
 from resources.lib.utils import *
+from xml.etree import ElementTree as ET
+from resources.lib.Globals import *
+
 # Use json instead of simplejson when python v2.7 or greater
 if sys.version_info < (2, 7):
     import simplejson as json
 else:
     import json
 
-from xml.etree import ElementTree as ET
-from resources.lib.Globals import *
-
-# Commoncache plugin import
-try:
-    import StorageServer
-except Exception,e:
-    import resources.lib.storageserverdummy as StorageServer
+API_URL = 'http://www.thetvdb.com/api/%s/series/%s/banners.xml'
 
 class TVDB(object):
-    def __init__(self, api_key='9c47d05a3f5f3a00104f6586412306af'):
-        self.apikey = api_key
+    def __init__(self):
+        self.name = 'TVDB'
+        self.api_key = TVDB_API_KEY
         self.baseurl = 'http://thetvdb.com'
+        self.url_prefix = 'http://www.thetvdb.com/banners/'
     
-    def __repr__(self):
-        return 'TVDB(baseurl=%s, apikey=%s)' % (self.baseurl, self.apikey)
-
+    
     def _buildUrl(self, cmd, parms={}):
         url = '%s/api/%s?%s' % (self.baseurl, cmd, urllib.urlencode(parms))
         return url
 
+        
     def getIdByZap2it(self, zap2it_id):
-        if Primary_Cache_Enabled == True:
-            result = parserTVDB.cacheFunction(self.getIdByZap2it_NEW, zap2it_id)
-        else:
-            result = self.getIdByZap2it_NEW(zap2it_id)
-        if not result:
-            result = 'Empty'
-        return result    
-
-    def getIdByZap2it_NEW(self, zap2it_id):
+        log("tvdb: getIdByZap2it")
         try:
-            response = urllib2.urlopen(self._buildUrl('GetSeriesByRemoteID.php', {'zap2it' : zap2it_id})).read()
+            response = read_url_cached(self._buildUrl('GetSeriesByRemoteID.php', {'zap2it' : zap2it_id}))
             tvdbidRE = re.compile('<id>(.+?)</id>', re.DOTALL)
             match = tvdbidRE.search(response)
             if match:
                 return match.group(1)
             else:
-                return 'Empty'
+                return 0
         except Exception,e:
-            return 'Empty'
+            return 0
 
+            
     def getIdByIMDB(self, imdb_id):
-        if Primary_Cache_Enabled == True:
-            result = parserTVDB.cacheFunction(self.getIdByIMDB_NEW, imdb_id)
-        else:
-            result = self.getIdByIMDB_NEW(imdb_id)
-        if not result:
-            result = 'Empty'
-        return result    
-
-    def getIdByIMDB_NEW(self, imdb_id):
+        log("tvdb: getIdByIMDB")
         try:
-            response = urllib2.urlopen(self._buildUrl('GetSeriesByRemoteID.php', {'apikey' : self.apikey, 'imdbid' : imdb_id})).read()
+            response = read_url_cached(self._buildUrl('GetSeriesByRemoteID.php', {'apikey' : self.api_key, 'imdbid' : imdb_id}))
             imdbidRE = re.compile('<id>(.+?)</id>', re.DOTALL)
             match = imdbidRE.search(response)
 
             if match:
                 return match.group(1)
             else:
-                return 'Empty'
+                return 0
         except Exception,e:
-            return 'Empty'
-
+            return 0
+            
+            
     def getEpisodeByAirdate(self, tvdbid, airdate):
-        if Primary_Cache_Enabled == True:
-            result = parserTVDB.cacheFunction(self.getEpisodeByAirdate_NEW, tvdbid, airdate)
-        else:
-            result = self.getEpisodeByAirdate_NEW(tvdbid, airdate)
-        if not result:
-            result = 'Empty'
-        return result    
-
-    def getEpisodeByAirdate_NEW(self, tvdbid, airdate):
+        log("tvdb: getEpisodeByAirdate")
         try:
-            response = urllib2.urlopen(self._buildUrl('GetEpisodeByAirDate.php', {'apikey' : self.apikey, 'seriesid' : tvdbid, 'airdate' : airdate})).read()
+            response = read_url_cached(self._buildUrl('GetEpisodeByAirDate.php', {'apikey' : self.api_key, 'seriesid' : tvdbid, 'airdate' : airdate}))
             return response
         except Exception,e:
             return ''
 
+            
     def getEpisodeByID(self, tvdbid):
-        if Primary_Cache_Enabled == True:
-            result = parserTVDB.cacheFunction(self.getEpisodeByID_NEW, tvdbid)
-        else:
-            result = self.getEpisodeByID_NEW(tvdbid)
-        if not result:
-            result = 'Empty'
-        return result    
-
-    def getEpisodeByID_NEW(self, tvdbid):
+        log("tvdb: getEpisodeByID")
         try:
-            response = urllib2.urlopen(self._buildUrl(self.apikey + '/series/' + tvdbid + '/all/en.xml')).read()
+            response = read_url_cached(self._buildUrl(self.api_key + '/series/' + tvdbid + '/all/en.xml'))
             return response
         except Exception,e:
             return ''
 
+            
     def getIdByShowName(self, showName):
-        if Primary_Cache_Enabled == True:
-            try:
-                result = parserTVDB.cacheFunction(self.getIdByShowName_NEW, showName)
-            except:
-                result = self.getIdByShowName_NEW(showName)
-                pass
-        else:
-            result = self.getIdByShowName_NEW(showName)
-        if not result:
-            result = 'Empty'
-        return result    
-
-    def getIdByShowName_NEW(self, showName):
+        log("tvdb: getIdByShowName")
         try:
             #NOTE: This assumes an exact match. It is possible to get multiple results though. This could be smarter
-            response = urllib2.urlopen(self._buildUrl('GetSeries.php', {'seriesname' : showName})).read()
+            response = read_url_cached(self._buildUrl('GetSeries.php', {'seriesname' : showName}))
             tvdbidRE = re.compile('<id>(.+?)</id>', re.DOTALL)
             match = tvdbidRE.search(response)
             if match:
                 return match.group(1)
             else:
-                return 'Empty'
+                return 0
         except Exception,e:
-            return 'Empty'
+            return 0
 
+            
     def getBannerByID(self, tvdbid, type):
-        if CHKCache() == True:
-            result = parserTVDB.cacheFunction(self.getBannerByID_NEW, tvdbid, type)
-        else:
-            result = self.getBannerByID_NEW(tvdbid, type)
-        if not result:
-            result = 'Empty'
-        return result    
-
-    def getBannerByID_NEW(self, tvdbid, type):
-        log('Downloader: getBannerByID')
+        log("tvdb: getBannerByID")
         try:
-            response = urllib2.urlopen(self._buildUrl(self.apikey + '/series/' + tvdbid + '/banners.xml'))
-            log('Downloader: response = ' + str(response))
-            tree = ET.parse(response)
+            response = read_url_cached(self._buildUrl(self.api_key + '/series/' + tvdbid + '/banners.xml'))
+            tree = ET.fromstring(response)
             images = []
             banner_data = tree.find("Banners")
             banner_nodes = tree.getiterator("Banner")
@@ -190,35 +138,26 @@ class TVDB(object):
                     # images.append((banner_url, banner_type, banner_type2, banner_season))
             return images
         except Exception,e:
-            return 'Empty'
+            return ''
 
+            
     def getIMDBbyShowName(self, showName):
-        if Primary_Cache_Enabled == True:
-            try:
-                result = parserTVDB.cacheFunction(self.getIMDBbyShowName_NEW, showName)
-            except:
-                result = self.getIMDBbyShowName_NEW(showName)
-                pass
-        else:
-            result = self.getIMDBbyShowName_NEW(showName)
-        if not result:
-            result = 'Empty'
-        return result    
-
-    def getIMDBbyShowName_NEW(self, showName):
+        log("tvdb: getIMDBbyShowName")
         try:
             #NOTE: This assumes an exact match. It is possible to get multiple results though. This could be smarter
-            response = urllib2.urlopen(self._buildUrl('GetSeries.php', {'seriesname' : showName})).read()
+            response = read_url_cached(self._buildUrl('GetSeries.php', {'seriesname' : showName}))
             tvdbidRE = re.compile('<IMDB_ID>(.+?)</IMDB_ID>', re.DOTALL)
             match = tvdbidRE.search(response)
             if match:
                 return match.group(1)
             else:
-                return 'Empty'
+                return ''
         except Exception,e:
-            return 'Empty'
+            return ''
 
-    def get_image_list(self, media_id, mode):
+            
+    def get_image_list(self, media_id):
+        log("tvdb: get_image_list")
         image_list = []
         data = get_data(API_URL%(self.api_key, media_id), 'xml')
         try:
@@ -276,7 +215,6 @@ class TVDB(object):
                     else:
                         info['season'] = 'n/a'
 
-                    # Create Gui string to display
                     info['generalinfo'] = '%s: %s  |  ' %( 'Language', get_language(info['language']).capitalize())
                     if info['season'] != 'n/a':
                         info['generalinfo'] += '%s: %s  |  ' %( 'Season', info['season'] )
@@ -287,57 +225,12 @@ class TVDB(object):
                 if info:
                     image_list.append(info)
         except:
-            raise NoFanartError(media_id)
+            raise
         if image_list == []:
-            raise NoFanartError(media_id)
+            raise
         else:
             # Sort the list before return. Last sort method is primary
             image_list = sorted(image_list, key=itemgetter('rating'), reverse=True)
             image_list = sorted(image_list, key=itemgetter('season'))
             image_list = sorted(image_list, key=itemgetter('language'))
             return image_list
-            
-    # Retrieve JSON data from cache function
-    def get_data(url, data_type ='json'):
-        if CHKCache() == True:
-            result = parserFANTV.cacheFunction(get_data_new, url, data_type)
-        else:
-            result = get_data_new(url, data_type)
-        if not result:
-            result = 'Empty'
-        return result
-
-
-    # Retrieve JSON data from site
-    def get_data_new(url, data_type):
-        #log('Cache expired. Retrieving new data')
-        data = []
-        try:
-            request = urllib2.Request(url)
-            # TMDB needs a header to be able to read the data
-            if url.startswith("http://api.themoviedb.org"):
-                request.add_header("Accept", "application/json")
-            req = urllib2.urlopen(request)
-            if data_type == 'json':
-                data = json.loads(req.read())
-                if not data:
-                    data = 'Empty'
-            else:
-                data = req.read()
-            req.close()
-        except HTTPError, e:
-            if e.code == 400:
-                raise HTTP400Error(url)
-            elif e.code == 404:
-                raise HTTP404Error(url)
-            elif e.code == 503:
-                raise HTTP503Error(url)
-            else:
-                raise DownloadError(str(e))
-        except URLError:
-            raise HTTPTimeout(url)
-        except socket.timeout, e:
-            raise HTTPTimeout(url)
-        except:
-            data = 'Empty'
-        return data

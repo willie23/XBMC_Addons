@@ -1502,8 +1502,8 @@ class HandleBCT(BaseRule):
 class HandlePOP(BaseRule):
     print 'HandlePOP temp disabled'
     def __init__(self):
-        self.name = 'ComingUp Popup'
-        self.optionLabels = ['Display ComingUp Next']
+        self.name = 'Coming Up Popup'
+        self.optionLabels = ['Display Coming Up Next']
         self.optionValues = ['Yes']
         self.myId = 18
         self.actions = RULES_ACTION_OVERLAY_SET_CHANNEL | RULES_ACTION_OVERLAY_SET_CHANNEL_END
@@ -1516,9 +1516,9 @@ class HandlePOP(BaseRule):
 
     def getTitle(self):
         if self.optionValues[0] == 'Yes':
-            return 'Display ComingUp Next'
+            return 'Display Coming Up Next'
         else:
-            return 'Hide ComingUp Next'
+            return 'Hide Coming Up Next'
 
 
     def onAction(self, act, optionindex):

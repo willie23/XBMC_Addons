@@ -31,6 +31,7 @@ class Main:
     def __init__(self):
         self._parse_argv()
     
+    
     def log(self, msg, level = xbmc.LOGDEBUG):
         log('capture: ' + msg, level)
 
@@ -56,24 +57,30 @@ class Main:
             except:
                 pass
                 
-        print self.params
+        self.log("params = " + str(self.params))
         self.Label = self.params[" Label"] = self.params.get(" Label", "").strip()
         self.Path = self.params[" Path"] = self.params.get(" Path", "").strip()
         self.FileName = self.params[" FileName"] = self.params.get(" FileName", "").strip()
         self.DBIDType = self.params[" DBIDType"] = self.params.get(" DBIDType", "").strip()
         self.AddonName = self.params[" AddonName"] = self.params.get(" AddonName", "").strip()
         self.AddonType = self.params[" AddonType"] = self.params.get(" AddonType", "").strip()
+        
         try:
             self.Description = self.params[" Description"] = self.params.get(" Description", "").strip()
         except:
             self.Description = self.params[" Description"] = self.params.get("Description", "").strip()
+        
         self.isPlayable = self.params[" isPlayable"] = self.params.get(" isPlayable", "").strip()
         self.isFolder = self.params[" isFolder"] = self.params.get(" isFolder", "").strip()
-        # print 'self.params', self.Label, self.Path, self.FileName, self.DBIDType, self.AddonName, self.AddonType, self.Description, self.isPlayable, self.isFolder
+        
         if self.AddonName:
             ADDON = xbmcaddon.Addon(id=self.AddonName)
             ADDON_ID = ADDON.getAddonInfo('id')
             self.AddonName = ADDON.getAddonInfo('name')
+        self.chnlst = ChannelList()
+        self.Label = self.chnlst.CleanLabels(self.Label)
+        self.Description  = self.chnlst.CleanLabels(self.Description)
+        self.AddonName = self.chnlst.CleanLabels(self.AddonName)
         self.ImportChannel()
         
         
@@ -89,7 +96,6 @@ class Main:
         self.channame = ''
         self.theitem = []
         self.itemlst = []
-        
         ADDON_SETTINGS.loadSettings()
         
         for i in range(999):

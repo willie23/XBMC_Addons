@@ -23,130 +23,97 @@ import xbmc, xbmcgui
 import resources.lib.Globals
 from resources.lib.utils import *
 
+from urllib2 import HTTPError, URLError
+from language import *
+from operator import itemgetter
+from resources.lib.Globals import *
+
 # Use json instead of simplejson when python v2.7 or greater
 if sys.version_info < (2, 7):
     import simplejson as json
 else:
     import json
 
-from urllib2 import HTTPError, URLError
-from language import *
-from operator import itemgetter
-from resources.lib.Globals import *
-
-# Commoncache plugin import
-try:
-    import StorageServer
-except Exception,e:
-    import resources.lib.storageserverdummy as StorageServer
+API_KEY = TMDB_API_KEY
+API_CFG = 'http://api.themoviedb.org/3/configuration?api_key=%s'
+API_URL = 'http://api.themoviedb.org/3/movie/%s/images?api_key=%s'
+BASE_IMAGEURL = "http://d3gtl9l2a4fn1j.cloudfront.net/t/p/"
 
 class TMDB(object):
-    def __init__(self, api_key='078845CE15BC08A7'):
-        self.apikey = api_key
+    def __init__(self):
+        self.name = 'TMDB'
+        self.apikey = TMDB_API_KEY
         self.baseurl = 'http://api.themoviedb.org/3'
         try:
             self.imagebaseurl = self._getPosterBaseUrl()
         except Exception,e:
             pass
 
-    def __repr__(self):
-        return 'TMDB(apikey=%s, baseurl=%s, imagebaseurl=%s)' % (self.apikey,self.baseurl,self.imagebaseurl)
-        
+            
     def _buildUrl(self, cmd, parms={}):
-        # try:
         parmsCopy = parms.copy()
         parmsCopy.update({'api_key' : self.apikey})
         url = '%s/%s?%s' % (self.baseurl, cmd, urllib.urlencode(parmsCopy))
-        #self.xbmc.log(url)
         return url
-        # except:
-            # pass
 
-    # def _getPosterBaseUrl(self):
-        # response = json.loads(urllib2.urlopen(urllib2.Request(self._buildUrl('configuration'), headers={"Accept": "application/json"})).read())
-        # #self.xbmc.log('Response: \r\n%s' % response)
-        # return response['images']['base_url']
+        
+    def _getPosterBaseUrl(self):
+        response = json.loads(urllib2.urlopen(urllib2.Request(self._buildUrl('configuration'), headers={"Accept": "application/json"})).read())
+        #self.xbmc.log('Response: \r\n%s' % response)
+        return response['images']['base_url']
 
-    # def getPosterUrl(self, filename):
-        # return '%s%s%s' % (self.imagebaseurl, 'w92/', filename)
+        
+    def getPosterUrl(self, filename):
+        return '%s%s%s' % (self.imagebaseurl, 'w92/', filename)
 
+        
     def getMovie(self, movieName, year):
-        if Primary_Cache_Enabled == True:
-            try:
-                result = parserTMDB.cacheFunction(self.getMovie_NEW, movieName, year)
-            except:
-                result = self.getMovie_NEW(movieName, year)
-                pass                
-        else:
-            result = self.getMovie_NEW(movieName, year)
-        if not result:
-            result = 0
-        return result 
-
-    def getMovie_NEW(self, movieName, year):
-        #self.xbmc.log('movieName: %s' % movieName)
         try:
-            response = json.loads(urllib2.urlopen(urllib2.Request(self._buildUrl('search/movie', {'query' : movieName, 'year' : year}), headers={"Accept": "application/json"})).read())
+            response = json.loads(read_url_cached(self._buildUrl('search/movie', {'query' : movieName, 'year' : year}, headers={"Accept": "application/json"})))
             if response['total_results'] > 0:
-                #self.xbmc.log('Response: \r\n%s' % response)
-                response = json.loads(urllib2.urlopen(urllib2.Request(self._buildUrl('movie/%s' % (response['results'][0]['id'])), headers={"Accept": "application/json"})).read())
+                response = json.loads(read_url_cached(self._buildUrl('movie/%s' % (response['results'][0]['id']), headers={"Accept": "application/json"})))
             else:
-                #self.xbmc.log('No matches found for %s' % movieName)
                 response = json.loads('{"imdb_id":"", "poster_path":""}')
-            #print response
         except:
             response = ''
-            pass
         return response
+
         
     def getMPAA(self, imdbid):
-        if Primary_Cache_Enabled == True:
-            try:
-                result = parserTMDB.cacheFunction(self.getMPAA_NEW, imdbid)
-            except:
-                result = self.getMPAA_NEW(imdbid)
-                pass               
-        else:
-            result = self.getMPAA_NEW(imdbid)
-        if not result:
-            result = 'NA'
-        return result 
-        
-    def getMPAA_NEW(self, imdbid):
-        response = str(json.loads(urllib2.urlopen(urllib2.Request('https://api.themoviedb.org/3/movie/'+imdbid+'/releases?api_key='+self.apikey+'&language=en', headers={"Accept": "application/json"})).read()))
+        response = json.loads(read_url_cached(self._buildUrl('https://api.themoviedb.org/3/movie/'+imdbid+'/releases?api_key='+self.apikey+'&language=en', headers={"Accept": "application/json"})))
         response = response.split("certification': u'")[1]
         response = response.split("'}")[0]
         return response
+        
         
     def getIMDBId(self, movieName, year):
         response = self.getMovie(movieName, year)
         return response['imdb_id']
 
+        
     def getPlot(self, movieName, year):
         response = self.getMovie(movieName, year)
         return response['overview']
 
+        
     def getTagline(self, movieName, year):
         response = self.getMovie(movieName, year)
         return response['tagline']
 
+        
     def getGenre(self, movieName, year):
         response = self.getMovie(movieName, year)
         return response['genres']
 
+
     def get_image_list(self, media_id):
-        log('Downloader: get_image_list, ' + str(media_id))
-        API_KEY = TMDB_API_KEY
-        API_CFG = 'http://api.themoviedb.org/3/configuration?api_key=%s'
-        API_URL = 'http://api.themoviedb.org/3/movie/%s/images?api_key=%s'
-        log('Downloader: API_URL = ' + str(API_URL))
+        log("tmdb: get_image_list")
         image_list = []
-        api_cfg = self.get_data(API_CFG%(API_KEY), 'json')
+        api_cfg = get_data(API_CFG%(API_KEY), 'json')
         if api_cfg == "Empty" or not api_cfg:
             return image_list
         BASE_IMAGEURL = api_cfg['images'].get('base_url')
-        data = self.get_data(API_URL%(media_id, API_KEY), 'json')
-        log('Downloader: data = ' + str(data))
+        data = get_data(API_URL%(media_id, API_KEY), 'json')
         if data == "Empty" or not data:
             return image_list
         else:
@@ -220,88 +187,46 @@ class TMDB(object):
                                        'language': item.get('iso_639_1','n/a'),
                                        'rating': rating,
                                        'votes': votes,
+                                       # Create Gui string to display
                                        'generalinfo': ('%s: %s  |  %s: %s  |  %s: %s  |  %s: %sx%s  |  ' 
                                                        %( "Language", get_language(item.get('iso_639_1','n/a')).capitalize(),
                                                           "Rating", rating,
                                                           "Votes", votes,
                                                           "Size", item.get('width'), item.get('height')))})
             except Exception, e:
-                xbmc.log( 'Problem report: %s' %str( e ), xbmc.LOGNOTICE )
+                log( 'Problem report: %s' %str( e ), xbmc.LOGNOTICE )
             if image_list == []:
-                pass
+                raise
             else:
                 # Sort the list before return. Last sort method is primary
                 image_list = sorted(image_list, key=itemgetter('rating'), reverse=True)
                 image_list = sorted(image_list, key=itemgetter('language'))
                 return image_list
 
-                
-    def _search_movie(medianame,year=''):
-        medianame = normalize_string(medianame)
-        xbmc.log('TMDB API search criteria: Title[''%s''] | Year[''%s'']' % (medianame,year) )
-        illegal_char = ' -<>:"/\|?*%'
-        for char in illegal_char:
-            medianame = medianame.replace( char , '+' ).replace( '++', '+' ).replace( '+++', '+' )
 
-        search_url = 'http://api.themoviedb.org/3/search/movie?query=%s+%s&api_key=%s' %( medianame, year, API_KEY )
-        tmdb_id = ''
-        xbmc.log('TMDB API search:   %s ' % search_url)
-        try:
-            data = self.get_data(search_url, 'json')
-            if data == "Empty":
-                tmdb_id = ''
-            else:
-                for item in data['results']:
-                    if item['id']:
-                        tmdb_id = item['id']
-                        break
-        except Exception, e:
-            xbmc.log( str( e ), xbmc.LOGERROR )
-        if tmdb_id == '':
-            xbmc.log('TMDB API search found no ID')
+def _search_movie(medianame,year=''):
+    medianame = normalize_string(medianame)
+    log('TMDB API search criteria: Title[''%s''] | Year[''%s'']' % (medianame,year) )
+    illegal_char = ' -<>:"/\|?*%'
+    for char in illegal_char:
+        medianame = medianame.replace( char , '+' ).replace( '++', '+' ).replace( '+++', '+' )
+
+    search_url = 'http://api.themoviedb.org/3/search/movie?query=%s+%s&api_key=%s' %( medianame, year, API_KEY )
+    tmdb_id = ''
+    log('TMDB API search:   %s ' % search_url)
+    try:
+        data = get_data(search_url, 'json')
+        if data == "Empty":
+            tmdb_id = ''
         else:
-            xbmc.log('TMDB API search found ID: %s' %tmdb_id)
-        return tmdb_id
-
-
-    # Retrieve JSON data from cache function
-    def get_data(self, url, data_type ='json'):
-        log('Downloader: get_data - Cache')
-        if CHKCache() == True:
-            try:
-                result = parserTMDB.cacheFunction(self.get_data_new, url, data_type)
-            except:
-                result = self.get_data_new(url, data_type)
-                pass
-        else:
-            result = self.get_data_new(url, data_type)
-        if not result:
-            result = 'Empty'
-            
-        log('Downloader: result = ' + str(result))
-        return result
-
-    # Retrieve JSON data from site
-    def get_data_new(self, url, data_type):
-        log('Downloader: get_data_new - Cache expired. Retrieving new data')
-        data = []
-        try:
-            request = urllib2.Request(url)
-            # TMDB needs a header to be able to read the data
-            if url.startswith("http://api.themoviedb.org"):
-                request.add_header("Accept", "application/json")
-            req = urllib2.urlopen(request)
-            if data_type == 'json':
-                data = json.loads(req.read())
-                if not data:
-                    data = 'Empty'
-            else:
-                data = req.read()
-            req.close()
-        except Exception,e:
-            data = 'Empty'
-            
-        log('Downloader: data = ' + str(data))
-        return data
-
-
+            for item in data['results']:
+                if item['id']:
+                    tmdb_id = item['id']
+                    break
+    except Exception, e:
+        log( str( e ), xbmc.LOGERROR )
+    if tmdb_id == '':
+        log('TMDB API search found no ID')
+    else:
+        log('TMDB API search found ID: %s' %tmdb_id)
+    return tmdb_id

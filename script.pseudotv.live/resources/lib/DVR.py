@@ -77,7 +77,7 @@ class DVR(xbmcgui.WindowXMLDialog):
 
     
     def logDebug(self, msg, level = xbmc.LOGDEBUG):
-        if DEBUG == 'true':
+        if isDebug() == True:
             log('PVR: ' + msg, level)
             
     def SetReminder(self):

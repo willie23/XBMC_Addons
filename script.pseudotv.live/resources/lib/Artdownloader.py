@@ -26,6 +26,7 @@ import urllib, urllib2, urlparse
 import socket
 
 from apis.fanarttv import *
+from apis.language import *
 from ChannelList import *
 from Globals import *
 from FileAccess import FileAccess
@@ -66,8 +67,8 @@ class Artdownloader:
     def __init__(self):
         self.chanlist = ChannelList()
         self.fanarttv = fanarttv()
-        self.tvdbAPI = tvdb.TVDB(TVDB_API_KEY)
-        self.tmdbAPI = tmdb.TMDB(TMDB_API_KEY)  
+        self.tvdbAPI = tvdb.TVDB()
+        self.tmdbAPI = tmdb.TMDB()  
         
         
     def log(self, msg, level = xbmc.LOGDEBUG):
@@ -75,7 +76,7 @@ class Artdownloader:
 
     
     def logDebug(self, msg, level = xbmc.LOGDEBUG):
-        if DEBUG == 'true':
+        if isDebug() == True:
             log('Artdownloader: ' + msg, level)
     
 
@@ -134,34 +135,7 @@ class Artdownloader:
 
             
     def FindArtwork(self, type, chtype, chname, id, dbid, mpath, arttypeEXT):
-        if Primary_Cache_Enabled == True:
-            self.log("FindArtwork Cache") 
-            try: #stagger artwork cache by chtype
-                if chtype <= 3:
-                    result = artwork1.cacheFunction(self.FindArtwork_NEW, type, chtype, chname, id, dbid, mpath, arttypeEXT)
-                elif chtype > 3 and chtype <= 6:
-                    result = artwork2.cacheFunction(self.FindArtwork_NEW, type, chtype, chname, id, dbid, mpath, arttypeEXT)
-                elif chtype > 6 and chtype <= 9:
-                    result = artwork3.cacheFunction(self.FindArtwork_NEW, type, chtype, chname, id, dbid, mpath, arttypeEXT)
-                elif chtype > 9 and chtype <= 12:
-                    result = artwork4.cacheFunction(self.FindArtwork_NEW, type, chtype, chname, id, dbid, mpath, arttypeEXT)
-                elif chtype > 9 and chtype <= 15:
-                    result = artwork5.cacheFunction(self.FindArtwork_NEW, type, chtype, chname, id, dbid, mpath, arttypeEXT)
-                else:
-                    result = artwork6.cacheFunction(self.FindArtwork_NEW, type, chtype, chname, id, dbid, mpath, arttypeEXT)
-            except:
-                self.log("FindArtwork Cache Failed Forwarding to FindArtwork_NEW") 
-                result = self.FindArtwork_NEW(type, chtype, chname, id, dbid, mpath, arttypeEXT)
-        else:
-            self.log("FindArtwork Cache Disabled")
-            result = self.FindArtwork_NEW(type, chtype, chname, id, dbid, mpath, arttypeEXT)
-        if not result:
-            result = self.SetDefaultArt_NEW(chname, mpath, arttypeEXT)
-        return result
-
-               
-    def FindArtwork_NEW(self, type, chtype, chname, id, dbid, mpath, arttypeEXT):
-        self.logDebug("FindArtwork_NEW, type = " + type + ', chtype = ' + str(chtype) + ', chname = ' + chname + ', id = ' + str(id) + ', dbid = ' + str(dbid) + ', arttypeEXT = ' + arttypeEXT)
+        self.logDebug("FindArtwork, type = " + type + ', chtype = ' + str(chtype) + ', chname = ' + chname + ', id = ' + str(id) + ', dbid = ' + str(dbid) + ', arttypeEXT = ' + arttypeEXT)
         try:
             setImage = ''
             CacheArt = False
@@ -174,11 +148,11 @@ class Artdownloader:
             cachefile = xbmc.translatePath(os.path.join(ART_LOC, cachedthumb[0], cachedthumb[:-4] + "." + ext)).replace("\\", "/")
                     
             if FileAccess.exists(cachefile):
-                self.logDebug('FindArtwork_NEW, Artwork Cache')
+                self.logDebug('FindArtwork, Artwork Cache')
                 return cachefile   
                 
             elif chtype <= 7:
-                self.logDebug('FindArtwork_NEW, chtype <= 7 - FOLDER')
+                self.logDebug('FindArtwork, chtype <= 7 - FOLDER')
                 smpath = mpath.rsplit('/',2)[0]
                 artSeries = xbmc.translatePath(os.path.join(smpath, arttypeEXT))
                 artSeason = xbmc.translatePath(os.path.join(mpath, arttypeEXT))
@@ -199,54 +173,41 @@ class Artdownloader:
                         return artSeason
                     elif FileAccess.exists(artSeason_fallback):
                         return artSeason_fallback    
-
-                self.logDebug('FindArtwork_NEW, chtype <= 7 - JSON/DBID')
-                SetImage = self.JsonArt(type, chname, mpath, arttypeEXT)
-                if not SetImage and dbid != '0':
-                    SetImage = self.dbidArt(type, chname, mpath, dbid, arttypeEXT)
-                if FileAccess.exists(SetImage):
-                    return SetImage
-                if ENHANCED_DATA == True: 
-                        self.logDebug('FindArtwork_NEW, Artwork Download')
+            
+                if isLowPower != True:
+                    self.logDebug('FindArtwork, chtype <= 7 - JSON/DBID')
+                    SetImage = self.JsonArt(type, chname, mpath, arttypeEXT)
+                    if FileAccess.exists(SetImage):
+                        return SetImage
+                    elif dbid != '0':
+                        SetImage = self.dbidArt(type, chname, mpath, dbid, arttypeEXT)
+                        if FileAccess.exists(SetImage):
+                            return SetImage
+                    if ENHANCED_DATA == True and id != '0':
+                        self.logDebug('FindArtwork, Artwork Download')
                         self.DownloadArt(type, id, arttype, cachefile, chname, mpath, arttypeEXT)
             else:
                 if id == '0':
                     if chtype == 8 and dbid != '0':
-                        self.logDebug('FindArtwork_NEW, XMLTV')
+                        self.logDebug('FindArtwork, XMLTV')
                         return dbid.decode('base64')
                     elif type == 'youtube':
-                        self.logDebug('FindArtwork_NEW, YOUTUBE')
+                        self.logDebug('FindArtwork, YOUTUBE')
                         return "http://i.ytimg.com/vi/"+dbid+"/mqdefault.jpg"
                     elif type == 'rss' and dbid != '0':
-                        self.logDebug('FindArtwork_NEW, RSS')
+                        self.logDebug('FindArtwork, RSS')
                         return dbid.decode('base64')
                 else:
-                    if ENHANCED_DATA == True: 
-                        self.logDebug('FindArtwork_NEW, Artwork Download')
+                    if ENHANCED_DATA == True and id != '0':
+                        self.logDebug('FindArtwork, Artwork Download')
                         self.DownloadArt(type, id, arttype, cachefile, chname, mpath, arttypeEXT)
         except Exception,e:  
-            self.log("script.pseudotv.live-Artdownloader: FindArtwork_NEW Failed" + str(e), xbmc.LOGERROR)
+            self.log("script.pseudotv.live-Artdownloader: FindArtwork Failed" + str(e), xbmc.LOGERROR)
             buggalo.onExceptionRaised()     
                 
-                
+              
     def SetDefaultArt(self, chname, mpath, arttypeEXT):
-        self.logDebug("SetDefaultArt Cache")
-        if Primary_Cache_Enabled == True:
-            try:
-                result = artwork.cacheFunction(self.SetDefaultArt_NEW, chname, mpath, arttypeEXT)
-            except:
-                self.log("SetDefaultArt Cache Failed Forwarding to SetDefaultArt_NEW") 
-                result = self.SetDefaultArt_NEW(chname, mpath, arttypeEXT)
-                pass
-        else:
-            result = self.SetDefaultArt_NEW(chname, mpath, arttypeEXT)
-        if not result:
-            result = THUMB
-        return result  
-
-        
-    def SetDefaultArt_NEW(self, chname, mpath, arttypeEXT):
-        self.logDebug('SetDefaultArt_NEW, chname = ' + chname + ', arttypeEXT = ' + arttypeEXT)
+        self.logDebug('SetDefaultArt, chname = ' + chname + ', arttypeEXT = ' + arttypeEXT)
         try:
             setImage = ''
             arttype = arttypeEXT.split(".")[0]
@@ -271,14 +232,15 @@ class Artdownloader:
                 self.logDebug('SetDefaultArt, THUMB')
                 return THUMB
         except Exception,e:  
-            self.log("script.pseudotv.live-Artdownloader: SetDefaultArt_NEW Failed" + str(e), xbmc.LOGERROR)
+            self.log("script.pseudotv.live-Artdownloader: SetDefaultArt Failed" + str(e), xbmc.LOGERROR)
             buggalo.onExceptionRaised()
               
               
     def DownloadArt(self, type, id, arttype, cachefile, chname, mpath, arttypeEXT):
         self.log('DownloadArt')
         try:
-            self.DownloadArtTimer = threading.Timer(0.1, self.DownloadArt_Thread, [type, id, arttype, cachefile, chname, mpath, arttypeEXT])
+            data = [type, id, arttype, cachefile, chname, mpath, arttypeEXT]
+            self.DownloadArtTimer = threading.Timer(0.5, self.DownloadArt_Thread, [data])
             self.DownloadArtTimer.name = "DownloadArtTimer"
             if self.DownloadArtTimer.isAlive():
                 self.DownloadArtTimer.cancel()
@@ -288,8 +250,15 @@ class Artdownloader:
             self.log("DownloadArt, Failed" + str(e), xbmc.LOGERROR)
             
                        
-    def DownloadArt_Thread(self, type, id, arttype, cachefile, chname, mpath, arttypeEXT):
-        self.log('DownloadArt_Thread')
+    def DownloadArt_Thread(self, data):
+        self.logDebug('DownloadArt_Thread, data = ' + str(data))
+        type = data[0]
+        id = data[1]
+        arttype = data[2] 
+        cachefile = data[3]
+        chname = data[4] 
+        mpath = data[5] 
+        arttypeEXT = data[6]
         try:
             drive, Dpath = os.path.splitdrive(cachefile)
             path, filename = os.path.split(Dpath)
@@ -311,10 +280,10 @@ class Artdownloader:
                         return download_silent(tvdbPath,cachefile)
                 
                 self.logDebug('DownloadArt_Thread, Fanart.TV')
-                arttype = arttype.replace('graphical', 'banner').replace('folder', 'poster').replace('fanart', 'landscape')
+                arttype = arttype.replace('graphical', 'banner').replace('folder', 'poster')
                 fan = str(self.fanarttv.get_image_list_TV(id))
                 file_detail = re.compile( "{(.*?)}", re.DOTALL ).findall(fan)
-                pref_language = self.fanarttv.get_abbrev(REAL_SETTINGS.getSetting('limit_preferred_language'))
+                pref_language = get_abbrev(REAL_SETTINGS.getSetting('limit_preferred_language'))
                 
                 for f in file_detail:
                     try:
@@ -337,7 +306,7 @@ class Artdownloader:
 
             elif type == 'movie':
                 self.logDebug('DownloadArt_Thread, movie')
-                tmdb_Types = ['fanart', 'folder', 'poster']
+                tmdb_Types = ['banner', 'fanart', 'folder', 'poster']
 
                 if arttype in tmdb_Types:
                     self.logDebug('DownloadArt_Thread, TMDB')
@@ -355,11 +324,11 @@ class Artdownloader:
                             return download_silent(tmdbPath,cachefile)
 
                 self.logDebug('DownloadArt_Thread, Fanart.TV')
-                arttype = arttype.replace('graphical', 'banner').replace('folder', 'poster').replace('fanart', 'landscape')
+                arttype = arttype.replace('folder', 'poster')
                 fan = str(self.fanarttv.get_image_list_Movie(id))
                 file_detail = re.compile( "{(.*?)}", re.DOTALL ).findall(fan)
                 # print file_detail
-                pref_language = self.fanarttv.get_abbrev(REAL_SETTINGS.getSetting('limit_preferred_language'))
+                pref_language = get_abbrev(REAL_SETTINGS.getSetting('limit_preferred_language'))
                 
                 for f in file_detail:
                     try:
@@ -382,7 +351,7 @@ class Artdownloader:
             self.logDebug('DownloadArt_Thread, Trying Fallback Download')
             self.DownloadArt(type, id, self.getFallback_Arttype(arttype), cachefile, chname, mpath, self.getFallback_Arttype(arttype))                
         except Exception,e:  
-            self.log("DownloadArt_Thread, Failed" + str(e), xbmc.LOGERROR)
+            self.log("DownloadArt_Thread, Failed!" + str(e), xbmc.LOGERROR)
             
             
     def DownloadMetaArt(self, type, fle, id, typeEXT, ART_LOC):
@@ -420,7 +389,7 @@ class Artdownloader:
                 arttype = arttype.replace('graphical', 'banner').replace('folder', 'poster').replace('fanart', 'landscape')
                 fan = str(self.fanarttv.get_image_list_TV(id))
                 file_detail = re.compile( "{(.*?)}", re.DOTALL ).findall(fan)
-                pref_language = self.fanarttv.get_abbrev(REAL_SETTINGS.getSetting('limit_preferred_language'))
+                pref_language = get_abbrev(REAL_SETTINGS.getSetting('limit_preferred_language'))
                 
                 for f in file_detail:
                     languages = re.search("'language' *: *(.*?),", f)
@@ -435,7 +404,7 @@ class Artdownloader:
                                     if fanPaths and len(fanPaths.group(1)) > 0:
                                         fanPath = fanPaths.group(1).replace("u'",'').replace("'",'')
                                         if fanPath.startswith('http'):
-                                            download_silent(fanPath,FilePath)
+                                            return download_silent(fanPath,FilePath)
                                             break 
         except Exception,e:  
             self.log("script.pseudotv.live-Artdownloader: Fanart_Download Failed" + str(e), xbmc.LOGERROR)
@@ -479,23 +448,9 @@ class Artdownloader:
             self.log("script.pseudotv.live-Artdownloader: ConvertBug Failed" + str(e), xbmc.LOGERROR)
             return 'NA.png'
             
-
+        
     def FindBug(self, chtype, chname):
-        self.logDebug("FindBug Cache")
-        if Primary_Cache_Enabled == True:
-            try:
-                result = artwork.cacheFunction(self.FindBug_NEW, chtype, chname)
-            except:
-                result = self.FindBug_NEW(chtype, chname)
-        else:
-            result = self.FindBug_NEW(chtype, chname)
-        if not result:
-            result = THUMB
-        return result  
-        
-        
-    def FindBug_NEW(self, chtype, chname):
-        self.logDebug("FindBug_NEW, chname = " + chname)
+        self.logDebug("FindBug, chname = " + chname)
         try:
             setImage = ''
             BugName = (chname[0:18] + '.png')
@@ -530,5 +485,5 @@ class Artdownloader:
                         else:
                             return self.ConvertBug(BugFLE, cachefile)
         except Exception,e:  
-            self.log("script.pseudotv.live-Artdownloader: FindBug_NEW Failed" + str(e), xbmc.LOGERROR)
+            self.log("script.pseudotv.live-Artdownloader: FindBug Failed" + str(e), xbmc.LOGERROR)
             buggalo.onExceptionRaised()

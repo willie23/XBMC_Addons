@@ -29,6 +29,7 @@
         <setting id="quickflip" type="bool"   label="30374" default="false"/>
         <setting id="DirectInput" type="bool"   label="30379" default="false"/>
         <setting id="ChannelDelay" type="enum"   label="30302" default="0" values="None|0.25|0.5|0.75|1.0|1.25|1.5|1.75|2.0"/>
+        <setting id="StartOverTime" type="enum"   label="31311" default="4" values="10%|20%|30%|40%|50%|60%|70%|80%|90%"/>
         <setting id="SUPchannel" type="enum"  label="30303" values="Last Channel|Preferred Channel" default="0"/>
         <setting id="CurrentChannel" type="text"   label="30304" subsetting="true" visible="eq(-1,1)" default="1"/>
         <setting id="Disable_Watched" type="bool"   label="30311" default="false"/>
@@ -113,32 +114,29 @@
             <setting id="autoFindCommunity_Youtube_Playlists" type="bool"   label="30114" subsetting="true" visible="eq(-23,true)" enable="eq(-4,true) + System.HasAddon(plugin.video.youtube)"                                   default="false"/>
             <setting id="autoFindCommunity_Youtube_Seasonal"  type="bool"   label="30817" subsetting="true" visible="eq(-24,true)" enable="eq(-5,true) + System.HasAddon(plugin.video.youtube)"                                  default="false"/>
             <setting id="autoFindCommunity_RSS"               type="bool"   label="30112" subsetting="true" visible="eq(-25,true)" enable="eq(-6,true) + System.HasNetwork"                                  default="false"/>
-            <setting  id="autoFindCommunity_LiveTV"           type="bool"   label="30116" subsetting="true" visible="eq(-26,true) + eq(-7,true)"  enable="System.HasNetwork"                        default="false"/>
-            <setting id="autoFindCommunity_InternetTV"        type="bool"   label="30117" subsetting="true" visible="eq(-27,true) + eq(-8,true)"  enable="System.HasNetwork"                         default="false"/>
-            <setting id="autoFindCommunity_Plugins"           type="bool"   label="30111" subsetting="true" visible="eq(-28,true) + eq(-9,true)"  enable="System.HasNetwork"                                          default="false"/>
         <setting     id="AT_Donor"                            type="bool"                                   visible="false"                                                              default="false" />    
-        <setting                                              type="lsep"   label="30090"                   visible="eq(-30,true) + eq(-1,true)"                                        default="" /> 
-            <setting id="autoFindPopcorn"                     type="bool"   label="30092" subsetting="true" visible="eq(-31,true) + eq(-2,true)" enable="System.HasAddon(plugin.video.youtube)"                                      default="false"/>
-            <setting id="autoFindCinema"                      type="enum"   label="30908" subsetting="true" visible="eq(-32,true) + eq(-3,true)" enable="System.HasAddon(plugin.video.youtube)"                                      values=" |Default|IMAX" default="1" />  
-        <setting                                              type="lsep"   label="30782"                   visible="eq(-33,true)"     default="" /> 
-            <setting id="autoFindIPTV_Source"                 type="enum"   label="30965" subsetting="true" visible="eq(-34,true)" values=" |Local|Online" default="0" />
-            <setting id="autoFindIPTV_Path_Local"             type="file"   label="30966" subsetting="true" visible="eq(-35,true) + eq(-1,1)"             source="auto" default=""/>
-            <setting id="autoFindIPTV_Path_Online"            type="text"   label="30967" subsetting="true" visible="eq(-36,true) + eq(-2,2)"     enable="System.HasNetwork"             source="auto" default=""/>
-            <setting id="autoFindLive_Source"                 type="enum"   label="30969" subsetting="true" visible="eq(-37,true)"                         values=" |Local|Online" source="auto" default="0" />
-            <setting id="autoFindLive_Path_Local"             type="file"   label="30970" subsetting="true" visible="eq(-38,true) + eq(-1,1)"             default=""/>
-            <setting id="autoFindLive_Path_Online"            type="text"   label="30971" subsetting="true" visible="eq(-39,true) + eq(-2,2)"     enable="System.HasNetwork"             source="auto" default=""/>
-            <setting id="autoFindPLX_Source"                  type="enum"   label="30972" subsetting="true" visible="eq(-40,true)"                         values=" |Local|Online" default="0" />
-            <setting id="autoFindPLX_Path_Local"              type="file"   label="30973" subsetting="true" visible="eq(-41,true) + eq(-1,1)"             source="auto" default=""/>
-            <setting id="autoFindPLX_Path_Online"             type="text"   label="30974" subsetting="true" visible="eq(-42,true) + eq(-2,2)"     enable="System.HasNetwork"             source="auto" default=""/>
-        <setting                                              type="lsep"   label="30701"                   visible="eq(-43,true)"                                                                                            default="" /> 
-            <setting id="CN_TV"                               type="bool"   label="30702" subsetting="true" visible="eq(-44,true)"                                                                            default="true" />
-            <setting id="CN_Movies"                           type="bool"   label="30703" subsetting="true" visible="eq(-45,true)"                                                                              default="true" />
-            <setting id="CN_Episodes"                         type="bool"   label="30704" subsetting="true" visible="eq(-46,true)"                                                                               default="true" />
-            <setting id="CN_Sports"                           type="bool"   label="30705" subsetting="true" visible="eq(-47,true)"                                                                               default="true" />
-            <setting id="CN_Kids"                             type="bool"   label="30706" subsetting="true" visible="eq(-48,true)"                                                                               default="false" />
-            <setting id="CN_News"                             type="bool"   label="30707" subsetting="true" visible="eq(-49,true)"                                                                               default="true" />
-            <setting id="CN_Music"                            type="bool"   label="30712" subsetting="true" visible="eq(-50,true)"                                                                               default="true" />
-            <setting id="CN_Other"                            type="bool"   label="30713" subsetting="true" visible="eq(-51,true)"                                                                             default="true" />  
+        <setting                                              type="lsep"   label="30090"                   visible="eq(-27,true) + eq(-1,true)"                                        default="" /> 
+            <setting id="autoFindPopcorn"                     type="bool"   label="30092" subsetting="true" visible="eq(-28,true) + eq(-2,true)" enable="System.HasAddon(plugin.video.youtube)"                                      default="false"/>
+            <setting id="autoFindCinema"                      type="enum"   label="30908" subsetting="true" visible="eq(-29,true) + eq(-3,true)" enable="System.HasAddon(plugin.video.youtube)"                                      values=" |Default|IMAX" default="1" />  
+        <setting                                              type="lsep"   label="30782"                   visible="eq(-30,true)"     default="" /> 
+            <setting id="autoFindIPTV_Source"                 type="enum"   label="30965" subsetting="true" visible="eq(-31,true)" values=" |Local|Online" default="0" />
+            <setting id="autoFindIPTV_Path_Local"             type="file"   label="30966" subsetting="true" visible="eq(-32,true) + eq(-1,1)"             source="auto" default=""/>
+            <setting id="autoFindIPTV_Path_Online"            type="text"   label="30967" subsetting="true" visible="eq(-33,true) + eq(-2,2)"     enable="System.HasNetwork"             source="auto" default=""/>
+            <setting id="autoFindLive_Source"                 type="enum"   label="30969" subsetting="true" visible="eq(-34,true)"                         values=" |Local|Online" source="auto" default="0" />
+            <setting id="autoFindLive_Path_Local"             type="file"   label="30970" subsetting="true" visible="eq(-35,true) + eq(-1,1)"             default=""/>
+            <setting id="autoFindLive_Path_Online"            type="text"   label="30971" subsetting="true" visible="eq(-36,true) + eq(-2,2)"     enable="System.HasNetwork"             source="auto" default=""/>
+            <setting id="autoFindPLX_Source"                  type="enum"   label="30972" subsetting="true" visible="eq(-37,true)"                         values=" |Local|Online" default="0" />
+            <setting id="autoFindPLX_Path_Local"              type="file"   label="30973" subsetting="true" visible="eq(-38,true) + eq(-1,1)"             source="auto" default=""/>
+            <setting id="autoFindPLX_Path_Online"             type="text"   label="30974" subsetting="true" visible="eq(-39,true) + eq(-2,2)"     enable="System.HasNetwork"             source="auto" default=""/>
+        <setting                                              type="lsep"   label="30701"                   visible="eq(-40,true)"                                                                                            default="" /> 
+            <setting id="CN_TV"                               type="bool"   label="30702" subsetting="true" visible="eq(-41,true)"                                                                            default="true" />
+            <setting id="CN_Movies"                           type="bool"   label="30703" subsetting="true" visible="eq(-42,true)"                                                                              default="true" />
+            <setting id="CN_Episodes"                         type="bool"   label="30704" subsetting="true" visible="eq(-43,true)"                                                                               default="true" />
+            <setting id="CN_Sports"                           type="bool"   label="30705" subsetting="true" visible="eq(-44,true)"                                                                               default="true" />
+            <setting id="CN_Kids"                             type="bool"   label="30706" subsetting="true" visible="eq(-45,true)"                                                                               default="false" />
+            <setting id="CN_News"                             type="bool"   label="30707" subsetting="true" visible="eq(-46,true)"                                                                               default="true" />
+            <setting id="CN_Music"                            type="bool"   label="30712" subsetting="true" visible="eq(-47,true)"                                                                               default="true" />
+            <setting id="CN_Other"                            type="bool"   label="30713" subsetting="true" visible="eq(-48,true)"                                                                             default="true" />  
             <!-- Autotune Options -->
         <setting type="lsep"   label="30700"/>
             <setting id="reserveChannels"                     type="bool"   label="30372" default="false"/>
@@ -216,7 +214,6 @@
         <setting id="Remove_Settings2" type="action"   label="31904" action="RunScript($CWD/utilities.py, -DeleteSettings2)"/>
         <setting id="ClearChanFavs" type="action"   label="31997" action="RunScript($CWD/utilities.py, -ClearChanFavorites)"/>
         <setting label="31998" type="lsep"/>
-        <setting id="ClearBCT" type="bool"   label="30995" default="false"/>
         <setting id="ClearLiveArt" type="bool"   label="30996" default="false"/>
         <setting id="ClearCache" type="bool"   label="30988" default="false"/>
     </category>
@@ -234,7 +231,7 @@
     <!--Debugging-->
     <category label="30900">  
         <setting label="30990" type="lsep"/>
-        <setting id="ActionTimeInt" type="slider"   label="30309" range="1,1,60" option="int" default="2"/>
+        <setting id="ActionTimeInt" type="slider"   label="30309" range="2,2,4" option="int" default="2"/>
         <setting id="PlayTimeoutInt" type="slider"   label="30319" range="2,2,60" option="int" default="30"/>
         <setting id="enable_Debug" type="bool"   label="30993" default="false"/>
         <setting id="Override_ok" type="bool"   label="30991" default="true"/>
@@ -245,6 +242,7 @@
         <setting id="showNextItem" type="bool"   label="39994" visible="false" default="true"/>
         <setting id="plugin_ok_level" type="enum"   label="30994" values="Low|High" default="0"/>
         <setting id="ga_disable" type="bool"   label="30992" default="false"/>
+        <setting id="Override.LOWPOWER" type="bool"   label="30943" default="false"/>
         <setting label="36996" type="lsep"  visible="eq(-1,true)"/>
         <setting label="36997" type="lsep"  visible="eq(-2,true)"/>
     </category>
