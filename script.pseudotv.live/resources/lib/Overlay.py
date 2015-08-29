@@ -643,7 +643,6 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         self.forceReset = REAL_SETTINGS.getSetting('ForceChannelReset') == "true"
         self.channelResetSetting = REAL_SETTINGS.getSetting('ChannelResetSetting')
         self.log("Channel reset setting - " + str(self.channelResetSetting))
-        self.channelLogos = xbmc.translatePath(REAL_SETTINGS.getSetting('ChannelLogoFolder'))
         self.backgroundUpdating = int(REAL_SETTINGS.getSetting("ThreadMode"))
         self.hideShortItems = REAL_SETTINGS.getSetting("HideClips") == "true"
         self.log("Hide Short Items - " + str(self.hideShortItems))
@@ -657,11 +656,9 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         if int(REAL_SETTINGS.getSetting("EnableComingUp")) > 0:
             self.showNextItem = True
             
+        self.channelLogos = LOGO_LOC
         if FileAccess.exists(self.channelLogos) == False:
-            self.channelLogos = DEFAULT_LOGO_LOC
-            if FileAccess.exists(DEFAULT_LOGO_LOC) == False:
-                FileAccess.makedirs(DEFAULT_LOGO_LOC)
-            REAL_SETTINGS.setSetting("ChannelLogoFolder",DEFAULT_LOGO_LOC)
+            FileAccess.makedirs(self.channelLogos)
         self.log('Channel logo folder - ' + self.channelLogos)
         
         self.channelList = ChannelList()

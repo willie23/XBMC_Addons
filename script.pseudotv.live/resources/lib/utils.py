@@ -23,7 +23,7 @@ import xbmc, xbmcgui, xbmcplugin, xbmcvfs, xbmcaddon
 import time, _strptime, string, datetime, ftplib, hashlib, smtplib, feedparser, imp
 
 from Globals import * 
-from FileAccess import FileAccess 
+from FileAccess import FileAccess
 from Queue import Queue
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEBase import MIMEBase
@@ -110,7 +110,6 @@ def isKodiRepo(plugin=''):
             RepoPlugins.append((repoItems[i]).split(' ')[0])
         elif (repoItems[i]).lower().startswith('plugin.music.'):
             RepoPlugins.append((repoItems[i]).split(' ')[0])
-    print addon, RepoPlugins
     if addon in RepoPlugins:
         return True
     else:
@@ -154,7 +153,6 @@ def VersionCompare():
         pass   
         
     if len(match) > 0:
-        print vernum, str(match)[0]
         if vernum != str(match[0]):
             if not isPlugin('repository.lunatixz'):
                 dialog = xbmcgui.Dialog()
@@ -366,38 +364,42 @@ def CleanCHname(text):
 
 def FindLogo_Thread(data):
     log("utils: FindLogo_Thread, " + str(data))
-    chtype = data[0]
+    chtype = int(data[0])
     chname = data[1]
-    mpath = getMpath(data[2])
     url = ''
-    LogoName = (chname + '.png')
+    LogoName = chname + '.png'
     LogoFolder = os.path.join(LOGO_LOC,LogoName)
-
-    if FileAccess.exists(LogoFolder) and REAL_SETTINGS.getSetting('LogoDB_Override') == "false":
-        return
-    else:
-        if chtype in [0,1,8,9]:
-            user_region = REAL_SETTINGS.getSetting('limit_preferred_region')
-            user_type = REAL_SETTINGS.getSetting('LogoDB_Type')
-            useMix = REAL_SETTINGS.getSetting('LogoDB_Fallback') == "true"
-            useAny = REAL_SETTINGS.getSetting('LogoDB_Anymatch') == "true"
-            url = findLogodb(chname, user_region, user_type, useMix, useAny)
-            if url:
-                return GrabLogo(url, chname)
-        if chtype in [0,1,2,3,4,5,12,13,14]:
-            url = findGithubLogo(chname)
-            if url:
-                return GrabLogo(url, chname) 
-        if mpath and (chtype == 6):
-            smpath = mpath.rsplit('/',2)[0] #Path Above mpath ie Series folder
-            artSeries = xbmc.translatePath(os.path.join(smpath, 'logo.png'))
-            artSeason = xbmc.translatePath(os.path.join(mpath, 'logo.png'))
-            if FileAccess.exists(artSeries): 
-                url = artSeries
-            elif FileAccess.exists(artSeason): 
-                url = artSeason
-            if url:
-                return GrabLogo(url, chname) 
+    log("utils: FindLogo_Thread, LogoFolder = " + LogoFolder)
+    
+    if FileAccess.exists(LOGO_LOC) == False:
+        FileAccess.makedirs(LOGO_LOC)
+        
+    if chtype in [0,1,8,9]:
+        log("utils: FindLogo_Thread, findLogodb")
+        user_region = REAL_SETTINGS.getSetting('limit_preferred_region')
+        user_type = REAL_SETTINGS.getSetting('LogoDB_Type')
+        useMix = REAL_SETTINGS.getSetting('LogoDB_Fallback') == "true"
+        useAny = REAL_SETTINGS.getSetting('LogoDB_Anymatch') == "true"
+        url = findLogodb(chname, user_region, user_type, useMix, useAny)
+        if url:
+            return GrabLogo(url, chname)
+    if chtype in [0,1,2,3,4,5,12,13,14]:
+        log("utils: FindLogo_Thread, findGithubLogo")
+        url = findGithubLogo(chname)
+        if url:
+            return GrabLogo(url, chname) 
+    mpath = getMpath(data[2])
+    if mpath and (chtype == 6):
+        log("utils: FindLogo_Thread, local logo")
+        smpath = mpath.rsplit('/',2)[0] #Path Above mpath ie Series folder
+        artSeries = xbmc.translatePath(os.path.join(smpath, 'logo.png'))
+        artSeason = xbmc.translatePath(os.path.join(mpath, 'logo.png'))
+        if FileAccess.exists(artSeries): 
+            url = artSeries
+        elif FileAccess.exists(artSeason): 
+            url = artSeason
+        if url:
+            return GrabLogo(url, chname) 
   
 def FindLogo(chtype, chname, mediapath=None):
     log("utils: FindLogo")
@@ -445,14 +447,12 @@ def findLogodb(chname, user_region, user_type, useMix=True, useAny=True):
         chanurl = (urlbase+clean_chname).replace(' ','%20')
         log("utils: findLogodb, chname = " + chname + ', clean_chname = ' + clean_chname + ', url = ' + chanurl)
         typelst =['strLogoSquare','strLogoSquareBW','strLogoWide','strLogoWideBW','strFanart1']
-        user_type = typelst[int(user_type)]   
-        response = read_url_cached(chanurl)
-        detail = re.compile("{(.*?)}", re.DOTALL ).findall(response)
+        user_type = typelst[int(user_type)]
+        detail = re.compile("{(.*?)}", re.DOTALL ).findall(read_url_cached(chanurl))
         MatchLst = []
         mixRegionMatch = []
         mixTypeMatch = []
         image = ''
-        
         for f in detail:
             try:
                 regions = re.search('"strCountry" *: *"(.*?)"', f)
@@ -473,7 +473,7 @@ def findLogodb(chname, user_region, user_type, useMix=True, useAny=True):
                                         mixRegionMatch.append(type.replace('\/','/'))
                                 else:
                                     mixTypeMatch.append(type.replace('\/','/'))
-            except:
+            except Exception,e:
                 pass
                 
         if len(MatchLst) == 0:
@@ -494,32 +494,33 @@ def findLogodb(chname, user_region, user_type, useMix=True, useAny=True):
         log("utils: findLogodb, Failed! " + str(e))
 
 def GrabLogo(url, Chname):
-    log("utils: GrabLogo")
-    print url
-    if REAL_SETTINGS.getSetting('ChannelLogoFolder') != '':                 
-        try:
-            LogoFile = os.path.join(LOGO_LOC, Chname + '.png')
-            url = url.replace('.png/','.png').replace('.jpg/','.jpg')
-            
-            if REAL_SETTINGS.getSetting('LogoDB_Override') == "true":
-                try:
-                    FileAccess.delete(LogoFile)
-                except:
-                    pass
-
-            if not FileAccess.exists(LogoFile):
-                if url.startswith('image'):
-                    url = (unquote(url)).replace("image://",'')
-                    if url.startswith('http'):
-                        download_silent(url, LogoFile)
-                    else:
-                        FileAccess.copy(url, LogoFile) 
-                elif url.startswith('http'):
-                    download_silent(url, LogoFile)
+    log("utils: GrabLogo, url = " + url)        
+    try:
+        LogoFile = os.path.join(LOGO_LOC, Chname + '.png')
+        url = url.replace('.png/','.png').replace('.jpg/','.jpg')
+        log("utils: GrabLogo, LogoFile = " + LogoFile)
+       
+        if REAL_SETTINGS.getSetting('LogoDB_Override') == "true":
+            try:
+                FileAccess.delete(LogoFile)
+                log("utils: GrabLogo, removed old logo")   
+            except:
+                pass
+        
+        if FileAccess.exists(LogoFile) == False:
+            log("utils: GrabLogo, downloading new logo")   
+            if url.startswith('image'):
+                url = (unquote(url)).replace("image://",'')
+                if url.startswith('http'):
+                    return download_silent(url, LogoFile)
                 else:
-                    FileAccess.copy(xbmc.translatePath(url), LogoFile) 
-        except Exception,e:
-            log("utils: GrabLogo, Failed! " + str(e))
+                    FileAccess.copy(url, LogoFile) 
+            elif url.startswith('http'):
+                return download_silent(url, LogoFile)
+            else:
+                return FileAccess.copy(xbmc.translatePath(url), LogoFile) 
+    except Exception,e:
+        log("utils: GrabLogo, Failed! " + str(e))
      
 #######################
 # Communication Tools #
@@ -606,7 +607,7 @@ def UpdateRSS_Thread():
         ##Push MSG
         try:
             pushrss = 'https://raw.githubusercontent.com/Lunatixz/XBMC_Addons/master/push_msg.xml'
-            file = open_url(pushrss).read()
+            file = open_url(pushrss)
             pushlist = file.read()
             file.close()
         except:
@@ -728,16 +729,14 @@ def download(url, dest, dp = None):
     try:
         urllib.urlretrieve(url, dest, lambda nb, bs, fs: _pbhook(nb, bs, fs, dp, start_time))
     except Exception,e:
-        print str(e)
-        pass
+        log('utils: download, Failed!,' + str(e))
      
 def download_silent_thread(data):
     log('download_silent_thread')
     try:
         urllib.urlretrieve(data[0], data[1])
     except Exception,e:
-        print str(e)
-        pass
+        log('utils: download_silent_thread, Failed!,' + str(e))
          
 def download_silent(url, dest):
     log('download_silent')
@@ -1304,9 +1303,9 @@ def getMpath(mediapath):
             mpath = 'upnp://' + mediapath.split('/')[2] + '/'
         else:
             mpath = (os.path.split(mediapath)[0]) + '/'
-        return mpath
-    except:
-        pass
+    except Exception,e:
+        mpath = mediapath
+    return mpath
            
 def ClearCache(type):
     log('utils: ClearCache ' + type)  
@@ -1744,6 +1743,7 @@ def chkLowPower():
             setProperty("PTVL.LOWPOWER","true") 
             REAL_SETTINGS.setSetting('SFX_Enabled', "false")
             REAL_SETTINGS.setSetting('Enable_FindLogo', "false")
+            REAL_SETTINGS.setSetting('EPGTextEnable', "1")
             REAL_SETTINGS.setSetting('Idle_Screensaver', "false")
             REAL_SETTINGS.setSetting('EnhancedGuideData', "false")
             if MEDIA_LIMIT > 250:

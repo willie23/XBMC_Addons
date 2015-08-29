@@ -285,8 +285,8 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                         chtype = (ADDON_SETTINGS.getSetting('Channel_' + str(curchannel) + '_type'))
                         pass  
 
-                    if FileAccess.exists(self.channelLogos + ascii(self.MyOverlayWindow.channels[curchannel - 1].name) + ".png"):
-                        self.getControl(321 + i).setImage(self.channelLogos + ascii(self.MyOverlayWindow.channels[curchannel - 1].name) + ".png")
+                    if FileAccess.exists(self.channelLogos + self.MyOverlayWindow.channels[curchannel - 1].name + ".png"):
+                        self.getControl(321 + i).setImage(self.channelLogos + self.MyOverlayWindow.channels[curchannel - 1].name + ".png")
                     elif REAL_SETTINGS.getSetting('Enable_FindLogo') == "true":            
                         chname = (self.MyOverlayWindow.channels[curchannel - 1].name)
                         plpos = self.determinePlaylistPosAtTime(starttime, (curchannel - 1))

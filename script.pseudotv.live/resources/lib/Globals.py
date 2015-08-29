@@ -117,8 +117,8 @@ MADE_CHAN_LOC = os.path.join(CHANNELS_LOC, 'stored','') #LOCKED
 GEN_CHAN_LOC = os.path.join(CHANNELS_LOC, 'generated','') #LOCKED
 IMAGES_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'images',''))
 PTVL_SKIN_LOC = os.path.join(ADDON_PATH, 'resources', 'skins', '') #Path to PTVL Skin folder
-LOGO_LOC = xbmc.translatePath(REAL_SETTINGS.getSetting('ChannelLogoFolder')) #Channel Logo location   
-PVR_DOWNLOAD_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('PVR_Folder'))) #PVR Download location
+LOGO_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('ChannelLogoFolder'),'')) #Channel Logo location   
+PVR_DOWNLOAD_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('PVR_Folder'),'')) #PVR Download location
 XMLTV_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('xmltvLOC'),''))
 XSP_LOC = xbmc.translatePath("special://profile/playlists/video/")
 SFX_LOC = ('special://home/addons/script.pseudotv.live/resources/sfx/')
@@ -136,7 +136,6 @@ PTVLURLUP = 'http://%s@pseudotvlive.com/ptvl/' %UPASS
 # Core Default Image Locations
 DEFAULT_MEDIA_LOC =  xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', 'Default', 'media',''))
 DEFAULT_EPGGENRE_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', 'Default', 'media', 'epg-genres',''))
-DEFAULT_LOGO_LOC = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'logos',''))
 
 # CORE IMG FILENAMES
 THUMB = IMAGES_LOC + 'icon.png'

@@ -33,8 +33,7 @@
         <setting id="SUPchannel" type="enum"  label="30303" values="Last Channel|Preferred Channel" default="0"/>
         <setting id="CurrentChannel" type="text"   label="30304" subsetting="true" visible="eq(-1,1)" default="1"/>
         <setting id="Disable_Watched" type="bool"   label="30311" default="false"/>
-        <setting id="EnhancedGuideData" type="bool"   label="30405" default="false" />
-        <setting id="AutoJump" type="bool"   label="30408" default="false" />
+        <setting id="EnhancedGuideData" type="bool"   label="30405" default="true" />
         <setting id="HideClips" type="bool"   label="30215" default="true"/>
         <setting id="ClipLength" type="enum" subsetting="true"   label="30216" visible="eq(-1,true)" values="15|30|60|90|120|240|360|480" default="7"/>
         <setting id="enable_mute" type="bool"   label="30373" default="false"/>
@@ -43,9 +42,9 @@
     <category label="30200">
         <setting id="SkinSelector" type="enum"  label="30202" values="Custom|Default|PTVL|Concast|Maverick|Z81" visible="false" default="1"/>
         <setting id="ShowSeEp" type="bool"   label="30301" default="false"/>
-        <setting id="ChannelLogoFolder" type="folder" source="auto"   label="30225" default=""/>
+        <setting id="ChannelLogoFolder" type="folder" source="auto"   label="30225" default="special://userdata/script.pseudotv.live/logos"/>
         <setting id="EnableArtwork" type="bool"   label="30375" visible="false" default="false"/>
-        <setting id="Enable_FindLogo" type="bool"   label="34547" default="false"/>
+        <setting id="Enable_FindLogo" type="bool"   label="34547" default="true"/>
         <setting id="LogoDB_Fallback" subsetting="true" visible="eq(-1,true)"type="bool"   label="34548" default="true"/>
         <setting id="LogoDB_Anymatch" subsetting="true" visible="eq(-2,true)"type="bool"   label="34549" default="true"/>
         <setting id="LogoDB_Override" subsetting="true" visible="eq(-3,true)"type="bool"   label="34550" default="false"/>
@@ -73,6 +72,7 @@
         <setting id="xmltvLOC" type="folder" source="auto"   label="30404" default="special://userdata/script.pseudotv.live/cache/xmltv" />
         <setting id="DVR_Enabled"   label="30801" type="bool" default="false"/>
         <setting id="DVR_Folder" subsetting="true"   label="30802" visible="eq(-1,true)" type="folder" source="auto" default="" />        
+        <setting id="AutoJump" type="bool"   label="30408" default="false" />
         <setting id="sickbeard.enabled"   label="30708" type="bool" default="false" />
         <setting id="sickbeard.baseurl" subsetting="true"   label="30709" visible="eq(-1,true)" type="text" default="http://localhost:8081"/>
         <setting id="sickbeard.apikey" subsetting="true"   label="30710" visible="eq(-2,true)" type="text" default="Enter API KEY"/>
