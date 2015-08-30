@@ -132,22 +132,23 @@ class ChannelList:
     def setupList(self, silent=False):
         self.log("setupList")
         self.readConfig()
+        foundvalid = False
+        makenewlists = False
         self.background = True
+        
         if silent == False:
+            self.background = False
             self.updateDialog.create("PseudoTV Live", "Updating channel list")
             self.updateDialog.update(0, "Updating channel list", "")
             self.updateDialogProgress = 0
-            self.background = False
         self.log("setupList, background = " + str(self.background))
-        foundvalid = False
-        makenewlists = False
         
         if self.backgroundUpdating > 0 and self.myOverlay.isMaster == True:
             makenewlists = True
             
         # Go through all channels, create their arrays, and setup the new playlist
         for i in range(self.maxChannels):
-            if silent == False:
+            if self.background == False:
                 self.updateDialogProgress = i * 100 // self.enteredChannelCount
                 self.updateDialog.update(self.updateDialogProgress, "Loading channel " + str(i + 1), "waiting for file lock")
             self.channels.append(Channel())
@@ -200,6 +201,7 @@ class ChannelList:
         self.log('findMaxChannels')
         self.maxChannels = 0
         self.enteredChannelCount = 0
+        self.myOverlay.background.setLabel('Initializing: PseudoTV Live')
 
         for i in range(999):
             chtype = 9999
@@ -230,9 +232,8 @@ class ChannelList:
                 ADDON_SETTINGS.setSetting('Channel_' + str(i + 1) + '_changed', "True")
                 
             if REAL_SETTINGS.getSetting('Enable_FindLogo') == "true":
-                if self.background == False:
-                    self.myOverlay.background.setLabel('Searching for Channel logos (' + str((i + 1)/10) + '%)')
-
+                self.myOverlay.background.setLabel('Initializing: Searching for Channel logos (' + str((i + 1)/10) + '%)')
+                
                 if chtype not in [6,7,9999]:
                     if chtype <= 7 or chtype == 12:
                         chname = self.getChannelName(chtype, chsetting1)
@@ -240,9 +241,7 @@ class ChannelList:
                         chname = self.getChannelName(chtype, (i + 1))
                     FindLogo(chtype, chname)
                     
-        if self.background == False:
-            self.myOverlay.background.setLabel('Initializing') 
-            
+        self.myOverlay.background.setLabel('Initializing: Channels') 
         self.log('findMaxChannels return ' + str(self.maxChannels))
 
 
@@ -2983,6 +2982,7 @@ class ChannelList:
                 tubefeed = ''
                 genre = 'Unknown'
                 rating = 'NR'
+                year = 0
                 try:
                     title = feed['entries'][i].title
                     link = str(feed['entries'][i].links[0])
@@ -3059,8 +3059,11 @@ class ChannelList:
                             if ENHANCED_DATA == True: 
                                 print 'EnhancedGuideData'    
                                 showtitle, title, genre, rating, year = self.getEnhancedEPGdata('movie', title, year, genre, rating)
-                                showtitle = self.CleanLabels(showtitle) 
-                                description = self.CleanLabels(description) 
+                            else:
+                                year, title, showtitle = getTitleYear(title, year)
+                                
+                            showtitle = self.CleanLabels(showtitle) 
+                            description = self.CleanLabels(description) 
                             
                             if imdbid != 0:
                                 type = 'movie'

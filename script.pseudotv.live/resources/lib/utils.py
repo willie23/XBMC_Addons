@@ -753,7 +753,7 @@ def download_silent(url, dest):
     except Exception,e:
         log('utils: download_silent, Failed!,' + str(e))
         
-@cache_weekly
+@cache_daily
 def read_url_cached(url, userpass=False, return_type='read'):
     log("utils: read_url_cached")
     try:
@@ -1211,6 +1211,7 @@ def copyanything(src, dst):
 ##############
      
 def getDonlist(list):
+    log("getDonlist")  
     nlist = []
     list = read_url_cached(PTVLURL + list, UPASS, return_type='readlines')
     for i in range(len(list)):
@@ -1220,7 +1221,7 @@ def getDonlist(list):
         except:
             pass
     return nlist
-    
+ 
 def writeCache(theitem, thepath, thefile):
     log("writeCache")  
     now = datetime.datetime.today()
@@ -1659,32 +1660,40 @@ def isCom():
     return val
         
 def DonCHK():
-    # Access tv meta, commercials, adverts and various custom videos from a private server.
-    if REAL_SETTINGS.getSetting("Donor_Enabled") == "true" and REAL_SETTINGS.getSetting("Donor_UP") != '' and REAL_SETTINGS.getSetting("Donor_UP") != 'Username:Password': 
-        if REAL_SETTINGS.getSetting("Verified_Donor") != "true":      
-            REAL_SETTINGS.setSetting("AT_Donor", "true")
-            REAL_SETTINGS.setSetting("COM_Donor", "true")
-            REAL_SETTINGS.setSetting("Verified_Donor", "true")
-            REAL_SETTINGS.setSetting("Donor_Verified", "1")
+    # Access tv meta, commercials, adverts and various legal custom videos from a private server.
+    if REAL_SETTINGS.getSetting("Donor_Enabled") == "true" and REAL_SETTINGS.getSetting("Donor_UP") != 'Username:Password': 
+        try:
+            open_url(PTVLURL + 'ce.ini', UPASS).read()
+            if REAL_SETTINGS.getSetting("Donor_Verified") != "1": 
+                REAL_SETTINGS.setSetting("AT_Donor", "true")
+                REAL_SETTINGS.setSetting("COM_Donor", "true")
+                REAL_SETTINGS.setSetting("Verified_Donor", "true")
+                REAL_SETTINGS.setSetting("Donor_Verified", "1")
+                xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live","Donor Access Activated", 1000, THUMB) )
+        except:
+            DonFailed()
     else:
-        if REAL_SETTINGS.getSetting("Verified_Donor") != "false":      
-            REAL_SETTINGS.setSetting("AT_Donor", "false")
-            REAL_SETTINGS.setSetting("COM_Donor", "false")
-            REAL_SETTINGS.setSetting("Verified_Donor", "false")
-            REAL_SETTINGS.setSetting("Donor_Verified", "0")
+        DonFailed()
+        
+def DonFailed():
+    if REAL_SETTINGS.getSetting("Donor_Verified") != "0": 
+        REAL_SETTINGS.setSetting("AT_Donor", "false")
+        REAL_SETTINGS.setSetting("COM_Donor", "false")
+        REAL_SETTINGS.setSetting("Verified_Donor", "false")
+        REAL_SETTINGS.setSetting("Donor_Verified", "0")
             
 def ComCHK():
     # Community users are required to supply gmail info in-order to use the community submission tool, SEE DISCLAIMER!!
     # Submission tool uses emails to submit channel configurations, which are then added to a public (github) list: https://github.com/Lunatixz/PseudoTV_Lists
     # Community lists includes: Youtube, Vimeo, RSS, Smartplaylists, LiveTV (legal feeds ONLY!), InternetTV (legal feeds ONLY!) and User installed and Kodi repository plugins (see isKodiRepo, isPlugin).
-    if REAL_SETTINGS.getSetting("Community_Enabled") == "true" and REAL_SETTINGS.getSetting("Gmail_User") != '' and REAL_SETTINGS.getSetting("Gmail_User") != 'User@gmail.com':
-        if REAL_SETTINGS.getSetting("Verified_Community") != "true": 
+    if REAL_SETTINGS.getSetting("Community_Enabled") == "true" and REAL_SETTINGS.getSetting("Gmail_User") != 'User@gmail.com':
+        if REAL_SETTINGS.getSetting("Verified_Community") != "1": 
             REAL_SETTINGS.setSetting("AT_Community","true")
             REAL_SETTINGS.setSetting("Verified_Community", "true")
             REAL_SETTINGS.setSetting("Community_Verified", "1")
             xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live","Community List Activated", 1000, THUMB) )
     else:
-        if REAL_SETTINGS.getSetting("Verified_Community") != "false": 
+        if REAL_SETTINGS.getSetting("Community_Verified") != "0": 
             REAL_SETTINGS.setSetting("AT_Community","false")
             REAL_SETTINGS.setSetting("Verified_Community", "false")
             REAL_SETTINGS.setSetting("Community_Verified", "0")

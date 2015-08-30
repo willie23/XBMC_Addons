@@ -241,9 +241,13 @@
         <setting id="IncludeBCTs" type="bool"   label="39997" default="true"/>
         <setting id="showNextItem" type="bool"   label="39994" visible="false" default="true"/>
         <setting id="plugin_ok_level" type="enum"   label="30994" values="Low|High" default="0"/>
-        <setting id="ga_disable" type="bool"   label="30992" default="false"/>
         <setting id="Override.LOWPOWER" type="bool"   label="30943" default="false"/>
+        <setting id="ga_disable" type="bool"   label="30992" default="false"/>
         <setting label="36996" type="lsep"  visible="eq(-1,true)"/>
         <setting label="36997" type="lsep"  visible="eq(-2,true)"/>
+        <setting label="30912" type="lsep"/>
+        <setting id="TMDB_API"  label="30922" option="hidden" type="text" default="9c47d05a3f5f3a00104f6586412306af" />
+        <setting id="TVDB_API"  label="30932" option="hidden" type="text" default="078845CE15BC08A7" />
+        <setting id="FANTV_API"  label="30942" option="hidden" type="text" default="0da4365d363db853f10fd800b6a245e5" />
     </category>
 </settings>

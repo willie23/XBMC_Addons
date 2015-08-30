@@ -429,8 +429,8 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         self.actionSemaphore.acquire()
         self.timeStarted = time.time() 
         updateDialog.update(95, "Initializing", "Channels")
-        updateDialog.close()
         self.background.setLabel('Initializing: Channels')
+        updateDialog.close()
 
         if self.readConfig() == False:
             return
@@ -548,7 +548,6 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         self.getControl(1009).setLabel('Player Settings')
         self.getControl(1010).setLabel('Sleep')
         self.getControl(1011).setLabel('Exit')
-        
         setProperty("PTVL.OVERLAY_INIT","true")
         self.log('onInit return')
     
@@ -1192,6 +1191,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         self.log('setShowInfo, setshowposition = ' + str(position))  
         chname = (self.channels[self.currentChannel - 1].name)
         chnum = str(self.currentChannel)
+        self.background.setVisible(False)
         self.SetMediaInfo(chtype, chname, chnum, mediapath, position)
         
         
@@ -1438,7 +1438,6 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                 
         self.hidePOP()
         self.setShowInfo()
-        self.background.setVisible(False)
         self.getControl(222).setVisible(False)
         self.getControl(102).setVisible(True)
         self.showingInfo = True
@@ -2957,13 +2956,13 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
           
     def end(self):
         self.log('end')    
+        self.background.setVisible(True)
         self.isExiting = True 
         # Prevent the player from setting the sleep timer
         self.Player.stopped = True
-        self.background.setLabel('Exiting')
+        self.background.setLabel('Exiting: PseudoTV Live')
         setProperty("OVERLAY.LOGOART",THUMB) 
         xbmc.executebuiltin("PlayerControl(repeatoff)")
-        self.egTrigger('PseudoTV_Live - Exiting')
         curtime = time.time()
         updateDialog = xbmcgui.DialogProgress()
         updateDialog.create("PseudoTV Live", "Exiting")
@@ -2971,6 +2970,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
 
         if CHANNEL_SHARING == True and self.isMaster:
             updateDialog.update(0, "Exiting", "Removing File Locks")
+            self.background.setLabel('Exiting: Removing File Locks')
             GlobalFileLock.unlockFile('MasterLock')
         GlobalFileLock.close()
         
@@ -2996,6 +2996,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             pass
 
         updateDialog.update(1, "Exiting", "Stopping Timers")
+        self.background.setLabel('Exiting: Stopping Timers')
         
         try:
             if self.channelLabelTimer.isAlive():
@@ -3033,7 +3034,8 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         except:
             pass
 
-        updateDialog.update(4, "Exiting", "Stopping Timer Threads")  
+        updateDialog.update(4, "Exiting", "Stopping Threads")  
+        self.background.setLabel('Exiting: Stopping Threads')
           
         try:
             if self.popTimer.isAlive():
@@ -3084,7 +3086,8 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         except:
             pass   
 
-        updateDialog.update(5, "Exiting", "Stopping Artwork Threads")  
+        updateDialog.update(5, "Exiting", "Stopping Artwork Threads")
+        self.background.setLabel('Exiting: Stopping Artwork Threads')  
             
         try: 
             if self.ArtThread.isAlive():
@@ -3124,6 +3127,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                     break
 
                 updateDialog.update(7 + i, "Exiting", "Stopping Channel Threads")
+                self.background.setLabel('Exiting: Stopping Channel Threads')  
 
             if self.channelThread.isAlive():
                 self.log("Problem joining channel thread", xbmc.LOGERROR)
@@ -3139,6 +3143,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
 
         if self.timeStarted > 0 and self.isMaster:
             updateDialog.update(35, "Exiting", "Saving Settings")
+            self.background.setLabel('Exiting: Saving Settings')  
             validcount = 0
 
             for i in range(self.maxChannels):
@@ -3150,6 +3155,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
 
                 for i in range(self.maxChannels):
                     updateDialog.update(35 + int((incval * i)))
+                    self.background.setLabel('Exiting: Saving Settings (' + str(int((incval * i))) + '%)') 
 
                     if self.channels[i].isValid:
                         if self.channels[i].mode & MODE_RESUME == 0:
@@ -3174,9 +3180,10 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                                 ADDON_SETTINGS.setSetting('Channel_' + str(i + 1) + '_time', str(int(tottime)))
                 self.storeFiles()
         
+        self.egTrigger('PseudoTV_Live - Exiting')
         REAL_SETTINGS.setSetting('LogoDB_Override', "false") 
         REAL_SETTINGS.setSetting('Normal_Shutdown', "true")
-        self.background.setVisible(False)
+        self.background.setLabel('Exiting: Shutting Down')  
         updateDialog.close()
         self.close()
 

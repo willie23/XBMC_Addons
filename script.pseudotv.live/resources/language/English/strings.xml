@@ -227,5 +227,9 @@
     <string id="30992">Disable Google Analytics</string>
     <string id="36996">Opting out? No personal information is ever tracked,</string>
     <string id="36997">only data relevant to the continuation of this project.</string>
-    <string id="30943">Override Optimized Settings.</string>
+    <string id="30943">Override Optimized Settings</string>
+    <string id="30912">Optional Personal APIKEY</string>
+    <string id="30922">TMDB APIKEY</string>
+    <string id="30932">TVDB APIKEY</string>
+    <string id="30942">FANART.TV APIKEY</string>
 </strings>

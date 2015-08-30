@@ -40,6 +40,7 @@ def autostart():
     sleep(IDLE_TIME)
     xbmc.executebuiltin('RunScript("' + ADDON_PATH + '/default.py' + '")')
 
+chkChanges()
 if REAL_SETTINGS.getSetting("Auto_Start") == "true":
     autostart()
     
