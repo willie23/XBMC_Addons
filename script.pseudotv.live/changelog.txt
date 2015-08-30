@@ -1,3 +1,4 @@
+[*] Optional Personal TMDB/TVDB/FANART.TV API Keys, setting under "Debugging".
 [*] NEW! LiveTV Reminders [Experimental]
 [*] Tweaked "Start Over" to ignore video chapters. Added Adjustable "Start Over" time.
 [*] Overhauled url caching, Optimized i/o performance for lowpower hardware.

@@ -201,7 +201,8 @@ class ChannelList:
         self.log('findMaxChannels')
         self.maxChannels = 0
         self.enteredChannelCount = 0
-        self.myOverlay.background.setLabel('Initializing: PseudoTV Live')
+        if self.background == False:
+            self.myOverlay.background.setLabel('Initializing: PseudoTV Live')
 
         for i in range(999):
             chtype = 9999
@@ -231,7 +232,7 @@ class ChannelList:
             if self.forceReset and (chtype != 9999):
                 ADDON_SETTINGS.setSetting('Channel_' + str(i + 1) + '_changed', "True")
                 
-            if REAL_SETTINGS.getSetting('Enable_FindLogo') == "true":
+            if self.background == False and REAL_SETTINGS.getSetting('Enable_FindLogo') == "true":
                 self.myOverlay.background.setLabel('Initializing: Searching for Channel logos (' + str((i + 1)/10) + '%)')
                 
                 if chtype not in [6,7,9999]:
@@ -240,8 +241,8 @@ class ChannelList:
                     else:
                         chname = self.getChannelName(chtype, (i + 1))
                     FindLogo(chtype, chname)
-                    
-        self.myOverlay.background.setLabel('Initializing: Channels') 
+        if self.background == False:
+            self.myOverlay.background.setLabel('Initializing: Channels') 
         self.log('findMaxChannels return ' + str(self.maxChannels))
 
 
