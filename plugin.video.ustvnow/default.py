@@ -42,8 +42,8 @@ if not password:
         Addon.set_setting('password', str(retval))
         password = Addon.get_setting('password')
         
-# if premium == False:
-    # Addon.set_setting('quality', '0')
+if premium == False:
+    Addon.set_setting('quality', '0')
 
 ustv = ustvnow.Ustvnow(email, password, premium)
 
@@ -65,7 +65,9 @@ elif mode == 'live':
     channels = ustv.get_channels(int(Addon.get_setting('quality')), 
                                      stream_type)
     for c in channels:
-        Addon.add_video_item(c['url'],
+        rURL = "plugin://plugin.video.ustvnow/?name="+c['name']+"&mode=play"
+        item = xbmcgui.ListItem(path=rURL)
+        Addon.add_video_item(rURL,
                              {'title': '%s - %s' % (c['name'], 
                                                     c['now']['title']),
                               'plot': c['now']['plot']},
@@ -101,7 +103,6 @@ elif mode=='play':
        channels = ustv.get_channels(quality,stream_type)
        for c in channels:
          if c['name'] == name:
-           # print "URL = "+c['url']
            print "setResolvedUrl"
            item = xbmcgui.ListItem(path=c['url'])
            xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)
