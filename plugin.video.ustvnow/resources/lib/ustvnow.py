@@ -70,7 +70,7 @@ class Ustvnow:
             channels.sort()
             return channels
         else:
-            self.dlg.ok("USTVnow", "LOGIN FAILED!", "Please check your login credentials")
+            self.dlg.ok("USTVnow", "Connection FAILED!", "Please check your login credentials and try again later...")
 
     def get_recordings(self, quality=1, stream_type='rtmp'):
         if self._login():
@@ -98,18 +98,19 @@ class Ustvnow:
                                    })
             return recordings
         else:
-            self.dlg.ok("USTVnow", "LOGIN FAILED!", "Please check your login credentials")
+            self.dlg.ok("USTVnow", "Connection FAILED!", "Please check your login credentials and try again later...")
     
     def delete_recording(self, del_url):
         html = self._get_html(del_url)
-        # print html
     
     def _build_url(self, path, queries={}):
         if queries:
             query = Addon.build_query(queries)
-            return '%s/%s?%s' % (self.__BASE_URL, path, query) 
+            url = '%s/%s?%s' % (self.__BASE_URL, path, query)
         else:
-            return '%s/%s' % (self.__BASE_URL, path)
+            url = '%s/%s' % (self.__BASE_URL, path)
+        print url
+        return url
 
     def _fetch(self, url, form_data=False):
         if form_data:

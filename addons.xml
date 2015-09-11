@@ -55,9 +55,11 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.ustvnow" version="12.0.3" name="USTVnow" provider-name="Lunatixz">
+<addon id="plugin.video.ustvnow" version="12.0.4" name="USTVnow" provider-name="Lunatixz">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
+        <import addon="script.module.simplejson" version="3.3.0"/>
+        <import addon="script.common.plugin.cache" version="2.5.5"/>
     </requires>
     <extension point="xbmc.python.pluginsource" library="default.py">
         <provides>video</provides>

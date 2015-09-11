@@ -6,9 +6,15 @@
     <string id="30003">Delete Recording</string>
     <string id="30004">Are you sure you want to</string>
     <string id="30005">delete this recording?</string>
+    <string id="30006">Favorites</string>
     <string id="30100">Quality</string>
+    <string id="30007">TV Guide</string>
     <string id="30101">Stream Type</string>
     <string id="30102">Email</string>
     <string id="30103">Password</string>
     <string id="30104">Premium Subscription</string>
+    <string id="30105">Code to use</string> 
+    <string id="30106">STRM folder</string> 
+    <string id="30107">Enable Building STRM & XMLTV files</string> 
+    <string id="30108">XMLTV folder</string> 
 </strings>

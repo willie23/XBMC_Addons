@@ -5,4 +5,8 @@
     <setting id="subscription" type="bool" label="30104" default="false" />
     <setting id="email" type="text" label="30102" default="" />
     <setting id="password" type="text" label="30103" default="" />
+    <setting id="version" type="enum" label="30105" values="NEW|OLD" default="1" />
+    <setting id="enablewrite" type="bool" label="30107" visible="eq(-1,0)" default="false" />
+    <setting id="STRMfolder" type="folder" source="auto"  visible="eq(-1,true) + eq(-2,0)" label="30106" default="special://userdata/plugin.video.ustvnow/"/>
+    <setting id="XMLTVfolder" type="folder" source="auto"  visible="eq(-2,true) + eq(-3,0)" label="30108" default="special://userdata/plugin.video.ustvnow/"/>
 </settings>

@@ -15,21 +15,20 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
-
-import cgi
-import os.path
-import pickle
-import re
-import sys
-import time
-import urllib
-
+import urllib, pickle, cgi
+import os, sys, re
+import time, datetime, calendar
 try:
-    import xbmc, xbmcaddon, xbmcgui, xbmcplugin
+    import xbmc, xbmcaddon, xbmcgui, xbmcplugin, xbmcvfs
     is_xbmc = True
 except:
     is_xbmc = False
     print 'not running on xbmc'
+
+from xml.dom import minidom
+from xml.etree import ElementTree as ET
+from datetime import date
+from datetime import timedelta
 
 def log(msg, err=False):
     if err:
@@ -38,7 +37,168 @@ def log(msg, err=False):
     else:
         xbmc.log(addon.getAddonInfo('name') + ': ' + msg.encode('utf-8'), 
                     xbmc.LOGDEBUG)    
+                    
+def ascii(string):
+    if isinstance(string, basestring):
+        if isinstance(string, unicode):
+           string = string.encode('ascii', 'ignore')
+    return string
+    
+def readXMLTV(filename, type='channels', name=''):
+    print ('readXMLTV')       
+    # import xmltv
+        # # If you need to change the locale:
+        # # xmltv.locale = 'Latin-1'
+        # # If you need to change the date format used in the XMLTV file:
+        # # xmltv.date_format = '%Y%m%d%H%M%S %Z'
 
+        # # Print info for XMLTV file (source, etc.)
+        # # return (xmltv.read_data(open(filename, 'r')))
+
+        # # Print channels
+        # # return (xmltv.read_channels(open(filename, 'r')))
+
+        # # # Print programmes
+        # # print(xmltv.read_programmes(open(filename, 'r')))
+    cached_readXMLTV = []
+    channels = []
+    # try:
+    # for key in xmltv.read_channels(FileAccess.open(filename, 'r')):
+        # name = map(itemgetter(0), key['display-name'])
+        # id   = key['id']
+        # name = name[0]
+    # channel = name+' : '+id
+    # self.cached_readXMLTV.append(channel)
+    now = datetime.datetime.now()
+    f = open(filename, "r")
+    context = ET.iterparse(f, events=("start", "end"))
+    context = iter(context)
+    event, root = context.next()
+    for event, elem in context:
+        if event == "end":
+            print type
+            if type == 'channels':
+                if elem.tag == "channel":
+                    id = ascii(elem.get("id"))
+                    for title in elem.findall('display-name'):
+                        channels.append(ascii(title.text.replace('<display-name>','').replace('</display-name>','')))
+                        break
+            elif type == 'programs':
+                if elem.tag == "programme":
+                    channel = elem.get("channel")
+                    channel = channel.upper()
+                    channel = channel.replace('WLYH','CW').replace('WHTM','ABC').replace('WPMT','FOX').replace('WPSU','PBS').replace('WHP','CBS').replace('WGAL','NBC').replace('WHVLLD','MY9').replace('AETV','AE')
+                    channel = channel.replace('APL','Animal Planet').replace('TOON','Cartoon Network').replace('DSC','Discovery').replace('BRAVO','Bravo').replace('USA','USA Network').replace('SYFY','Syfy').replace('HISTORY','History')
+                    channel = channel.replace('COMEDY','Comedy Central').replace('FOOD','Food Network').replace('NIK','Nickelodeon').replace('LIFE','Lifetime').replace('SPIKETV','Spike').replace('FNC','Fox News').replace('NGC','National Geographic')
+                    if name.lower() == channel.lower():
+                        print 'match', channel, name
+                        showtitle = elem.findtext('title')
+                        print showtitle
+                        description = elem.findtext("desc")
+                        print description
+                        subtitle = elem.findtext("sub-title")
+                        print subtitle
+                        icon = None
+                        iconElement = elem.find("icon")
+                        if iconElement is not None:
+                            icon = iconElement.get("src") 
+                        print icon
+                        genre = 'Unknown'
+                        categories = ''
+                        categoryList = elem.findall("category")
+                        for cat in categoryList:
+                            categories += ', ' + cat.text
+                            if (cat.text).lower() == 'movie':
+                                movie = True
+                                genre = cat.text
+                            elif (cat.text).lower() == 'tvshow':
+                                genre = cat.text
+                            elif (cat.text).lower() == 'sports':
+                                genre = cat.text
+                            elif (cat.text).lower() == 'children':
+                                genre = 'Kids'
+                            elif (cat.text).lower() == 'kids':
+                                genre = cat.text
+                            elif (cat.text).lower() == 'news':
+                                genre = cat.text
+                            elif (cat.text).lower() == 'comedy':
+                                genre = cat.text
+                            elif (cat.text).lower() == 'drama':
+                                genre = cat.text 
+                        print genre
+                        offset = ((time.timezone / 3600) - 5 ) * -1
+                        print offset
+                        stopDate = parseXMLTVDate(elem.get('stop'), 0)
+                        startDate = parseXMLTVDate(elem.get('start'), 0)
+                        print stopDate, startDate, now
+                        if (((now > startDate and now <= stopDate) or (now < startDate))):
+                            cached_readXMLTV.append([channel, startDate, showtitle, description, subtitle, genre, icon])
+    if type == 'channels':
+        return channels
+    elif type == 'programs':
+        return cached_readXMLTV
+    else:
+        return []
+    # except Exception,e:
+        # print ("readXMLTV, Failed! " + str(e))
+        # return ['XMLTV ERROR']
+            
+def parseXMLTVDate(dateString, offset=0):
+    if dateString is not None:
+        if dateString.find(' ') != -1:
+            # remove timezone information
+            dateString = dateString[:dateString.find(' ')]
+        t = time.strptime(dateString, '%Y%m%d%H%M%S')
+        d = datetime.datetime(t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec)
+        d += datetime.timedelta(hours = offset)
+        return d
+    else:
+        return None
+            
+def makeSTRM(name, link):  
+    log('makeSTRM')
+    STRM_CACHE_LOC = get_setting('STRMfolder')
+    try:
+        if not xbmcvfs.exists(STRM_CACHE_LOC):
+            xbmcvfs.mkdir(STRM_CACHE_LOC)
+        filepath = os.path.join(STRM_CACHE_LOC,name + '.strm')
+        if xbmcvfs.exists(filepath):
+            return True
+        else:
+            fle = open(filepath, "w")
+            fle.write("%s" % link)
+            fle.close()
+            log('writing item: %s' % (filepath))
+            return True
+        return False
+    except:
+        return False
+
+def makeXMLTV(data, filepath):
+    log('makeXMLTV')
+    try:
+        if not xbmcvfs.exists(os.path.dirname(filepath)):
+            xbmcvfs.mkdir(os.path.dirname(filepath))
+        if xbmcvfs.exists(filepath):
+            xbmcvfs.delete(filepath)
+        fle = open(filepath, "w")
+        try:
+            xml = data.toxml(encoding='utf-8');
+        except Exception as e:
+            xml  = '<?xml version="1.0" encoding="ISO-8859-1"?>'
+            xml += '<error>' + str(e) + '</error>';
+        xmllst = xml.replace('><','>\n<')
+        # for i in range(len(xmllst)):
+        fle.write("%s" % xmllst) 
+        fle.close()
+        log('writing item: %s' % (filepath))
+        if xbmcvfs.exists(filepath):
+            return True
+        else:
+            return False
+    except:
+        return False
+       
 def show_error(details):
     show_dialog(details, get_string(30000), True)
 
@@ -64,7 +224,7 @@ def get_string(string_id):
 def add_music_item(item_id, infolabels, img='', fanart='', total_items=0):
     infolabels = decode_dict(infolabels)
     url = build_plugin_url({'play': item_id})
-    log('adding item: %s' % (infolabels['title']))
+    log('adding item: %s' % (infolabels['title'].decode('utf-8','ignore')))
     listitem = xbmcgui.ListItem(infolabels['title'], iconImage=img, 
                                 thumbnailImage=img)
     listitem.setInfo('music', infolabels)
