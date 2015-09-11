@@ -50,24 +50,27 @@ class Ustvnow:
         
     def get_channels(self, quality=1, stream_type='rtmp'):
         print 'get_channels'
-        if self.token == None:
-            self._login()
-        content = self._get_json('gtv/1/live/listchannels', {'token': self.token})
-        channels = []
-        #print json.dumps(content);
-        results = content['results']['streamnames'];
-        for i in results:
-            url = "plugin://plugin.video.ustvnow/?name="+i['sname']+"&mode=play"
-            # url = self.get_link(i['sname'], quality, stream_type, dologin=False)
-            channels.append({
-                'name': i['sname'],
-                'sname' : i['callsign'],
-                'url': url, 
-                'icon': self.__BASE_URL + '/' + i['img']
-                })  
-            if Addon.get_setting('enablewrite') == "true":
-                Addon.makeSTRM(i['sname'], url) 
-        return channels
+        if self._login():
+            content = self._get_json('gtv/1/live/listchannels', {'token': self.token})
+            channels = []
+            #print json.dumps(content);
+            results = content['results']['streamnames'];
+            for i in results:
+                name = ((i['sname']).upper())
+                name = name.replace('WLYH','CW').replace('WHTM','ABC').replace('WPMT','FOX').replace('WPSU','PBS').replace('WHP','CBS').replace('WGAL','NBC').replace('WHVLLD','MY9').replace('AETV','AE')
+                name = name.replace('APL','Animal Planet').replace('TOON','Cartoon Network').replace('DSC','Discovery').replace('BRAVO','Bravo').replace('USA','USA Network').replace('SYFY','Syfy').replace('HISTORY','History')
+                name = name.replace('COMEDY','Comedy Central').replace('FOOD','Food Network').replace('NIK','Nickelodeon').replace('LIFE','Lifetime').replace('SPIKETV','Spike').replace('FNC','Fox News').replace('NGC','National Geographic')
+                url = "plugin://plugin.video.ustvnow/?name="+name+"&mode=play"
+                # url = self.get_link(i['sname'], quality, stream_type, dologin=False)
+                channels.append({
+                    'name': name,
+                    'sname' : i['callsign'],
+                    'url': url, 
+                    'icon': self.__BASE_URL + '/' + i['img']
+                    })  
+                if Addon.get_setting('enablewrite') == "true":
+                    Addon.makeSTRM(i['sname'], url) 
+            return channels
             
 # LIVETV           = BASE_URL + '/iphone/1/live/playingnow?pgonly=true&token=%s'
 # RECORDINGS       = BASE_URL + '/iphone/1/dvr/viewdvrlist?pgonly=true&token=%s'
@@ -85,7 +88,7 @@ class Ustvnow:
         for i in results:
             url = "plugin://plugin.video.ustvnow/?name="+i['sname']+"&mode=play"
             # url = self.get_link(i['sname'], quality, stream_type, dologin=False)
-            name = ((i['sname'].rsplit('/',1)[1]).replace('.png','')).upper()
+            name = ((i['sname']).upper())
             name = name.replace('WLYH','CW').replace('WHTM','ABC').replace('WPMT','FOX').replace('WPSU','PBS').replace('WHP','CBS').replace('WGAL','NBC').replace('WHVLLD','MY9').replace('AETV','AE')
             name = name.replace('APL','Animal Planet').replace('TOON','Cartoon Network').replace('DSC','Discovery').replace('BRAVO','Bravo').replace('USA','USA Network').replace('SYFY','Syfy').replace('HISTORY','History')
             name = name.replace('COMEDY','Comedy Central').replace('FOOD','Food Network').replace('NIK','Nickelodeon').replace('LIFE','Lifetime').replace('SPIKETV','Spike').replace('FNC','Fox News').replace('NGC','National Geographic')

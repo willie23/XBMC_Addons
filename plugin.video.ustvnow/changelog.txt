@@ -1,8 +1,8 @@
+[B]Version 12.0.4[/B]
 - New parsing code, To use new code enter settings and select "NEW"
 - "NEW" code exclusive features:
   - STRM & XMLTV generator
   - TV Guide
-[B]Version 12.0.4[/B]
 
 [B]Version 12.0.3[/B]
 - Added Login verification
