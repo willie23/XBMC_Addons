@@ -871,6 +871,9 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
     
     # return a valid channel in the proper range
     def fixChannel(self, channel, increasing = True):
+        # correct issue with setlabel which is returning -1 todo track down issue
+        if channel == -1:
+            return
         while channel < 1 or channel > self.maxChannels:
             if channel < 1: channel = self.maxChannels + channel
             if channel > self.maxChannels: channel -= self.maxChannels     
