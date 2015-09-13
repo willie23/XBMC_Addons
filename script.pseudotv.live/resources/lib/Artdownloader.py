@@ -186,21 +186,23 @@ class Artdownloader:
                     if ENHANCED_DATA == True and id != '0':
                         self.logDebug('FindArtwork, Artwork Download')
                         self.DownloadArt(type, id, arttype, cachefile, chname, mpath, arttypeEXT)
+                        return cachefile
             else:
                 if id == '0':
                     if chtype == 8 and dbid != '0':
                         self.logDebug('FindArtwork, XMLTV')
-                        return dbid.decode('base64')
+                        return decodeString(dbid)
                     elif type == 'youtube':
                         self.logDebug('FindArtwork, YOUTUBE')
                         return "http://i.ytimg.com/vi/"+dbid+"/mqdefault.jpg"
                     elif type == 'rss' and dbid != '0':
                         self.logDebug('FindArtwork, RSS')
-                        return dbid.decode('base64')
+                        return decodeString(dbid)
                 else:
                     if ENHANCED_DATA == True and id != '0':
                         self.logDebug('FindArtwork, Artwork Download')
-                        self.DownloadArt(type, id, arttype, cachefile, chname, mpath, arttypeEXT)
+                        self.DownloadArt(type, id, arttype, cachefile, chname, mpath, arttypeEXT)                       
+                        return cachefile
         except Exception,e:  
             self.log("script.pseudotv.live-Artdownloader: FindArtwork Failed" + str(e), xbmc.LOGERROR)
             buggalo.onExceptionRaised()     
@@ -235,7 +237,7 @@ class Artdownloader:
             self.log("script.pseudotv.live-Artdownloader: SetDefaultArt Failed" + str(e), xbmc.LOGERROR)
             buggalo.onExceptionRaised()
               
-              
+                             
     def DownloadArt(self, type, id, arttype, cachefile, chname, mpath, arttypeEXT):
         self.log('DownloadArt')
         try:
@@ -246,10 +248,12 @@ class Artdownloader:
                 self.DownloadArtTimer.cancel()
                 self.DownloadArtTimer.join()
             self.DownloadArtTimer.start()
+            # Sleep between Download, keeps cpu usage down and reduces the number of simultaneous threads.
+            xbmc.sleep(500)
         except Exception,e:  
             self.log("DownloadArt, Failed" + str(e), xbmc.LOGERROR)
             
-                       
+                         
     def DownloadArt_Thread(self, data):
         self.logDebug('DownloadArt_Thread, data = ' + str(data))
         type = data[0]
@@ -259,6 +263,7 @@ class Artdownloader:
         chname = data[4] 
         mpath = data[5] 
         arttypeEXT = data[6]
+        self.log('DownloadArt')
         try:
             drive, Dpath = os.path.splitdrive(cachefile)
             path, filename = os.path.split(Dpath)
@@ -267,19 +272,19 @@ class Artdownloader:
                 FileAccess.makedirs(os.path.join(drive,path))   
                     
             if type == 'tvshow':
-                self.logDebug('DownloadArt_Thread, tvshow')
+                self.logDebug('DownloadArt, tvshow')
                 tvdb_Types = ['banner', 'fanart', 'folder', 'poster']
                     
                 if arttype in tvdb_Types:
-                    self.logDebug('DownloadArt_Thread, TVDB')
+                    self.logDebug('DownloadArt, TVDB')
                     arttype = arttype.replace('banner', 'graphical').replace('folder', 'poster')
                     tvdb = str(self.tvdbAPI.getBannerByID(id, arttype))
                     tvdbPath = tvdb.split(', ')[0].replace("[('", "").replace("'", "") 
                     if tvdbPath.startswith('http'):
-                        self.logDebug('DownloadArt_Thread, return TV TVDB')
+                        self.logDebug('DownloadArt, return TV TVDB')
                         return download_silent(tvdbPath,cachefile)
                 
-                self.logDebug('DownloadArt_Thread, Fanart.TV')
+                self.logDebug('DownloadArt, Fanart.TV')
                 arttype = arttype.replace('graphical', 'banner').replace('folder', 'poster')
                 fan = str(self.fanarttv.get_image_list_TV(id))
                 file_detail = re.compile( "{(.*?)}", re.DOTALL ).findall(fan)
@@ -299,17 +304,17 @@ class Artdownloader:
                                         if fanPaths and len(fanPaths.group(1)) > 0:
                                             fanPath = fanPaths.group(1).replace("u'",'').replace("'",'')
                                             if fanPath.startswith('http'):
-                                                self.logDebug('DownloadArt_Thread, return TV Fanart.tv')
+                                                self.logDebug('DownloadArt, return TV Fanart.tv')
                                                 return download_silent(fanPath,cachefile)
                     except:
                         pass
 
             elif type == 'movie':
-                self.logDebug('DownloadArt_Thread, movie')
+                self.logDebug('DownloadArt, movie')
                 tmdb_Types = ['banner', 'fanart', 'folder', 'poster']
 
                 if arttype in tmdb_Types:
-                    self.logDebug('DownloadArt_Thread, TMDB')
+                    self.logDebug('DownloadArt, TMDB')
                     arttype = arttype.replace('folder', 'poster')
                     tmdb = self.tmdbAPI.get_image_list(id)
                     data = str(tmdb).replace("[", "").replace("]", "").replace("'", "")
@@ -320,10 +325,10 @@ class Artdownloader:
                         tmdbPath = match.group().replace(",", "").replace("url: u", "").replace("url: ", "")
                         if tmdbPath.startswith('http'):
                             FanMovieDownload = False 
-                            self.logDebug('DownloadArt_Thread, return Movie TMDB')
+                            self.logDebug('DownloadArt, return Movie TMDB')
                             return download_silent(tmdbPath,cachefile)
 
-                self.logDebug('DownloadArt_Thread, Fanart.TV')
+                self.logDebug('DownloadArt, Fanart.TV')
                 arttype = arttype.replace('folder', 'poster')
                 fan = str(self.fanarttv.get_image_list_Movie(id))
                 file_detail = re.compile( "{(.*?)}", re.DOTALL ).findall(fan)
@@ -344,14 +349,14 @@ class Artdownloader:
                                         if fanPaths and len(fanPaths.group(1)) > 0:
                                             fanPath = fanPaths.group(1).replace("u'",'').replace("'",'')
                                             if fanPath.startswith('http'):
-                                                self.logDebug('DownloadArt_Thread, return Movie Fanart.tv')
+                                                self.logDebug('DownloadArt, return Movie Fanart.tv')
                                                 return download_silent(fanPath,cachefile)
                     except:
                         pass
-            self.logDebug('DownloadArt_Thread, Trying Fallback Download')
+            self.logDebug('DownloadArt, Trying Fallback Download')
             self.DownloadArt(type, id, self.getFallback_Arttype(arttype), cachefile, chname, mpath, self.getFallback_Arttype(arttype))                
         except Exception,e:  
-            self.log("DownloadArt_Thread, Failed!" + str(e), xbmc.LOGERROR)
+            self.log("DownloadArt, Failed!" + str(e), xbmc.LOGERROR)
             
             
     def DownloadMetaArt(self, type, fle, id, typeEXT, ART_LOC):
@@ -405,7 +410,6 @@ class Artdownloader:
                                         fanPath = fanPaths.group(1).replace("u'",'').replace("'",'')
                                         if fanPath.startswith('http'):
                                             return download_silent(fanPath,FilePath)
-                                            break 
         except Exception,e:  
             self.log("script.pseudotv.live-Artdownloader: Fanart_Download Failed" + str(e), xbmc.LOGERROR)
             buggalo.onExceptionRaised()      

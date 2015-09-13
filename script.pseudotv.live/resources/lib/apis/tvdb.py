@@ -23,13 +23,13 @@ import sys, re
 import urllib, urllib2
 import socket, unicodedata
 import xbmc, xbmcgui
-import resources.lib.Globals
 
 from urllib2 import HTTPError, URLError
 from language import *
 from resources.lib.utils import *
 from xml.etree import ElementTree as ET
 from resources.lib.Globals import *
+from resources.lib.utils import *
 
 # Use json instead of simplejson when python v2.7 or greater
 if sys.version_info < (2, 7):

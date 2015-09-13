@@ -1,6 +1,12 @@
+[*] Improved "Quickflip", RSS artwork detection and Watched status flagging.
+[*] Fixed Autotuining Community list youtube channels.
+[*] Added Adjustable "SmartSeek" under "Tweaks". Smartseek avoids starting playback of strms or plugins toward the end of its runtime.
+[*] MC2XML/ZAP2XML/WebGrab+Plus XMLTV Artwork support.
+[*] Improved USTVnow Context Export Experience and ExtendedInfo support.
+[*] [COLOR=blue][B]^ v.0.6.7 ^[/B][/COLOR]
 [*] Optional Personal TMDB/TVDB/FANART.TV API Keys, setting under "Debugging".
 [*] NEW! LiveTV Reminders [Experimental]
-[*] Tweaked "Start Over" to ignore video chapters. Added Adjustable "Start Over" time.
+[*] Tweaked "Start Over" to ignore video chapters. Added Adjustable "Start Over" time and disable option under "Tweaks".
 [*] Overhauled url caching, Optimized i/o performance for lowpower hardware.
 [*] Fixed Logo downloading, tweaked low power profiles and cache functions.
 [*] USTVnow autotuning fixed, Fixed UPNP Channels, Kodi Favorites and other various issues.

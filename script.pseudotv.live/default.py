@@ -31,16 +31,6 @@ __cwd__        = __settings__.getAddonInfo('path')
 __version__    = __settings__.getAddonInfo('version')
 __language__   = __settings__.getLocalizedString
        
-def startPseudoTV():
-    # Run Prestart functions
-    ChkSettings()
-    
-    # Backup/Restore settings2
-    ChkSettings2()
-
-    #Start PseudoTV
-    PseudoTV()
-       
 def PseudoTV():
     import resources.lib.Overlay as Overlay
     setProperty("PseudoTVRunning", "True")
@@ -53,52 +43,29 @@ def PseudoTV():
         return
         
     for curthread in threading.enumerate():
-        try:
-            log("Active Thread: " + str(curthread.name), xbmc.LOGERROR)
-            if curthread.name != "MainThread":
-                try:
-                    curthread.join()      
-                except: 
-                    pass
-                log("Joined " + curthread.name)               
-        except: 
-            pass
+        # try:
+        log("Active Thread: " + str(curthread.name), xbmc.LOGERROR)
+        if curthread.name != "MainThread":
+            try:
+                curthread.join()      
+            except: 
+                pass
+            log("Joined " + curthread.name)               
+        # except: 
+            # pass
             
     del MyOverlayWindow
     setProperty("PseudoTVRunning", "False")
     
 # Adapting a solution from ronie (http://forum.xbmc.org/showthread.php?t=97353)
 if getProperty("PseudoTVRunning") != "True":
-    try:
-        PTVL_Version = REAL_SETTINGS.getSetting("PTVL_Version")
-        if not PTVL_Version:
-            raise
-    except:
-        REAL_SETTINGS.setSetting("PTVL_Version", __version__)
-        PTVL_Version = REAL_SETTINGS.getSetting("PTVL_Version") 
-    
-    if PTVL_Version != __version__:
-        REAL_SETTINGS.setSetting("PTVL_Version", __version__)
-        
-        # Remove m3u playlists
-        # ClearPlaylists()
-        
-        # Force Channel rebuild
-        # REAL_SETTINGS.setSetting('ForceChannelReset', 'true')
-      
-        # Optimize settings based on sys.platform
-        chkLowPower()
-        
-        # VideoWindow Patch.
-        VideoWindow()
-        
-        # Call showChangeLog like this to workaround bug in openElec, *Thanks spoyser
-        xbmc.executebuiltin("RunScript("+__cwd__+"/utilities.py,-showChangelog)") 
-        
-        # Check if autoplay is enabled
-        CHKAutoplay()
+    if hasVersionChanged(__version__) == True: 
+        HandleUpgrade()
     else:
-        startPseudoTV()
+        chkVersion()
+        if preStart() == True:
+            #Start PseudoTV
+            PseudoTV()
 else:
     log('default: Already running, exiting', xbmc.LOGERROR)
     xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Already running please wait and try again later.", 4000, THUMB) )

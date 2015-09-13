@@ -78,9 +78,9 @@ class Main:
             ADDON_ID = ADDON.getAddonInfo('id')
             self.AddonName = ADDON.getAddonInfo('name')
         self.chnlst = ChannelList()
-        self.Label = self.chnlst.CleanLabels(self.Label)
-        self.Description  = self.chnlst.CleanLabels(self.Description)
-        self.AddonName = self.chnlst.CleanLabels(self.AddonName)
+        self.Label = self.chnlst.cleanLabels(self.Label)
+        self.Description  = self.chnlst.cleanLabels(self.Description)
+        self.AddonName = self.chnlst.cleanLabels(self.AddonName)
         self.ImportChannel()
         
         
@@ -114,7 +114,7 @@ class Main:
             select = selectDialog(self.itemlst, 'Select Channel Number')
             if select != -1:
                 # self.channel = select + 1
-                self.channel = int(self.chnlst.CleanLabels((self.itemlst[select]).split(' - ')[0]))
+                self.channel = int(self.chnlst.cleanLabels((self.itemlst[select]).split(' - ')[0]))
                 if not (self.itemlst[select]).startswith('[COLOR=dimgrey]'):
                     available = True
                     
@@ -169,12 +169,15 @@ class Main:
             self.channame = self.Label
             
         elif self.chantype == 8: 
-            dname = self.Label
             xmltvFle = xmltvFile(listXMLTV())
-            # try:
+            if self.Path.startswith('plugin://plugin.video.ustvnow'):
+                self.Label = self.Label.split(' - ')[0]
+                dname = "USTVnow - "+self.Label
+            else:
+                dname = self.Label
+
             self.channame, self.setting1 = self.chnlst.findZap2itID(dname, xmltvFle)
-            # except:
-                # return
+            self.channame = self.Label+" USTV"
             self.setting2 = self.Path
                 
         elif self.chantype == 9:

@@ -17,7 +17,6 @@
 # along with PseudoTV.  If not, see <http://www.gnu.org/licenses/>.
 
 import xbmc, xbmcgui, xbmcplugin, xbmcvfs, xbmcaddon
-import simplejson
 
 from Globals import * 
 from FileAccess import *  
@@ -98,10 +97,5 @@ class APPS(xbmcgui.WindowXMLDialog):
                 
     def closeAPPS(self):
         self.log('closeAPPS')
-        try:
-            setProperty("PTVL.OnDemand_Opened","false") 
-            self.close()
-        except:
-            pass
-        
+        self.close()        
         

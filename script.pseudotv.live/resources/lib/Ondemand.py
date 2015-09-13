@@ -17,7 +17,6 @@
 # along with PseudoTV.  If not, see <http://www.gnu.org/licenses/>.
 
 import xbmc, xbmcgui, xbmcplugin, xbmcvfs, xbmcaddon
-import simplejson
 
 from Globals import * 
 from FileAccess import *  
@@ -99,8 +98,4 @@ class Ondemand(xbmcgui.WindowXMLDialog):
            
     def closeOndemand(self):
         self.log('closeOndemand')
-        try:
-            setProperty("PTVL.OnDemand_Opened","false") 
-            self.close()
-        except:
-            pass
+        self.close()

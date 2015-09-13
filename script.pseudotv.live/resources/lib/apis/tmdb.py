@@ -20,13 +20,12 @@
 import urllib, urllib2, socket
 import unicodedata, sys, re
 import xbmc, xbmcgui
-import resources.lib.Globals
-from resources.lib.utils import *
 
 from urllib2 import HTTPError, URLError
 from language import *
 from operator import itemgetter
 from resources.lib.Globals import *
+from resources.lib.utils import *
 
 # Use json instead of simplejson when python v2.7 or greater
 if sys.version_info < (2, 7):

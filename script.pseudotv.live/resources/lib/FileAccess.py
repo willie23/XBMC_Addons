@@ -40,7 +40,6 @@ class FileAccess:
             return VFSFile(filename, mode)
         except UnicodeDecodeError:
             return FileAccess.open(ascii(filename), mode, encoding)
-
         return fle
 
 

@@ -20,7 +20,7 @@ import os, sys, re
 import xbmcaddon, xbmc, xbmcgui, xbmcvfs
 import Settings, pyfscache
 
-from FileAccess import *
+from FileAccess import FileLock
 
 # Commoncache plugin import
 try:
@@ -102,7 +102,7 @@ MODE_REALTIME = 16
 MODE_SERIAL = MODE_RESUME | MODE_ALWAYSPAUSE | MODE_ORDERAIRDATE
 MODE_STARTMODES = MODE_RANDOM | MODE_REALTIME | MODE_RESUME
 
-# Maximum is 10 for this
+# Maximum is 10
 RULES_PER_PAGE = 7
 
 #UPNP Clients
@@ -113,6 +113,7 @@ IPP3 = REAL_SETTINGS.getSetting("UPNP3_IPP")
 #LOCATIONS
 SETTINGS_LOC = REAL_SETTINGS.getAddonInfo('profile') #LOCKED
 CHANNELS_LOC = os.path.join(SETTINGS_LOC, 'cache','') #LOCKED
+REQUESTS_LOC = xbmc.translatePath(os.path.join(CHANNELS_LOC, 'requests','')) #LOCKED
 MADE_CHAN_LOC = os.path.join(CHANNELS_LOC, 'stored','') #LOCKED
 GEN_CHAN_LOC = os.path.join(CHANNELS_LOC, 'generated','') #LOCKED
 IMAGES_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'images',''))
@@ -210,10 +211,10 @@ daily = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "daily",2
 weekly = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "weekly",24 * 7)
 monthly = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "monthly",((24 * 7) * 4))
 
-# cache globals
-cache_daily = pyfscache.FSCache((os.path.join(LOCK_LOC, 'requests', '')), days=1, hours=0, minutes=0)
-cache_weekly = pyfscache.FSCache((os.path.join(LOCK_LOC, 'requests', '')), days=7, hours=0, minutes=0)
-cache_monthly = pyfscache.FSCache((os.path.join(LOCK_LOC, 'requests', '')), days=31, hours=0, minutes=0)
+# pyfs cache globals
+cache_daily = pyfscache.FSCache(REQUESTS_LOC, days=1, hours=0, minutes=0)
+cache_weekly = pyfscache.FSCache(REQUESTS_LOC, days=7, hours=0, minutes=0)
+cache_monthly = pyfscache.FSCache(REQUESTS_LOC, days=31, hours=0, minutes=0)
     
 if REAL_SETTINGS.getSetting('EnableSettop') == 'true': 
     SETTOP_REFRESH = REFRESH_INT[int(REAL_SETTINGS.getSetting('REFRESH_INT'))] 

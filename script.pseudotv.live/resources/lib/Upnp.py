@@ -16,14 +16,14 @@
 # You should have received a copy of the GNU General Public License
 # along with PseudoTV.  If not, see <http://www.gnu.org/licenses/>.
 
-import Globals, requests, os, re, datetime
-import socket, select, json, StringIO, copy
+import datetime, socket, json, copy
 
 from Globals import *
 
 socket.setdefaulttimeout(30)
     
 class Upnp:
+
 
     def log(self, msg, level = xbmc.LOGDEBUG):
         log('Upnp: ' + msg, level)
@@ -36,16 +36,20 @@ class Upnp:
             
     def SendExtJson(self, IPP, params):
         self.log('SendExtJson')
-        xbmc_host = str(IPP.split(":")[0])
-        xbmc_port = int(IPP.split(":")[1])
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((xbmc_host, xbmc_port))
-        params2 = copy.copy(params)
-        params2["jsonrpc"] = "2.0"
-        params2["id"] = 1
-        s.send(json.dumps(params2))
-        s.shutdown(socket.SHUT_RDWR)
-        s.close()
+        try:
+            xbmc_host = str(IPP.split(":")[0])
+            xbmc_port = int(IPP.split(":")[1])
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect((xbmc_host, xbmc_port))
+            params2 = copy.copy(params)
+            params2["jsonrpc"] = "2.0"
+            params2["id"] = 1
+            s.send(json.dumps(params2))
+            s.shutdown(socket.SHUT_RDWR)
+            s.close()
+        except:
+            if NOTIFY == True:
+                xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", xbmc_host + " Failed to respond.", 1000, THUMB) )
         
         
     def SendUPNP(self, IPP, file, seektime):
@@ -69,7 +73,6 @@ class Upnp:
             params = ({"jsonrpc": "2.0", "method": "Player.Open", "params": {"item": {"file": file},"options":{"resume":{"hours":hours,"minutes":minutes,"seconds":seconds,"milliseconds":milliseconds}}}})
         else:
             params = ({"jsonrpc": "2.0", "method": "Player.Open", "params": {"item": {"path": file}}})
-        
         self.SendExtJson(IPP, params)
 
         

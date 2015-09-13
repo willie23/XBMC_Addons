@@ -16,7 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with PseudoTV.  If not, see <http://www.gnu.org/licenses/>.
 
-from Globals import *
+import xbmc, xbmcgui, xbmcplugin, xbmcvfs, xbmcaddon
+
+from Globals import * 
+from FileAccess import *  
+from Artdownloader import *
+from utils import *
 
 class DVR(xbmcgui.WindowXMLDialog):
     def __init__(self, *args, **kwargs):
@@ -103,11 +108,7 @@ class DVR(xbmcgui.WindowXMLDialog):
 
     def closeDVR(self):
         self.log('closeDVR')
-        try:
-            setProperty("PTVL.OnDemand_Opened","false") 
-            self.close()
-        except:
-            pass
+        self.close()
            
 
 
