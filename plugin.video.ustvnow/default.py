@@ -33,6 +33,9 @@ quality_type = int(Addon.get_setting('quality'))
 dlg = xbmcgui.Dialog()
 addon = xbmcaddon.Addon(id='plugin.video.ustvnow')
 plugin_path = addon.getAddonInfo('path')
+write_path = Addon.get_setting('write_folder')    
+if not write_path:
+    Addon.set_setting('write_folder', xbmc.translatePath('special://userdata/plugin.video.ustvnow/'))
 
 if Addon.get_setting('version') == '0':
     from resources.lib import ustvnow_new
@@ -65,28 +68,27 @@ Addon.log('plugin url: ' + Addon.plugin_url)
 Addon.log('plugin queries: ' + str(Addon.plugin_queries))
 Addon.log('plugin handle: ' + str(Addon.plugin_handle))
 mode = Addon.plugin_queries['mode']
+Addon.log(mode)
 
 if mode == 'main':
-    Addon.log(mode)
     Addon.add_directory({'mode': 'live'}, Addon.get_string(30001))
     if usingNewCode == True:
-        # Addon.add_directory({'mode': 'favorites'}, Addon.get_string(30006))
+        Addon.add_directory({'mode': 'favorites'}, Addon.get_string(30006))
         Addon.add_directory({'mode': 'tvguide'}, Addon.get_string(30007))
-    if premium == True and not usingNewCode:
+    if premium == True:
         Addon.add_directory({'mode': 'recordings'}, Addon.get_string(30002))
 
 elif mode == 'live':
-    Addon.log(mode)
     channels = ustv.get_channels(quality_type, stream_type)
     if channels:
         for c in channels:
             rURL = "plugin://plugin.video.ustvnow/?name="+c['name']+"&mode=play"
+            # logo = xbmc.translatePath(os.path.join(plugin_path, 'resources', 'images', c['name']+'.png'))
             item = xbmcgui.ListItem(path=rURL)
             if usingNewCode == True:
                 name = c["name"];
                 sname = c["sname"];
                 icon = c["icon"];
-
                 for quality in range(1,4):
                     parameters = urllib.urlencode( {
                         'c': sname,
@@ -95,27 +97,25 @@ elif mode == 'live':
                         'u': email,
                         'p': password } );
 
+                    # todo set HD flag
                     if quality==1:
                         quality_name = 'Low';
                     elif quality==2:
                         quality_name = 'Medium';
                     elif quality==3:
                         quality_name = 'High';
-
-                # todo set HD flag
+                        
                 Addon.add_video_item(rURL,
                                      {'title': '%s' % (c['name'])},
-                                     img=c['icon'])
-
+                                     img=c["icon"])
             else:
                 Addon.add_video_item(rURL,
                                      {'title': '%s - %s' % (c['name'], 
                                                             c['now']['title']),
                                       'plot': c['now']['plot']},
-                                     img=c['icon'])
+                                     img=c["icon"])
                              
 elif mode == 'recordings':
-    Addon.log(mode)
     stream_type = ['rtmp', 'rtsp'][int(Addon.get_setting('stream_type'))]
     recordings = ustv.get_recordings(int(Addon.get_setting('quality')), 
                                      stream_type)
@@ -129,7 +129,6 @@ elif mode == 'recordings':
                                                    'plot': r['plot']},
                                  img=r['icon'], cm=[cm_del], cm_replace=True)
 elif mode == 'delete':
-    Addon.log(mode)
     dialog = xbmcgui.Dialog()
     ret = dialog.yesno(Addon.get_string(30000), Addon.get_string(30004), 
                        Addon.get_string(30005))
@@ -137,32 +136,28 @@ elif mode == 'delete':
         ustv.delete_recording(Addon.plugin_queries['del'])
 
 elif mode == 'favorites':
-    Addon.log(mode)
     favorites = ustv.get_favorites(int(Addon.get_setting('quality')), 
                                      stream_type)
 elif mode == 'guidedata':
-    Addon.log(mode)  
-    # ex. call
-    # xbmc.executebuiltin("XBMC.RunPlugin(plugin://plugin.video.ustvnow/?file=%s&mode=guidedata)" %urllib.quote(fpath))
+    # ex. xbmc.executebuiltin("XBMC.RunPlugin(plugin://plugin.video.ustvnow/?file=%s&mode=guidedata)" %urllib.quote(fpath))
     fpath = Addon.plugin_queries['file']               
     Addon.makeXMLTV(ustv.get_guidedata(),urllib.unquote(fpath))
     
+elif mode == 'playlist':
+    ustv.get_channels(quality_type, stream_type)
+
 elif mode == 'tvguide':
-    Addon.log(mode)
-    fpath = os.path.join(Addon.get_setting('XMLTVfolder'), 'xmltv.xml')
+    fpath = os.path.join(write_path, 'xmltv.xml')    
     try:
         name = Addon.plugin_queries['name']
         listings = ustv.get_tvguide(fpath, 'programs', name)
         if listings:
             for l in range(len(listings)):
                 print listings[l]
-                # breakdown time and chname
-                # if time > now set rec option
-                # else play channel
                 rURL = "plugin://plugin.video.ustvnow/?name="+listings[l][0]+"&mode=play"
                 Addon.add_video_item(rURL,
                                      {'title': '%s - %s' % (listings[l][1], 
-                                                            listings[l][2]),
+                                                            (listings[l][2]).replace('&amp;','&')),
                                       'plot': listings[l][3]},
                                      img=listings[l][6])
     except:
@@ -183,12 +178,11 @@ elif mode == 'tvguide':
                                                 isFolder=True, totalItems=len(listings))
         
 elif mode=='play':
-    Addon.log(mode)
     name = Addon.plugin_queries['name']
     Addon.log(name)
     channels = []
     if usingNewCode == True:
-        channels = ustv.get_link(name, quality_type, stream_type)
+        channels = ustv.get_link(quality_type, stream_type)
     else:
         channels = ustv.get_channels(quality_type, stream_type)
     if channels:

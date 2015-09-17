@@ -45,31 +45,30 @@ class Ustvnow:
         self.cache  = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "cache",1)
         
     def get_tvguide(self, filename, type='channels', name=''):
-        print 'get_tvguide'
+        Addon.log('get_tvguide,' + type + ',' + name)
         return Addon.readXMLTV(filename, type, name)
         
     def get_channels(self, quality=1, stream_type='rtmp'):
-        print 'get_channels'
+        Addon.log('get_channels,' + str(quality) + ',' + stream_type)
+        write_type = int(Addon.get_setting('write_type'))
         if self._login():
             content = self._get_json('gtv/1/live/listchannels', {'token': self.token})
             channels = []
             #print json.dumps(content);
             results = content['results']['streamnames'];
             for i in results:
-                name = ((i['sname']).upper())
-                name = name.replace('WLYH','CW').replace('WHTM','ABC').replace('WPMT','FOX').replace('WPSU','PBS').replace('WHP','CBS').replace('WGAL','NBC').replace('WHVLLD','MY9').replace('AETV','AE')
-                name = name.replace('APL','Animal Planet').replace('TOON','Cartoon Network').replace('DSC','Discovery').replace('BRAVO','Bravo').replace('USA','USA Network').replace('SYFY','Syfy').replace('HISTORY','History')
-                name = name.replace('COMEDY','Comedy Central').replace('FOOD','Food Network').replace('NIK','Nickelodeon').replace('LIFE','Lifetime').replace('SPIKETV','Spike').replace('FNC','Fox News').replace('NGC','National Geographic')
+                name = Addon.cleanChanName(i['sname'])
                 url = "plugin://plugin.video.ustvnow/?name="+name+"&mode=play"
-                # url = self.get_link(i['sname'], quality, stream_type, dologin=False)
                 channels.append({
                     'name': name,
                     'sname' : i['callsign'],
-                    'url': url, 
+                    'url': url,
                     'icon': self.__BASE_URL + '/' + i['img']
                     })  
-                if Addon.get_setting('enablewrite') == "true":
-                    Addon.makeSTRM(i['sname'], url) 
+                if Addon.get_setting('enablewrite') == "true" and write_type == 0:
+                    Addon.makeSTRM(name, url)
+            if Addon.get_setting('enablewrite') == "true" and write_type > 0:
+                Addon.makeM3U(self.get_link(quality, stream_type, self.token))
             return channels
             
 # LIVETV           = BASE_URL + '/iphone/1/live/playingnow?pgonly=true&token=%s'
@@ -87,11 +86,8 @@ class Ustvnow:
         print results
         for i in results:
             url = "plugin://plugin.video.ustvnow/?name="+i['sname']+"&mode=play"
-            # url = self.get_link(i['sname'], quality, stream_type, dologin=False)
-            name = ((i['sname']).upper())
-            name = name.replace('WLYH','CW').replace('WHTM','ABC').replace('WPMT','FOX').replace('WPSU','PBS').replace('WHP','CBS').replace('WGAL','NBC').replace('WHVLLD','MY9').replace('AETV','AE')
-            name = name.replace('APL','Animal Planet').replace('TOON','Cartoon Network').replace('DSC','Discovery').replace('BRAVO','Bravo').replace('USA','USA Network').replace('SYFY','Syfy').replace('HISTORY','History')
-            name = name.replace('COMEDY','Comedy Central').replace('FOOD','Food Network').replace('NIK','Nickelodeon').replace('LIFE','Lifetime').replace('SPIKETV','Spike').replace('FNC','Fox News').replace('NGC','National Geographic')
+            name = (i['sname'])
+            # name = name.replace('WLYH','CW').replace('WHTM','ABC').replace('WPMT','FOX').replace('WPSU','PBS').replace('WHP','CBS').replace('WGAL','NBC').replace('My9','MY9').replace('AETV','AE').replace('Channel','').replace('Network','')
             channels.append({
                 'name': name,
                 'sname' : i['callsign'],
@@ -101,20 +97,19 @@ class Ustvnow:
         print channels
         return channels
 
-    def get_guidedata(self):
-        try:
-            result = self.cache.cacheFunction(self.get_guidedata_NEW)
-        except:
-            result = self.get_guidedata_NEW()
-            pass
-        if not result:
-            result = []
-        return result  
+    # def get_guidedata(self):
+        # try:
+            # result = self.cache.cacheFunction(self.get_guidedata_NEW)
+        # except:
+            # result = self.get_guidedata_NEW()
+            # pass
+        # if not result:
+            # result = self.cache.cacheFunction(self.get_guidedata_NEW)
+        # return result  
 
-    def get_guidedata_NEW(self):
+    def get_guidedata(self):
         Addon.log('get_guidedata')
-        if self.token == None:
-            self._login()
+        self._login()
         content = self._get_json('gtv/1/live/channelguide', {'token': self.token})
         results = content['results'];
         now = time();
@@ -235,12 +230,13 @@ class Ustvnow:
             html = False
         return html
 
-    def get_link(self, sname, quality=1, stream_type='rtmp'):
+    def get_link(self, quality=1, stream_type='rtmp', token=False):
         Addon.log('get_link')
-        if self._login():
+        if self._login(token):
             self.__BASE_URL = 'http://lv2.ustvnow.com';
-            html = self._get_html('iphone_ajax', {'tab': 'iphone_playingnow', 
-                                                              'token': self.token})
+            # self.__BASE_URL = 'http://lv7.ustvnow.com';
+            # self.__BASE_URL = 'http://lv9.ustvnow.com';
+            html = self._get_html('iphone_ajax', {'tab': 'iphone_playingnow', 'token': self.token})
             channels = []
             achannels = []
             for channel in re.finditer('class="panel".+?title="(.+?)".+?src="' +
@@ -252,9 +248,7 @@ class Ustvnow:
                 name = name.replace('\n','').replace('\t','').replace('\r','').replace('<fieldset> ','').replace('<div class=','').replace('>','').replace('"','').replace(' ','')
                 if not name:
                     name = ((icon.rsplit('/',1)[1]).replace('.png','')).upper()
-                    name = name.replace('WLYH','CW').replace('WHTM','ABC').replace('WPMT','FOX').replace('WPSU','PBS').replace('WHP','CBS').replace('WGAL','NBC').replace('WHVLLD','MY9').replace('AETV','AE')
-                    name = name.replace('APL','Animal Planet').replace('TOON','Cartoon Network').replace('DSC','Discovery').replace('BRAVO','Bravo').replace('USA','USA Network').replace('SYFY','Syfy').replace('HISTORY','History')
-                    name = name.replace('COMEDY','Comedy Central').replace('FOOD','Food Network').replace('NIK','Nickelodeon').replace('LIFE','Lifetime').replace('SPIKETV','Spike').replace('FNC','Fox News').replace('NGC','National Geographic')
+                    name = Addon.cleanChanName(name)
                 try:
                     if not url.startswith('http'):
                         now = {'title': title, 'plot': plot.strip()}
@@ -267,11 +261,13 @@ class Ustvnow:
                            channels.append(aChannel)
                 except:
                     pass
-            channels.sort()
             return channels
-
-    def _login(self):
+                    
+    def _login(self, token=False):
         Addon.log('_login')
+        if token != False:
+            self.token = token
+            return True
         self.token = None
         self.cj = cookielib.CookieJar()
         opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cj))

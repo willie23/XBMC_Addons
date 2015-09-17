@@ -1,3 +1,7 @@
+[B]Version 12.0.5[/B]
+- Standard and IPTVsimple M3U generator
+- Background service - Updates M3U's and XMLTV (Strms do not require refreshing) every 4,6,12,24hrs.
+
 [B]Version 12.0.4[/B]
 - New parsing code, To use new code enter settings and select "NEW"
 - "NEW" code exclusive features:

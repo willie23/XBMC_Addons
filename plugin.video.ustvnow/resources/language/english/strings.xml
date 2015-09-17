@@ -13,8 +13,9 @@
     <string id="30102">Email</string>
     <string id="30103">Password</string>
     <string id="30104">Premium Subscription</string>
-    <string id="30105">Code to use</string> 
-    <string id="30106">STRM folder</string> 
-    <string id="30107">Enable Building STRM & XMLTV files</string> 
-    <string id="30108">XMLTV folder</string> 
+    <string id="30105">Code type</string> 
+    <string id="30106">File folder</string> 
+    <string id="30107">Enable files</string> 
+    <string id="30108">Update files every</string> 
+    <string id="30109">File type</string> 
 </strings>

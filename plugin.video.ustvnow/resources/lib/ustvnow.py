@@ -24,6 +24,8 @@ import xbmcgui
 
 class Ustvnow:
     __BASE_URL = 'http://lv2.ustvnow.com'
+    # __BASE_URL = 'http://lv7.ustvnow.com'
+    # __BASE_URL = 'http://lv9.ustvnow.com'
     def __init__(self, user, password, premium):
         self.user = user
         self.password = password

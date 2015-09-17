@@ -37,38 +37,28 @@ def log(msg, err=False):
     else:
         xbmc.log(addon.getAddonInfo('name') + ': ' + msg.encode('utf-8'), 
                     xbmc.LOGDEBUG)    
-                    
+          
 def ascii(string):
     if isinstance(string, basestring):
         if isinstance(string, unicode):
            string = string.encode('ascii', 'ignore')
     return string
     
+def cleanChanName(string):
+    string = string.strip()
+    string = string.replace('WLYH','CW').replace('WHTM','ABC').replace('WPMT','FOX').replace('WPSU','PBS').replace('WHP','CBS').replace('WGAL','NBC').replace('WHVLLD','MY9').replace('AETV','AE')
+    string = string.replace('APL','Animal Planet').replace('TOON','Cartoon Network').replace('DSC','Discovery').replace('Discovery ','Discovery').replace('BRAVO','Bravo').replace('SYFY','Syfy').replace('HISTORY','History')
+    string = string.replace('COMEDY','Comedy Central').replace('FOOD','Food Network').replace('NIK','Nickelodeon').replace('LIFE','Lifetime').replace('SPIKETV','SPIKE TV').replace('FNC','Fox News').replace('NGC','National Geographic').replace('Channel','')
+    return cleanChannel(string)
+          
+def cleanChannel(string):
+    string = string.replace('WLYH','CW').replace('WHTM','ABC').replace('WPMT','FOX').replace('WPSU','PBS').replace('WHP','CBS').replace('WGAL','NBC').replace('My9','MY9').replace('AETV','AE').replace('USA','USA Network').replace('Channel','').replace('Network Network','Network')
+    return string.strip()
+      
 def readXMLTV(filename, type='channels', name=''):
     print ('readXMLTV')       
-    # import xmltv
-        # # If you need to change the locale:
-        # # xmltv.locale = 'Latin-1'
-        # # If you need to change the date format used in the XMLTV file:
-        # # xmltv.date_format = '%Y%m%d%H%M%S %Z'
-
-        # # Print info for XMLTV file (source, etc.)
-        # # return (xmltv.read_data(open(filename, 'r')))
-
-        # # Print channels
-        # # return (xmltv.read_channels(open(filename, 'r')))
-
-        # # # Print programmes
-        # # print(xmltv.read_programmes(open(filename, 'r')))
     cached_readXMLTV = []
     channels = []
-    # try:
-    # for key in xmltv.read_channels(FileAccess.open(filename, 'r')):
-        # name = map(itemgetter(0), key['display-name'])
-        # id   = key['id']
-        # name = name[0]
-    # channel = name+' : '+id
-    # self.cached_readXMLTV.append(channel)
     now = datetime.datetime.now()
     f = open(filename, "r")
     context = ET.iterparse(f, events=("start", "end"))
@@ -81,15 +71,14 @@ def readXMLTV(filename, type='channels', name=''):
                 if elem.tag == "channel":
                     id = ascii(elem.get("id"))
                     for title in elem.findall('display-name'):
-                        channels.append(ascii(title.text.replace('<display-name>','').replace('</display-name>','')))
+                        title = cleanChanName(title.text)
+                        channels.append(ascii(title.replace('<display-name>','').replace('</display-name>','')))
                         break
             elif type == 'programs':
                 if elem.tag == "programme":
                     channel = elem.get("channel")
                     channel = channel.upper()
-                    channel = channel.replace('WLYH','CW').replace('WHTM','ABC').replace('WPMT','FOX').replace('WPSU','PBS').replace('WHP','CBS').replace('WGAL','NBC').replace('WHVLLD','MY9').replace('AETV','AE')
-                    channel = channel.replace('APL','Animal Planet').replace('TOON','Cartoon Network').replace('DSC','Discovery').replace('BRAVO','Bravo').replace('USA','USA Network').replace('SYFY','Syfy').replace('HISTORY','History')
-                    channel = channel.replace('COMEDY','Comedy Central').replace('FOOD','Food Network').replace('NIK','Nickelodeon').replace('LIFE','Lifetime').replace('SPIKETV','Spike').replace('FNC','Fox News').replace('NGC','National Geographic')
+                    print channel, name
                     if name.lower() == channel.lower():
                         print 'match', channel, name
                         showtitle = elem.findtext('title')
@@ -154,10 +143,33 @@ def parseXMLTVDate(dateString, offset=0):
         return d
     else:
         return None
-            
+        
+def makeM3U(links):
+    log('makeM3U')
+    print links
+    STRM_CACHE_LOC = get_setting('write_folder')
+    if not xbmcvfs.exists(STRM_CACHE_LOC):
+        xbmcvfs.mkdir(STRM_CACHE_LOC)
+    flepath = os.path.join(STRM_CACHE_LOC,'ustvnow.m3u')
+    if xbmcvfs.exists(flepath):
+        xbmcvfs.delete(flepath)
+    playlist = open(flepath,'w')
+    #Extended M3U format used here
+    playlist.write('#EXTM3U'+'\n')
+    if links:
+        for l in links:
+            #Add name based filename
+            if get_setting('write_type') == "2":
+                playlist.write('#EXTINF:-1, tvg-id="'+l['name']+'" tvg-logo="'+l['name']+'" tvg-name="'+l['name']+'"  group-title="USTVnow",'+l['name']+'\n')
+            else:
+                playlist.write('#EXTINF:'+l['name']+'\n')
+            #Write relative location of file
+            playlist.write(l['url']+'\n')
+    playlist.close()
+                    
 def makeSTRM(name, link):  
     log('makeSTRM')
-    STRM_CACHE_LOC = get_setting('STRMfolder')
+    STRM_CACHE_LOC = get_setting('write_folder')
     try:
         if not xbmcvfs.exists(STRM_CACHE_LOC):
             xbmcvfs.mkdir(STRM_CACHE_LOC)
@@ -175,7 +187,7 @@ def makeSTRM(name, link):
         return False
 
 def makeXMLTV(data, filepath):
-    log('makeXMLTV')
+    log('makeXMLTV, filepath = ' + ascii(filepath))
     try:
         if not xbmcvfs.exists(os.path.dirname(filepath)):
             xbmcvfs.mkdir(os.path.dirname(filepath))
@@ -188,7 +200,7 @@ def makeXMLTV(data, filepath):
             xml  = '<?xml version="1.0" encoding="ISO-8859-1"?>'
             xml += '<error>' + str(e) + '</error>';
         xmllst = xml.replace('><','>\n<')
-        # for i in range(len(xmllst)):
+        xmllst = cleanChanName(xmllst)
         fle.write("%s" % xmllst) 
         fle.close()
         log('writing item: %s' % (filepath))
