@@ -97,17 +97,17 @@ class Ustvnow:
         print channels
         return channels
 
-    # def get_guidedata(self):
-        # try:
-            # result = self.cache.cacheFunction(self.get_guidedata_NEW)
-        # except:
-            # result = self.get_guidedata_NEW()
-            # pass
-        # if not result:
-            # result = self.cache.cacheFunction(self.get_guidedata_NEW)
-        # return result  
-
     def get_guidedata(self):
+        try:
+            result = self.cache.cacheFunction(self.get_guidedata_NEW)
+        except:
+            result = self.get_guidedata_NEW()
+            pass
+        if not result:
+            result = self.cache.cacheFunction(self.get_guidedata_NEW)
+        return result  
+
+    def get_guidedata_NEW(self):
         Addon.log('get_guidedata')
         self._login()
         content = self._get_json('gtv/1/live/channelguide', {'token': self.token})
@@ -234,6 +234,7 @@ class Ustvnow:
         Addon.log('get_link')
         if self._login(token):
             self.__BASE_URL = 'http://lv2.ustvnow.com';
+            # self.__BASE_URL = 'http://lv5.ustvnow.com';
             # self.__BASE_URL = 'http://lv7.ustvnow.com';
             # self.__BASE_URL = 'http://lv9.ustvnow.com';
             html = self._get_html('iphone_ajax', {'tab': 'iphone_playingnow', 'token': self.token})

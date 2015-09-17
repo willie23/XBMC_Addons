@@ -246,7 +246,7 @@ def add_music_item(item_id, infolabels, img='', fanart='', total_items=0):
                                 isFolder=False, totalItems=total_items)
 
 def add_video_item(url, infolabels, img='', fanart='', total_items=0, 
-                   cm=[], cm_replace=False):
+                   cm=[], cm_replace=False, HD='Low'):
     infolabels = decode_dict(infolabels)
     if url.find('://') == -1:
         url = build_plugin_url({'play': url})
@@ -256,6 +256,12 @@ def add_video_item(url, infolabels, img='', fanart='', total_items=0,
     listitem.setInfo('video', infolabels)
     listitem.setProperty('IsPlayable', 'true')
     listitem.setProperty('fanart_image', fanart)
+    if HD == 'High':
+        listitem.addStreamInfo('video', { 'width':1280 ,'height' : 720 })
+    if HD == 'Medium':
+        listitem.addStreamInfo('video', { 'width':640 ,'height' : 480 })
+    else:
+        listitem.addStreamInfo('video', { 'width':600 ,'height' : 320 })
     if cm:
         listitem.addContextMenuItems(cm, cm_replace)
     xbmcplugin.addDirectoryItem(plugin_handle, url, listitem, 
