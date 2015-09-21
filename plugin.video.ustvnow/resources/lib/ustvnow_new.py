@@ -77,25 +77,25 @@ class Ustvnow:
 
     def get_favorites(self, quality=1, stream_type='rtmp'):
         print 'get_channels'
-        if self.token == None:
-            self._login()
-            content = self._get_json('gtv/1/live/listchannels', {'token': self.token})
-        channels = []
-        #print json.dumps(content);
-        results = content['results']['streamnames'];
-        print results
-        for i in results:
-            url = "plugin://plugin.video.ustvnow/?name="+i['sname']+"&mode=play"
-            name = (i['sname'])
-            # name = name.replace('WLYH','CW').replace('WHTM','ABC').replace('WPMT','FOX').replace('WPSU','PBS').replace('WHP','CBS').replace('WGAL','NBC').replace('My9','MY9').replace('AETV','AE').replace('Channel','').replace('Network','')
-            channels.append({
-                'name': name,
-                'sname' : i['callsign'],
-                'url': url, 
-                'icon': self.__BASE_URL + '/' + i['img']
-                })  
-        print channels
-        return channels
+        # if self.token == None:
+            # if self._login():
+                # content = self._get_json('gtv/1/live/listchannels', {'token': self.token})
+        # channels = []
+        # #print json.dumps(content);
+        # results = content['results']['streamnames'];
+        # print results
+        # for i in results:
+            # url = "plugin://plugin.video.ustvnow/?name="+i['sname']+"&mode=play"
+            # name = (i['sname'])
+            # # name = name.replace('WLYH','CW').replace('WHTM','ABC').replace('WPMT','FOX').replace('WPSU','PBS').replace('WHP','CBS').replace('WGAL','NBC').replace('My9','MY9').replace('AETV','AE').replace('Channel','').replace('Network','')
+            # channels.append({
+                # 'name': name,
+                # 'sname' : i['callsign'],
+                # 'url': url, 
+                # 'icon': self.__BASE_URL + '/' + i['img']
+                # })  
+        # print channels
+        # return channels
 
     def get_guidedata(self):
         try:
@@ -104,91 +104,91 @@ class Ustvnow:
             result = self.get_guidedata_NEW()
             pass
         if not result:
-            result = self.cache.cacheFunction(self.get_guidedata_NEW)
+            result = self.get_guidedata_NEW()
         return result  
 
     def get_guidedata_NEW(self):
         Addon.log('get_guidedata')
-        self._login()
-        content = self._get_json('gtv/1/live/channelguide', {'token': self.token})
-        results = content['results'];
-        now = time();
-        doc = minidom.Document();
-        base = doc.createElement('tv');
-        base.setAttribute("cache-version", str(now));
-        base.setAttribute("cache-time", str(now));
-        base.setAttribute("generator-info-name", "IPTV Plugin");
-        base.setAttribute("generator-info-url", "http://www.xmltv.org/");
-        doc.appendChild(base)
-        channels = self.get_channels();
+        if self._login():
+            content = self._get_json('gtv/1/live/channelguide', {'token': self.token})
+            results = content['results'];
+            now = time();
+            doc = minidom.Document();
+            base = doc.createElement('tv');
+            base.setAttribute("cache-version", str(now));
+            base.setAttribute("cache-time", str(now));
+            base.setAttribute("generator-info-name", "IPTV Plugin");
+            base.setAttribute("generator-info-url", "http://www.xmltv.org/");
+            doc.appendChild(base)
+            channels = self.get_channels();
 
-        for channel in channels:
-            name = channel['name'];
-            id = channel['sname'];
-            c_entry = doc.createElement('channel');
-            c_entry.setAttribute("id", id);
-            base.appendChild(c_entry)
-            dn_entry = doc.createElement('display-name');
-            dn_entry_content = doc.createTextNode(name);
-            dn_entry.appendChild(dn_entry_content);
-            c_entry.appendChild(dn_entry);
-            dn_entry = doc.createElement('display-name');
-            dn_entry_content = doc.createTextNode(id);
-            dn_entry.appendChild(dn_entry_content);
-            c_entry.appendChild(dn_entry);
-            icon_entry = doc.createElement('icon');
-            icon_entry.setAttribute("src", channel['icon']);
-            c_entry.appendChild(icon_entry);
+            for channel in channels:
+                name = channel['name'];
+                id = channel['sname'];
+                c_entry = doc.createElement('channel');
+                c_entry.setAttribute("id", id);
+                base.appendChild(c_entry)
+                dn_entry = doc.createElement('display-name');
+                dn_entry_content = doc.createTextNode(name);
+                dn_entry.appendChild(dn_entry_content);
+                c_entry.appendChild(dn_entry);
+                dn_entry = doc.createElement('display-name');
+                dn_entry_content = doc.createTextNode(id);
+                dn_entry.appendChild(dn_entry_content);
+                c_entry.appendChild(dn_entry);
+                icon_entry = doc.createElement('icon');
+                icon_entry.setAttribute("src", channel['icon']);
+                c_entry.appendChild(icon_entry);
 
-        for programme in results:
-            start_time 	= datetime.fromtimestamp(float(programme['ut_start']));
-            stop_time	= start_time + timedelta(seconds=int(programme['guideremainingtime']));
-            
-            pg_entry = doc.createElement('programme');
-            pg_entry.setAttribute("start", start_time.strftime('%Y%m%d%H%M%S 0'));
-            pg_entry.setAttribute("stop", stop_time.strftime('%Y%m%d%H%M%S 0'));
-            pg_entry.setAttribute("channel", programme['callsign']);
-            base.appendChild(pg_entry);
-            
-            t_entry = doc.createElement('title');
-            t_entry.setAttribute("lang", "en");
-            t_entry_content = doc.createTextNode(programme['title']);
-            t_entry.appendChild(t_entry_content);
-            pg_entry.appendChild(t_entry);
-            
-            st_entry = doc.createElement('sub-title');
-            st_entry.setAttribute("lang", "en");
-            st_entry_content = doc.createTextNode(programme['episode_title']);
-            st_entry.appendChild(st_entry_content);
-            pg_entry.appendChild(st_entry);
+            for programme in results:
+                start_time 	= datetime.fromtimestamp(float(programme['ut_start']));
+                stop_time	= start_time + timedelta(seconds=int(programme['guideremainingtime']));
+                
+                pg_entry = doc.createElement('programme');
+                pg_entry.setAttribute("start", start_time.strftime('%Y%m%d%H%M%S 0'));
+                pg_entry.setAttribute("stop", stop_time.strftime('%Y%m%d%H%M%S 0'));
+                pg_entry.setAttribute("channel", programme['callsign']);
+                base.appendChild(pg_entry);
+                
+                t_entry = doc.createElement('title');
+                t_entry.setAttribute("lang", "en");
+                t_entry_content = doc.createTextNode(programme['title']);
+                t_entry.appendChild(t_entry_content);
+                pg_entry.appendChild(t_entry);
+                
+                st_entry = doc.createElement('sub-title');
+                st_entry.setAttribute("lang", "en");
+                st_entry_content = doc.createTextNode(programme['episode_title']);
+                st_entry.appendChild(st_entry_content);
+                pg_entry.appendChild(st_entry);
 
-            d_entry = doc.createElement('desc');
-            d_entry.setAttribute("lang", "en");
-            d_entry_content = doc.createTextNode(programme['synopsis']);
-            d_entry.appendChild(d_entry_content);
-            pg_entry.appendChild(d_entry);
+                d_entry = doc.createElement('desc');
+                d_entry.setAttribute("lang", "en");
+                d_entry_content = doc.createTextNode(programme['synopsis']);
+                d_entry.appendChild(d_entry_content);
+                pg_entry.appendChild(d_entry);
 
-            dt_entry = doc.createElement('date');
-            dt_entry_content = doc.createTextNode(start_time.strftime('%Y%m%d'));
-            dt_entry.appendChild(dt_entry_content);
-            pg_entry.appendChild(dt_entry);
+                dt_entry = doc.createElement('date');
+                dt_entry_content = doc.createTextNode(start_time.strftime('%Y%m%d'));
+                dt_entry.appendChild(dt_entry_content);
+                pg_entry.appendChild(dt_entry);
 
-            c_entry = doc.createElement('category');
-            c_entry_content = doc.createTextNode(programme['xcdrappname']);
-            c_entry.appendChild(c_entry_content);
-            pg_entry.appendChild(c_entry);
+                c_entry = doc.createElement('category');
+                c_entry_content = doc.createTextNode(programme['xcdrappname']);
+                c_entry.appendChild(c_entry_content);
+                pg_entry.appendChild(c_entry);
 
 
-            en_entry = doc.createElement('episode-num');
-            en_entry.setAttribute('system', 'dd_progid');
-            en_entry_content = doc.createTextNode(programme['content_id']);
-            en_entry.appendChild(en_entry_content);
-            pg_entry.appendChild(en_entry);
+                en_entry = doc.createElement('episode-num');
+                en_entry.setAttribute('system', 'dd_progid');
+                en_entry_content = doc.createTextNode(programme['content_id']);
+                en_entry.appendChild(en_entry_content);
+                pg_entry.appendChild(en_entry);
 
-            i_entry = doc.createElement('icon');
-            i_entry.setAttribute("src", self.__BASE_URL + '/' + programme['img']);
-            pg_entry.appendChild(i_entry);
-        return doc
+                i_entry = doc.createElement('icon');
+                i_entry.setAttribute("src", self.__BASE_URL + '/' + programme['img']);
+                pg_entry.appendChild(i_entry);
+            return doc
 
 
     def _build_url(self, path, queries={}):
@@ -264,7 +264,7 @@ class Ustvnow:
                     pass
             return channels
                     
-    def _login(self, token=False):
+    def _login(self, token=False, force=False):
         Addon.log('_login')
         if token != False:
             self.token = token

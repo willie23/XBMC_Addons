@@ -32,7 +32,7 @@ while (not xbmc.abortRequested):
             if not Update_LastRun:
                 raise exception()
         except:
-            UpdateRSS_LastRun = "1970-01-01 23:59:00.000000"
+            Update_LastRun = "1970-01-01 23:59:00.000000"
             Addon.set_setting('Update_NextRun', str(Update_LastRun))
         try:
             SyncUpdate = datetime.datetime.strptime(Update_LastRun, "%Y-%m-%d %H:%M:%S.%f")

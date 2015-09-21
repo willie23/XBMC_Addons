@@ -97,7 +97,6 @@ elif mode == 'live':
                         'u': email,
                         'p': password } );
 
-                    # todo set HD flag
                     if quality==1:
                         quality_name = 'Low';
                     elif quality==2:
@@ -107,7 +106,7 @@ elif mode == 'live':
                         
                 Addon.add_video_item(rURL,
                                      {'title': '%s' % (c['name'])},
-                                     img=c["icon"])
+                                     img=c["icon"], HD=quality_name)
             else:
                 Addon.add_video_item(rURL,
                                      {'title': '%s - %s' % (c['name'], 
