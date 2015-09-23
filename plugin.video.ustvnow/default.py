@@ -33,6 +33,7 @@ quality_type = int(Addon.get_setting('quality'))
 dlg = xbmcgui.Dialog()
 addon = xbmcaddon.Addon(id='plugin.video.ustvnow')
 plugin_path = addon.getAddonInfo('path')
+
 write_path = Addon.get_setting('write_folder')    
 if not write_path:
     Addon.set_setting('write_folder', xbmc.translatePath('special://userdata/plugin.video.ustvnow/'))
@@ -185,8 +186,8 @@ elif mode=='play':
     else:
         channels = ustv.get_channels(quality_type, stream_type)
     if channels:
+        Addon.log(str(channels))
         for c in channels:
-            Addon.log(str(c['name']) +' , '+ name)
             if c['name'] == name:
                 url = c['url']
                 Addon.log(url)

@@ -146,7 +146,6 @@ def parseXMLTVDate(dateString, offset=0):
         
 def makeM3U(links):
     log('makeM3U')
-    print links
     STRM_CACHE_LOC = get_setting('write_folder')
     if not xbmcvfs.exists(STRM_CACHE_LOC):
         xbmcvfs.mkdir(STRM_CACHE_LOC)
