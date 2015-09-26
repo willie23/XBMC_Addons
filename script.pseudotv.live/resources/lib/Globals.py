@@ -34,26 +34,26 @@ def log(msg, level = xbmc.LOGDEBUG):
     except Exception,e:
         pass
 
-def uni(string, encoding = 'utf-8'):
+def utf(string, encoding = 'utf-8'):
     if isinstance(string, basestring):
         if not isinstance(string, unicode):
             string = unicode(string, encoding, 'ignore')
     return string
   
-def utf(string):
-    if isinstance(string, basestring):
-        if isinstance(string, unicode):
-           string = string.encode( 'utf-8', 'ignore' )
-    return string
-
 def ascii(string):
     if isinstance(string, basestring):
         if isinstance(string, unicode):
            string = string.encode('ascii', 'ignore')
     return string
     
-def removeNonAscii(s): 
-    return "".join(filter(lambda x: ord(x)<128, s))
+def uni(string):
+    if isinstance(string, basestring):
+        if isinstance(string, unicode):
+           string = string.encode('utf-8', 'ignore' )
+    return string
+
+def removeNonAscii(string): 
+    return "".join(filter(lambda x: ord(x)<128, string))
 
 # Plugin Info
 ADDON_ID = 'script.pseudotv.live'
@@ -69,6 +69,7 @@ TVDB_API_KEY = REAL_SETTINGS.getSetting("TVDB_API")
 TMDB_API_KEY = REAL_SETTINGS.getSetting("TMDB_API")
 FANARTTV_API_KEY = REAL_SETTINGS.getSetting("FANTV_API")
 YT_API_KEY = 'AIzaSyAnwpqhAmdRShnEHnxLiOUjymHlG4ecE7c'
+GBOX_API_KEY = 'rKPHzBmsYrFYROD98HS0Bt6rScBccAVm'
 LOGODB_API_KEY = '8332'
 
 # Timers
@@ -208,6 +209,7 @@ DEBUG = REAL_SETTINGS.getSetting('enable_Debug')
 SETTOP = REAL_SETTINGS.getSetting("EnableSettop") == "true"
 OS_SET = int(REAL_SETTINGS.getSetting("os"))   
 ENHANCED_DATA = REAL_SETTINGS.getSetting('EnhancedGuideData') == 'true'
+FILELIST_LIMIT = [4096,8192,16384]
  
 # common cache globals
 daily = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "daily",24)

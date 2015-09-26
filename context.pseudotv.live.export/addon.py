@@ -18,7 +18,7 @@
 
 import xbmc, xbmcaddon
 
-if __name__ == '__main__':	
+if __name__ == '__main__':
 
     # PseudoTV Live Globals
     ADDON_ID = 'script.pseudotv.live'
@@ -27,30 +27,4 @@ if __name__ == '__main__':
     ADDON_NAME = REAL_SETTINGS.getAddonInfo('name')
     ADDON_PATH = (REAL_SETTINGS.getAddonInfo('path').decode('utf-8'))
     ADDON_VERSION = REAL_SETTINGS.getAddonInfo('version')
-    
-    # InfoLabel Parameters  
-    label    = xbmc.getInfoLabel('ListItem.Label')
-    path     = xbmc.getInfoLabel('ListItem.FolderPath')
-    filename = xbmc.getInfoLabel('ListItem.FilenameAndPath')
-    dbidtype = xbmc.getInfoLabel('ListItem.DBTYPE')
-    addonName = xbmc.getInfoLabel('Container.PluginName')
-    addonType = xbmc.getInfoLabel('Container.Property(addoncategory)')
-    description = xbmc.getInfoLabel('ListItem.Property(Addon.Description)')
-    plot = xbmc.getInfoLabel('ListItem.Plot')
-    plotOutline = xbmc.getInfoLabel('ListItem.PlotOutline')
-    isPlayable = xbmc.getInfoLabel('ListItem.Property(IsPlayable)').lower() == 'true'
-    isFolder = xbmc.getCondVisibility('ListItem.IsFolder') == 1
-    
-    if not plot:
-        if plotOutline:
-            description = plotOutline
-        elif not description:   
-            description = label
-    else:  
-        description = plot
-
-    data = ['Label='+label,'Path='+path,'FileName='+filename,'DBIDType='+dbidtype,'AddonName='+addonName,'AddonType='+addonType,'Description='+description,'isPlayable='+str(isPlayable),'isFolder='+str(isFolder)]
-    
-    # Pass arguments to PseudoTV Live
-    xbmc.executebuiltin("RunScript("+ADDON_PATH+"/capture.py, %s)" %str(data))
-    
+    xbmc.executebuiltin("RunScript("+ADDON_PATH+"/capture.py)")

@@ -1,7 +1,7 @@
 [B]Version 12.0.5[/B]
 - "NEW" code exclusive features:
     - Standard and IPTVsimple M3U generator
-    - Background service - Updates M3U's and XMLTV (Strms do not require refreshing) every 4,6,12,24hrs.
+    - Background service - Updates M3U's and XMLTV (Strms do not require refreshing) every 6 hrs.
 - New HD feeds, Premium users only!
 
 [B]Version 12.0.4[/B]

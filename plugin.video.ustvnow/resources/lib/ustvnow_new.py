@@ -47,7 +47,7 @@ class Ustvnow:
         self.premium = premium
         self.dlg = xbmcgui.Dialog()
         self.cache  = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "cache",1)
-        self.guide  = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "guide",24)
+        self.guide  = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "guide",6)
         
         
     def get_tvguide(self, filename, type='channels', name=''):

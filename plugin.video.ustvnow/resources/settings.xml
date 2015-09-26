@@ -7,7 +7,6 @@
     <setting id="password" type="text" option="hidden" label="30103" default="" />
     <setting id="version" type="enum" label="30105" values="NEW|OLD" default="1" />
     <setting id="enablewrite" type="bool" label="30107" visible="eq(-1,0)" default="false" />
-    <setting id="service_time" type="enum" label="30108" visible="eq(-1,true) + eq(-2,0)" values="Disabled|4hrs|6hrs|12hrs|12hrs" default="0" />
-    <setting id="write_type" type="enum" label="30109" visible="eq(-2,true) + eq(-3,0)" values="strm|Standard m3u|IPTVsimple m3u" default="0" />
-    <setting id="write_folder" type="folder" source="auto"  visible="eq(-3,true) + eq(-4,0)" label="30106" default=""/>
+    <setting id="write_type" type="enum" label="30109" visible="eq(-1,true) + eq(-2,0)" values="strm|Standard m3u|IPTVsimple m3u" default="0" />
+    <setting id="write_folder" type="folder" source="auto"  visible="eq(-2,true) + eq(-3,0)" label="30106" default=""/>
 </settings>
