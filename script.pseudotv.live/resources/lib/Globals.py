@@ -52,9 +52,6 @@ def uni(string):
            string = string.encode('utf-8', 'ignore' )
     return string
 
-def removeNonAscii(string): 
-    return "".join(filter(lambda x: ord(x)<128, string))
-
 # Plugin Info
 ADDON_ID = 'script.pseudotv.live'
 REAL_SETTINGS = xbmcaddon.Addon(id=ADDON_ID)

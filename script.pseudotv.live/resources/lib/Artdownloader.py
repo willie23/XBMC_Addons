@@ -144,7 +144,7 @@ class Artdownloader:
             arttype = arttypeEXT.split(".")[0]
             fle = id + '-' + arttypeEXT
             ext = arttypeEXT.split('.')[1]
-            cachedthumb = xbmc.getCacheThumbName(os.path.join(mpath, fle))
+            cachedthumb = xbmc.getCacheThumbName(os.path.join(removeNonAscii(mpath), fle))
             cachefile = xbmc.translatePath(os.path.join(ART_LOC, cachedthumb[0], cachedthumb[:-4] + "." + ext)).replace("\\", "/")
                     
             if FileAccess.exists(cachefile):

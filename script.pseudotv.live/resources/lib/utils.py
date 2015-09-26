@@ -982,7 +982,10 @@ def getPlatform():
 #####################
 # String/File Tools #
 #####################
-           
+      
+def removeNonAscii(string): 
+    return "".join(filter(lambda x: ord(x)<128, string))
+     
 def cleanMovieTitle(title):
     log("utils: cleanMovieTitle")
     title = re.sub('\n|([[].+?[]])|([(].+?[)])|\s(vs|v[.])\s|(:|;|-|"|,|\'|\_|\.|\?)|\s', '', title).lower()

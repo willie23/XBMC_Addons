@@ -1374,9 +1374,8 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                         hide_busy_dialog()
                         select = selectDialog(NameLst, 'Select [COLOR=green][F][/COLOR]ile')
                         if select != -1:
-                            name = self.chnlst.cleanLabels(NameLst[select])
                             path = PathLst[select]
-                            if name.startswith('[F]'):
+                            if (NameLst[select]).startswith('[F]'):
                                 #remove unwanted reference to superfavourites 
                                 if 'ActivateWindow%2810025%2C%22plugin%3A%2F%2Fplugin' in path:
                                     path = unquote(path).replace('",return)','')
@@ -1395,7 +1394,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                                 PathLst = []
                             else:
                                 path = PathLst[select] 
-                    return name, path   
+                    return self.chnlst.cleanLabels(NameLst[select]), path   
                 else:
                     NameLst, PathLst = self.parsePlugin(self.chnlst.PluginInfo('plugin://plugin.program.super.favourites'))
                     hide_busy_dialog()
