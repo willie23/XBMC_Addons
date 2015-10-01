@@ -18,7 +18,7 @@
 import cookielib
 import os
 import re
-import urllib, urllib2
+import urllib, urllib2, socket
 import simplejson as json
 import xbmcgui, xbmc, xbmcvfs
 import Addon
@@ -33,7 +33,7 @@ try:
 except Exception,e:
     import storageserverdummy as StorageServer
 
-
+socket.setdefaulttimeout(30)
 class Ustvnow:
     def __init__(self, user, password, premium):
         Addon.log('__init__')
@@ -47,7 +47,8 @@ class Ustvnow:
         self.premium = premium
         self.dlg = xbmcgui.Dialog()
         self.cache  = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "cache",1)
-        self.guide  = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "guide",6)
+        self.guide  = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "guide",5)
+        self.write_type = int(Addon.get_setting('write_type'))
         
         
     def get_tvguide(self, filename, type='channels', name=''):
@@ -56,9 +57,26 @@ class Ustvnow:
         
         
     def get_channels(self, quality=1, stream_type='rtmp'):
-        Addon.log('get_channels,' + str(quality) + ',' + stream_type)
+        Addon.log('get_channels')
+        try:
+            result = self.guide.cacheFunction(self.get_channels_NEW, quality, stream_type)
+        except:
+            result = self.get_channels_NEW(quality, stream_type)
+        if not result:
+            result = self.get_channels_NEW(quality, stream_type)
+        if not result:
+            result = [({
+                'name': 'USTVnow is unavailable',
+                'sname' : i['callsign'],
+                'url': url,
+                'icon': self.uBASE_URL + '/' + i['img']
+                })]
+        return result  
+        
+        
+    def get_channels_NEW(self, quality=1, stream_type='rtmp'):
+        Addon.log('get_channels_NEW,' + str(quality) + ',' + stream_type)
         self.token = self._login()
-        write_type = int(Addon.get_setting('write_type'))
         content = self._get_json('gtv/1/live/listchannels', {'token': self.token})
         channels = []
         #print json.dumps(content);
@@ -71,12 +89,17 @@ class Ustvnow:
                 'sname' : i['callsign'],
                 'url': url,
                 'icon': self.uBASE_URL + '/' + i['img']
-                })  
-            if Addon.get_setting('enablewrite') == "true" and write_type == 0:
+                })
+            if Addon.get_setting('enablewrite') == "true" and self.write_type == 0:
                 Addon.makeSTRM(name, url)
-        if Addon.get_setting('enablewrite') == "true" and write_type > 0:
-            Addon.makeM3U(self.get_link(quality, stream_type))
+            self.make_Playlists(quality, stream_type)
         return channels
+            
+            
+    def make_Playlists(self, quality, stream_type):
+        Addon.log('make_Playlists')
+        if Addon.get_setting('enablewrite') == "true" and self.write_type > 0:
+            Addon.makeM3U(self.get_link(quality, stream_type))
             
 # LIVETV           = BASE_URL + '/iphone/1/live/playingnow?pgonly=true&token=%s'
 # RECORDINGS       = BASE_URL + '/iphone/1/dvr/viewdvrlist?pgonly=true&token=%s'
@@ -234,8 +257,9 @@ class Ustvnow:
             req = urllib2.Request(url, form_data)
         else:
             req = url
+        # req.add_header('User-Agent','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11')
         try:
-            response = urllib2.urlopen(url)
+            response = urllib2.urlopen(req)
             return response
         except urllib2.URLError, e:
             return False
@@ -257,6 +281,7 @@ class Ustvnow:
         Addon.log('_get_html')
         html = False
         url = self._build_url(path, queries)
+        # print url    
         response = self._fetch(url)
         if response:
             html = response.read()
@@ -277,7 +302,7 @@ class Ustvnow:
                                    '<\/td>.+?class="nowplaying_itemdesc".+?' +
                                    '<\/a>(.+?)<\/td>.+?href="(.+?)"',
                                    html, re.DOTALL):
-            print channel.groups()
+            # print channel.groups()
             name, icon, title, plot, url = channel.groups()
             name = name.replace('\n','').replace('\t','').replace('\r','').replace('<fieldset> ','').replace('<div class=','').replace('>','').replace('"','').replace(' ','')
             if not name:
@@ -286,7 +311,7 @@ class Ustvnow:
             try:
                 if not url.startswith('http'):
                     now = {'title': title, 'plot': plot.strip()}
-                    print url
+                    # print url
                     url = '%s%s%d' % (stream_type, url[4:-1], quality + 1)
                     aChannelname = {'name': name}
                     aChannel = {'name': name, 'url': url, 
@@ -311,12 +336,31 @@ class Ustvnow:
             result = self._login_NEW()
         if not result:
             result = self._login_NEW()
+        if not result:
+            result = self._login_NEW_ALT()
         return result  
-
-    
-    def _login_NEW(self, force=False):
+        
+        
+    def _login_NEW(self):
         Addon.log('_login_NEW')
-        token = None
+        self.cj = cookielib.CookieJar()
+        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cj)) 
+        urllib2.install_opener(opener)
+        url = self._build_json('gtv/1/live/login', {'username': self.user, 
+                                               'password': self.password, 
+                                               'device':'gtv', 
+                                               'redir':'0'})
+        response = self._fetch(url)
+        #response = opener.open(url)
+        for cookie in self.cj:
+            if cookie.name == 'token':
+                # print '%s: %s' % (cookie.name, cookie.value)
+                return cookie.value
+        return False
+    
+    
+    def _login_NEW_ALT(self):
+        Addon.log('_login_NEW_ALT')
         self.cj = cookielib.CookieJar()
         opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cj))
         urllib2.install_opener(opener)
