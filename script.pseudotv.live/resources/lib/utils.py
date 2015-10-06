@@ -50,7 +50,7 @@ else:
 # Videowindow filepaths
 Path = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins', 'Default', '1080i'))
 flePath = xbmc.translatePath(os.path.join(Path, 'custom_script.pseudotv.live_9506.xml'))
-PTVL_SKIN_WINDOW_FLE = ['script.pseudotv.live.EPG.xml','script.pseudotv.live.OnDemand.xml','script.pseudotv.live.DVR.xml','script.pseudotv.live.Apps.xml']     
+PTVL_SKIN_WINDOW_FLE = ['script.pseudotv.live.EPG.xml','script.pseudotv.live.Ondemand.xml','script.pseudotv.live.DVR.xml','script.pseudotv.live.Apps.xml']     
 VWPath = xbmc.translatePath(os.path.join(XBMC_SKIN_LOC, 'custom_script.pseudotv.live_9506.xml'))  
 DSPath = xbmc.translatePath(os.path.join(XBMC_SKIN_LOC, 'DialogSeekBar.xml'))
 
@@ -315,13 +315,14 @@ def FindLogo_Thread(data):
 def FindLogo(chtype, chname, mediapath=None):
     log("utils: FindLogo")
     try:
-        data = [chtype, chname, mediapath]
-        FindLogoThread = threading.Timer(0.5, FindLogo_Thread, [data])
-        FindLogoThread.name = "FindLogoThread"
-        if FindLogoThread.isAlive():
-            FindLogoThread.cancel()
-            FindLogoThread.join()            
-        FindLogoThread.start()
+        if isLowPower() != True:
+            data = [chtype, chname, mediapath]
+            FindLogoThread = threading.Timer(0.5, FindLogo_Thread, [data])
+            FindLogoThread.name = "FindLogoThread"
+            if FindLogoThread.isAlive():
+                FindLogoThread.cancel()
+                FindLogoThread.join()            
+            FindLogoThread.start()
     except Exception,e:
         log('utils: FindLogo, Failed!,' + str(e))
         pass   
@@ -1411,44 +1412,47 @@ def SyncXMLTV_NEW(force=False):
     log('utils: SyncXMLTV_NEW, force = ' + str(force))
     now  = datetime.datetime.today()
     try:
-        SyncPTV_LastRun = REAL_SETTINGS.getSetting('SyncPTV_NextRun')
-        if not SyncPTV_LastRun or FileAccess.exists(PTVLXML) == False or force == True:
-            raise exception()
-    except:
-        REAL_SETTINGS.setSetting("SyncPTV_NextRun","1970-01-01 23:59:00.000000")
-        SyncPTV_LastRun = REAL_SETTINGS.getSetting('SyncPTV_NextRun')
+        try:
+            SyncPTV_LastRun = REAL_SETTINGS.getSetting('SyncPTV_NextRun')
+            if not SyncPTV_LastRun or FileAccess.exists(PTVLXML) == False or force == True:
+                raise exception()
+        except:
+            REAL_SETTINGS.setSetting("SyncPTV_NextRun","1970-01-01 23:59:00.000000")
+            SyncPTV_LastRun = REAL_SETTINGS.getSetting('SyncPTV_NextRun')
 
-    try:
-        SyncPTV = datetime.datetime.strptime(SyncPTV_LastRun, "%Y-%m-%d %H:%M:%S.%f")
-    except:
-        SyncPTV = datetime.datetime.strptime("1970-01-01 23:59:00.000000", "%Y-%m-%d %H:%M:%S.%f")
-    
-    if now > SyncPTV:         
-        #Remove old file before download
-        if FileAccess.exists(PTVLXML):
-            try:
-                FileAccess.delete(PTVLXML)
-                log('utils: SyncXMLTV, Removed old PTVLXML')
-            except:
-                log('utils: SyncXMLTV, Removing old PTVLXML Failed!')
-                
-        if retrieve_url(PTVLXMLURL, UPASS, PTVLXMLZIP):
-            if FileAccess.exists(PTVLXMLZIP):
-                all(PTVLXMLZIP,XMLTV_CACHE_LOC)
-                try:
-                    FileAccess.delete(PTVLXMLZIP)
-                    log('utils: SyncXMLTV, Removed PTVLXMLZIP')
-                except:
-                    log('utils: SyncXMLTV, Removing PTVLXMLZIP Failed!')
+        try:
+            SyncPTV = datetime.datetime.strptime(SyncPTV_LastRun, "%Y-%m-%d %H:%M:%S.%f")
+        except:
+            SyncPTV = datetime.datetime.strptime("1970-01-01 23:59:00.000000", "%Y-%m-%d %H:%M:%S.%f")
             
+        if now > SyncPTV:         
+            #Remove old file before download
             if FileAccess.exists(PTVLXML):
-                log('utils: SyncXMLTV, ptvlguide.xml download successful!')  
-                xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live","Guidedata Update Complete", 1000, THUMB) )  
-                SyncPTV_NextRun = ((now + datetime.timedelta(hours=24)).strftime("%Y-%m-%d %H:%M:%S.%f"))
-                log('utils: SyncXMLTV, Now = ' + str(now) + ', SyncPTV_NextRun = ' + str(SyncPTV_NextRun))
-                REAL_SETTINGS.setSetting("SyncPTV_NextRun",str(SyncPTV_NextRun))
-                REAL_SETTINGS.setSetting('PTVLXML_FORCE', 'false')
-
+                try:
+                    FileAccess.delete(PTVLXML)
+                    log('utils: SyncXMLTV, Removed old PTVLXML')
+                except:
+                    log('utils: SyncXMLTV, Removing old PTVLXML Failed!')
+                    
+            if retrieve_url(PTVLXMLURL, UPASS, PTVLXMLZIP):
+                if FileAccess.exists(PTVLXMLZIP):
+                    all(PTVLXMLZIP,XMLTV_CACHE_LOC)
+                    try:
+                        FileAccess.delete(PTVLXMLZIP)
+                        log('utils: SyncXMLTV, Removed PTVLXMLZIP')
+                    except:
+                        log('utils: SyncXMLTV, Removing PTVLXMLZIP Failed!')
+                
+                if FileAccess.exists(PTVLXML):
+                    log('utils: SyncXMLTV, ptvlguide.xml download successful!')  
+                    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live","Guidedata Update Complete", 1000, THUMB) )  
+                    SyncPTV_NextRun = ((now + datetime.timedelta(hours=24)).strftime("%Y-%m-%d %H:%M:%S.%f"))
+                    log('utils: SyncXMLTV, Now = ' + str(now) + ', SyncPTV_NextRun = ' + str(SyncPTV_NextRun))
+                    REAL_SETTINGS.setSetting("SyncPTV_NextRun",str(SyncPTV_NextRun))
+                    REAL_SETTINGS.setSetting('PTVLXML_FORCE', 'false')
+    except Exception,e:
+        log("utils: SyncXMLTV_NEW Failed!" + str(e))
+        
 def help(chtype):
     log('utils: help, ' + chtype)
     HelpBaseURL = 'https://raw.githubusercontent.com/Lunatixz/XBMC_Addons/master/script.pseudotv.live/resources/help/help_'
@@ -1521,21 +1525,24 @@ def VideoWindow():
     log("utils: VideoWindow, VWPath = " + str(VWPath))
     #Copy VideoWindow Patch file
     try:
-        if not FileAccess.exists(VWPath):
-            log("utils: VideoWindow, VWPath not found")
-            FileAccess.copy(flePath, VWPath)
-            if FileAccess.exists(VWPath):
-                log('utils: custom_script.pseudotv.live_9506.xml Copied')
-                xbmc.executebuiltin("ReloadSkin()")
-                VideoWindowPatch()   
-            else:
-                raise exception()
+        if isLowPower() == True:
+            raise Exception()
         else:
-            log("utils: VideoWindow, VWPath found")
-            VideoWindowPatch()  
-            
-        if FileAccess.exists(VWPath):
-            setProperty("PTVL.VideoWindow","true")
+            if not FileAccess.exists(VWPath):
+                log("utils: VideoWindow, VWPath not found")
+                FileAccess.copy(flePath, VWPath)
+                if FileAccess.exists(VWPath):
+                    log('utils: custom_script.pseudotv.live_9506.xml Copied')
+                    xbmc.executebuiltin("ReloadSkin()")
+                    VideoWindowPatch()   
+                else:
+                    raise Exception()
+            else:
+                log("utils: VideoWindow, VWPath found")
+                VideoWindowPatch()  
+                
+            if FileAccess.exists(VWPath):
+                setProperty("PTVL.VideoWindow","true")
     except Exception:
         VideoWindowUninstall()
         VideoWindowUnpatch()
@@ -1545,22 +1552,22 @@ def VideoWindow():
 def VideoWindowPatch():
     log("utils: VideoWindowPatch")
     try:
-        for n in range(len(PTVL_SKIN_WINDOW_FLE)):
-            PTVL_SKIN_SELECT_FLE = xbmc.translatePath(os.path.join(PTVL_SKIN_SELECT, PTVL_SKIN_WINDOW_FLE[n]))
-            log('utils: VideoWindowPatch Patching ' + ascii(PTVL_SKIN_SELECT_FLE))
-            #Patch Videowindow, by un-commenting code in epg.xml 
-            f = FileAccess.open(PTVL_SKIN_SELECT_FLE, "r")
-            linesLST = f.readlines()  
-            f.close()
+        # for n in range(len(PTVL_SKIN_WINDOW_FLE)):
+            # PTVL_SKIN_SELECT_FLE = xbmc.translatePath(os.path.join(PTVL_SKIN_SELECT, PTVL_SKIN_WINDOW_FLE[n]))
+            # log('utils: VideoWindowPatch Patching ' + ascii(PTVL_SKIN_SELECT_FLE))
+            # #Patch Videowindow, by un-commenting code in epg.xml 
+            # f = FileAccess.open(PTVL_SKIN_SELECT_FLE, "r")
+            # linesLST = f.readlines()  
+            # f.close()
             
-            for i in range(len(linesLST)):
-                line = linesLST[i]
-                if line in b:
-                    replaceAll(PTVL_SKIN_SELECT_FLE,b,a)        
-                    log('utils: '+PTVL_SKIN_WINDOW_FLE[n]+' Patched b,a')
-                elif line in d:
-                    replaceAll(PTVL_SKIN_SELECT_FLE,d,c)           
-                    log('utils: '+PTVL_SKIN_WINDOW_FLE[n]+' Patched d,c') 
+            # for i in range(len(linesLST)):
+                # line = (linesLST[i]).replace('\n','').replace('\t','').replace('\r','')
+                # if line == b:
+                    # replaceAll(PTVL_SKIN_SELECT_FLE,b,a)        
+                    # log('utils: '+PTVL_SKIN_WINDOW_FLE[n]+' Patched b,a')
+                # elif line == d:
+                    # replaceAll(PTVL_SKIN_SELECT_FLE,d,c)           
+                    # log('utils: '+PTVL_SKIN_WINDOW_FLE[n]+' Patched d,c') 
                     
         #Patch dialogseekbar to ignore OSD for PTVL.
         log('utils: VideoWindowPatch Patching ' + ascii(DSPath))
@@ -1588,20 +1595,20 @@ def VideoWindowPatch():
 def VideoWindowUnpatch():
     log("utils: VideoWindowUnpatch")
     try:
-        for n in range(len(PTVL_SKIN_WINDOW_FLE)):
-            PTVL_SKIN_SELECT_FLE = xbmc.translatePath(os.path.join(PTVL_SKIN_SELECT, PTVL_SKIN_WINDOW_FLE[n]))
-            #unpatch videowindow
-            f = FileAccess.open(PTVL_SKIN_SELECT_FLE, "r")
-            linesLST = f.readlines()    
-            f.close()
-            for i in range(len(linesLST)):
-                lines = linesLST[i]
-                if lines in a:
-                    replaceAll(PTVL_SKIN_SELECT_FLE,a,b)
-                    log('utils: '+PTVL_SKIN_WINDOW_FLE[n]+' UnPatched a,b')
-                elif lines in c:
-                    replaceAll(PTVL_SKIN_SELECT_FLE,c,d)          
-                    log('utils: '+PTVL_SKIN_WINDOW_FLE[n]+' UnPatched c,d')
+        # for n in range(len(PTVL_SKIN_WINDOW_FLE)):
+            # PTVL_SKIN_SELECT_FLE = xbmc.translatePath(os.path.join(PTVL_SKIN_SELECT, PTVL_SKIN_WINDOW_FLE[n]))
+            # #unpatch videowindow
+            # f = FileAccess.open(PTVL_SKIN_SELECT_FLE, "r")
+            # linesLST = f.readlines()    
+            # f.close()
+            # for i in range(len(linesLST)):
+                # line = (linesLST[i]).replace('\n','').replace('\t','').replace('\r','')
+                # if line == a:
+                    # replaceAll(PTVL_SKIN_SELECT_FLE,a,b)
+                    # log('utils: '+PTVL_SKIN_WINDOW_FLE[n]+' UnPatched a,b')
+                # elif line == c:
+                    # replaceAll(PTVL_SKIN_SELECT_FLE,c,d)          
+                    # log('utils: '+PTVL_SKIN_WINDOW_FLE[n]+' UnPatched c,d')
                 
         #unpatch seekbar
         f = FileAccess.open(DSPath, "r")
@@ -1777,22 +1784,32 @@ def chkLowPower():
     if REAL_SETTINGS.getSetting("Override.LOWPOWER") == "false":
         if getPlatform() in ['ATV2','iOS','rPi','Android']:
             setProperty("PTVL.LOWPOWER","true") 
-            REAL_SETTINGS.setSetting('AT_LIMIT', "25")
+            REAL_SETTINGS.setSetting('AT_LIMIT', "0")
+            REAL_SETTINGS.setSetting('ThreadMode', "2")
             REAL_SETTINGS.setSetting('EPG.xInfo', "false")
+            REAL_SETTINGS.setSetting('UPNP1', "false")
+            REAL_SETTINGS.setSetting('UPNP2', "false")
+            REAL_SETTINGS.setSetting('UPNP3', "false")
             REAL_SETTINGS.setSetting('HideClips', "false")
             REAL_SETTINGS.setSetting('EPGTextEnable', "1")
+            REAL_SETTINGS.setSetting('quickflip', "false")
             REAL_SETTINGS.setSetting('SFX_Enabled', "false")
+            REAL_SETTINGS.setSetting('EnableSettop', "false")
+            REAL_SETTINGS.setSetting('UNAlter_ChanBug', "true")
             REAL_SETTINGS.setSetting('Enable_FindLogo', "false")
             REAL_SETTINGS.setSetting('Disable_Watched', "false")
             REAL_SETTINGS.setSetting('Idle_Screensaver', "false")
             REAL_SETTINGS.setSetting('EnhancedGuideData', "false")
+            REAL_SETTINGS.setSetting('sickbeard.enabled', "false")
+            REAL_SETTINGS.setSetting('couchpotato.enabled', "false")
             if MEDIA_LIMIT > 250:
                 REAL_SETTINGS.setSetting('MEDIA_LIMIT', "3")
             if NOTIFY == True:
-                xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Settings Optimized For Performance", 1000, THUMB) )
+                xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Settings Optimized For Performance", 4000, THUMB) )
     log("utils: chkLowPower = " + getProperty("PTVL.LOWPOWER"))
 
 def isLowPower():
+    # log("utils: isLowPower = " + str(getProperty("PTVL.LOWPOWER") == "true"))
     return getProperty("PTVL.LOWPOWER") == "true"
              
 def ClearPlaylists():
@@ -1917,15 +1934,15 @@ def HandleUpgrade():
     
 def preStart(): 
     log('utils: preStart')
-    # VideoWindow Patch.
-    VideoWindow()
+    # Optimize settings based on sys.platform
+    chkLowPower()
     
     if isDebug() == True:
         if yesnoDialog('Its recommended you disable debug logging for standard use','Disable Debugging?') == True:
             REAL_SETTINGS.setSetting('enable_Debug', "false")
 
-    # Optimize settings based on sys.platform
-    chkLowPower()
+    # VideoWindow Patch.
+    VideoWindow()
     
     # Clear filelist Caches    
     if REAL_SETTINGS.getSetting("ClearCache") == "true":
