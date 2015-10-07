@@ -464,13 +464,14 @@ def GA_Request():
         
         if getProperty("Verified_Community") == "True":
             OPTIONS = OPTIONS + ['Com:'+REAL_SETTINGS.getSetting('Gmail_User')]
-        else:
-            OPTIONS = OPTIONS+ ['Com:False']
                     
         if isContextInstalled():
             OPTIONS = OPTIONS + ['CM:True']
-        else:
-            OPTIONS = OPTIONS + ['CM:False']
+            
+        if isLowPower():
+            OPTIONS = OPTIONS + ['LP:True']
+
+        OPTIONS = OPTIONS + ['OS:'+getPlatform()+'']
             
         OPTIONLST = "/".join(OPTIONS)
         DATA = {"utmwv": "5.2.2d",
