@@ -36,6 +36,11 @@ from urllib2 import HTTPError, URLError
 
 socket.setdefaulttimeout(30)
 
+try:
+    import gc
+except:
+    pass
+
 # Commoncache plugin import
 try:
     import StorageServer
@@ -455,15 +460,17 @@ def GA_Request():
         if not REAL_SETTINGS.getSetting('Visitor_GA'):
             REAL_SETTINGS.setSetting('Visitor_GA', str(random.randint(0, 0x7fffffff)))
         VISITOR = REAL_SETTINGS.getSetting("Visitor_GA")
-        OPTIONS = ['PTVL',str(ADDON_VERSION),str(VISITOR)]
+        
+        OPTIONS = ['PTVL:'+str(ADDON_VERSION)+'']
+        OPTIONS = OPTIONS + ['USER:'+str(VISITOR)+'']
+        OPTIONS = OPTIONS + ['KODI:'+str(getXBMCVersion())+'']
+        OPTIONS = OPTIONS + ['OS:'+getProperty("PTVL.Platform")+'']
         
         if getProperty("Verified_Donor") == "True":
-            OPTIONS = OPTIONS + ['Donor:'+(REAL_SETTINGS.getSetting('Donor_UP')).split(':')[0]]
-        else:
-            OPTIONS = OPTIONS+ ['FreeUser']
+            OPTIONS = OPTIONS + ['DONOR:'+(REAL_SETTINGS.getSetting('Donor_UP')).split(':')[0]]
         
         if getProperty("Verified_Community") == "True":
-            OPTIONS = OPTIONS + ['Com:'+REAL_SETTINGS.getSetting('Gmail_User')]
+            OPTIONS = OPTIONS + ['COM:'+REAL_SETTINGS.getSetting('Gmail_User')]
                     
         if isContextInstalled():
             OPTIONS = OPTIONS + ['CM:True']
@@ -471,8 +478,6 @@ def GA_Request():
         if isLowPower():
             OPTIONS = OPTIONS + ['LP:True']
 
-        OPTIONS = OPTIONS + ['OS:'+getPlatform()+'']
-            
         OPTIONLST = "/".join(OPTIONS)
         DATA = {"utmwv": "5.2.2d",
         "utmn": str(random.randint(1, 9999999999)),
@@ -676,7 +681,7 @@ def download_silent(url, dest):
     except Exception,e:
         log('utils: download_silent, Failed!,' + str(e))
         
-@cache_weekly
+@cache_daily
 def read_url_cached(url, userpass=False, return_type='read'):
     log("utils: read_url_cached")
     try:
@@ -689,7 +694,7 @@ def read_url_cached(url, userpass=False, return_type='read'):
         log('utils: read_url_cached, Failed!,' + str(e))
   
 def open_url(url, userpass=None):
-    log("utils: open_url, url = " + str(url))
+    log("utils: open_url")
     page = ''
     try:
         request = urllib2.Request(url)
@@ -948,29 +953,32 @@ def getXBMCVersion():
 def getPlatform():
     platform = chkPlatform()
     log("utils: getPlatform = " + platform)
+    setProperty("PTVL.Platform",platform)
     return platform
     
 def chkPlatform():
     log("utils: chkPlatform")
-    if xbmc.getCondVisibility('system.platform.osx'):
+    if xbmc.getCondVisibility('System.Platform.OSX'):
         return "OSX"
-    elif xbmc.getCondVisibility('system.platform.atv2'):
+    elif xbmc.getCondVisibility('System.Platform.ATV2'):
         REAL_SETTINGS.setSetting('os', "4")
         return "ATV2"
-    elif xbmc.getCondVisibility('system.platform.ios'):
+    elif xbmc.getCondVisibility('System.Platform.IOS'):
         REAL_SETTINGS.setSetting('os', "5")
         return "iOS"
-    elif xbmc.getCondVisibility('system.platform.windows'):
+    elif xbmc.getCondVisibility('System.Platform.Windows'):
         REAL_SETTINGS.setSetting('os', "11")
         return "Windows"
-    elif xbmc.getCondVisibility('system.platform.darwin'):
+    elif xbmc.getCondVisibility('System.Platform.Darwin'):
         return "Darwin"
-    elif xbmc.getCondVisibility('system.platform.linux'):
+    elif xbmc.getCondVisibility('System.Platform.Linux'):
         return "Linux"
-    elif xbmc.getCondVisibility('system.platform.linux.raspberryPi'): 
+    elif xbmc.getCondVisibility('System.Platform.Xbox'):
+        return "Linux"
+    elif xbmc.getCondVisibility('System.Platform.Linux.RaspberryPi'): 
         REAL_SETTINGS.setSetting('os', "10")
         return "rPi"
-    elif xbmc.getCondVisibility('system.platform.android'): 
+    elif xbmc.getCondVisibility('System.Platform.Android'): 
         return "Android"
     elif REAL_SETTINGS.getSetting("os") in ['0','1']: 
         return "Android"
@@ -1249,7 +1257,479 @@ def Restore(bak, org):
                 pass
         xbmcvfs.rename(bak, org)
         xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Restore Complete, Restarting...", 1000, THUMB) )
+         
+####################
+# VideoWindow Hack #
+####################
+            
+def VideoWindow():
+    log("utils: VideoWindow, VWPath = " + str(VWPath))
+    #Copy VideoWindow Patch file
+    try:
+        if isLowPower() == True:
+            raise Exception()
+        else:
+            if not FileAccess.exists(VWPath):
+                log("utils: VideoWindow, VWPath not found")
+                FileAccess.copy(flePath, VWPath)
+                if FileAccess.exists(VWPath):
+                    log('utils: custom_script.pseudotv.live_9506.xml Copied')
+                    xbmc.executebuiltin("ReloadSkin()")
+                    VideoWindowPatch()   
+                else:
+                    raise Exception()
+            else:
+                log("utils: VideoWindow, VWPath found")
+                VideoWindowPatch()  
+                
+            if FileAccess.exists(VWPath):
+                setProperty("PTVL.VideoWindow","true")
+    except Exception:
+        VideoWindowUninstall()
+        VideoWindowUnpatch()
+        Error = True
+        pass
     
+def VideoWindowPatch():
+    log("utils: VideoWindowPatch")
+    try:
+        # for n in range(len(PTVL_SKIN_WINDOW_FLE)):
+            # PTVL_SKIN_SELECT_FLE = xbmc.translatePath(os.path.join(PTVL_SKIN_SELECT, PTVL_SKIN_WINDOW_FLE[n]))
+            # log('utils: VideoWindowPatch Patching ' + ascii(PTVL_SKIN_SELECT_FLE))
+            # #Patch Videowindow, by un-commenting code in epg.xml 
+            # f = FileAccess.open(PTVL_SKIN_SELECT_FLE, "r")
+            # linesLST = f.readlines()  
+            # f.close()
+            
+            # for i in range(len(linesLST)):
+                # line = (linesLST[i]).replace('\n','').replace('\t','').replace('\r','')
+                # if line == b:
+                    # replaceAll(PTVL_SKIN_SELECT_FLE,b,a)        
+                    # log('utils: '+PTVL_SKIN_WINDOW_FLE[n]+' Patched b,a')
+                # elif line == d:
+                    # replaceAll(PTVL_SKIN_SELECT_FLE,d,c)           
+                    # log('utils: '+PTVL_SKIN_WINDOW_FLE[n]+' Patched d,c') 
+                    
+        #Patch dialogseekbar to ignore OSD for PTVL.
+        log('utils: VideoWindowPatch Patching ' + ascii(DSPath))
+        f = FileAccess.open(DSPath, "r")
+        lineLST = f.readlines()            
+        f.close()
+        
+        Ypatch = True
+        for i in range(len(lineLST)):
+            line = lineLST[i]
+            if z in line:
+                Ypatch = False
+                break
+            
+        if Ypatch:
+            for i in range(len(lineLST)):
+                line = lineLST[i]
+                if y in line:
+                    replaceAll(DSPath,y,z)
+                log('utils: dialogseekbar.xml Patched y,z')
+    except Exception:
+        VideoWindowUninstall()
+        pass
+   
+def VideoWindowUnpatch():
+    log("utils: VideoWindowUnpatch")
+    try:
+        # for n in range(len(PTVL_SKIN_WINDOW_FLE)):
+            # PTVL_SKIN_SELECT_FLE = xbmc.translatePath(os.path.join(PTVL_SKIN_SELECT, PTVL_SKIN_WINDOW_FLE[n]))
+            # #unpatch videowindow
+            # f = FileAccess.open(PTVL_SKIN_SELECT_FLE, "r")
+            # linesLST = f.readlines()    
+            # f.close()
+            # for i in range(len(linesLST)):
+                # line = (linesLST[i]).replace('\n','').replace('\t','').replace('\r','')
+                # if line == a:
+                    # replaceAll(PTVL_SKIN_SELECT_FLE,a,b)
+                    # log('utils: '+PTVL_SKIN_WINDOW_FLE[n]+' UnPatched a,b')
+                # elif line == c:
+                    # replaceAll(PTVL_SKIN_SELECT_FLE,c,d)          
+                    # log('utils: '+PTVL_SKIN_WINDOW_FLE[n]+' UnPatched c,d')
+                
+        #unpatch seekbar
+        f = FileAccess.open(DSPath, "r")
+        lineLST = f.readlines()            
+        f.close()
+        for i in range(len(lineLST)):
+            line = lineLST[i]
+            if w in line:
+                replaceAll(DSPath,w,v)
+                log('utils: dialogseekbar.xml UnPatched w,v')
+    except Exception:
+        Error = True
+        pass
+
+def VideoWindowUninstall():
+    log('utils: VideoWindowUninstall')
+    try:
+        FileAccess.delete(VWPath)
+        if not FileAccess.exists(VWPath):
+            log('utils: custom_script.pseudotv.live_9506.xml Removed')
+    except Exception:
+        Error = True
+        pass
+    
+######################
+# PreStart Functions #
+######################
+   
+def getGithubZip(url, lib, addonpath, MSG):
+    log('utils: getGithubZip, url = ' + url)
+    # Delete old install package
+    try: 
+        FileAccess.delete(lib)
+        log('utils: deleted old package')
+    except: 
+        pass  
+    try:
+        download(url, lib, '')
+        log('utils: downloaded new package')
+        all(lib,addonpath,'')
+        log('utils: extracted new package')
+        MSG = MSG + ' Installed'
+    except: 
+        MSG = MSG + ' Failed to install, Try Again Later'
+        pass
+        
+    xbmc.executebuiltin("XBMC.UpdateLocalAddons()"); 
+    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", MSG, 1000, THUMB) )
+    return  
+    
+def isContextInstalled():
+    context = isPlugin('context.pseudotv.live.export')
+    log('utils: isContextInstalled = ' + str(context))
+    return context
+      
+def getContext():  
+    log('utils: getContext')
+    url='https://github.com/Lunatixz/XBMC_Addons/raw/master/zips/context.pseudotv.live.export/context.pseudotv.live.export-1.0.4.zip'
+    name = 'context.pseudotv.live.export.zip' 
+    MSG = 'PseudoTV Live Context Export'    
+    path = xbmc.translatePath(os.path.join('special://home/addons','packages'))
+    addonpath = xbmc.translatePath(os.path.join('special://','home/addons'))
+    lib = os.path.join(path,name)
+    getGithubZip(url, lib, addonpath, MSG)
+    
+def isRepoInstalled():
+    repo = isPlugin('repository.lunatixz')
+    log('utils: isRepoInstalled = ' + str(repo))
+    return repo
+      
+def getRepo():
+    log('utils: getRepo')
+    url='https://github.com/Lunatixz/XBMC_Addons/raw/master/zips/repository.lunatixz/repository.lunatixz-1.0.zip'
+    name = 'repository.lunatixz.zip' 
+    MSG = 'Lunatixz Repository Installed'    
+    path = xbmc.translatePath(os.path.join('special://home/addons','packages'))
+    addonpath = xbmc.translatePath(os.path.join('special://','home/addons'))
+    lib = os.path.join(path,name)
+    getGithubZip(url, lib, addonpath, MSG)
+    
+def chkVersion():
+    log('utils: chkVersion')
+    curver = xbmc.translatePath(os.path.join(ADDON_PATH,'addon.xml'))    
+    source = open(curver, mode='r')
+    link = source.read()
+    source.close()
+    match = re.compile('" version="(.+?)" name="PseudoTV Live"').findall(link)
+    
+    for vernum in match:
+        log("utils: Current Version = " + str(vernum))
+    try:
+        link = open_url('https://raw.githubusercontent.com/Lunatixz/XBMC_Addons/master/script.pseudotv.live/addon.xml').read() 
+        link = link.replace('\r','').replace('\n','').replace('\t','').replace('&nbsp;','')
+        match = re.compile('" version="(.+?)" name="PseudoTV Live"').findall(link)
+    except:
+        pass   
+        
+    if len(match) > 0:
+        if vernum != str(match[0]):
+            if isRepoInstalled() == False:
+                getRepo()
+
+def chkAutoplay():
+    log('utils: chkAutoplay')
+    fle = xbmc.translatePath("special://profile/guisettings.xml")
+    try:
+        xml = FileAccess.open(fle, "r")
+        dom = parse(xml)
+        autoplaynextitem = dom.getElementsByTagName('autoplaynextitem')
+        Videoautoplaynextitem  = (autoplaynextitem[0].childNodes[0].nodeValue.lower() == 'true')
+        Musicautoplaynextitem  = (autoplaynextitem[1].childNodes[0].nodeValue.lower() == 'true')
+        xml.close()
+        log('utils: chkAutoplay, Videoautoplaynextitem is ' + str(Videoautoplaynextitem)) 
+        log('utils: chkAutoplay, Musicautoplaynextitem is ' + str(Musicautoplaynextitem)) 
+        totcnt = Videoautoplaynextitem + Musicautoplaynextitem
+        if totcnt > 0:
+            okDialog("Its recommended you disable Kodi's"+' "Play the next video/song automatically" ' + "feature found under Kodi's video/playback and music/playback settings.")
+        else:
+            raise exception()
+    except:
+        pass
+        
+def chkSources():
+    log("utils: chkSources") 
+    hasPVR = False
+    hasUPNP = False
+    try:
+        fle = xbmc.translatePath('special://userdata/sources.xml')
+        xml = FileAccess.open(fle, "r")
+        dom = parse(xml)
+        path = dom.getElementsByTagName('path')
+        xml.close()
+        for i in range(len(path)):
+            line = path[i].childNodes[0].nodeValue.lower()
+            if line == 'pvr://':
+                hasPVR = True
+            elif line == 'upnp://':
+                hasUPNP = True
+        if hasPVR + hasUPNP == 2:
+            return True
+    except:
+        pass
+      
+def chkChanges():
+    log("utils: chkChanges")
+    ComCHK()
+    DonCHK()
+    
+    CURR_BUMPER = REAL_SETTINGS.getSetting('bumpers')
+    try:
+        CURR_BUMPER = REAL_SETTINGS.getSetting('Last_bumpers')
+    except:
+        REAL_SETTINGS.setSetting('Last_bumpers', CURR_BUMPER)
+    LAST_BUMPER = REAL_SETTINGS.getSetting('Last_bumpers')
+    
+    if CURR_BUMPER != LAST_BUMPER:
+        REAL_SETTINGS.setSetting('ForceChannelReset', "true")
+        REAL_SETTINGS.setSetting('Last_bumpers', CURR_BUMPER)
+        
+    CURR_COMMERCIALS = REAL_SETTINGS.getSetting('commercials')
+    try:
+        CURR_COMMERCIALS = REAL_SETTINGS.getSetting('Last_commercials')
+    except:
+        REAL_SETTINGS.setSetting('Last_commercials', CURR_COMMERCIALS)
+    LAST_COMMERCIALS = REAL_SETTINGS.getSetting('Last_commercials')
+    
+    if CURR_COMMERCIALS != LAST_COMMERCIALS:
+        REAL_SETTINGS.setSetting('ForceChannelReset', "true")
+        REAL_SETTINGS.setSetting('Last_commercials', CURR_COMMERCIALS)
+        
+    CURR_TRAILERS = REAL_SETTINGS.getSetting('trailers')
+    try:
+        CURR_TRAILERS = REAL_SETTINGS.getSetting('Last_trailers')
+    except:
+        REAL_SETTINGS.setSetting('Last_trailers', CURR_TRAILERS)
+    LAST_TRAILERS = REAL_SETTINGS.getSetting('Last_trailers')
+    
+    if CURR_TRAILERS != LAST_TRAILERS:
+        REAL_SETTINGS.setSetting('ForceChannelReset', "true")
+        REAL_SETTINGS.setSetting('Last_trailers', CURR_TRAILERS)
+    
+    CURR_ENHANCED_DATA = REAL_SETTINGS.getSetting('EnhancedGuideData')
+    try:
+        LAST_ENHANCED_DATA = REAL_SETTINGS.getSetting('Last_EnhancedGuideData')
+    except:
+        REAL_SETTINGS.setSetting('Last_EnhancedGuideData', CURR_ENHANCED_DATA)
+    LAST_ENHANCED_DATA = REAL_SETTINGS.getSetting('Last_EnhancedGuideData')
+    
+    if CURR_ENHANCED_DATA != LAST_ENHANCED_DATA:
+        REAL_SETTINGS.setSetting('ForceChannelReset', "true")
+        REAL_SETTINGS.setSetting('Last_EnhancedGuideData', CURR_ENHANCED_DATA)
+        
+    CURR_MEDIA_LIMIT = REAL_SETTINGS.getSetting('MEDIA_LIMIT')
+    try:
+        LAST_MEDIA_LIMIT = REAL_SETTINGS.getSetting('Last_MEDIA_LIMIT')
+    except:
+        REAL_SETTINGS.setSetting('Last_MEDIA_LIMIT', CURR_MEDIA_LIMIT)
+    LAST_MEDIA_LIMIT = REAL_SETTINGS.getSetting('Last_MEDIA_LIMIT')
+    
+    if CURR_MEDIA_LIMIT != LAST_MEDIA_LIMIT:
+        REAL_SETTINGS.setSetting('ForceChannelReset', "true")
+        REAL_SETTINGS.setSetting('Last_MEDIA_LIMIT', CURR_MEDIA_LIMIT)
+              
+def chkLowPower(): 
+    setProperty("PTVL.LOWPOWER","false") 
+    if REAL_SETTINGS.getSetting("Override.LOWPOWER") == "false":
+        if getPlatform() in ['ATV2','iOS','rPi','Android']:
+            setProperty("PTVL.LOWPOWER","true") 
+            REAL_SETTINGS.setSetting('AT_LIMIT', "0")
+            REAL_SETTINGS.setSetting('ThreadMode', "2")
+            REAL_SETTINGS.setSetting('EPG.xInfo', "false")
+            REAL_SETTINGS.setSetting('UPNP1', "false")
+            REAL_SETTINGS.setSetting('UPNP2', "false")
+            REAL_SETTINGS.setSetting('UPNP3', "false")
+            REAL_SETTINGS.setSetting('HideClips', "false")
+            REAL_SETTINGS.setSetting('EPGTextEnable', "1")
+            REAL_SETTINGS.setSetting('quickflip', "false")
+            REAL_SETTINGS.setSetting('SFX_Enabled', "false")
+            REAL_SETTINGS.setSetting('EnableSettop', "false")
+            REAL_SETTINGS.setSetting('UNAlter_ChanBug', "true")
+            REAL_SETTINGS.setSetting('Enable_FindLogo', "false")
+            REAL_SETTINGS.setSetting('Disable_Watched', "false")
+            REAL_SETTINGS.setSetting('Idle_Screensaver', "false")
+            REAL_SETTINGS.setSetting('EnhancedGuideData', "false")
+            REAL_SETTINGS.setSetting('sickbeard.enabled', "false")
+            REAL_SETTINGS.setSetting('couchpotato.enabled', "false")
+            if MEDIA_LIMIT > 250:
+                REAL_SETTINGS.setSetting('MEDIA_LIMIT', "3")
+            if NOTIFY == True:
+                xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Settings Optimized For Performance", 4000, THUMB) )
+    log("utils: chkLowPower = " + getProperty("PTVL.LOWPOWER"))
+
+def isLowPower():
+    # log("utils: isLowPower = " + str(getProperty("PTVL.LOWPOWER") == "true"))
+    return getProperty("PTVL.LOWPOWER") == "true"
+             
+def ClearPlaylists():
+    log('utils: ClearPlaylists')
+    for i in range(999):
+        try:
+            FileAccess.delete(CHANNELS_LOC + 'channel_' + str(i) + '.m3u')
+        except:
+            pass
+    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", 'Channel Playlists Cleared', 1000, THUMB) )
+    return   
+                
+def ClearCache(type):
+    log('utils: ClearCache ' + type)  
+    if type == 'Filelist':
+        daily.delete("%") 
+        weekly.delete("%")
+        monthly.delete("%")
+        REAL_SETTINGS.setSetting('ClearCache', "false")
+    elif type == 'Art':
+        try:    
+            shutil.rmtree(ART_LOC)
+            log('utils: Removed ART_LOC')  
+            REAL_SETTINGS.setSetting('ClearLiveArtCache', "true") 
+            xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Artwork Folder Cleared", 1000, THUMB) )
+        except:
+            pass
+        REAL_SETTINGS.setSetting('ClearLiveArt', "false")
+    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", type + " Cache Cleared", 1000, THUMB) )
+    
+def chkSettings2():   
+    log('utils: chkSettings2')
+    # check if ptvl shutdown correctly
+    try:
+        Normal_Shutdown = REAL_SETTINGS.getSetting('Normal_Shutdown') == "true"
+    except:
+        REAL_SETTINGS.setSetting('Normal_Shutdown', "true")
+        Normal_Shutdown = REAL_SETTINGS.getSetting('Normal_Shutdown') == "true"
+                 
+    if FileAccess.exists(BACKUP_LOC) == False:
+        try:
+            FileAccess.makedirs(BACKUP_LOC)
+        except Exception,e:
+            pass
+            
+    if Normal_Shutdown == False:
+        log('utils: chkSettings2, Setting2 Restore') 
+        if getSize(SETTINGS_FLE) < 100 and getSize(SETTINGS_FLE_LASTRUN) > 100:
+            Restore(SETTINGS_FLE_LASTRUN, SETTINGS_FLE)    
+    else:
+        log('utils: chkSettings2, Setting2 Backup') 
+        if getSize(SETTINGS_FLE) > 100:
+            Backup(SETTINGS_FLE, SETTINGS_FLE_LASTRUN)
+            if REAL_SETTINGS.getSetting("AutoBackup") == "true":               
+                SETTINGS_FLE_BACKUP = os.path.join(BACKUP_LOC, 'settings2.' + (str(datetime.datetime.now()).split('.')[0]).replace(' ','.').replace(':','.') + '.xml')
+                Backup(SETTINGS_FLE, SETTINGS_FLE_BACKUP)
+    return True
+    
+def backupSettings2():
+    log('utils: backupSettings2')
+    SETTINGS_FLE_BACKUP = os.path.join(BACKUP_LOC, 'settings2.' + (str(datetime.datetime.now()).split('.')[0]).replace(' ','.').replace(':','.') + '.xml')
+    Backup(SETTINGS_FLE, SETTINGS_FLE_BACKUP)
+
+def restoreSettings2():
+    log('utils: restoreSettings2')
+    dirs,files = xbmcvfs.listdir(BACKUP_LOC)
+    dir,file = xbmcvfs.listdir(XMLTV_LOC)
+    backuplist = [s.replace('.xml','') for s in files if s.endswith('.xml')]
+    if len(backuplist) == 0:
+        xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "No Backups found", 1000, THUMB) )
+        return
+    select = selectDialog(backuplist, 'Select backup to restore')   
+    if select != -1:
+        if dlg.yesno("PseudoTV Live", 'Restoring will remove current channel configurations, Are you sure?'):                        
+            Restore(((backuplist[select])+'.xml'), SETTINGS_FLE)
+            xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Restore Complete", 1000, THUMB) )
+
+def purgeSettings2():
+    log('utils: purgeSettings2')
+    if dlg.yesno("PseudoTV Live", 'Are you sure you want to remove all previous backups?'):       
+        dirs,files = xbmcvfs.listdir(BACKUP_LOC)
+        for i in range(len(files)):
+            try:
+                FileAccess.delete(os.path.join(BACKUP_LOC,files[i]))
+            except:
+                pass
+        xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Backup Purge Complete", 1000, THUMB) )
+
+def hasVersionChanged(__version__): 
+    log('utils: hasVersionChanged = ' + __version__)   
+    try:
+        PTVL_Version = REAL_SETTINGS.getSetting("PTVL_Version")
+        if not PTVL_Version:
+            raise exception()
+    except:
+        REAL_SETTINGS.setSetting("PTVL_Version", __version__)
+        PTVL_Version = REAL_SETTINGS.getSetting("PTVL_Version") 
+    
+    if PTVL_Version != __version__:
+        REAL_SETTINGS.setSetting("PTVL_Version", __version__)
+        return True
+    else:
+        return False
+        
+def HandleUpgrade():
+    log('utils: HandleUpgrade') 
+    # Remove m3u playlists
+    # ClearPlaylists()
+    
+    # Force Channel rebuild
+    # REAL_SETTINGS.setSetting('ForceChannelReset', 'true') 
+             
+    # Install PTVL Isengard Context Export
+    if getXBMCVersion() > 14 and isContextInstalled() == False:
+        getContext()
+        
+    # Check if autoplay is enabled
+    chkAutoplay()
+    
+    # Call showChangeLog like this to workaround bug in openElec, *Thanks spoyser
+    xbmc.executebuiltin("RunScript(" + ADDON_PATH + "/utilities.py,-showChangelog)")
+    
+def preStart(): 
+    log('utils: preStart')
+    # Optimize settings based on sys.platform
+    chkLowPower()
+    
+    if isDebug() == True:
+        if yesnoDialog('Its recommended you disable debug logging for standard use','Disable Debugging?') == True:
+            REAL_SETTINGS.setSetting('enable_Debug', "false")
+
+    # VideoWindow Patch.
+    VideoWindow()
+    
+    # Clear filelist Caches    
+    if REAL_SETTINGS.getSetting("ClearCache") == "true":
+        ClearCache('Filelist')
+        
+    # Clear Artwork Folders
+    if REAL_SETTINGS.getSetting("ClearLiveArt") == "true":
+        ClearCache('Art')
+            
+    # Backup/Restore settings2
+    if chkSettings2() == True:
+        return True
+        
 ##############
 # PTVL Tools #
 ##############
@@ -1512,447 +1992,23 @@ def parseFeed(link):
         # log("getRSSFeed Failed!" + str(e))
         # pass
 
-
-def changeChannelNum(channel, new_channel):
-    log("utils: changeChannelNum")
-    replaceAll(SETTINGS_FLE,"Channel_"+str(channel)+"_","Channel_"+str(new_channel)+"_") 
+def correctYoutubeSetting2(setting2):
+    setting2 = setting2.replace('Multi Playlist','7').replace('Multi Channel','8').replace('Raw gdata','9')
+    setting2 = setting2.replace('User Favorites','4').replace('Search Query','5').replace('User Subscription','3')
+    setting2 = setting2.replace('Seasonal','31').replace('Channel','1').replace('Playlist','2')
+    return setting2
+    
+def purgeGarbage(): 
+    try:
+        # threshold = gc.get_threshold()
+        # log("utils: purgeGarbage, Garbage collection thresholds: %s" % (str(threshold)))
+        collected = gc.collect()
+        log("utils: purgeGarbage, Garbage collector: collected %d objects." % (collected))
+        log("utils: purgeGarbage, Cleaning...")
+        gc.collect()
+        log("utils: purgeGarbage, Finished!")
+    except Exception,e:
+        log("purgeGarbage Failed!" + str(e))
         
-        
-####################
-# VideoWindow Hack #
-####################
-            
-def VideoWindow():
-    log("utils: VideoWindow, VWPath = " + str(VWPath))
-    #Copy VideoWindow Patch file
-    try:
-        if isLowPower() == True:
-            raise Exception()
-        else:
-            if not FileAccess.exists(VWPath):
-                log("utils: VideoWindow, VWPath not found")
-                FileAccess.copy(flePath, VWPath)
-                if FileAccess.exists(VWPath):
-                    log('utils: custom_script.pseudotv.live_9506.xml Copied')
-                    xbmc.executebuiltin("ReloadSkin()")
-                    VideoWindowPatch()   
-                else:
-                    raise Exception()
-            else:
-                log("utils: VideoWindow, VWPath found")
-                VideoWindowPatch()  
-                
-            if FileAccess.exists(VWPath):
-                setProperty("PTVL.VideoWindow","true")
-    except Exception:
-        VideoWindowUninstall()
-        VideoWindowUnpatch()
-        Error = True
-        pass
-    
-def VideoWindowPatch():
-    log("utils: VideoWindowPatch")
-    try:
-        # for n in range(len(PTVL_SKIN_WINDOW_FLE)):
-            # PTVL_SKIN_SELECT_FLE = xbmc.translatePath(os.path.join(PTVL_SKIN_SELECT, PTVL_SKIN_WINDOW_FLE[n]))
-            # log('utils: VideoWindowPatch Patching ' + ascii(PTVL_SKIN_SELECT_FLE))
-            # #Patch Videowindow, by un-commenting code in epg.xml 
-            # f = FileAccess.open(PTVL_SKIN_SELECT_FLE, "r")
-            # linesLST = f.readlines()  
-            # f.close()
-            
-            # for i in range(len(linesLST)):
-                # line = (linesLST[i]).replace('\n','').replace('\t','').replace('\r','')
-                # if line == b:
-                    # replaceAll(PTVL_SKIN_SELECT_FLE,b,a)        
-                    # log('utils: '+PTVL_SKIN_WINDOW_FLE[n]+' Patched b,a')
-                # elif line == d:
-                    # replaceAll(PTVL_SKIN_SELECT_FLE,d,c)           
-                    # log('utils: '+PTVL_SKIN_WINDOW_FLE[n]+' Patched d,c') 
-                    
-        #Patch dialogseekbar to ignore OSD for PTVL.
-        log('utils: VideoWindowPatch Patching ' + ascii(DSPath))
-        f = FileAccess.open(DSPath, "r")
-        lineLST = f.readlines()            
-        f.close()
-        
-        Ypatch = True
-        for i in range(len(lineLST)):
-            line = lineLST[i]
-            if z in line:
-                Ypatch = False
-                break
-            
-        if Ypatch:
-            for i in range(len(lineLST)):
-                line = lineLST[i]
-                if y in line:
-                    replaceAll(DSPath,y,z)
-                log('utils: dialogseekbar.xml Patched y,z')
-    except Exception:
-        VideoWindowUninstall()
-        pass
-   
-def VideoWindowUnpatch():
-    log("utils: VideoWindowUnpatch")
-    try:
-        # for n in range(len(PTVL_SKIN_WINDOW_FLE)):
-            # PTVL_SKIN_SELECT_FLE = xbmc.translatePath(os.path.join(PTVL_SKIN_SELECT, PTVL_SKIN_WINDOW_FLE[n]))
-            # #unpatch videowindow
-            # f = FileAccess.open(PTVL_SKIN_SELECT_FLE, "r")
-            # linesLST = f.readlines()    
-            # f.close()
-            # for i in range(len(linesLST)):
-                # line = (linesLST[i]).replace('\n','').replace('\t','').replace('\r','')
-                # if line == a:
-                    # replaceAll(PTVL_SKIN_SELECT_FLE,a,b)
-                    # log('utils: '+PTVL_SKIN_WINDOW_FLE[n]+' UnPatched a,b')
-                # elif line == c:
-                    # replaceAll(PTVL_SKIN_SELECT_FLE,c,d)          
-                    # log('utils: '+PTVL_SKIN_WINDOW_FLE[n]+' UnPatched c,d')
-                
-        #unpatch seekbar
-        f = FileAccess.open(DSPath, "r")
-        lineLST = f.readlines()            
-        f.close()
-        for i in range(len(lineLST)):
-            line = lineLST[i]
-            if w in line:
-                replaceAll(DSPath,w,v)
-                log('utils: dialogseekbar.xml UnPatched w,v')
-    except Exception:
-        Error = True
-        pass
-
-def VideoWindowUninstall():
-    log('utils: VideoWindowUninstall')
-    try:
-        FileAccess.delete(VWPath)
-        if not FileAccess.exists(VWPath):
-            log('utils: custom_script.pseudotv.live_9506.xml Removed')
-    except Exception:
-        Error = True
-        pass
-    
-######################
-# PreStart Functions #
-######################
-   
-def getGithubZip(url, lib, addonpath, MSG):
-    log('utils: getGithubZip, url = ' + url)
-    # Delete old install package
-    try: 
-        FileAccess.delete(lib)
-        log('utils: deleted old package')
-    except: 
-        pass  
-    try:
-        download(url, lib, '')
-        log('utils: downloaded new package')
-        all(lib,addonpath,'')
-        log('utils: extracted new package')
-        MSG = MSG + ' Installed'
-    except: 
-        MSG = MSG + ' Failed to install, Try Again Later'
-        pass
-        
-    xbmc.executebuiltin("XBMC.UpdateLocalAddons()"); 
-    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", MSG, 1000, THUMB) )
-    return  
-    
-def isContextInstalled():
-    context = isPlugin('context.pseudotv.live.export')
-    log('utils: isContextInstalled = ' + str(context))
-    return context
-      
-def getContext():  
-    log('utils: getContext')
-    url='https://github.com/Lunatixz/XBMC_Addons/raw/master/zips/context.pseudotv.live.export/context.pseudotv.live.export-1.0.4.zip'
-    name = 'context.pseudotv.live.export.zip' 
-    MSG = 'PseudoTV Live Context Export'    
-    path = xbmc.translatePath(os.path.join('special://home/addons','packages'))
-    addonpath = xbmc.translatePath(os.path.join('special://','home/addons'))
-    lib = os.path.join(path,name)
-    getGithubZip(url, lib, addonpath, MSG)
-    
-def isRepoInstalled():
-    repo = isPlugin('repository.lunatixz')
-    log('utils: isRepoInstalled = ' + str(repo))
-    return repo
-      
-def getRepo():
-    log('utils: getRepo')
-    url='https://github.com/Lunatixz/XBMC_Addons/raw/master/zips/repository.lunatixz/repository.lunatixz-1.0.zip'
-    name = 'repository.lunatixz.zip' 
-    MSG = 'Lunatixz Repository Installed'    
-    path = xbmc.translatePath(os.path.join('special://home/addons','packages'))
-    addonpath = xbmc.translatePath(os.path.join('special://','home/addons'))
-    lib = os.path.join(path,name)
-    getGithubZip(url, lib, addonpath, MSG)
-    
-def chkVersion():
-    log('utils: chkVersion')
-    curver = xbmc.translatePath(os.path.join(ADDON_PATH,'addon.xml'))    
-    source = open(curver, mode='r')
-    link = source.read()
-    source.close()
-    match = re.compile('" version="(.+?)" name="PseudoTV Live"').findall(link)
-    
-    for vernum in match:
-        log("utils: Current Version = " + str(vernum))
-    try:
-        link = open_url('https://raw.githubusercontent.com/Lunatixz/XBMC_Addons/master/script.pseudotv.live/addon.xml').read() 
-        link = link.replace('\r','').replace('\n','').replace('\t','').replace('&nbsp;','')
-        match = re.compile('" version="(.+?)" name="PseudoTV Live"').findall(link)
-    except:
-        pass   
-        
-    if len(match) > 0:
-        if vernum != str(match[0]):
-            if isRepoInstalled() == False:
-                getRepo()
-
-def chkAutoplay():
-    log('utils: chkAutoplay')
-    fle = xbmc.translatePath("special://profile/guisettings.xml")
-    try:
-        xml = FileAccess.open(fle, "r")
-        dom = parse(xml)
-        autoplaynextitem = dom.getElementsByTagName('autoplaynextitem')
-        Videoautoplaynextitem  = (autoplaynextitem[0].childNodes[0].nodeValue.lower() == 'true')
-        Musicautoplaynextitem  = (autoplaynextitem[1].childNodes[0].nodeValue.lower() == 'true')
-        xml.close()
-        log('utils: chkAutoplay, Videoautoplaynextitem is ' + str(Videoautoplaynextitem)) 
-        log('utils: chkAutoplay, Musicautoplaynextitem is ' + str(Musicautoplaynextitem)) 
-        totcnt = Videoautoplaynextitem + Musicautoplaynextitem
-        if totcnt > 0:
-            okDialog("Its recommended you disable Kodi's"+' "Play the next video/song automatically" ' + "feature found under Kodi's video/playback and music/playback settings.")
-        else:
-            raise exception()
-    except:
-        pass
-        
-def chkSources():
-    log("utils: chkSources") 
-    hasPVR = False
-    hasUPNP = False
-    try:
-        fle = xbmc.translatePath('special://userdata/sources.xml')
-        xml = FileAccess.open(fle, "r")
-        dom = parse(xml)
-        path = dom.getElementsByTagName('path')
-        xml.close()
-        for i in range(len(path)):
-            line = path[i].childNodes[0].nodeValue.lower()
-            if line == 'pvr://':
-                hasPVR = True
-            elif line == 'upnp://':
-                hasUPNP = True
-        if hasPVR + hasUPNP == 2:
-            return True
-    except:
-        pass
-      
-def chkChanges():
-    log("utils: chkChanges")
-    ComCHK()
-    DonCHK()
-    # todo add bcts
-    CURR_ENHANCED_DATA = REAL_SETTINGS.getSetting('EnhancedGuideData')
-    try:
-        LAST_ENHANCED_DATA = REAL_SETTINGS.getSetting('Last_EnhancedGuideData')
-    except:
-        REAL_SETTINGS.setSetting('Last_EnhancedGuideData', CURR_ENHANCED_DATA)
-        LAST_ENHANCED_DATA = REAL_SETTINGS.getSetting('Last_EnhancedGuideData')
-    
-    if CURR_ENHANCED_DATA != LAST_ENHANCED_DATA:
-        REAL_SETTINGS.setSetting('ForceChannelReset', "true")
-        REAL_SETTINGS.setSetting('Last_EnhancedGuideData', CURR_ENHANCED_DATA)
-        
-    CURR_MEDIA_LIMIT = REAL_SETTINGS.getSetting('MEDIA_LIMIT')
-    try:
-        LAST_MEDIA_LIMIT = REAL_SETTINGS.getSetting('Last_MEDIA_LIMIT')
-    except:
-        REAL_SETTINGS.setSetting('Last_MEDIA_LIMIT', CURR_MEDIA_LIMIT)
-        LAST_MEDIA_LIMIT = REAL_SETTINGS.getSetting('Last_MEDIA_LIMIT')
-    
-    if CURR_MEDIA_LIMIT != LAST_MEDIA_LIMIT:
-        REAL_SETTINGS.setSetting('ForceChannelReset', "true")
-        REAL_SETTINGS.setSetting('Last_MEDIA_LIMIT', CURR_MEDIA_LIMIT)
-              
-def chkLowPower(): 
-    setProperty("PTVL.LOWPOWER","false") 
-    if REAL_SETTINGS.getSetting("Override.LOWPOWER") == "false":
-        if getPlatform() in ['ATV2','iOS','rPi','Android']:
-            setProperty("PTVL.LOWPOWER","true") 
-            REAL_SETTINGS.setSetting('AT_LIMIT', "0")
-            REAL_SETTINGS.setSetting('ThreadMode', "2")
-            REAL_SETTINGS.setSetting('EPG.xInfo', "false")
-            REAL_SETTINGS.setSetting('UPNP1', "false")
-            REAL_SETTINGS.setSetting('UPNP2', "false")
-            REAL_SETTINGS.setSetting('UPNP3', "false")
-            REAL_SETTINGS.setSetting('HideClips', "false")
-            REAL_SETTINGS.setSetting('EPGTextEnable', "1")
-            REAL_SETTINGS.setSetting('quickflip', "false")
-            REAL_SETTINGS.setSetting('SFX_Enabled', "false")
-            REAL_SETTINGS.setSetting('EnableSettop', "false")
-            REAL_SETTINGS.setSetting('UNAlter_ChanBug', "true")
-            REAL_SETTINGS.setSetting('Enable_FindLogo', "false")
-            REAL_SETTINGS.setSetting('Disable_Watched', "false")
-            REAL_SETTINGS.setSetting('Idle_Screensaver', "false")
-            REAL_SETTINGS.setSetting('EnhancedGuideData', "false")
-            REAL_SETTINGS.setSetting('sickbeard.enabled', "false")
-            REAL_SETTINGS.setSetting('couchpotato.enabled', "false")
-            if MEDIA_LIMIT > 250:
-                REAL_SETTINGS.setSetting('MEDIA_LIMIT', "3")
-            if NOTIFY == True:
-                xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Settings Optimized For Performance", 4000, THUMB) )
-    log("utils: chkLowPower = " + getProperty("PTVL.LOWPOWER"))
-
-def isLowPower():
-    # log("utils: isLowPower = " + str(getProperty("PTVL.LOWPOWER") == "true"))
-    return getProperty("PTVL.LOWPOWER") == "true"
-             
-def ClearPlaylists():
-    log('utils: ClearPlaylists')
-    for i in range(999):
-        try:
-            FileAccess.delete(CHANNELS_LOC + 'channel_' + str(i) + '.m3u')
-        except:
-            pass
-    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", 'Channel Playlists Cleared', 1000, THUMB) )
-    return   
-                
-def ClearCache(type):
-    log('utils: ClearCache ' + type)  
-    if type == 'Filelist':
-        daily.delete("%") 
-        weekly.delete("%")
-        monthly.delete("%")
-        REAL_SETTINGS.setSetting('ClearCache', "false")
-    elif type == 'Art':
-        try:    
-            shutil.rmtree(ART_LOC)
-            log('utils: Removed ART_LOC')  
-            REAL_SETTINGS.setSetting('ClearLiveArtCache', "true") 
-            xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Artwork Folder Cleared", 1000, THUMB) )
-        except:
-            pass
-        REAL_SETTINGS.setSetting('ClearLiveArt', "false")
-    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", type + " Cache Cleared", 1000, THUMB) )
-    
-def chkSettings2():   
-    log('utils: chkSettings2')
-    # check if ptvl shutdown correctly
-    try:
-        Normal_Shutdown = REAL_SETTINGS.getSetting('Normal_Shutdown') == "true"
-    except:
-        REAL_SETTINGS.setSetting('Normal_Shutdown', "true")
-        Normal_Shutdown = REAL_SETTINGS.getSetting('Normal_Shutdown') == "true"
-                 
-    if FileAccess.exists(BACKUP_LOC) == False:
-        try:
-            FileAccess.makedirs(BACKUP_LOC)
-        except Exception,e:
-            pass
-            
-    if Normal_Shutdown == False:
-        log('utils: chkSettings2, Setting2 Restore') 
-        if getSize(SETTINGS_FLE) < 100 and getSize(SETTINGS_FLE_LASTRUN) > 100:
-            Restore(SETTINGS_FLE_LASTRUN, SETTINGS_FLE)    
-    else:
-        log('utils: chkSettings2, Setting2 Backup') 
-        if getSize(SETTINGS_FLE) > 100:
-            Backup(SETTINGS_FLE, SETTINGS_FLE_LASTRUN)
-            if REAL_SETTINGS.getSetting("AutoBackup") == "true":               
-                SETTINGS_FLE_BACKUP = os.path.join(BACKUP_LOC, 'settings2.' + (str(datetime.datetime.now()).split('.')[0]).replace(' ','.').replace(':','.') + '.xml')
-                Backup(SETTINGS_FLE, SETTINGS_FLE_BACKUP)
-    return True
-    
-def backupSettings2():
-    log('utils: backupSettings2')
-    SETTINGS_FLE_BACKUP = os.path.join(BACKUP_LOC, 'settings2.' + (str(datetime.datetime.now()).split('.')[0]).replace(' ','.').replace(':','.') + '.xml')
-    Backup(SETTINGS_FLE, SETTINGS_FLE_BACKUP)
-
-def restoreSettings2():
-    log('utils: restoreSettings2')
-    dirs,files = xbmcvfs.listdir(BACKUP_LOC)
-    dir,file = xbmcvfs.listdir(XMLTV_LOC)
-    backuplist = [s.replace('.xml','') for s in files if s.endswith('.xml')]
-    if len(backuplist) == 0:
-        xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "No Backups found", 1000, THUMB) )
-        return
-    select = selectDialog(backuplist, 'Select backup to restore')   
-    if select != -1:
-        if dlg.yesno("PseudoTV Live", 'Restoring will remove current channel configurations, Are you sure?'):                        
-            Restore(((backuplist[select])+'.xml'), SETTINGS_FLE)
-            xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Restore Complete", 1000, THUMB) )
-
-def purgeSettings2():
-    log('utils: purgeSettings2')
-    if dlg.yesno("PseudoTV Live", 'Are you sure you want to remove all previous backups?'):       
-        dirs,files = xbmcvfs.listdir(BACKUP_LOC)
-        for i in range(len(files)):
-            try:
-                FileAccess.delete(os.path.join(BACKUP_LOC,files[i]))
-            except:
-                pass
-        xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Backup Purge Complete", 1000, THUMB) )
-
-def hasVersionChanged(__version__): 
-    log('utils: hasVersionChanged = ' + __version__)   
-    try:
-        PTVL_Version = REAL_SETTINGS.getSetting("PTVL_Version")
-        if not PTVL_Version:
-            raise exception()
-    except:
-        REAL_SETTINGS.setSetting("PTVL_Version", __version__)
-        PTVL_Version = REAL_SETTINGS.getSetting("PTVL_Version") 
-    
-    if PTVL_Version != __version__:
-        REAL_SETTINGS.setSetting("PTVL_Version", __version__)
-        return True
-    else:
-        return False
-        
-def HandleUpgrade():
-    log('utils: HandleUpgrade') 
-    # Remove m3u playlists
-    # ClearPlaylists()
-    
-    # Force Channel rebuild
-    # REAL_SETTINGS.setSetting('ForceChannelReset', 'true') 
-             
-    # Install PTVL Isengard Context Export
-    if getXBMCVersion() > 14 and isContextInstalled() == False:
-        getContext()
-        
-    # Check if autoplay is enabled
-    chkAutoplay()
-    
-    # Call showChangeLog like this to workaround bug in openElec, *Thanks spoyser
-    xbmc.executebuiltin("RunScript(" + ADDON_PATH + "/utilities.py,-showChangelog)")
-    
-def preStart(): 
-    log('utils: preStart')
-    # Optimize settings based on sys.platform
-    chkLowPower()
-    
-    if isDebug() == True:
-        if yesnoDialog('Its recommended you disable debug logging for standard use','Disable Debugging?') == True:
-            REAL_SETTINGS.setSetting('enable_Debug', "false")
-
-    # VideoWindow Patch.
-    VideoWindow()
-    
-    # Clear filelist Caches    
-    if REAL_SETTINGS.getSetting("ClearCache") == "true":
-        ClearCache('Filelist')
-        
-    # Clear Artwork Folders
-    if REAL_SETTINGS.getSetting("ClearLiveArt") == "true":
-        ClearCache('Art')
-            
-    # Backup/Restore settings2
-    if chkSettings2() == True:
-        return True
+def isScanningVideo():
+    return bool(xbmc.getCondVisibility("Library.IsScanningVideo"))
