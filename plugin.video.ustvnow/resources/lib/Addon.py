@@ -23,7 +23,7 @@ try:
     is_xbmc = True
 except:
     is_xbmc = False
-    print 'not running on xbmc'
+    #print 'not running on xbmc'
 
 from xml.dom import minidom
 from xml.etree import ElementTree as ET
@@ -56,7 +56,7 @@ def cleanChannel(string):
     return string.strip()
       
 def readXMLTV(filename, type='channels', name=''):
-    print ('readXMLTV')       
+    #print ('readXMLTV')       
     cached_readXMLTV = []
     channels = []
     now = datetime.datetime.now()
@@ -66,7 +66,7 @@ def readXMLTV(filename, type='channels', name=''):
     event, root = context.next()
     for event, elem in context:
         if event == "end":
-            print type
+            #print type
             if type == 'channels':
                 if elem.tag == "channel":
                     id = ascii(elem.get("id"))
@@ -78,20 +78,20 @@ def readXMLTV(filename, type='channels', name=''):
                 if elem.tag == "programme":
                     channel = elem.get("channel")
                     channel = channel.upper()
-                    print channel, name
+                    #print channel, name
                     if name.lower() == channel.lower():
-                        print 'match', channel, name
+                        #print 'match', channel, name
                         showtitle = elem.findtext('title')
-                        print showtitle
+                        #print showtitle
                         description = elem.findtext("desc")
-                        print description
+                        #print description
                         subtitle = elem.findtext("sub-title")
-                        print subtitle
+                        #print subtitle
                         icon = None
                         iconElement = elem.find("icon")
                         if iconElement is not None:
                             icon = iconElement.get("src") 
-                        print icon
+                        #print icon
                         genre = 'Unknown'
                         categories = ''
                         categoryList = elem.findall("category")
@@ -114,12 +114,12 @@ def readXMLTV(filename, type='channels', name=''):
                                 genre = cat.text
                             elif (cat.text).lower() == 'drama':
                                 genre = cat.text 
-                        print genre
+                        #print genre
                         offset = ((time.timezone / 3600) - 5 ) * -1
-                        print offset
+                        #print offset
                         stopDate = parseXMLTVDate(elem.get('stop'), 0)
                         startDate = parseXMLTVDate(elem.get('start'), 0)
-                        print stopDate, startDate, now
+                        #print stopDate, startDate, now
                         if (((now > startDate and now <= stopDate) or (now < startDate))):
                             cached_readXMLTV.append([channel, startDate, showtitle, description, subtitle, genre, icon])
     if type == 'channels':
@@ -129,7 +129,7 @@ def readXMLTV(filename, type='channels', name=''):
     else:
         return []
     # except Exception,e:
-        # print ("readXMLTV, Failed! " + str(e))
+        # #print ("readXMLTV, Failed! " + str(e))
         # return ['XMLTV ERROR']
             
 def parseXMLTVDate(dateString, offset=0):
@@ -158,7 +158,7 @@ def makeM3U(links):
     if links:
         for l in links:
             #Add name based filename
-            if get_setting('write_type') == "2":
+            if int(get_setting('write_type')) == 3:
                 playlist.write('#EXTINF:-1, tvg-id="'+l['name']+'" tvg-logo="'+l['name']+'" tvg-name="'+l['name']+'"  group-title="USTVnow",'+l['name']+'\n')
             else:
                 playlist.write('#EXTINF:'+l['name']+'\n')

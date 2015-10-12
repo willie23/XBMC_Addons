@@ -84,7 +84,7 @@ elif mode == 'live':
     if channels:
         for c in channels:
             rURL = "plugin://plugin.video.ustvnow/?name="+c['name']+"&mode=play"
-            # logo = xbmc.translatePath(os.path.join(plugin_path, 'resources', 'images', c['name']+'.png'))
+            logo = xbmc.translatePath(os.path.join(plugin_path, 'resources', 'images', c['name']+'.png'))
             item = xbmcgui.ListItem(path=rURL)
             if usingNewCode == True:
                 name = c["name"];
@@ -107,13 +107,13 @@ elif mode == 'live':
                         
                 Addon.add_video_item(rURL,
                                      {'title': '%s' % (c['name'])},
-                                     img=c["icon"], HD=quality_name)
+                                     img=logo, HD=quality_name)
             else:
                 Addon.add_video_item(rURL,
                                      {'title': '%s - %s' % (c['name'], 
                                                             c['now']['title']),
                                       'plot': c['now']['plot']},
-                                     img=c["icon"])
+                                     img=logo)
                              
 elif mode == 'recordings':
     stream_type = ['rtmp', 'rtsp'][int(Addon.get_setting('stream_type'))]
@@ -153,7 +153,6 @@ elif mode == 'tvguide':
         listings = ustv.get_tvguide(fpath, 'programs', name)
         if listings:
             for l in range(len(listings)):
-                print listings[l]
                 rURL = "plugin://plugin.video.ustvnow/?name="+listings[l][0]+"&mode=play"
                 Addon.add_video_item(rURL,
                                      {'title': '%s - %s' % (listings[l][1], 
@@ -165,10 +164,10 @@ elif mode == 'tvguide':
             listings = ustv.get_tvguide(fpath)
             if listings:
                 for l in range(len(listings)):
-                    # print listings[l]
+                    # #print listings[l]
                     url = "plugin://plugin.video.ustvnow/?name="+listings[l]+"&mode=tvguide"
                     Addon.log('adding dir: %s' % (listings[l]))
-                    img = ''
+                    img = xbmc.translatePath(os.path.join(plugin_path, 'resources', 'images', listings[l])+'.png')
                     fanart = ''
                     listitem = xbmcgui.ListItem(listings[l], iconImage=img, thumbnailImage=img)
                     if not fanart:

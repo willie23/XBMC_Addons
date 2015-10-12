@@ -79,7 +79,7 @@ class Ustvnow:
         self.token = self._login()
         content = self._get_json('gtv/1/live/listchannels', {'token': self.token})
         channels = []
-        #print json.dumps(content);
+        ##print json.dumps(content);
         results = content['results']['streamnames'];
         for i in results:
             name = Addon.cleanChanName(i['sname'])
@@ -90,7 +90,7 @@ class Ustvnow:
                 'url': url,
                 'icon': self.uBASE_URL + '/' + i['img']
                 })
-            if Addon.get_setting('enablewrite') == "true" and self.write_type == 0:
+            if self.write_type == 1:
                 Addon.makeSTRM(name, url)
             self.make_Playlists(quality, stream_type)
         return channels
@@ -98,34 +98,63 @@ class Ustvnow:
             
     def make_Playlists(self, quality, stream_type):
         Addon.log('make_Playlists')
-        if Addon.get_setting('enablewrite') == "true" and self.write_type > 0:
+        if self.write_type > 1:
             Addon.makeM3U(self.get_link(quality, stream_type))
             
 # LIVETV           = BASE_URL + '/iphone/1/live/playingnow?pgonly=true&token=%s'
 # RECORDINGS       = BASE_URL + '/iphone/1/dvr/viewdvrlist?pgonly=true&token=%s'
 # FAVORITES        = BASE_URL + '/iphone/1/live/showfavs?pgonly=true&token=%s'
 
-    # def get_favorites(self, quality=1, stream_type='rtmp'):
-        # if self.token == None:
-            # if self._login():
-                # content = self._get_json('gtv/1/live/listchannels', {'token': self.token})
-        # channels = []
-        # #print json.dumps(content);
-        # results = content['results']['streamnames'];
-        # print results
-        # for i in results:
-            # url = "plugin://plugin.video.ustvnow/?name="+i['sname']+"&mode=play"
-            # name = (i['sname'])
-            # # name = name.replace('WLYH','CW').replace('WHTM','ABC').replace('WPMT','FOX').replace('WPSU','PBS').replace('WHP','CBS').replace('WGAL','NBC').replace('My9','MY9').replace('AETV','AE').replace('Channel','').replace('Network','')
-            # channels.append({
-                # 'name': name,
-                # 'sname' : i['callsign'],
-                # 'url': url, 
-                # 'icon': self.uBASE_URL + '/' + i['img']
-                # })  
-        # print channels
-        # return channels
 
+    def get_favorites(self, quality=1, stream_type='rtmp'):
+        self.token = self._login()
+        content = self._get_json('gtv/1/live/listchannels', {'token': self.token})
+        channels = []
+        results = content['results']['streamnames'];
+        #print results
+        for i in results:
+            url = "plugin://plugin.video.ustvnow/?name="+i['sname']+"&mode=play"
+            name = Addon.cleanChanName(i['sname'])
+            channels.append({
+                'name': name,
+                'sname' : i['callsign'],
+                'url': url, 
+                'icon': self.uBASE_URL + '/' + i['img']
+                })  
+        #print channels
+        return channels
+        
+        
+    def get_recordings(self, quality=1, stream_type='rtmp'):
+        self.token = self._login()
+        html = self._get_html('iphone_ajax', {'tab': 'iphone_viewdvrlist'})
+        recordings = []
+        for r in re.finditer('class="panel".+?title="(.+?)".+?src="(.+?)".+?' +
+                             'class="nowplaying_item">(.+?)<\/td>.+?(?:<\/a>' +
+                             '(.+?)<\/td>.+?)?vertical-align:bottom.+?">(.+?)' +
+                             '<\/div>.+?_self" href="(rtsp.+?)".+?href="(.+?)"', 
+                             html, re.DOTALL):
+            chan, icon, title, plot, rec_date, url, del_url = r.groups()
+            url = '%s%s%s' % (stream_type, url[4:-7], 
+                              ['350', '650', '950'][quality])
+            if plot:
+                plot = plot.strip()
+            else:
+                plot = ''
+            recordings.append({'channel': chan,
+                               'stream_url': url,
+                               'title': title,
+                               'plot': plot,
+                               'rec_date': rec_date.strip(),
+                               'icon': icon,
+                               'del_url': del_url
+                               })
+        return recordings
+    
+    
+    def delete_recording(self, del_url):
+        html = self._get_html(del_url)
+        
         
     def get_guidedata(self):
         Addon.log('get_guidedata')
@@ -211,7 +240,6 @@ class Ustvnow:
             c_entry.appendChild(c_entry_content);
             pg_entry.appendChild(c_entry);
 
-
             en_entry = doc.createElement('episode-num');
             en_entry.setAttribute('system', 'dd_progid');
             en_entry_content = doc.createTextNode(programme['content_id']);
@@ -269,6 +297,7 @@ class Ustvnow:
         Addon.log('_get_json')
         content = False
         url = self._build_json(path, queries)
+        #print url
         response = self._fetch(url)
         if response:
             content = json.loads(response.read())
@@ -281,7 +310,7 @@ class Ustvnow:
         Addon.log('_get_html')
         html = False
         url = self._build_url(path, queries)
-        # print url    
+        # #print url    
         response = self._fetch(url)
         if response:
             html = response.read()
@@ -302,7 +331,7 @@ class Ustvnow:
                                    '<\/td>.+?class="nowplaying_itemdesc".+?' +
                                    '<\/a>(.+?)<\/td>.+?href="(.+?)"',
                                    html, re.DOTALL):
-            # print channel.groups()
+            # #print channel.groups()
             name, icon, title, plot, url = channel.groups()
             name = name.replace('\n','').replace('\t','').replace('\r','').replace('<fieldset> ','').replace('<div class=','').replace('>','').replace('"','').replace(' ','')
             if not name:
@@ -311,7 +340,7 @@ class Ustvnow:
             try:
                 if not url.startswith('http'):
                     now = {'title': title, 'plot': plot.strip()}
-                    # print url
+                    # #print url
                     url = '%s%s%d' % (stream_type, url[4:-1], quality + 1)
                     aChannelname = {'name': name}
                     aChannel = {'name': name, 'url': url, 
@@ -338,6 +367,8 @@ class Ustvnow:
             result = self._login_NEW()
         if not result:
             result = self._login_NEW_ALT()
+        if not result:
+            self.dlg.ok("USTVnow", "Connection FAILED!", "Please check your login credentials and try again later...")
         return result  
         
         
@@ -354,7 +385,7 @@ class Ustvnow:
         #response = opener.open(url)
         for cookie in self.cj:
             if cookie.name == 'token':
-                # print '%s: %s' % (cookie.name, cookie.value)
+                # #print '%s: %s' % (cookie.name, cookie.value)
                 return cookie.value
         return False
     
@@ -368,7 +399,7 @@ class Ustvnow:
                                                'password': self.password})
         response = self._fetch(url)
         for cookie in self.cj:
-            # print '%s: %s' % (cookie.name, cookie.value)
+            # #print '%s: %s' % (cookie.name, cookie.value)
             if cookie.name == 'token':
                 return cookie.value
         return False

@@ -1,3 +1,8 @@
+[B]Version 12.0.7[/B]
+- High quality Channel logos
+- "NEW" code exclusive features:
+    - Record folder fixed, Favorites still experimental. 
+
 [B]Version 12.0.5[/B]
 - "NEW" code exclusive features:
     - Standard and IPTVsimple M3U generator
