@@ -1,4 +1,5 @@
 [*] Tweaked LowPower profiles, users need to set "Device Type".
+[*] Fixed backup restore Utilitie
 [*] [COLOR=blue][B]^ v.0.6.9 ^[/B][/COLOR]
 [*] Tweaked RSS parsing and In-App Channel Manager.
 [*] Peformance optimizations and Fixed "Coming Up Next" Popup.

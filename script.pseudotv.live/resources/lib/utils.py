@@ -1566,9 +1566,7 @@ def chkLowPower():
             REAL_SETTINGS.setSetting('EnhancedGuideData', "false")
             REAL_SETTINGS.setSetting('sickbeard.enabled', "false")
             REAL_SETTINGS.setSetting('couchpotato.enabled', "false")
-            if MEDIA_LIMIT > 50:
-                MEDIA_LIMIT = 50
-                REAL_SETTINGS.setSetting('MEDIA_LIMIT', "1")
+            REAL_SETTINGS.setSetting('MEDIA_LIMIT', "1")
             if NOTIFY == True:
                 xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Settings Optimized For Performance", 4000, THUMB) )
     else:

@@ -3268,14 +3268,12 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
     
     
     def playsetresolved(self, url):
-        self.logDebug('playsetresolved')
-        if url.startswith('PlayMedia'):
-            url = ('PlayMedia('+url+')')
-            xbmc.executebuiltin(tidy(url).replace(',', ''))    
-        elif url.startswith(('plugin','http','rtmp','rtsp')):
+        self.logDebug('playsetresolved') 
+        if url.startswith('plugin'):
             if not url.startswith('PlayMedia'):
                 url = ('PlayMedia('+url+')')
-            xbmc.executebuiltin(tidy(url).replace(',', ''))    
+            xbmc.executebuiltin(tidy(url).replace(',', ''))   
+        # elif url.startswith(('plugin','http','rtmp','rtsp')):
             # item = xbmcgui.ListItem(path=url)    
             # item.setInfo(type='Video', infoLabels={'Title':getProperty("OVERLAY.Title")})
             # item.setProperty("IsPlayable","true")
