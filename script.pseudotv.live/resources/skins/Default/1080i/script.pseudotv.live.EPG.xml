@@ -5,6 +5,7 @@
     <onunload>ActivateWindow(12005)</onunload>
     <onload>SetProperty(PTVL.EPG_Opened,true,10000)</onload>
     <onunload>SetProperty(PTVL.EPG_Opened,false,10000)</onunload>
+    <!-- <onload condition="System.HasAddon(script.tv.show.next.aired)">RunScript(script.tv.show.next.aired,backend=True)</onload> -->
     <zorder>1</zorder>
     <coordinates>
         <system>1</system>

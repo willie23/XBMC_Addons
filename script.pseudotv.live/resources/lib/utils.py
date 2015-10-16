@@ -958,42 +958,35 @@ def getPlatform():
     
 def chkPlatform():
     log("utils: chkPlatform")
-    if xbmc.getCondVisibility('System.Platform.OSX'):
-        return "OSX"
-    elif xbmc.getCondVisibility('System.Platform.ATV2'):
-        REAL_SETTINGS.setSetting('os', "4")
-        return "ATV2"
+    if xbmc.getCondVisibility('System.Platform.ATV2'):
+        REAL_SETTINGS.setSetting('platform', "1")
+        return "ATV"
     elif xbmc.getCondVisibility('System.Platform.IOS'):
-        REAL_SETTINGS.setSetting('os', "5")
+        REAL_SETTINGS.setSetting('platform', "2")
         return "iOS"
-    elif xbmc.getCondVisibility('System.Platform.Windows'):
-        REAL_SETTINGS.setSetting('os', "11")
-        return "Windows"
-    elif xbmc.getCondVisibility('System.Platform.Darwin'):
-        return "Darwin"
-    elif xbmc.getCondVisibility('System.Platform.Linux'):
-        return "Linux"
     elif xbmc.getCondVisibility('System.Platform.Xbox'):
-        return "Linux"
+        REAL_SETTINGS.setSetting('platform', "5")
+        return "XBOX"
     elif xbmc.getCondVisibility('System.Platform.Linux.RaspberryPi'): 
-        REAL_SETTINGS.setSetting('os', "10")
+        REAL_SETTINGS.setSetting('platform', "4")
         return "rPi"
     elif xbmc.getCondVisibility('System.Platform.Android'): 
+        REAL_SETTINGS.setSetting('platform', "0")
         return "Android"
-    elif REAL_SETTINGS.getSetting("os") in ['0','1']: 
+    elif REAL_SETTINGS.getSetting("platform") == '0': 
         return "Android"
-    elif REAL_SETTINGS.getSetting("os") in ['2','3','4']: 
-        return "ATV2"
-    elif REAL_SETTINGS.getSetting("os") == "5": 
+    elif REAL_SETTINGS.getSetting("platform") == '1': 
+        return "ATV"
+    elif REAL_SETTINGS.getSetting("platform") == "2": 
         return "iOS"
-    elif REAL_SETTINGS.getSetting("os") in ['6','7']: 
-        return "Linux"
-    elif REAL_SETTINGS.getSetting("os") in ['8','9']: 
-        return "OSX"
-    elif REAL_SETTINGS.getSetting("os") == "10": 
+    elif REAL_SETTINGS.getSetting("platform") == "3": 
+        return "PowerPC"
+    elif REAL_SETTINGS.getSetting("platform") == "4": 
         return "rPi"
-    elif REAL_SETTINGS.getSetting("os") == "11": 
-        return "Windows"
+    elif REAL_SETTINGS.getSetting("platform") in ["5","7"]: 
+        return "APU"
+    elif REAL_SETTINGS.getSetting("platform") in ["6","8"]: 
+        return "Pro"
     return "Unknown"
      
 #####################
@@ -1556,14 +1549,11 @@ def chkChanges():
 def chkLowPower(): 
     setProperty("PTVL.LOWPOWER","false") 
     if REAL_SETTINGS.getSetting("Override.LOWPOWER") == "false":
-        if getPlatform() in ['ATV2','iOS','rPi','Android']:
+        if getPlatform() in ['PowerPC','ATV','iOS','XBOX','rPi','Android','APU']:
             setProperty("PTVL.LOWPOWER","true") 
             REAL_SETTINGS.setSetting('AT_LIMIT', "0")
             REAL_SETTINGS.setSetting('ThreadMode', "2")
             REAL_SETTINGS.setSetting('EPG.xInfo', "false")
-            REAL_SETTINGS.setSetting('UPNP1', "false")
-            REAL_SETTINGS.setSetting('UPNP2', "false")
-            REAL_SETTINGS.setSetting('UPNP3', "false")
             REAL_SETTINGS.setSetting('HideClips', "false")
             REAL_SETTINGS.setSetting('EPGTextEnable', "1")
             REAL_SETTINGS.setSetting('quickflip', "false")
@@ -1576,10 +1566,13 @@ def chkLowPower():
             REAL_SETTINGS.setSetting('EnhancedGuideData', "false")
             REAL_SETTINGS.setSetting('sickbeard.enabled', "false")
             REAL_SETTINGS.setSetting('couchpotato.enabled', "false")
-            if MEDIA_LIMIT > 250:
-                REAL_SETTINGS.setSetting('MEDIA_LIMIT', "3")
+            if MEDIA_LIMIT > 50:
+                MEDIA_LIMIT = 50
+                REAL_SETTINGS.setSetting('MEDIA_LIMIT', "1")
             if NOTIFY == True:
                 xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Settings Optimized For Performance", 4000, THUMB) )
+    else:
+        log("utils: chkLowPower Override = True")
     log("utils: chkLowPower = " + getProperty("PTVL.LOWPOWER"))
 
 def isLowPower():
@@ -1652,15 +1645,16 @@ def restoreSettings2():
     dirs,files = xbmcvfs.listdir(BACKUP_LOC)
     dir,file = xbmcvfs.listdir(XMLTV_LOC)
     backuplist = [s.replace('.xml','') for s in files if s.endswith('.xml')]
-    if len(backuplist) == 0:
-        xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "No Backups found", 1000, THUMB) )
-        return
-    select = selectDialog(backuplist, 'Select backup to restore')   
-    if select != -1:
-        if dlg.yesno("PseudoTV Live", 'Restoring will remove current channel configurations, Are you sure?'):                        
-            Restore(((backuplist[select])+'.xml'), SETTINGS_FLE)
-            xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Restore Complete", 1000, THUMB) )
-
+    if backuplist and len(backuplist) > 0:
+        backuplist.reverse()
+        select = selectDialog(backuplist, 'Select backup to restore')   
+        if select != -1:
+            if dlg.yesno("PseudoTV Live", 'Restoring will remove current channel configurations, Are you sure?'):                        
+                Restore(os.path.join(BACKUP_LOC,(backuplist[select]+'.xml')), SETTINGS_FLE)
+                xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Restore Complete", 1000, THUMB) )
+    else:
+        return xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "No Backups found", 1000, THUMB) )
+        
 def purgeSettings2():
     log('utils: purgeSettings2')
     if dlg.yesno("PseudoTV Live", 'Are you sure you want to remove all previous backups?'):       
@@ -2004,11 +1998,22 @@ def purgeGarbage():
         # log("utils: purgeGarbage, Garbage collection thresholds: %s" % (str(threshold)))
         collected = gc.collect()
         log("utils: purgeGarbage, Garbage collector: collected %d objects." % (collected))
-        log("utils: purgeGarbage, Cleaning...")
+        log("utils: purgeGarbage, Garbage collector: Cleaning")
         gc.collect()
-        log("utils: purgeGarbage, Finished!")
+        collected = gc.collect()
+        log("utils: purgeGarbage, Garbage collector: %d objects left." % (collected))
+        log("utils: purgeGarbage, Garbage collector: Finished")
     except Exception,e:
         log("purgeGarbage Failed!" + str(e))
         
 def isScanningVideo():
-    return bool(xbmc.getCondVisibility("Library.IsScanningVideo"))
+    return xbmc.getCondVisibility("Library.IsScanningVideo")
+    
+def isScanningMusic():
+    return xbmc.getCondVisibility("Library.IsScanningMusic")
+    
+def updateLibrary(type='video', path=''):
+    xbmc.executebuiltin('UpdateLibrary(%s,[%s])' %(type, path))
+    
+def isBackgroundLoading():
+    return getProperty("PTVL.BackgroundLoading") == 'true'

@@ -1,12 +1,13 @@
 <window>
     <allowoverlay>yes</allowoverlay>
     <onload>SetProperty(OVERLAY.type1,landscape,10000)</onload><!-- label 508 artwork -->
+    <onload>SetProperty(OVERLAY.type1,landscape,10000)</onload><!-- label 508 artwork -->
     <onload>SetProperty(OVERLAY.type2,poster,10000)</onload><!-- label 510 artwork -->
     <onload>SetProperty(OVERLAY.type3,landscape,10000)</onload><!-- onnow artwork -->
     <onload>SetProperty(OVERLAY.type4,landscape,10000)</onload><!-- coming up next artwork -->
     <onload>SetProperty(EPG.type1,landscape,10000)</onload><!-- epg label 508 artwork -->
     <onload>SetProperty(EPG.type2,poster,10000)</onload><!-- epg label 510 artwork -->
-    <onload>SetProperty(EPG.rowCount,6,10000)</onload><!-- epg row count -->
+    <onload>SetProperty(EPG.rowCount,6,10000)</onload><!-- epg row count --> 
     <coordinates>
         <system>1</system>
         <posx>0</posx>
@@ -385,12 +386,12 @@
                         <height>30</height>
                         <fadetime>250</fadetime>
                         <textcolor>FFFFFFFF</textcolor>
-                <shadowcolor>ff000000</shadowcolor>
+                        <shadowcolor>ff000000</shadowcolor>
                         <font>font12</font>
                         <align>left</align>
                         <aligny>center</aligny>
                         <label fallback="">$INFO[System.Time, Time: ] $INFO[Player.StartTime, Started: ]</label>
-                        <visible>False</visible>
+                        <visible>Player.HasDuration</visible>
                     </control> 
                     <control type="label" id="516">
                         <description>Seekbar Elapsed Time Button</description>
@@ -398,11 +399,12 @@
                         <height>30</height>
                         <fadetime>250</fadetime>
                         <textcolor>FFFFFFFF</textcolor>
-                <shadowcolor>ff000000</shadowcolor>
+                        <shadowcolor>ff000000</shadowcolor>
                         <font>font12</font>
                         <align>left</align>
                         <aligny>center</aligny>
                         <label>$INFO[Player.TimeRemaining,Remaining: ] / $INFO[Player.Time,Elapsed: ]</label>
+                        <visible>Player.HasDuration</visible>
                     </control>  
                     <control type="label" id="518">"
                         <description>Seekbar time</description>
@@ -410,11 +412,12 @@
                         <height>30</height>
                         <fadetime>250</fadetime>
                         <textcolor>FFFFFFFF</textcolor>
-                <shadowcolor>ff000000</shadowcolor>
+                        <shadowcolor>ff000000</shadowcolor>
                         <font>font12</font>
                         <align>right</align>
                         <aligny>center</aligny>
                         <label>$INFO[Player.Duration, Duration: ] / $INFO[Player.FinishTime(hh:mm xx), Finished: ]</label>
+                        <visible>Player.HasDuration</visible>
                     </control> 
                 </control> 
             </control>  

@@ -1028,6 +1028,7 @@ class InterleaveChannel(BaseRule):
             
             realindex = random.randint(minint, maxint)
             startindex = 0
+            
             # Use more memory, but greatly speed up the process by just putting everything into a new list
             newfilelist = []
             self.log("Length of original list: " + str(len(filelist)))

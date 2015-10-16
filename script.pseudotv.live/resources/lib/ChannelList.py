@@ -325,6 +325,10 @@ class ChannelList:
                     if self.channelResetSetting > 0 and self.channelResetSetting < 4:
                         timedif = time.time() - self.lastResetTime
 
+                        # reset livetv after two days
+                        if chtype == 8 and timedif < (60 * 60 * 24 * 2):
+                            createlist = False
+                        
                         if self.channelResetSetting == 1 and timedif < (60 * 60 * 24):
                             createlist = False
 
@@ -541,7 +545,6 @@ class ChannelList:
     # Based on a smart playlist, create a normal playlist that can actually be used by us
     def makeChannelList(self, channel, chtype, setting1, setting2, setting3, setting4, append = False):
         self.log('makeChannelList, CHANNEL: ' + str(channel))
-        setProperty("PTVL.BackgroundLoading_Finished","false")
         fileListCHK = False
         israndom = False  
         isreverse = False
@@ -552,14 +555,16 @@ class ChannelList:
         if chtype in [7,10,11,15,16] and setting3 and len(setting3) > 0:
             try:
                 limit = int(setting3)
-            except:
+                if isLowPower() == True:
+                    raise Exception()
+            except Exception,e:
                 limit = MEDIA_LIMIT
             if limit == 0:
                 limit = 10000
             self.log("makeChannelList, Overriding Global Parse-limit to " + str(limit))
         else:
             if chtype == 8:
-                limit = 172800
+                limit = 259200
             elif chtype == 9:
                 limit = 24
             elif MEDIA_LIMIT == 0:
@@ -3388,14 +3393,7 @@ class ChannelList:
         CommercialLST = []
         duration = 0
         channel = self.settingChannel
-        
-        if MEDIA_LIMIT == 0 or MEDIA_LIMIT > 200:
-            limit = 200
-        elif MEDIA_LIMIT < 25:
-            limit = 25
-        else:
-            limit = MEDIA_LIMIT
-            
+
         #Youtube - As Seen On TV
         if REAL_SETTINGS.getSetting('AsSeenOn') == 'true' and CommercialsType != '0':
             self.log("getCommercialList, AsSeenOn")
@@ -3461,7 +3459,7 @@ class ChannelList:
                 setting2 = YoutubeCommercial[1]
                 setting3 = YoutubeCommercial[2]
                 setting4 = YoutubeCommercial[3]
-                YoutubeLST = self.createYoutubeFilelist(setting1, setting2, setting3, setting4, limit)
+                YoutubeLST = self.createYoutubeFilelist(setting1, setting2, setting3, setting4, 200)
                 
                 for i in range(len(YoutubeLST)):    
                     if self.background == False:
