@@ -33,10 +33,7 @@ quality_type = int(Addon.get_setting('quality'))
 dlg = xbmcgui.Dialog()
 addon = xbmcaddon.Addon(id='plugin.video.ustvnow')
 plugin_path = addon.getAddonInfo('path')
-
-write_path = Addon.get_setting('write_folder')    
-if not write_path:
-    Addon.set_setting('write_folder', xbmc.translatePath('special://userdata/plugin.video.ustvnow/'))
+write_path = xbmc.translatePath(Addon.get_setting('write_folder'))
 
 if Addon.get_setting('version') == '0':
     from resources.lib import ustvnow_new
@@ -153,6 +150,7 @@ elif mode == 'tvguide':
         listings = ustv.get_tvguide(fpath, 'programs', name)
         if listings:
             for l in range(len(listings)):
+                print listings[l]
                 rURL = "plugin://plugin.video.ustvnow/?name="+listings[l][0]+"&mode=play"
                 Addon.add_video_item(rURL,
                                      {'title': '%s - %s' % (listings[l][1], 
@@ -164,7 +162,6 @@ elif mode == 'tvguide':
             listings = ustv.get_tvguide(fpath)
             if listings:
                 for l in range(len(listings)):
-                    # #print listings[l]
                     url = "plugin://plugin.video.ustvnow/?name="+listings[l]+"&mode=tvguide"
                     Addon.log('adding dir: %s' % (listings[l]))
                     img = xbmc.translatePath(os.path.join(plugin_path, 'resources', 'images', listings[l])+'.png')

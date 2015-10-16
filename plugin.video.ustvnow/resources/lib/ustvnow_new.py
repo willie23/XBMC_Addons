@@ -191,11 +191,11 @@ class Ustvnow:
             c_entry.setAttribute("id", id);
             base.appendChild(c_entry)
             dn_entry = doc.createElement('display-name');
-            dn_entry_content = doc.createTextNode(name);
+            dn_entry_content = doc.createTextNode(Addon.cleanChanName(name));
             dn_entry.appendChild(dn_entry_content);
             c_entry.appendChild(dn_entry);
             dn_entry = doc.createElement('display-name');
-            dn_entry_content = doc.createTextNode(id);
+            dn_entry_content = doc.createTextNode(Addon.cleanChanName(id));
             dn_entry.appendChild(dn_entry_content);
             c_entry.appendChild(dn_entry);
             icon_entry = doc.createElement('icon');
@@ -361,12 +361,10 @@ class Ustvnow:
             if force == True:
                 cache.delete("%")
             result = self.cache.cacheFunction(self._login_NEW)
-        except:
-            result = self._login_NEW()
-        if not result:
-            result = self._login_NEW()
-        if not result:
-            result = self._login_NEW_ALT()
+            if not result:
+                raise Exception()
+        except Exception,e:
+            result = self.cache.cacheFunction(self._login_NEW_ALT)
         if not result:
             self.dlg.ok("USTVnow", "Connection FAILED!", "Please check your login credentials and try again later...")
         return result  

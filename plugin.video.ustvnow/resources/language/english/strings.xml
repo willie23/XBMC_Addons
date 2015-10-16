@@ -13,9 +13,7 @@
     <string id="30102">Email</string>
     <string id="30103">Password</string>
     <string id="30104">Premium Subscription</string>
-    <string id="30105">Code type</string> 
-    <string id="30106">File folder</string> 
-    <string id="30107">Enable files</string> 
-    <string id="30108">Update files every</string> 
-    <string id="30109">File type</string> 
+    <string id="30105">Use Which Code?</string> 
+    <string id="30106">Strm/M3U/XMLTV File Path</string> 
+    <string id="30109">Enable Which File Generator?</string> 
 </strings>

@@ -26,7 +26,7 @@ plugin_path = addon.getAddonInfo('path')
 THUMB = os.path.join(plugin_path,'icon.png')
 
 while (not xbmc.abortRequested):
-    if int(Addon.get_setting('write_type')) != 0:
+    if int(Addon.get_setting('version')) == 0 and int(Addon.get_setting('write_type')) != 0:
         if int(Addon.get_setting('write_type')) in [2,3]:
             MSG = 'M3U'
         else:
@@ -51,4 +51,4 @@ while (not xbmc.abortRequested):
             xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("USTVnow", "%s/XMLTV Updated" %MSG, 1000, THUMB) )
         Update_NextRun = ((now + datetime.timedelta(hours=6)).strftime("%Y-%m-%d %H:%M:%S.%f"))
         Addon.set_setting('Update_NextRun', str(Update_NextRun))
-        xbmc.sleep(150000)
+    xbmc.sleep(150000)

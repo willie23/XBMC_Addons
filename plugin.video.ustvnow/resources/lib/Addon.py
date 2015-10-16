@@ -47,7 +47,7 @@ def ascii(string):
 def cleanChanName(string):
     string = string.strip()
     string = string.replace('WLYH','CW').replace('WHTM','ABC').replace('WPMT','FOX').replace('WPSU','PBS').replace('WHP','CBS').replace('WGAL','NBC').replace('WHVLLD','MY9').replace('AETV','AE')
-    string = string.replace('APL','Animal Planet').replace('TOON','Cartoon Network').replace('DSC','Discovery').replace('Discovery ','Discovery').replace('BRAVO','Bravo').replace('SYFY','Syfy').replace('HISTORY','History')
+    string = string.replace('APL','Animal Planet').replace('TOON','Cartoon Network').replace('DSC','Discovery').replace('Discovery ','Discovery').replace('BRAVO','Bravo').replace('SYFY','Syfy').replace('HISTORY','History').replace('NATIONAL GEOGRAPHIC','National Geographic')
     string = string.replace('COMEDY','Comedy Central').replace('FOOD','Food Network').replace('NIK','Nickelodeon').replace('LIFE','Lifetime').replace('SPIKETV','SPIKE TV').replace('FNC','Fox News').replace('NGC','National Geographic').replace('Channel','')
     return cleanChannel(string)
           
@@ -121,7 +121,7 @@ def readXMLTV(filename, type='channels', name=''):
                         startDate = parseXMLTVDate(elem.get('start'), 0)
                         #print stopDate, startDate, now
                         if (((now > startDate and now <= stopDate) or (now < startDate))):
-                            cached_readXMLTV.append([channel, startDate, showtitle, description, subtitle, genre, icon])
+                            cached_readXMLTV.append([cleanChanName(channel), startDate, showtitle, description, subtitle, genre, icon])
     if type == 'channels':
         return channels
     elif type == 'programs':
@@ -146,7 +146,7 @@ def parseXMLTVDate(dateString, offset=0):
         
 def makeM3U(links):
     log('makeM3U')
-    STRM_CACHE_LOC = get_setting('write_folder')
+    STRM_CACHE_LOC = xbmc.translatePath(get_setting('write_folder'))
     if not xbmcvfs.exists(STRM_CACHE_LOC):
         xbmcvfs.mkdir(STRM_CACHE_LOC)
     flepath = os.path.join(STRM_CACHE_LOC,'ustvnow.m3u')
@@ -168,7 +168,7 @@ def makeM3U(links):
                     
 def makeSTRM(name, link):  
     log('makeSTRM')
-    STRM_CACHE_LOC = get_setting('write_folder')
+    STRM_CACHE_LOC = xbmc.translatePath(get_setting('write_folder'))
     try:
         if not xbmcvfs.exists(STRM_CACHE_LOC):
             xbmcvfs.mkdir(STRM_CACHE_LOC)
