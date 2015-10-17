@@ -357,21 +357,23 @@ class Ustvnow:
                 
     def _login(self, force=False):
         Addon.log('_login')
+        result = ''
+        if force == True:
+            self.cache.delete("%")
         try:
-            if force == True:
-                cache.delete("%")
             result = self.cache.cacheFunction(self._login_NEW)
             if not result:
                 raise Exception()
         except Exception,e:
+            Addon.log('_login_NEW, Failed!')
             result = self.cache.cacheFunction(self._login_NEW_ALT)
         if not result:
             self.dlg.ok("USTVnow", "Connection FAILED!", "Please check your login credentials and try again later...")
         return result  
         
         
-    def _login_NEW(self):
-        Addon.log('_login_NEW')
+    def _login_NEW_ALT(self):
+        Addon.log('_login_NEW_ALT')
         self.cj = cookielib.CookieJar()
         opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cj)) 
         urllib2.install_opener(opener)
@@ -388,8 +390,8 @@ class Ustvnow:
         return False
     
     
-    def _login_NEW_ALT(self):
-        Addon.log('_login_NEW_ALT')
+    def _login_NEW(self):
+        Addon.log('_login_NEW')
         self.cj = cookielib.CookieJar()
         opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cj))
         urllib2.install_opener(opener)
