@@ -1278,31 +1278,14 @@ def VideoWindow():
             if FileAccess.exists(VWPath):
                 setProperty("PTVL.VideoWindow","true")
     except Exception:
-        VideoWindowUninstall()
-        VideoWindowUnpatch()
+        VideoWindowPatch() 
+        VideoWindowUninstall()  
         Error = True
         pass
     
 def VideoWindowPatch():
     log("utils: VideoWindowPatch")
     try:
-        # for n in range(len(PTVL_SKIN_WINDOW_FLE)):
-            # PTVL_SKIN_SELECT_FLE = xbmc.translatePath(os.path.join(PTVL_SKIN_SELECT, PTVL_SKIN_WINDOW_FLE[n]))
-            # log('utils: VideoWindowPatch Patching ' + ascii(PTVL_SKIN_SELECT_FLE))
-            # #Patch Videowindow, by un-commenting code in epg.xml 
-            # f = FileAccess.open(PTVL_SKIN_SELECT_FLE, "r")
-            # linesLST = f.readlines()  
-            # f.close()
-            
-            # for i in range(len(linesLST)):
-                # line = (linesLST[i]).replace('\n','').replace('\t','').replace('\r','')
-                # if line == b:
-                    # replaceAll(PTVL_SKIN_SELECT_FLE,b,a)        
-                    # log('utils: '+PTVL_SKIN_WINDOW_FLE[n]+' Patched b,a')
-                # elif line == d:
-                    # replaceAll(PTVL_SKIN_SELECT_FLE,d,c)           
-                    # log('utils: '+PTVL_SKIN_WINDOW_FLE[n]+' Patched d,c') 
-                    
         #Patch dialogseekbar to ignore OSD for PTVL.
         log('utils: VideoWindowPatch Patching ' + ascii(DSPath))
         f = FileAccess.open(DSPath, "r")
@@ -1329,21 +1312,6 @@ def VideoWindowPatch():
 def VideoWindowUnpatch():
     log("utils: VideoWindowUnpatch")
     try:
-        # for n in range(len(PTVL_SKIN_WINDOW_FLE)):
-            # PTVL_SKIN_SELECT_FLE = xbmc.translatePath(os.path.join(PTVL_SKIN_SELECT, PTVL_SKIN_WINDOW_FLE[n]))
-            # #unpatch videowindow
-            # f = FileAccess.open(PTVL_SKIN_SELECT_FLE, "r")
-            # linesLST = f.readlines()    
-            # f.close()
-            # for i in range(len(linesLST)):
-                # line = (linesLST[i]).replace('\n','').replace('\t','').replace('\r','')
-                # if line == a:
-                    # replaceAll(PTVL_SKIN_SELECT_FLE,a,b)
-                    # log('utils: '+PTVL_SKIN_WINDOW_FLE[n]+' UnPatched a,b')
-                # elif line == c:
-                    # replaceAll(PTVL_SKIN_SELECT_FLE,c,d)          
-                    # log('utils: '+PTVL_SKIN_WINDOW_FLE[n]+' UnPatched c,d')
-                
         #unpatch seekbar
         f = FileAccess.open(DSPath, "r")
         lineLST = f.readlines()            

@@ -43,7 +43,7 @@ class VideoParser:
     def log(self, msg, level = xbmc.LOGDEBUG):
         log('VideoParser: ' + msg, level)
 
-
+        
     def getVideoLength(self, filename):
         self.log("getVideoLength, " + filename)
         if len(filename) == 0:

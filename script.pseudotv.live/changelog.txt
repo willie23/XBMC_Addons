@@ -1,3 +1,4 @@
+[*] Tweaked not playing detection, and Force Stop trigger.
 [*] Tweaked LowPower profiles, users need to set "Device Type".
 [*] Fixed backup restore Utilitie
 [*] [COLOR=blue][B]^ v.0.6.9 ^[/B][/COLOR]

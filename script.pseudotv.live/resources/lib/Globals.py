@@ -203,7 +203,6 @@ NOTIFY = REAL_SETTINGS.getSetting('notify') == "true"
 SILENT = REAL_SETTINGS.getSetting('silent')
 DEBUG = REAL_SETTINGS.getSetting('enable_Debug')   
 SETTOP = REAL_SETTINGS.getSetting("EnableSettop") == "true"
-OS_SET = int(REAL_SETTINGS.getSetting("os"))   
 ENHANCED_DATA = REAL_SETTINGS.getSetting('EnhancedGuideData') == 'true'
 FILELIST_LIMIT = [4096,8192,16384]
 
