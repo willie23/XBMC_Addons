@@ -31,12 +31,12 @@ from BeautifulSoup import BeautifulStoneSoup, BeautifulSoup, BeautifulSOAP
 
 addon = xbmcaddon.Addon('plugin.video.pseudo.library')
 addon_version = addon.getAddonInfo('version')
+ADDON_NAME = addon.getAddonInfo('name')
 profile = xbmc.translatePath(addon.getAddonInfo('profile').decode('utf-8'))
 home = xbmc.translatePath(addon.getAddonInfo('path').decode('utf-8'))
 favorites = os.path.join(profile, 'favorites')
 history = os.path.join(profile, 'history')
 
-REV = os.path.join(profile, 'list_revision')
 icon = os.path.join(home, 'icon.png')
 FANART = os.path.join(home, 'fanart.jpg')
 source_file = os.path.join(home, 'source_file')
@@ -51,6 +51,7 @@ if os.path.exists(favorites)==True:
     FAV = open(favorites).read()
 else: FAV = []
 
+DIRS = []
 STRM_LOC = xbmc.translatePath(addon.getSetting('STRM_LOC'))
 
 def addon_log(string):
@@ -114,7 +115,7 @@ def cleanLabels( text, format=''):
     text = text.replace("//",'/')
     text = text.replace('plugin.video.','')
     text = text.replace('plugin.audio.','')
-
+    text = re.sub('[\/:*?<>|!@#$/:]', '', text)
     if format == 'title':
         text = text.title().replace("'S","'s")
     elif format == 'upper':
@@ -127,6 +128,19 @@ def cleanLabels( text, format=''):
     text = uni(text.strip())
     return text
 
+def cleanStrms( text, format=''):
+    text = uni(text)
+    text = text.replace('Full Episodes', '')
+    if format == 'title':
+        text = text.title().replace("'S","'s")
+    elif format == 'upper':
+        text = text.upper()
+    elif format == 'lower':
+        text = text.lower()
+    else:
+        text = text
+    return text
+    
 def ascii(string):
     if isinstance(string, basestring):
         if isinstance(string, unicode):
@@ -161,12 +175,12 @@ def requestList(path, fletype='video'):
     json_folder_detail = sendJSON(json_query)
     return re.compile( "{(.*?)}", re.DOTALL ).findall(json_folder_detail)      
    
-def fillPluginItems(url, type='video', file=False, strm=False):
+def fillPluginItems(url, media_type='video', file_type=False, strm=False, strm_name='', strm_type='Other'):
     addon_log('fillPluginItems')
-    if not file:
-        detail = uni(requestList(url, type))
+    if not file_type:
+        detail = uni(requestList(url, media_type))
     else:
-        detail = uni(requestItem(url, type))
+        detail = uni(requestItem(url, media_type))
     for f in detail:
         files = re.search('"file" *: *"(.*?)",', f)
         filetypes = re.search('"filetype" *: *"(.*?)",', f)
@@ -187,21 +201,30 @@ def fillPluginItems(url, type='video', file=False, strm=False):
                 
             thumbnail = removeNonAscii(thumbnails.group(1))
             fanart = removeNonAscii(fanarts.group(1))
-        
+            
+            if addon.getSetting('Link_Type') == '0':
+                link = sys.argv[0]+"?url="+urllib.quote_plus(file)+"&mode="+str(10)+"&name="+urllib.quote_plus(label)+"&fanart="+urllib.quote_plus(fanart)
+            else:
+                link = file
+            
+            if strm_type in ['TV','Episodes']:
+                path = os.path.join('TV',strm_name)
+                filename = strm_name + ' - ' + label
+                print path, filename
+                
             if filetype == 'file':
                 if strm:
-                    writeSTRM(label,file)
+                    writeSTRM(cleanStrms(path), cleanStrms(filename) ,link)
                 else:
                     addLink(label,file,10,thumbnail,fanart,description,'','','',None,'',total=len(detail))
                     #xbmc.executebuiltin("Container.SetViewMode(500)")
-
             else:
                 if strm:
-                    writeSTRM(label,file)
+                    fillPluginItems(file, media_type, file_type, strm, label, strm_type)
                 else:
                     addDir(label,file,101,thumbnail,fanart,description,'','','')
                     #xbmc.executebuiltin("Container.SetViewMode(500)")    
-                
+        
 def fillPlugins(type='video'):
     addon_log('fillPlugins, type = ' + type)
     json_query = ('{"jsonrpc":"2.0","method":"Addons.GetAddons","params":{"type":"xbmc.addon.%s","properties":["name","path","thumbnail","description","fanart","summary"]}, "id": 1 }'%type)
@@ -229,8 +252,10 @@ def fillPlugins(type='video'):
 
 def getSources():
     addon_log('getSources')
-    addDir('Video Plugins','url',1,icon,FANART,'description','genre','date','credits')
-    addDir('Music Plugins','url',2,icon,FANART,'description','genre','date','credits')
+    addDir('Video Plugins','video',1,icon,FANART,'description','genre','date','credits')
+    addDir('Music Plugins','music',1,icon,FANART,'description','genre','date','credits')
+    addDir('UPNP Servers','upnp://',2,icon,FANART,'description','genre','date','credits')
+    addDir('PVR Backend','pvr://',2,icon,FANART,'description','genre','date','credits')
 
 def getData(url,fanart):
     addon_log('getData, url = ' + type)
@@ -275,12 +300,18 @@ def addLink(name,url,mode,iconimage,fanart,description,genre,date,showcontext,pl
         
 def getCommunitySources(browse=False):
     addon_log('getCommunitySources')
- 
+    
+def removeStringElem(lst,string=''):
+    return ([x for x in lst if x != string])
+    
+def replaceStringElem(lst,old='',new=''):
+    return ([x.replace(old,new) for x in lst])
+    
 def makeSTRM(filepath, filename, url):
     addon_log('makeSTRM')
     filepath = os.path.join(STRM_LOC, filepath)
-    if not xbmcvfs.exists(filepath):
-        xbmcvfs.mkdir(filepath)
+    if not xbmcvfs.exists(filepath): 
+        xbmcvfs.mkdirs(filepath)
     fullpath = os.path.join(filepath, filename + '.strm')
     if xbmcvfs.exists(fullpath):
         if addon.getSetting('Clear_Strms') == 'true':
@@ -293,10 +324,47 @@ def makeSTRM(filepath, filename, url):
         fle.close()
         return fullpath
         
-def writeSTRM(name, url):
+def writeSTRM(path, file, url):
     addon_log('writeSTRM')
-    makeSTRM(name, name, url)
+    makeSTRM(path, file, url)
           
+def writeSettings2(url, type='Other'):
+    addon_log('writeSettings2')
+    thelist = []
+    thefile = xbmc.translatePath(os.path.join(profile,'settings2.xml'))
+    theentry = '|'.join([type,url])+'\n'
+    
+    if xbmcvfs.exists(thefile):
+        fle = open(thefile, "r")
+        thelist = fle.readlines()
+        fle.close()
+        
+    if theentry not in thelist:
+        thelist.append(theentry)
+    else:
+        thelist = replaceStringElem(thelist, theentry, theentry)
+        
+    try:
+        fle = open(thefile, "w")
+        fle.writelines(thelist)
+        fle.close()
+    except Exception,e:
+        addon_log("writeSettings2, Failed " + str(e))
+          
+def isSettings2(url, type='Other'):
+    addon_log('isSettings2')
+    # parse settings2 for url return bool if found
+    
+def removeSettings2(url, type='Other'):       
+    addon_log('removeSettings2')
+    # parse settings2 for url remove entry
+    
+def getType():
+    Types = ['TV','Episodes','Movies','Other']
+    select = selectDialog(Types)
+    if select >= 0:
+        return Types[select]
+    
 def getURL(par):
     try:
         # if par.startswith('?url=plugin://plugin.video.pseudo.library/')
@@ -307,7 +375,67 @@ def getURL(par):
     except:
         url = None
     return url
-    
+     
+##################
+# GUI Tools #
+##################
+
+def handle_wait(time_to_wait,header,title): #*Thanks enen92
+    dlg = xbmcgui.DialogProgress()
+    dlg.create("PseudoTV Live", header)
+    secs=0
+    percent=0
+    increment = int(100 / time_to_wait)
+    cancelled = False
+    while secs < time_to_wait:
+        secs += 1
+        percent = increment*secs
+        secs_left = str((time_to_wait - secs))
+        remaining_display = "Starts In " + str(secs_left) + " seconds, Cancel Channel Change?" 
+        dlg.update(percent,title,remaining_display)
+        xbmc.sleep(1000)
+        if (dlg.iscanceled()):
+            cancelled = True
+            break
+    if cancelled == True:
+        return False
+    else:
+        dlg.close()
+        return True
+
+def show_busy_dialog():
+    xbmc.executebuiltin('ActivateWindow(busydialog)')
+
+def hide_busy_dialog():
+    xbmc.executebuiltin('Dialog.Close(busydialog)')
+    while xbmc.getCondVisibility('Window.IsActive(busydialog)'):
+        time.sleep(.1)
+        
+def Error(header, line1= '', line2= '', line3= ''):
+    dlg = xbmcgui.Dialog()
+    dlg.ok(header, line1, line2, line3)
+    del dlg
+
+def infoDialog(str, header=ADDON_NAME, time=4000):
+    try: xbmcgui.Dialog().notification(header, str, THUMB, time, sound=False)
+    except: xbmc.executebuiltin("Notification(%s,%s, %s, %s)" % (header, str, time, THUMB))
+
+def okDialog(str1, str2='', header=ADDON_NAME):
+    xbmcgui.Dialog().ok(header, str1, str2)
+
+def selectDialog(list, header=ADDON_NAME, autoclose=0):
+    if len(list) > 0:
+        select = xbmcgui.Dialog().select(header, list, autoclose)
+        return select
+
+def yesnoDialog(str1, str2='', header=ADDON_NAME, yes='', no=''):
+    answer = xbmcgui.Dialog().yesno(header, str1, str2, '', yes, no)
+    return answer
+     
+def browse(type, heading, shares, mask='', useThumbs=False, treatAsFolder=False, path='', enableMultiple=False):
+    retval = xbmcgui.Dialog().browse(type, heading, shares, mask, useThumbs, treatAsFolder, path, enableMultiple)
+    return retval
+       
 def get_params():
     addon_log('get_params')
     param=[]
@@ -404,13 +532,13 @@ if mode==None:
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 elif mode==1:
-    fillPlugins('video')
+    fillPlugins(url)
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
     
 elif mode==2:
-    fillPlugins('music')
+    fillPluginItems(url)
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
-
+    
 elif mode==10:
     addon_log("setResolvedUrl")
     item = xbmcgui.ListItem(path=url)
@@ -425,9 +553,12 @@ elif mode==101:
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
     
 elif mode==200:
-    print 'write multi strms'
+    addon_log("write multi strms")
+    type = getType()
+    writeSettings2(url, type)
+    fillPluginItems(url, strm=True, strm_name=name, strm_type=type)
 
 elif mode==201:
-    print name, url
+    addon_log("write single strm")
     # fillPluginItems(url)
     # makeSTRM(name, name, url)

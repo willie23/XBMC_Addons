@@ -16,6 +16,8 @@
     <string id="34009">Run Library Scan when finished</string>
     <string id="34010">Clean Database when finished</string>
     <string id="34002">Clear Strm folder before each run</string>
+    <string id="34023">Internal Strm link references</string>
+    <string id="34024">Sort Strms by</string>
   </strings>
 
 
