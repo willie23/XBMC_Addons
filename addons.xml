@@ -125,57 +125,6 @@
     </extension>
 </addon>
 
-<addon
-    id="script.pseudo.library"
-    version="0.0.8"
-    name="PseudoLibrary"
-    provider-name="Lunatixz">
-    <requires>
-        <import addon="script.common.plugin.cache" version="0.9.1"/>
-        <import addon="script.module.requests" version="1.1.0"/>
-        <import addon="script.module.simplejson" version="0.9.1"/>
-        <import addon="script.module.feedparser" version="0.9.1"/>
-        <import addon="script.module.metahandler" version="2.3.1" />
-        <import addon="script.module.addon.common" version="2.0.0"/>
-        <import addon="script.module.beautifulsoup" version="3.2.1"/>
-        <import addon="plugin.video.youtube" optional="true"/>
-    </requires>
-    <extension point="xbmc.python.script"
-        defaultresolution="1080p"
-        defaultresolutionwide="1080p"
-        library="default.py"/>
-    <extension point="xbmc.service" library="service.py" start="startup"/>
-    <extension point="xbmc.addon.metadata">
-        <platform>all</platform>
-        <minversion>35647</minversion>
-        <summary lang="en">Virtual Library Strm Generator</summary>
-        <description lang="en">Generate Strms from Youtube, plugins and upnp sources.</description>
-    </extension>
-</addon>
-
-    <addon id="script.pseudotv.lite" version="1.0.0" name="PseudoTV Lite" provider-name="Lunatixz">
-    <requires>
-        <import addon="xbmc.python" version="2.1.0"/>
-        <import addon="script.module.buggalo" version="1.1.6"/>
-        <import addon="script.module.requests" version="2.4.3"/>
-    </requires>
-    <extension point="xbmc.python.script"
-        defaultresolution="720p"
-        defaultresolutionwide="720p"
-        library="default.py"/>
-    <extension point="xbmc.service" library="service.py" start="startup"/>
-    <extension point="xbmc.addon.metadata">
-        <platform>all</platform>
-        <broken>deprecated</broken>
-        <minversion></minversion>
-        <summary lang="en">Channel surfing for your video library and online sources</summary>
-        <description lang="en">PseudoTV Lite acts similar to normal broadcast or cable TV, complete with multiple preset and user-defined channels and an EPG.</description>
-        <license>GNU GENERAL PUBLIC LICENSE. Version 3, June 2007</license>
-        <website>www.pseudotvlive.com</website>
-        <source>http://github.com/Lunatixz/script.pseudotv.lite</source>
-    </extension>
-</addon>
-
 <addon id="script.pseudotv.live" version="0.6.9c" name="PseudoTV Live" provider-name="Lunatixz">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
