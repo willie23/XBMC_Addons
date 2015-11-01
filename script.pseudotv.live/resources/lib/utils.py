@@ -1773,16 +1773,14 @@ def ComCHK():
     # Community lists includes: Youtube, Vimeo, RSS, Smartplaylists, LiveTV (legal feeds ONLY!), InternetTV (legal feeds ONLY!) and User installed and Kodi repository plugins (see isKodiRepo, isPlugin).
     if REAL_SETTINGS.getSetting("Community_Enabled") == "true":
         if REAL_SETTINGS.getSetting("Community_Verified") != "1": 
-            REAL_SETTINGS.setSetting("AT_Community","true")
-            REAL_SETTINGS.setSetting("Verified_Community", "true")
             REAL_SETTINGS.setSetting("Community_Verified", "1")
+            REAL_SETTINGS.setSetting("AT_Community","true")
             infoDialog("Community List Activated")
         setProperty("Verified_Community", 'true')
     else:
         if REAL_SETTINGS.getSetting("Community_Verified") != "0": 
-            REAL_SETTINGS.setSetting("AT_Community","false")
-            REAL_SETTINGS.setSetting("Verified_Community", "false")
             REAL_SETTINGS.setSetting("Community_Verified", "0")
+            REAL_SETTINGS.setSetting("AT_Community","false")
         setProperty("Verified_Community", 'false')
        
 def DonCHK():
@@ -1792,12 +1790,13 @@ def DonCHK():
         try:
             list = getDonlist('ce.ini', test=True)
             if len(list) == 0:
+                log('utils: DonCHK = Failed')  
                 raise Exception()
+            log('utils: DonCHK = Passed')  
             if REAL_SETTINGS.getSetting("Donor_Verified") != "1": 
+                REAL_SETTINGS.setSetting("Donor_Verified", "1")
                 REAL_SETTINGS.setSetting("AT_Donor", "true")
                 REAL_SETTINGS.setSetting("COM_Donor", "true")
-                REAL_SETTINGS.setSetting("Verified_Donor", "true")
-                REAL_SETTINGS.setSetting("Donor_Verified", "1")
                 infoDialog("Donor Access Activated")
             setProperty("Verified_Donor", 'true')
         except:
@@ -1806,11 +1805,11 @@ def DonCHK():
         DonFailed()
            
 def DonFailed():
+    log('utils: DonFailed')    
     if REAL_SETTINGS.getSetting("Donor_Verified") != "0": 
+        REAL_SETTINGS.setSetting("Donor_Verified", "0")
         REAL_SETTINGS.setSetting("AT_Donor", "false")
         REAL_SETTINGS.setSetting("COM_Donor", "false")
-        REAL_SETTINGS.setSetting("Verified_Donor", "false")
-        REAL_SETTINGS.setSetting("Donor_Verified", "0")
     setProperty("Verified_Donor", 'false')
     
 def getDonlist(list, test=False):

@@ -762,7 +762,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                 if ChannelChk == 0:
                     raise Exception()
                     
-                position, timedif = self.getPlaylistPOS(chtype, offset=offdif)
+                position, timedif = self.getPlaylistPOS(chtype ,posOffset=offdif)
                 label = self.channels[Channel].getItemTitle(position)
                 EPTitle = self.channels[Channel].getItemEpisodeTitle(position)
                 Description = self.channels[Channel].getItemDescription(position)
@@ -774,9 +774,9 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                 year, title, showtitle = getTitleYear(label)
                 
                 ChanColor = (self.channelbugcolor).replace('0x','')
-                if self.isChanFavorite(Channel+1):
+                if self.isChanFavorite(chnum):
                     ChanColor = 'gold'   
-                self.OnNowTitleLst.append("[COLOR=%s][B]%d|[/B][/COLOR] %s" % (ChanColor, Channel+1, title))
+                self.OnNowTitleLst.append("[COLOR=%s][B]%d|[/B][/COLOR] %s" % (ChanColor, chnum, title))
                 
                 # prepare artwork
                 type = (self.channelList.unpackLiveID(LiveID))[0]
@@ -785,10 +785,10 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                 rating = (self.channelList.unpackLiveID(LiveID))[5]
                 Art = [type, title, year, chtype, chname, id, dbid, getMpath(mediapath), EXTtype(getProperty("OVERLAY.type3")), genre, rating]
                 self.OnNowArtLst.append(Art)
-            except:
-                pass
-                
-  
+            except Exception,e:
+                self.log('getOnNow, Failed!, ' + str(e))
+    
+
     def setOnNow(self):
         self.log('setOnNow')
         self.getOnNow()
@@ -1619,8 +1619,8 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                     item = self.OnNowTitleLst[i]
                     channel = int(self.channelList.cleanLabels(item.split('|')[0]))
                     if channel == self.currentChannel:
+                        self.list.selectItem(i)
                         break
-                self.list.selectItem(i)
                 
                 self.getControl(130).setVisible(True)
                 hide_busy_dialog()
@@ -2614,13 +2614,10 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         if REAL_SETTINGS.getSetting("SFX_Enabled") != "true":
             return
         elif action in [ACTION_SELECT_ITEM, ACTION_MOVE_DOWN, ACTION_MOVE_UP, ACTION_MOVE_LEFT, ACTION_MOVE_RIGHT]:
-            print SELECT_SFX
             xbmc.playSFX(SELECT_SFX)
         elif action in [ACTION_CONTEXT_MENU, ACTION_PAGEDOWN, ACTION_PAGEUP]:
-            print CONTEXT_SFX
             xbmc.playSFX(CONTEXT_SFX)
         elif action in [ACTION_PREVIOUS_MENU]:
-            print BACK_SFX
             xbmc.playSFX(BACK_SFX)
             
      
