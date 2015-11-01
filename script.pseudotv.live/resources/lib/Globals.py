@@ -35,12 +35,12 @@ ADDON_ID = REAL_SETTINGS.getAddonInfo('id')
 ADDON_NAME = REAL_SETTINGS.getAddonInfo('name')
 ADDON_PATH = (REAL_SETTINGS.getAddonInfo('path').decode('utf-8'))
 ADDON_VERSION = REAL_SETTINGS.getAddonInfo('version')
+DEBUG = REAL_SETTINGS.getSetting('enable_Debug') == "true"
 
 def log(msg, level = xbmc.LOGDEBUG):
-    try:
-        xbmc.log(ADDON_ID + '-' + ADDON_VERSION + '-' + ascii(msg), level)
-    except Exception,e:
-        pass
+    if DEBUG != True and level == xbmc.LOGDEBUG:
+        return
+    xbmc.log(ADDON_ID + '-' + ADDON_VERSION + '-' + uni(msg), level)
 
 def utf(string, encoding = 'utf-8'):
     if isinstance(string, basestring):
@@ -122,8 +122,10 @@ LOGO_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('ChannelLogo
 PVR_DOWNLOAD_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('PVR_Folder'),'')) #PVR Download location
 XMLTV_LOC = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('xmltvLOC'),''))
 XSP_LOC = xbmc.translatePath("special://profile/playlists/video/")
-SFX_LOC = ('special://home/addons/script.pseudotv.live/resources/sfx/')
+SFX_LOC = os.path.join(ADDON_PATH, 'resources','sfx','')
 BACKUP_LOC = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'backups'))
+MOUNT_LOC = xbmc.translatePath(os.path.join(CHANNELS_LOC, 'mountpnt',''))
+mountedFS = False
 
 #BASEURL
 try:
@@ -199,26 +201,26 @@ else:
 dlg = xbmcgui.Dialog()
 ADDON_SETTINGS = Settings.Settings()
 GlobalFileLock = FileLock()
-NOTIFY = REAL_SETTINGS.getSetting('notify') == "true"
-SILENT = REAL_SETTINGS.getSetting('silent')
-DEBUG = REAL_SETTINGS.getSetting('enable_Debug')   
+NOTIFY = REAL_SETTINGS.getSetting('EnableNotify') == "true"
 SETTOP = REAL_SETTINGS.getSetting("EnableSettop") == "true"
 ENHANCED_DATA = REAL_SETTINGS.getSetting('EnhancedGuideData') == 'true'
 FILELIST_LIMIT = [4096,8192,16384]
+MAXFILE_DURATION = 16000
 
 # Settings2 filepaths
 SETTINGS_FLE = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.xml'))
+SETTINGS_FLE_DEFAULT_SIZE = 100
 SETTINGS_FLE_REPAIR = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.repair.xml'))
 SETTINGS_FLE_PENDING = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.pending.xml'))
 SETTINGS_FLE_LASTRUN = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.lastrun.xml'))
 SETTINGS_FLE_PRETUNE = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.pretune.xml'))
 
-# common cache globals
+# commoncache globals
 daily = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "daily",24)
 weekly = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "weekly",24 * 7)
 monthly = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "monthly",((24 * 7) * 4))
 
-# common cache artwork (Only needed for Artwork Spooler Service)
+# commoncache artwork (Only needed for Artwork Spooler Service)
 artwork = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "artwork",((24 * 7) * 4))         #Artwork Purge
 artwork1 = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "artwork1",((24 * 7) * 4))       #Artwork Purge
 artwork2 = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "artwork2",((24 * 7) * 4))       #Artwork Purge
@@ -227,7 +229,7 @@ artwork4 = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "artwo
 artwork5 = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "artwork5",((24 * 7) * 4))       #Artwork Purge
 artwork6 = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "artwork6",((24 * 7) * 4))       #Artwork Purge
 
-# pyfs cache globals
+# pyfscache globals
 cache_daily = pyfscache.FSCache(REQUESTS_LOC, days=1, hours=0, minutes=0)
 cache_weekly = pyfscache.FSCache(REQUESTS_LOC, days=7, hours=0, minutes=0)
 cache_monthly = pyfscache.FSCache(REQUESTS_LOC, days=31, hours=0, minutes=0)
@@ -250,7 +252,7 @@ except:
     AT_LIMIT = 25
     xbmc.log('Autotune Channel Limit Failed!')
 xbmc.log('Autotune Channel Limit is ' + str(AT_LIMIT))
-        
+            
 # HEX COLOR OPTIONS 4 (Overlay CHANBUG, EPG Genre & CHtype) 
 # http://www.w3schools.com/html/html_colornames.asp
 COLOR_RED = '#FF0000'
@@ -303,7 +305,7 @@ ACTION_MOVE_DOWN = 4
 ACTION_PAGEUP = 5
 ACTION_PAGEDOWN = 6
 ACTION_SELECT_ITEM = 7
-ACTION_PREVIOUS_MENU = (9, 10, 92, 247, 257, 275, 61467, 61448)
+ACTION_PREVIOUS_MENU = [9, 10, 92, 247, 257, 275, 61467, 61448]
 ACTION_DELETE_ITEM = 80
 ACTION_SHOW_INFO = 11
 ACTION_PAUSE = 12
@@ -365,18 +367,27 @@ UTC_XMLTV = []
 # Plugin seek blacklist - Plugins that are known to use rtmp source which lockup xbmc during seek
 BYPASS_SEEK = ['plugin.video.vevo_tv','plugin.video.g4tv','plugin.video.ustvnow']
 
-# Bypass EPG and "stack" by channel name
-BYPASS_EPG =  ['PseudoCinema']
+# Duration in seconds "stacked" for chtypes >= 10
+BYPASS_EPG_SECONDS = 900
+
+# Force "stacked" EPG by channel name
+FORCE_EPG_STACK =  ['PseudoCinema']
 
 # Bypass "stacked" EPG by channel name
 BYPASS_EPG_STACK = []
 
-# Bypass Overlay Coming up next by channel name - keep "ComingUp Next" from displaying
-BYPASS_OVERLAY = ['PseudoCinema']
+# Bypass Overlay "Coming up next" by channel name
+BYPASS_COMINGUP = ['PseudoCinema']
 
 # Plugin exclusion strings
 SF_FILTER = ['isearch', 'iplay - kodi playlist manager','create new super folder','explore kodi favourites']
 EX_FILTER = SF_FILTER + ['video resolver settings','<<','back','previous','home','search','find','clips','seasons','trailers']
 
 # SFX
-MOVE_SFX = os.path.join(SFX_LOC, 'move.wav')
+ALERT_SFX = os.path.join(SFX_LOC, 'alert.wav')
+BACK_SFX = os.path.join(SFX_LOC, 'back.wav')
+CONTEXT_SFX = os.path.join(SFX_LOC, 'context.wav')
+ERROR_SFX = os.path.join(SFX_LOC, 'error.wav')
+FAILED_SFX = os.path.join(SFX_LOC, 'failed.wav')
+SELECT_SFX = os.path.join(SFX_LOC, 'select.wav')
+PUSH_SFX = os.path.join(SFX_LOC, 'push.wav')

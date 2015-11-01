@@ -2,9 +2,9 @@
     <allowoverlay>yes</allowoverlay>  
     <onload condition="StringCompare((Window(10000).Property(PTVL.VideoWindow)),true)">ActivateWindow(9506)</onload>
     <onload condition="StringCompare((Window(10000).Property(PTVL.VideoWindow)),true)">ActivateWindow(10004)</onload><!-- Activate random window, workaround for 9506 starting paused -->
+    <onunload>ActivateWindow(12005)</onunload>
     <onload>SetProperty(PTVL.APPS_Opened,true,10000)</onload>
     <onunload>SetProperty(PTVL.APPS_Opened,false,10000)</onunload>
-    <!-- <onunload>ActivateWindow(12005)</onunload> -->
     <coordinates>
         <system>1</system>
         <posx>0</posx>
@@ -19,9 +19,15 @@
             <posy>0</posy>
             <width>1920</width>
             <height>1080</height>
-            <texture>pstvlBackground3.png</texture>
+            <texture>APPSbackground.png</texture>
             <colordiffuse>FFFFFFFF</colordiffuse>
         </control>  
+        <control type="image">
+            <texture colordiffuse="$INFO[Window(home).Property(WindowColor)]">APPSoverlay.png</texture>
+            <width>1920</width>
+            <height>1080</height>
+            <animation effect="fade" start="100" end="0" time="1000">WindowOpen</animation>
+        </control>
         <!-- Trending Box --> 
         <control type="group"> 
             <control type="label">

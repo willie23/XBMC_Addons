@@ -16,7 +16,7 @@
                 <setting id="EnableSettop" type="bool"   label="30998" default="false"/>
                 <setting id="REFRESH_INT" subsetting="true" visible="eq(-1,true)" type="enum"   label="31000" values="3|6|12|24" default="2"/>
                 <setting id="MEDIA_LIMIT"   label="30310" type="enum" values="25|50|100|250|500|1000|5000|Unlimited" default="1"/>
-                <setting id="notify" type="bool"   label="30046" default="true"/>
+                <setting id="EnableNotify" type="bool"   label="30046" default="true"/>
                 <setting id="AutoBackup" type="bool"   label="30159" default="false"/>
                 <setting id="SFX_Enabled" type="bool"   label="30056" visible="false" default="true"/>
     </category>
@@ -42,7 +42,7 @@
     <category label="30200">
         <setting id="SkinSelector" type="enum"  label="30202" values="Custom|Default|PTVL|Concast|Maverick|Z81" visible="false" default="1"/>
         <setting id="ShowSeEp" type="bool"   label="30301" default="false"/>
-        <setting id="ChannelLogoFolder" type="folder" source="auto"   label="30225" default="special://userdata/script.pseudotv.live/logos"/>
+        <setting id="ChannelLogoFolder" type="folder" source="auto"   label="30225" default="special://userdata/addon_data/script.pseudotv.live/logos/"/>
         <setting id="Enable_FindLogo" type="bool"   label="34547" default="true"/>
         <setting id="LogoDB_Fallback" subsetting="true" visible="eq(-1,true)"type="bool"   label="34548" default="true"/>
         <setting id="LogoDB_Anymatch" subsetting="true" visible="eq(-2,true)"type="bool"   label="34549" default="true"/>
@@ -68,7 +68,7 @@
 <!--PVR-->
    <category label="30400">
         <setting id="SyncXMLTV_Enabled"                   type="bool"   label="30397" default="true"/>
-        <setting id="xmltvLOC" type="folder" source="auto"   label="30404" default="special://userdata/script.pseudotv.live/cache/xmltv" />
+        <setting id="xmltvLOC" type="folder" source="auto"   label="30404" default="special://userdata/addon_data/script.pseudotv.live/cache/xmltv" />
         <setting id="DVR_Enabled"   label="30801" type="bool" default="false"/>
         <setting id="DVR_Folder" subsetting="true"   label="30802" visible="eq(-1,true)" type="folder" source="auto" default="" />        
         <setting id="AutoJump" type="bool"   label="30408" default="false" />
@@ -233,8 +233,8 @@
 <!--Debugging-->
     <category label="30900">  
         <setting label="30990" type="lsep"/>
-        <setting id="ActionTimeInt" type="slider"   label="30309" range="2,2,4" option="int" default="2"/>
-        <setting id="PlayTimeoutInt" type="slider"   label="30319" range="2,2,90" option="int" default="90"/>
+        <setting id="ActionTimeInt" type="slider"   label="30309" range="2,2,10" option="int" default="2"/>
+        <setting id="PlayTimeoutInt" type="slider"   label="30319" range="2,2,120" option="int" default="60"/>
         <setting id="enable_Debug" type="bool"   label="30993" default="false"/>
         <setting id="Override_ok" type="bool"   label="30991" default="true"/>
         <setting id="Cache_Enabled"   label="39999" type="bool" default="true" />

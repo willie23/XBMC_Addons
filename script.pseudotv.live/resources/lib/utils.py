@@ -117,6 +117,7 @@ def isKodiRepo(plugin=''):
 def fillGithubItems(url, ext=None, removeEXT=False):
     log("utils: fillGithubItems, url = " + url)
     Sortlist = []
+    show_busy_dialog()
     try:
         list = []
         catlink = re.compile('title="(.+?)">').findall(read_url_cached(url))
@@ -127,12 +128,15 @@ def fillGithubItems(url, ext=None, removeEXT=False):
                 if ([x.lower for x in ext if name.endswith(x)]):
                     if removeEXT == True:
                         link = os.path.splitext(os.path.basename(link))[0]
-            list.append(link.replace('&amp;','&'))
+                    list.append(link.replace('&amp;','&'))
+            else:
+                list.append(link.replace('&amp;','&'))
         Sortlist = sorted_nicely(list) 
         log("utils: fillGithubItems, found %s items" % str(len(Sortlist)))
     except Exception,e:
         log("utils: fillGithubItems, Failed! " + str(e))
         log(traceback.format_exc(), xbmc.LOGERROR)
+    hide_busy_dialog()
     return Sortlist
 
 #############
@@ -298,12 +302,12 @@ def FindLogo_Thread(data):
         useAny = REAL_SETTINGS.getSetting('LogoDB_Anymatch') == "true"
         url = findLogodb(chname, user_region, user_type, useMix, useAny)
         if url:
-            return GrabLogo(url, chname)
+            GrabLogo(url, chname)
     if chtype in [0,1,2,3,4,5,8,9,12,13,14]:
         log("utils: FindLogo_Thread, findGithubLogo")
         url = findGithubLogo(chname)
         if url:
-            return GrabLogo(url, chname)
+            GrabLogo(url, chname)
     mpath = getMpath(data[2])
     if mpath and (chtype == 6):
         log("utils: FindLogo_Thread, local logo")
@@ -315,12 +319,12 @@ def FindLogo_Thread(data):
         elif FileAccess.exists(artSeason): 
             url = artSeason
         if url:
-            return GrabLogo(url, chname) 
+            GrabLogo(url, chname) 
   
 def FindLogo(chtype, chname, mediapath=None):
     log("utils: FindLogo")
     try:
-        if isLowPower() != True:
+        if REAL_SETTINGS.getSetting('Enable_FindLogo') == "true" and isLowPower() != True:
             data = [chtype, chname, mediapath]
             FindLogoThread = threading.Timer(0.5, FindLogo_Thread, [data])
             FindLogoThread.name = "FindLogoThread"
@@ -466,10 +470,10 @@ def GA_Request():
         OPTIONS = OPTIONS + ['KODI:'+str(getXBMCVersion())+'']
         OPTIONS = OPTIONS + ['OS:'+getProperty("PTVL.Platform")+'']
         
-        if getProperty("Verified_Donor") == "True":
+        if getProperty("Verified_Donor") == "true":
             OPTIONS = OPTIONS + ['DONOR:'+(REAL_SETTINGS.getSetting('Donor_UP')).split(':')[0]]
         
-        if getProperty("Verified_Community") == "True":
+        if getProperty("Verified_Community") == "true":
             OPTIONS = OPTIONS + ['COM:'+REAL_SETTINGS.getSetting('Gmail_User')]
                     
         if isContextInstalled():
@@ -513,18 +517,18 @@ def UpdateRSS_Thread():
     try:
         UpdateRSS_LastRun = getProperty("UpdateRSS_NextRun")
         if not UpdateRSS_LastRun:
-            raise exception()
-    except:
+            raise Exception()
+    except Exception,e:
         UpdateRSS_LastRun = "1970-01-01 23:59:00.000000"
         setProperty("UpdateRSS_NextRun",UpdateRSS_LastRun)
+
     try:
         SyncUpdateRSS = datetime.datetime.strptime(UpdateRSS_LastRun, "%Y-%m-%d %H:%M:%S.%f")
     except:
-        UpdateRSS_LastRun = "1970-01-01 23:59:00.000000"
-        SyncUpdateRSS = datetime.datetime.strptime(UpdateRSS_LastRun, "%Y-%m-%d %H:%M:%S.%f")
-    # log('utils: UpdateRSS, Now = ' + str(now) + ', UpdateRSS_NextRun = ' + str(UpdateRSS_LastRun))
+        SyncUpdateRSS = datetime.datetime.strptime("1970-01-01 23:59:00.000000", "%Y-%m-%d %H:%M:%S.%f")
     
     if now > SyncUpdateRSS:
+        # chkBS()
         ##Push MSG
         try:
             pushlist = ''
@@ -576,7 +580,26 @@ def UpdateRSS_Thread():
         setProperty("twitter.1.label", pushlist)
         setProperty("twitter.2.label", gitlist)
         setProperty("twitter.3.label", twitlist) 
-        
+
+# Adapted from KodeKarnage's lazytv
+def sendShout():
+    thyme = time.time()
+    recipient = 'pseudotvsubmit@gmail.com'
+    
+    body = '<table border="1">'
+    body += '<tr><td>%s</td></tr>' % "I'm using the addon!"
+    body += '</table>'
+    
+    msg = MIMEText(body, 'html')
+    msg['Subject'] = 'LazyTV +1  %s' % thyme
+    msg['From'] = 'LazyTV'
+    msg['To'] = recipient
+    msg['X-Mailer'] = 'LazyTV Shout Out %s' % thyme
+
+    smtp = smtplib.SMTP('alt4.gmail-smtp-in.l.google.com')
+    smtp.sendmail(msg['From'], msg['To'], msg.as_string(9))
+    smtp.quit()
+
 def sendGmail(subject, body, attach):
     GAuser = REAL_SETTINGS.getSetting('Visitor_GA')
     recipient = 'pseudotvsubmit@gmail.com'
@@ -692,6 +715,18 @@ def read_url_cached(url, userpass=False, return_type='read'):
         return response
     except Exception,e:
         log('utils: read_url_cached, Failed!,' + str(e))
+        
+@cache_monthly
+def read_url_cached_monthly(url, userpass=False, return_type='read'):
+    log("utils: read_url_cached_monthly")
+    try:
+        if return_type == 'readlines':
+            response = open_url(url, userpass).readlines()
+        else:
+            response = open_url(url, userpass).read()
+        return response
+    except Exception,e:
+        log('utils: read_url_cached_monthly, Failed!,' + str(e))
   
 def open_url(url, userpass=None):
     log("utils: open_url")
@@ -699,8 +734,8 @@ def open_url(url, userpass=None):
     try:
         request = urllib2.Request(url)
         if userpass:
-            userpass = userpass.split(':')
-            base64string = base64.encodestring('%s:%s' % (userpass[0], userpass[1])).replace('\n', '')
+            user, password = userpass.split(':')
+            base64string = base64.encodestring('%s:%s' % (user, password))
             request.add_header("Authorization", "Basic %s" % base64string) 
         else:
             # TMDB needs a header to be able to read the data
@@ -743,30 +778,24 @@ def anonFTPDownload(filename, DL_LOC):
         
 @cache_monthly
 def get_data(url, data_type ='json'):
-    log('utils: get_data')
+    log('utils: get_data, url = ' + url)
     data = []
     try:
-        req = read_url_cached(url)
+        request = urllib2.Request(url)
+        # TMDB needs a header to be able to read the data
+        if url.startswith("http://api.themoviedb.org"):
+            request.add_header("Accept", "application/json")
+        req = urllib2.urlopen(request)
         if data_type == 'json':
-            data = json.loads(req)
+            data = json.loads(req.read())
             if not data:
                 data = 'Empty'
         else:
-            data = req
-    except HTTPError, e:
-        if e.code == 400:
-            raise HTTP400Error(url)
-        elif e.code == 404:
-            raise HTTP404Error(url)
-        elif e.code == 503:
-            raise HTTP503Error(url)
-        else:
-            raise DownloadError(str(e))
-    except URLError:
-        raise HTTPTimeout(url)
-    except socket.timeout, e:
-        raise HTTPTimeout(url)
-    except:
+            data = req.read()
+        req.close()
+    except Exception,e:
+        log("utils: get_data, Failed! " + str(e))
+        log(traceback.format_exc(), xbmc.LOGERROR)
         data = 'Empty'
     return data
         
@@ -806,7 +835,7 @@ def allWithProgress(_in, _out, dp):
 # GUI Tools #
 ##################
 
-def handle_wait(time_to_wait,header,title): #*Thanks enen92
+def handle_wait(time_to_wait,header,title,string=None): #*Thanks enen92
     dlg = xbmcgui.DialogProgress()
     dlg.create("PseudoTV Live", header)
     secs=0
@@ -817,7 +846,10 @@ def handle_wait(time_to_wait,header,title): #*Thanks enen92
         secs += 1
         percent = increment*secs
         secs_left = str((time_to_wait - secs))
-        remaining_display = "Starts In " + str(secs_left) + " seconds, Cancel Channel Change?" 
+        if not string:
+            remaining_display = "Starts In " + str(secs_left) + " seconds, Cancel Channel Change?" 
+        else:
+            remaining_display = string
         dlg.update(percent,title,remaining_display)
         xbmc.sleep(1000)
         if (dlg.iscanceled()):
@@ -862,17 +894,26 @@ def showText(heading, text):
         except:
             pass
 
-def infoDialog(str, header=ADDON_NAME, time=4000):
-    try: xbmcgui.Dialog().notification(header, str, THUMB, time, sound=False)
-    except: xbmc.executebuiltin("Notification(%s,%s, %s, %s)" % (header, str, time, THUMB))
+# General
+def infoDialog(message, header=ADDON_NAME, show=True, sound=False, time=1000, icon=THUMB):
+    if show:
+        try: 
+            xbmcgui.Dialog().notification(header, message, icon, time, sound=False)
+        except Exception,e:
+            log("utils: infoDialog Failed! " + str(e))
+            xbmc.executebuiltin("Notification(%s, %s, %d, %s)" % (header, message, time, THUMB))
 
-def stdNotify(message, time=4000, show=NOTIFY, sound=False, icon=THUMB, header=ADDON_NAME):
-    if show == True:
-        xbmcgui.Dialog().notification(heading=header, message=message, icon=icon, time=time, sound=sound)
+# Error
+def ErrorNotify(message, header=ADDON_NAME, show=True, sound=False, time=1000, icon=THUMB):
+    infoDialog("ERROR: " + message, header, show, sound, time, icon)
 
-def DebugNotify(string):
-    if DEBUG:
-        xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "DEBUGGING: " + string, 1000, THUMB))
+# Debug
+def DebugNotify(message, header=ADDON_NAME, show=DEBUG, sound=False, time=1000, icon=THUMB):
+    infoDialog("DEBUGGING: " + message, header, show, sound, time, icon)
+
+# Optional
+def OptNotify(message, header=ADDON_NAME, show=NOTIFY, sound=False, time=1000, icon=THUMB):
+    infoDialog(message, header, show, sound, time, icon)
     
 def okDialog(str1, str2='', header=ADDON_NAME):
     xbmcgui.Dialog().ok(header, str1, str2)
@@ -1099,11 +1140,13 @@ def modification_date(filename):
     return datetime.datetime.fromtimestamp(t)
     
 def getSize(file):
+    log("getSize")
     if FileAccess.exists(file):
-        fileobject = FileAccess.open(file, "r")
-        fileobject.seek(0,2) # move the cursor to the end of the file
-        size = fileobject.tell()
-        fileobject.close()
+        file = xbmc.translatePath(file)
+        try:
+            size = os.path.getsize(file)
+        except:
+            size = 0
         return size
         
 def replaceAll(file,searchExp,replaceExp):
@@ -1238,7 +1281,7 @@ def Backup(org, bak):
             except:
                 pass
         FileAccess.copy(org, bak)
-        xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Backup Complete", 1000, THUMB) )
+        infoDialog("Backup Complete")
        
 def Restore(bak, org):
     log('utils: Restore ' + str(bak) + ' - ' + str(org))
@@ -1249,7 +1292,7 @@ def Restore(bak, org):
             except:
                 pass
         xbmcvfs.rename(bak, org)
-        xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Restore Complete, Restarting...", 1000, THUMB) )
+        infoDialog("Restore Complete, Restarting...")
          
 ####################
 # VideoWindow Hack #
@@ -1358,8 +1401,7 @@ def getGithubZip(url, lib, addonpath, MSG):
         pass
         
     xbmc.executebuiltin("XBMC.UpdateLocalAddons()"); 
-    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", MSG, 1000, THUMB) )
-    return  
+    infoDialog(MSG)
     
 def isContextInstalled():
     context = isPlugin('context.pseudotv.live.export')
@@ -1535,8 +1577,7 @@ def chkLowPower():
             REAL_SETTINGS.setSetting('sickbeard.enabled', "false")
             REAL_SETTINGS.setSetting('couchpotato.enabled', "false")
             REAL_SETTINGS.setSetting('MEDIA_LIMIT', "1")
-            if NOTIFY == True:
-                xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Settings Optimized For Performance", 4000, THUMB) )
+            infoDialog("Settings Optimized For Performance")
     else:
         log("utils: chkLowPower Override = True")
     log("utils: chkLowPower = " + getProperty("PTVL.LOWPOWER"))
@@ -1544,7 +1585,16 @@ def chkLowPower():
 def isLowPower():
     # log("utils: isLowPower = " + str(getProperty("PTVL.LOWPOWER") == "true"))
     return getProperty("PTVL.LOWPOWER") == "true"
-             
+       
+def chkBS():
+    if isPlugin(decodeString('cGx1Z2luLnByb2dyYW0uYWRkb25pbnN0YWxsZXI=')) == True:
+        if yesnoDialog(decodeString('SXRzIHJlY29tbWVuZGVkIHlvdSB1bmluc3RhbGwuLi4ga25vd24gdG8gaW50ZXJmZXJlIHdpdGggUHNldWRvVFYgTGl2ZSwgVW5pbnN0YWxsPw=='),'',decodeString('W0JdIVVOQVVUSE9SSVpFRCBBRERPTiBJbnN0YWxsZXIgREVURUNURUQhWy9CXQ=='),'Yes','No') == True:
+            cancelled = False
+            while cancelled == False:
+                cancelled = handle_wait(15,decodeString('W0JdIVVOQVVUSE9SSVpFRCBBRERPTiBJbnN0YWxsZXIgREVURUNURUQhWy9CXQ=='),decodeString('UGxlYXNlIFVuaW5zdGFsbCAiQWRkb24gSW5zdGFsbGVyIiBwbHVnaW4='),decodeString('UHNldWRvVFYgTGl2ZSB3aWxsIHJlc3VtZSBzaG9ydGx5'))
+        else:
+            Comingsoon()
+
 def ClearPlaylists():
     log('utils: ClearPlaylists')
     for i in range(999):
@@ -1552,26 +1602,30 @@ def ClearPlaylists():
             FileAccess.delete(CHANNELS_LOC + 'channel_' + str(i) + '.m3u')
         except:
             pass
-    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", 'Channel Playlists Cleared', 1000, THUMB) )
-    return   
+    infoDialog("Channel Playlists Cleared")
+       
                 
 def ClearCache(type):
     log('utils: ClearCache ' + type)  
     if type == 'Filelist':
-        daily.delete("%") 
-        weekly.delete("%")
-        monthly.delete("%")
+        try:    
+            daily.delete("%") 
+            weekly.delete("%")
+            monthly.delete("%")
+            shutil.rmtree(REQUESTS_LOC)
+        except:
+            pass
         REAL_SETTINGS.setSetting('ClearCache', "false")
     elif type == 'Art':
         try:    
             shutil.rmtree(ART_LOC)
             log('utils: Removed ART_LOC')  
             REAL_SETTINGS.setSetting('ClearLiveArtCache', "true") 
-            xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Artwork Folder Cleared", 1000, THUMB) )
+            infoDialog("Artwork Folder Cleared")
         except:
             pass
         REAL_SETTINGS.setSetting('ClearLiveArt', "false")
-    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", type + " Cache Cleared", 1000, THUMB) )
+    infoDialog(type + " Cache Cleared")
     
 def chkSettings2():   
     log('utils: chkSettings2')
@@ -1590,16 +1644,16 @@ def chkSettings2():
             
     if Normal_Shutdown == False:
         log('utils: chkSettings2, Setting2 Restore') 
-        if getSize(SETTINGS_FLE) < 100 and getSize(SETTINGS_FLE_LASTRUN) > 100:
-            Restore(SETTINGS_FLE_LASTRUN, SETTINGS_FLE)    
+        if getSize(SETTINGS_FLE) < SETTINGS_FLE_DEFAULT_SIZE and getSize(SETTINGS_FLE_LASTRUN) > SETTINGS_FLE_DEFAULT_SIZE:
+            Restore(SETTINGS_FLE_LASTRUN, SETTINGS_FLE)
     else:
-        log('utils: chkSettings2, Setting2 Backup') 
-        if getSize(SETTINGS_FLE) > 100:
+        log('utils: chkSettings2, Setting2 Backup')
+        if getSize(SETTINGS_FLE) > SETTINGS_FLE_DEFAULT_SIZE:
             Backup(SETTINGS_FLE, SETTINGS_FLE_LASTRUN)
             if REAL_SETTINGS.getSetting("AutoBackup") == "true":               
                 SETTINGS_FLE_BACKUP = os.path.join(BACKUP_LOC, 'settings2.' + (str(datetime.datetime.now()).split('.')[0]).replace(' ','.').replace(':','.') + '.xml')
                 Backup(SETTINGS_FLE, SETTINGS_FLE_BACKUP)
-    return True
+    return
     
 def backupSettings2():
     log('utils: backupSettings2')
@@ -1615,11 +1669,12 @@ def restoreSettings2():
         backuplist.reverse()
         select = selectDialog(backuplist, 'Select backup to restore')   
         if select != -1:
-            if dlg.yesno("PseudoTV Live", 'Restoring will remove current channel configurations, Are you sure?'):                        
-                Restore(os.path.join(BACKUP_LOC,(backuplist[select]+'.xml')), SETTINGS_FLE)
-                xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Restore Complete", 1000, THUMB) )
+            RESTORE_FILE = backuplist[select]+'.xml'
+            if dlg.yesno("PseudoTV Live", 'Restoring will remove current channel configurations, Are you sure?'):
+                Restore(os.path.join(BACKUP_LOC, RESTORE_FILE, SETTINGS_FLE))
+                return infoDialog("Restore Complete")
     else:
-        return xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "No Backups found", 1000, THUMB) )
+        return infoDialog("No Backups found")
         
 def purgeSettings2():
     log('utils: purgeSettings2')
@@ -1630,7 +1685,7 @@ def purgeSettings2():
                 FileAccess.delete(os.path.join(BACKUP_LOC,files[i]))
             except:
                 pass
-        xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Backup Purge Complete", 1000, THUMB) )
+        infoDialog("Backup Purge Complete")
 
 def hasVersionChanged(__version__): 
     log('utils: hasVersionChanged = ' + __version__)   
@@ -1687,8 +1742,9 @@ def preStart():
         ClearCache('Art')
             
     # Backup/Restore settings2
-    if chkSettings2() == True:
-        return True
+    chkSettings2()
+    
+    return
         
 ##############
 # PTVL Tools #
@@ -1705,16 +1761,10 @@ def PlaylistLimit():
     return Playlist_Limit
 
 def isDon():
-    val = REAL_SETTINGS.getSetting("Verified_Donor") == "true"
-    setProperty("Verified_Donor", str(val))
-    log('utils: isDon = ' + str(val))
-    return val
+    return getProperty("Verified_Donor") == "true"
     
 def isCom():
-    val = REAL_SETTINGS.getSetting("Verified_Community") == "true"
-    setProperty("Verified_Community", str(val))
-    log('utils: isCom = ' + str(val))
-    return val
+    return getProperty("Verified_Community") == "true"
         
 def ComCHK():
     log('utils: ComCHK')      
@@ -1726,12 +1776,14 @@ def ComCHK():
             REAL_SETTINGS.setSetting("AT_Community","true")
             REAL_SETTINGS.setSetting("Verified_Community", "true")
             REAL_SETTINGS.setSetting("Community_Verified", "1")
-            xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live","Community List Activated", 1000, THUMB) )
+            infoDialog("Community List Activated")
+        setProperty("Verified_Community", 'true')
     else:
         if REAL_SETTINGS.getSetting("Community_Verified") != "0": 
             REAL_SETTINGS.setSetting("AT_Community","false")
             REAL_SETTINGS.setSetting("Verified_Community", "false")
             REAL_SETTINGS.setSetting("Community_Verified", "0")
+        setProperty("Verified_Community", 'false')
        
 def DonCHK():
     log('utils: DonCHK')     
@@ -1746,7 +1798,8 @@ def DonCHK():
                 REAL_SETTINGS.setSetting("COM_Donor", "true")
                 REAL_SETTINGS.setSetting("Verified_Donor", "true")
                 REAL_SETTINGS.setSetting("Donor_Verified", "1")
-                xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live","Donor Access Activated", 1000, THUMB) )
+                infoDialog("Donor Access Activated")
+            setProperty("Verified_Donor", 'true')
         except:
             DonFailed()
     else:
@@ -1758,9 +1811,10 @@ def DonFailed():
         REAL_SETTINGS.setSetting("COM_Donor", "false")
         REAL_SETTINGS.setSetting("Verified_Donor", "false")
         REAL_SETTINGS.setSetting("Donor_Verified", "0")
-     
+    setProperty("Verified_Donor", 'false')
+    
 def getDonlist(list, test=False):
-    log('utils: getDonlist')
+    log('utils: getDonlist, test = ' + str(test))
     nlist = []
     if test:
         list = open_url(PTVLURL + list, UPASS).readlines()
@@ -1886,7 +1940,7 @@ def SyncXMLTV_NEW(force=False):
                 
                 if FileAccess.exists(PTVLXML):
                     log('utils: SyncXMLTV, ptvlguide.xml download successful!')  
-                    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live","Guidedata Update Complete", 1000, THUMB) )  
+                    infoDialog("Guidedata Update Complete")
                     SyncPTV_NextRun = ((now + datetime.timedelta(hours=24)).strftime("%Y-%m-%d %H:%M:%S.%f"))
                     log('utils: SyncXMLTV, Now = ' + str(now) + ', SyncPTV_NextRun = ' + str(SyncPTV_NextRun))
                     REAL_SETTINGS.setSetting("SyncPTV_NextRun",str(SyncPTV_NextRun))
@@ -1960,15 +2014,16 @@ def correctYoutubeSetting2(setting2):
     
 def purgeGarbage(): 
     try:
-        # threshold = gc.get_threshold()
-        # log("utils: purgeGarbage, Garbage collection thresholds: %s" % (str(threshold)))
-        collected = gc.collect()
-        log("utils: purgeGarbage, Garbage collector: collected %d objects." % (collected))
-        log("utils: purgeGarbage, Garbage collector: Cleaning")
-        gc.collect()
-        collected = gc.collect()
-        log("utils: purgeGarbage, Garbage collector: %d objects left." % (collected))
-        log("utils: purgeGarbage, Garbage collector: Finished")
+        if getProperty("PTVL.BackgroundLoading") == "false":
+            # threshold = gc.get_threshold()
+            # log("utils: purgeGarbage, Garbage collection thresholds: %s" % (str(threshold)))
+            collected = gc.collect()
+            log("utils: purgeGarbage, Garbage collector: collected %d objects." % (collected))
+            log("utils: purgeGarbage, Garbage collector: Cleaning")
+            gc.collect()
+            collected = gc.collect()
+            log("utils: purgeGarbage, Garbage collector: %d objects left." % (collected))
+            log("utils: purgeGarbage, Garbage collector: Finished")
     except Exception,e:
         log("purgeGarbage Failed!" + str(e))
         
