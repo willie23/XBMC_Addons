@@ -750,8 +750,8 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
     # todo catolog info for dvr, search, find similar. 
     def getOnNow(self, offdif=0):
         self.log('getOnNow, offdif = ' + str(offdif))    
-        self.OnNowArtLst = []
-        self.OnNowTitleLst = []    
+        OnNowArtLst = []
+        OnNowTitleLst = []    
         for Channel in range(999):
             try:
                 chnum = Channel + 1
@@ -776,7 +776,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                 ChanColor = (self.channelbugcolor).replace('0x','')
                 if self.isChanFavorite(chnum):
                     ChanColor = 'gold'   
-                self.OnNowTitleLst.append("[COLOR=%s][B]%d|[/B][/COLOR] %s" % (ChanColor, chnum, title))
+                OnNowTitleLst.append("[COLOR=%s][B]%d|[/B][/COLOR] %s" % (ChanColor, chnum, title))
                 
                 # prepare artwork
                 type = (self.channelList.unpackLiveID(LiveID))[0]
@@ -784,21 +784,47 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                 dbid, epid = splitDBID((self.channelList.unpackLiveID(LiveID))[2])
                 rating = (self.channelList.unpackLiveID(LiveID))[5]
                 Art = [type, title, year, chtype, chname, id, dbid, getMpath(mediapath), EXTtype(getProperty("OVERLAY.type3")), genre, rating]
-                self.OnNowArtLst.append(Art)
+                OnNowArtLst.append(Art)
             except Exception,e:
                 self.log('getOnNow, Failed!, ' + str(e))
+        return OnNowTitleLst, OnNowArtLst
     
+    
+    def setOnNow_Thread(self):
+        self.log('setOnNow_Thread')
+        try:
+            if isLowPower() != True:
+                try:
+                    if self.setOnNowThread.isAlive():
+                        self.setOnNowThread.cancel()
+                except:
+                    pass
+                self.setOnNowThread = threading.Timer(900.0, self.setOnNow)
+                self.setOnNowThread.name = "setOnNowThread"
+                self.setOnNowThread.start()
+            else:
+                self.clearOnNow(True)
+        except Exception,e:
+            self.log('setOnNow_Thread, Failed!, ' + str(e))
 
+                 
     def setOnNow(self):
         self.log('setOnNow')
-        self.getOnNow()
+        self.OnNowTitleLst, self.OnNowArtLst = self.getOnNow()
 
-
+        
+    def clearOnNow(self, force=False):
+        self.log('clearOnNow, force = ' + str(force))
+        if force == True or len(self.OnNowTitleLst) < self.maxChannels:
+            self.OnNowArtLst = []
+            self.OnNowTitleLst = [] 
+        
+        
     def setOnNext(self):
         self.log('setOnNext')
         self.getOnNow(1)
         
-        
+
     def channelUp(self):
         self.log('channelUp')
         self.notPlayingAction = 'Up'
@@ -1417,11 +1443,11 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             # self.infoOffset = 0
             # self.showInfo(5.0)
         
+        chname = self.getChname(self.currentChannel)
+        self.getControl(300).setLabel(chname)
         if self.showChannelBug == True:
             chtype = self.getChtype(self.currentChannel)     
-            chname = self.getChname(self.currentChannel)
             self.getControl(103).setImage(self.Artdownloader.FindBug(chtype, chname))
-        self.getControl(300).setLabel(chname)
         
         if xbmc.getCondVisibility('Player.ShowInfo'):
             json_query = '{"jsonrpc": "2.0", "method": "Input.Info", "id": 1}'
@@ -2508,6 +2534,8 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                     self.list.setVisible(False)   
                     self.getControl(130).setVisible(False)
                     self.MenuControl('Menu',self.InfTimer)
+                    xbmc.sleep(100)
+                    self.clearOnNow()
                 except:
                     pass
             else:
@@ -3190,13 +3218,13 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         setProperty("PTVL.BackgroundLoading","false")
         purgeGarbage()
         self.setShowInfo()
+        self.setOnNow_Thread()
         
         if REAL_SETTINGS.getSetting("EnableSettop") == "true":
             self.log('onInit, Settop Enabled')
             self.channelThread_Timer = threading.Timer(float(SETTOP_REFRESH), self.Settop)
             self.channelThread_Timer.name = "channelThread_Timer"
             self.channelThread_Timer.start() 
-
             
     def playStartOver(self):
         self.log('playStartOver')
@@ -3205,14 +3233,12 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             
             
     def playOnNow(self):
-        self.MenuControl('MenuAlt',self.InfTimer,True)
-        self.MenuControl('Menu',self.InfTimer,True) 
         pos = self.list.getSelectedPosition()
         item = self.OnNowTitleLst[pos]
+        self.MenuControl('MenuAlt',self.InfTimer,True)
+        self.MenuControl('Menu',self.InfTimer,True) 
         channel = int(self.channelList.cleanLabels(item.split('|')[0]))
         self.log('playOnNow, channel = ' + str(channel))
-        # channel = (((item.getLabel()).split('|')[0]).replace('[B]',''))
-        # channel = re.sub('\[COLOR=(.+?)\]', '', channel)
         if self.currentChannel != channel:
             self.setChannel((int(channel)))
             
