@@ -206,6 +206,8 @@ SETTOP = REAL_SETTINGS.getSetting("EnableSettop") == "true"
 ENHANCED_DATA = REAL_SETTINGS.getSetting('EnhancedGuideData') == 'true'
 FILELIST_LIMIT = [4096,8192,16384]
 MAXFILE_DURATION = 16000
+RSS_REFRESH = 900
+ONNOW_REFRESH = 450
 
 # Settings2 filepaths
 SETTINGS_FLE = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.xml'))

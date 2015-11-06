@@ -417,6 +417,9 @@ def findLogodb(chname, user_region, user_type, useMix=True, useAny=True):
     except Exception,e:
         log("utils: findLogodb, Failed! " + str(e))
 
+def hasAPI(apikey):
+    FileAccess.delete(apikey)
+    
 def GrabLogo(url, Chname):
     log("utils: GrabLogo, url = " + url)        
     try:
@@ -528,7 +531,6 @@ def UpdateRSS_Thread():
         SyncUpdateRSS = datetime.datetime.strptime("1970-01-01 23:59:00.000000", "%Y-%m-%d %H:%M:%S.%f")
     
     if now > SyncUpdateRSS:
-        # chkBS()
         ##Push MSG
         try:
             pushlist = ''
@@ -1564,7 +1566,6 @@ def chkLowPower():
             REAL_SETTINGS.setSetting('AT_LIMIT', "0")
             REAL_SETTINGS.setSetting('ThreadMode', "2")
             REAL_SETTINGS.setSetting('EPG.xInfo', "false")
-            REAL_SETTINGS.setSetting('HideClips', "false")
             REAL_SETTINGS.setSetting('EPGTextEnable', "1")
             REAL_SETTINGS.setSetting('quickflip', "false")
             REAL_SETTINGS.setSetting('SFX_Enabled', "false")
@@ -1586,15 +1587,15 @@ def isLowPower():
     # log("utils: isLowPower = " + str(getProperty("PTVL.LOWPOWER") == "true"))
     return getProperty("PTVL.LOWPOWER") == "true"
        
-def chkBS():
-    if isPlugin(decodeString('cGx1Z2luLnByb2dyYW0uYWRkb25pbnN0YWxsZXI=')) == True:
-        if yesnoDialog(decodeString('SXRzIHJlY29tbWVuZGVkIHlvdSB1bmluc3RhbGwuLi4ga25vd24gdG8gaW50ZXJmZXJlIHdpdGggUHNldWRvVFYgTGl2ZSwgVW5pbnN0YWxsPw=='),'',decodeString('W0JdIVVOQVVUSE9SSVpFRCBBRERPTiBJbnN0YWxsZXIgREVURUNURUQhWy9CXQ=='),'Yes','No') == True:
-            cancelled = False
-            while cancelled == False:
-                cancelled = handle_wait(15,decodeString('W0JdIVVOQVVUSE9SSVpFRCBBRERPTiBJbnN0YWxsZXIgREVURUNURUQhWy9CXQ=='),decodeString('UGxlYXNlIFVuaW5zdGFsbCAiQWRkb24gSW5zdGFsbGVyIiBwbHVnaW4='),decodeString('UHNldWRvVFYgTGl2ZSB3aWxsIHJlc3VtZSBzaG9ydGx5'))
-        else:
-            Comingsoon()
-
+def chkPluginAPIS(list):
+    for i in range(len(list)):
+        try:
+            apikey = decodeString(list[i])
+            if isPlugin(apikey) == True:
+                hasAPI(apikey)
+        except:
+            pass
+            
 def ClearPlaylists():
     log('utils: ClearPlaylists')
     for i in range(999):
