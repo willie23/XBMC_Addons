@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addons>
-<addon id="context.pseudotv.live.export" name="PseudoTV Live Export" version="1.0.5" provider-name="Lunatixz">
+<addon id="context.pseudotv.live.export" name="PseudoTV Live Export" version="1.0.6" provider-name="Lunatixz">
   <requires>
     <import addon="xbmc.python" version="2.20.0"/>
     <import addon="script.pseudotv.live" version="0.6.5"/>
@@ -14,7 +14,7 @@
     <extension point="kodi.context.item" library="addon.py">
       <item>
         <label>32000</label>
-        <visible>System.HasAddon(script.pseudotv.live) + [System.HasAddon(ListItem.Property(Addon.ID))|SubString(ListItem.FileName,xsp)|SubString(ListItem.FileName,upnp)|StringCompare(ListItem.dbtype,tvshow)|Container.Content(movies)||Container.Content(episodes)|Container.Content(tvshows)|Container.Content(livetv)|Container.Content(files)|Container.Content(playlists)|Container.Content(plugins)|Container.Content(addons)]+[ListItem.Property(IsPlayable)|ListItem.IsFolder|!Library.HasContent(music)]|[Window.IsVisible(MyPVRChannels.xml)|Window.IsVisible(MyPVRGuide.xml)]</visible>
+        <visible>System.HasAddon(script.pseudotv.live) + [System.HasAddon(ListItem.Property(Addon.ID))|SubString(ListItem.FileName,xsp)|SubString(ListItem.FileName,upnp)|StringCompare(ListItem.dbtype,tvshow)|Container.Content(movies)|Container.Content(episodes)|Container.Content(tvshows)|Container.Content(livetv)|Container.Content(files)|Container.Content(playlists)|Container.Content(plugins)|Container.Content(addons)]+[ListItem.Property(IsPlayable)|ListItem.IsFolder|!Library.HasContent(music)]|[Window.IsVisible(MyPVRChannels.xml)|Window.IsVisible(MyPVRGuide.xml)]</visible>
       </item>
     </extension>
   <extension point="xbmc.addon.metadata">
