@@ -185,7 +185,6 @@ class Artdownloader:
                 if ENHANCED_DATA == True and id != '0':
                     self.log('FindArtwork, Artwork Download')
                     self.DownloadArt(type, id, arttype, cachefile, chname, mpath, arttypeEXT)
-                    return cachefile
             else:
                 if id == '0':
                     if chtype == 8 and dbid != '0':
@@ -201,7 +200,6 @@ class Artdownloader:
                     if ENHANCED_DATA == True and id != '0':
                         self.log('FindArtwork, Artwork Download')
                         self.DownloadArt(type, id, arttype, cachefile, chname, mpath, arttypeEXT)
-                        return cachefile
         except Exception,e:  
             self.log("script.pseudotv.live-Artdownloader: FindArtwork Failed" + str(e), xbmc.LOGERROR)
             self.log(traceback.format_exc(), xbmc.LOGERROR) 

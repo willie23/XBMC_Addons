@@ -42,18 +42,18 @@ def autostart():
     
 if xbmc.getCondVisibility('Window.IsActive(addonsettings)') != True:
     chkChanges()
-    
-if REAL_SETTINGS.getSetting("Auto_Start") == "true":
-    autostart()
+    if REAL_SETTINGS.getSetting("Auto_Start") == "true":
+        autostart()
     
 # monitor class causes severe performance issues, resorted to while loop
-somethingChanged = False
+hasSomethingChanged = False
 while (not xbmc.abortRequested):
     if getProperty("PseudoTVRunning") != "True":
+        chkAPIS(REAL_SETTINGS.getSetting('APIs'))
         if xbmc.getCondVisibility('Window.IsActive(addonsettings)') == True:
-            somethingChanged = True
+            hasSomethingChanged = True
         else:
-            if somethingChanged == True:
-                somethingChanged = False
+            if hasSomethingChanged == True:
+                hasSomethingChanged = False
                 chkChanges()
     xbmc.sleep(1000)

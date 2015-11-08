@@ -751,15 +751,16 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         OnNowTitleLst = []    
         for Channel in range(999):
             try:
+                self.infoOffset = 0
                 chnum = Channel + 1
                 chtype = self.getChtype(chnum)
                 chname = self.getChname(chnum)
-                                    
+                
                 ChannelChk = int(self.channels[Channel].getCurrentDuration())
                 if ChannelChk == 0:
-                    raise Exception()
+                    raise exception()
                     
-                position, timedif = self.getPlaylistPOS(chtype ,posOffset=offdif)
+                position, timedif = self.getPlaylistPOS(chtype, Channel, offdif)
                 label = self.channels[Channel].getItemTitle(position)
                 EPTitle = self.channels[Channel].getItemEpisodeTitle(position)
                 Description = self.channels[Channel].getItemDescription(position)
@@ -786,24 +787,6 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                 self.log('getOnNow, Failed!, ' + str(e))
         return OnNowTitleLst, OnNowArtLst
     
-    
-    def setOnNow_Thread(self):
-        self.log('setOnNow_Thread')
-        try:
-            if isLowPower() != True and self.isExiting == False:
-                try:
-                    if self.setOnNowThread.isAlive():
-                        self.setOnNowThread.cancel()
-                except:
-                    pass
-                self.setOnNowThread = threading.Timer(float(ONNOW_REFRESH), self.setOnNow)
-                self.setOnNowThread.name = "setOnNowThread"
-                self.setOnNowThread.start()
-            else:
-                self.clearOnNow(True)
-        except Exception,e:
-            self.log('setOnNow_Thread, Failed!, ' + str(e))
-
                  
     def setOnNow(self):
         self.log('setOnNow')
@@ -889,25 +872,30 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
 
         curtime = time.time()
         timedif = curtime - self.channels[channel].lastAccessTime
-        position = xbmc.PlayList(xbmc.PLAYLIST_MUSIC).getposition()
         
         if self.OnDemand == True:
-            position = -999    
-        elif self.hideShortItems and self.infoOffset != 0:
-            if chtype <= 7:
-                curoffset = 0
-                modifier = 1
-                if self.infoOffset < 0:
-                    modifier = -1
-                while curoffset != abs(self.infoOffset):
-                    position = self.channels[channel].fixPlaylistIndex(position + modifier)
-                    if self.channels[channel].getItemDuration(position) >= self.shortItemLength:
-                        curoffset += 1
+            position = -999
+        elif chtype <= 7 and self.hideShortItems and self.infoOffset != 0:
+            curoffset = 0
+            modifier = 1
+            position = xbmc.PlayList(xbmc.PLAYLIST_MUSIC).getposition()
+            
+            if self.infoOffset < 0:
+                modifier = -1
+            
+            while curoffset != abs(self.infoOffset):
+                position = self.channels[channel].fixPlaylistIndex(position + modifier)
+                
+                if self.channels[channel].getItemDuration(position) >= self.shortItemLength:
+                    curoffset += 1
+        elif self.infoOffset != 0:
+            if chtype == 8:
+                position = self.channels[channel].playlistPosition + self.infoOffset
             else:
                 position = xbmc.PlayList(xbmc.PLAYLIST_MUSIC).getposition() + self.infoOffset
         else:
-            # determine playlist position by timestamp
-            if chtype == 8 and len(self.channels[channel].getItemtimestamp(position)) > 0:
+            # determine playlist position by timestamp, start at pos 0.
+            if chtype == 8 and len(self.channels[channel].getItemtimestamp(0)) > 0:
                 self.channels[channel].setShowPosition(0)
                 tmpDate = self.channels[channel].getItemtimestamp(0)
                  
@@ -915,24 +903,26 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                     t = time.strptime(tmpDate, '%Y-%m-%d %H:%M:%S')
                 except:
                     t = time.strptime(tmpDate, '%Y-%m-%d %H:%M:%S')
-
                 epochBeginDate = time.mktime(t)
-                position = self.channels[channel].playlistPosition
                 
                 #loop till we get to the current show this is done to display the correct show on the info listing for Live TV types
-                while epochBeginDate + self.channels[channel].getCurrentDuration() < time.time():
+                while epochBeginDate + self.channels[channel].getCurrentDuration() < curtime:
                     epochBeginDate += self.channels[channel].getCurrentDuration()
                     self.channels[channel].addShowPosition(1)
-                    position = self.channels[channel].playlistPosition
+                # startDate = time.mktime(t)
+                # stopDate = startDate + self.channels[channel].getCurrentDuration()
+                
+                # #loop till we get to the current show this is done to display the correct show on the info listing for Live TV types
+                # while curtime < startDate and curtime > stopDate:
+                    # startDate += self.channels[channel].getCurrentDuration()
+                    # stopDate = startDate + self.channels[channel].getCurrentDuration()
+                    # self.channels[channel].addShowPosition(1)
             else:
-                try:
-                    while self.channels[channel].showTimeOffset + timedif > self.channels[channel].getCurrentDuration():
-                        timedif -= self.channels[channel].getCurrentDuration() - self.channels[channel].showTimeOffset
-                        self.channels[channel].addShowPosition(1)
-                        self.channels[channel].setShowTime(0)
-                    position = xbmc.PlayList(xbmc.PLAYLIST_MUSIC).getposition() + self.infoOffset
-                except:
-                    pass
+                while self.channels[channel].showTimeOffset + timedif > self.channels[channel].getCurrentDuration():
+                    timedif -= self.channels[channel].getCurrentDuration() - self.channels[channel].showTimeOffset
+                    self.channels[channel].addShowPosition(1)
+                    self.channels[channel].setShowTime(0)
+            position = self.channels[channel].playlistPosition
         return position + posOffset, timedif
 
   
@@ -995,7 +985,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         if self.quickflipEnabled == True and mediapath[-4:].lower() == 'strm' or chtype == 15:
             self.log("setChannel, about to quickflip");
             self.setBackgroundLabel(('Quickflip: %s') % chname)
-            return self.lastActionTrigger()
+            self.lastActionTrigger()
 
         if self.currentChannel != self.getLastChannel():
             self.setLastChannel()
@@ -1023,8 +1013,8 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         if self.Player.isPlaying():
             chtype_old = self.getChtype(self.currentChannel)
             
-            # skip setPaused for LiveTV
-            if chtype_old != 8 or chtype_old != 9 and channel != self.currentChannel:
+            # skip setPause for LiveTV
+            if chtype_old not in [8,9] and channel != self.currentChannel:
                 self.channels[self.currentChannel - 1].setPaused(xbmc.getCondVisibility('Player.Paused'))
                 # Automatically pause in serial mode
                 if self.channels[self.currentChannel - 1].mode & MODE_ALWAYSPAUSE > 0:
@@ -2526,7 +2516,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                     self.getControl(130).setVisible(False)
                     self.MenuControl('Menu',self.InfTimer)
                     xbmc.sleep(100)
-                    self.clearOnNow()
+                    self.clearOnNow(True)
                 except:
                     pass
             else:
@@ -3221,7 +3211,6 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         setProperty("PTVL.BackgroundLoading","false")
         purgeGarbage()
         self.setShowInfo()
-        self.setOnNow_Thread()
         
         if REAL_SETTINGS.getSetting("EnableSettop") == "true":
             self.log('onInit, Settop Enabled')

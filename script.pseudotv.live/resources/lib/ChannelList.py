@@ -106,10 +106,10 @@ class ChannelList:
         self.Playlist_Limit = PlaylistLimit()
         self.findMaxChannels()
         
-        if self.backgroundUpdating > 0:
-            self.updateDialog = xbmcgui.DialogProgress()
-        else:
-            self.updateDialog = xbmcgui.DialogProgressBG()
+        # if self.backgroundUpdating > 0:
+            # self.updateDialog = xbmcgui.DialogProgress()
+        # else:
+        self.updateDialog = xbmcgui.DialogProgressBG()
             
         if self.forceReset:
             REAL_SETTINGS.setSetting("INTRO_PLAYED","false")
@@ -151,7 +151,7 @@ class ChannelList:
             if self.background == False:
                 self.updateDialogProgress = i * 100 // self.enteredChannelCount
                 self.updateDialog.update(self.updateDialogProgress, "Initializing Channel " + str(i + 1), "waiting for file lock")
-                self.myOverlay.setBackgroundLabel("Initializing: Channel " + str(i + 1))
+                self.myOverlay.setBackgroundLabel("Initializing: Channels (" + str(self.updateDialogProgress) + "%)")
                 setProperty('loading.progress',str(self.updateDialogProgress))
             self.channels.append(Channel())
             
@@ -316,20 +316,19 @@ class ChannelList:
                 if self.channels[channel - 1].setPlaylist(CHANNELS_LOC + 'channel_' + str(channel) + '.m3u') == True:
                     self.channels[channel - 1].isValid = True
                     self.channels[channel - 1].fileName = CHANNELS_LOC + 'channel_' + str(channel) + '.m3u'
+                    timedif = time.time() - self.lastResetTime
                     returnval = True
 
                     # If this channel has been watched for longer than it lasts, reset the channel
                     if self.channelResetSetting == 0 and self.channels[channel - 1].totalTimePlayed < self.channels[channel - 1].getTotalDuration():
                         createlist = False
-
+  
+                    # Reset livetv after two days
+                    if self.channelResetSetting == 0 and chtype == 8 and timedif < (60 * 60 * 24 * 2):
+                        createlist = False
+                    
                     if self.channelResetSetting > 0 and self.channelResetSetting < 4:
-                        timedif = time.time() - self.lastResetTime
 
-                        # reset livetv after two days
-                        if chtype == 8 and timedif < (60 * 60 * 24 * 2):
-                            createlist = False
-                            needsreset = True
-                        
                         if self.channelResetSetting == 1 and timedif < (60 * 60 * 24):
                             createlist = False
 
@@ -5222,13 +5221,16 @@ class ChannelList:
                                         if dur_accurate == False:
                                             dur = self.durationInSeconds(dur)
                                         
-                                        # epg can't handle overlarge controlbuttons, ignore oversized also ignore plugin "clips".
-                                        if dur > MAXFILE_DURATION:
-                                            self.log("getFileList, Failed! Duration exceeded MAXFILE_DURATION")
-                                            raise Exception()
-                                        elif file.startswith(("plugin", "upnp")) and dur < self.myOverlay.shortItemLength:
-                                            self.log("getFileList, Failed! Duration under shortItemLength")
-                                            raise Exception()
+                                        try:
+                                            # epg can't handle overlarge controlbuttons, ignore oversized also ignore plugin "clips".
+                                            if dur > MAXFILE_DURATION:
+                                                self.log("getFileList, Failed! Duration exceeded MAXFILE_DURATION")
+                                                raise Exception()
+                                            elif file.startswith(("plugin", "upnp")) and dur < self.myOverlay.shortItemLength:
+                                                self.log("getFileList, Failed! Duration under shortItemLength")
+                                                raise Exception()
+                                        except:
+                                            pass
 
                                         # only enhance meta for viewable shows.
                                         if dur >= self.myOverlay.shortItemLength:
@@ -5236,7 +5238,7 @@ class ChannelList:
                                             if type == 'tvshow':
                                                 showtitle = cleantitle # Use cleantitle without (year) for tvshows
 
-                                        # accurate real-time scheduling does not apply to chtypes <= 7, only chtype = 8. Doesn't hurt to keep track of it anyway, future todo?
+                                        # accurate real-time scheduling does not apply to chtypes <= 7, only chtype = 8. Doesn't hurt to keep track of it anyway, future feature?
                                         now = datetime.datetime.now()
                                         stopDate = self.startDate + datetime.timedelta(seconds=dur)
                                         
