@@ -1,6 +1,6 @@
 '''
     ustvnow XBMC Plugin
-    Copyright (C) 2015 t0mm0, jwdempsey, esxbr, Lunatixz
+    Copyright (C) 2015 t0mm0, jwdempsey, esxbr, Lunatixz, yrabl
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -60,16 +60,16 @@ class Ustvnow:
         Addon.log('get_channels')
         try:
             result = self.guide.cacheFunction(self.get_channels_NEW, quality, stream_type)
+            if not result:
+                raise Exception()
         except:
             result = self.get_channels_NEW(quality, stream_type)
         if not result:
-            result = self.get_channels_NEW(quality, stream_type)
-        if not result:
             result = [({
-                'name': 'USTVnow is unavailable',
-                'sname' : i['callsign'],
-                'url': url,
-                'icon': self.uBASE_URL + '/' + i['img']
+                'name': 'USTVnow is temporarily unavailable, Try again...',
+                'sname' : 'callsign',
+                'url': 'url',
+                'icon': 'img'
                 })]
         return result  
         
@@ -111,7 +111,6 @@ class Ustvnow:
         content = self._get_json('gtv/1/live/listchannels', {'token': self.token})
         channels = []
         results = content['results']['streamnames'];
-        #print results
         for i in results:
             url = "plugin://plugin.video.ustvnow/?name="+i['sname']+"&mode=play"
             name = Addon.cleanChanName(i['sname'])
@@ -121,24 +120,25 @@ class Ustvnow:
                 'url': url, 
                 'icon': self.uBASE_URL + '/' + i['img']
                 })  
-        #print channels
         return channels
         
         
     def get_recordings(self, quality=1, stream_type='rtmp'):
+        Addon.log('get_channels')
         self.token = self._login()
         html = self._get_html('iphone_ajax', {'tab': 'iphone_viewdvrlist'})
-        schedule_index = html.find('Scheduled')
-        if schedule_index > 0:
-            html = html[0:schedule_index]
+
+
+
         recordings = []
         for r in re.finditer('class="panel".+?title="(.+?)".+?src="(.+?)".+?' +
                              'class="nowplaying_item">(.+?)<\/td>.+?(?:<\/a>' +
-                             '(.+?)<\/td>.+?)?vertical-align:bottom.+?">.+?(Recorded.+?)' +
-                             '<\/div>.+?"(rtsp.+?)"+.+?"(iphone_ajax.+?)"', 
+                             '(.+?)<\/td>.+?)?vertical-align:bottom.+?">(.+?)' +
+
+                             '<\/div>.+?_self" href="(rtsp.+?)".+?href="(.+?)"', 
                              html, re.DOTALL):
             chan, icon, title, plot, rec_date, url, del_url = r.groups()
-            rec_date = rec_date.replace('\n', ' ').replace('\r', '').replace('\t', '')
+
             url = '%s%s%s' % (stream_type, url[4:-7], 
                               ['350', '650', '950'][quality])
             if plot:
@@ -155,7 +155,41 @@ class Ustvnow:
                                })
         return recordings
     
-    
+
+    def get_recordings_NEW(self, quality=1, stream_type='rtmp'):
+        Addon.log('get_recordings_NEW,' + str(quality) + ',' + stream_type)
+        self.token = self._login(True)
+        content = self._get_json('gtv/1/live/viewdvrlist', {'token': self.token, 'format': stream_type})
+        recordings = []
+        results = content['results'];
+        for i in results:
+            print i
+            chan = Addon.cleanChanName(i['callsign'])
+            icon = 'http://mc.ustvnow.com/gtv/1/live/viewposter?srsid=' + str(i['srsid']) + '&cs=' + i['callsign'] + '&tid=SH'
+            title = i['title']
+            plot = i['description']
+            orig_air_date = i['orig_air_date']
+            rec_date = i['recordedonmmddyyyy']
+            synopsis = i['synopsis']
+            duration = i['runtime']
+            episode_title = i['episode_title']
+            url = stream_type + '://' + i['dvrlocation'] + '.ustvnow.com:1935/' + i['app_name'] + '/mp4:' + [i['filename_low'], i['filename_med'], i['filename_high']][quality]
+            del_url = 'iphone_ajax?tab=updatedvr&scheduleid=' + str(i['scheduleid']) + '&token=' + self.token + '&action=remove'
+            recordings.append({'channel': chan,
+                               'stream_url': url,
+                               'title': title,
+                               'episode_title': episode_title,
+                               'tvshowtitle': title,
+                               'plot': plot,
+                               'rec_date': rec_date,
+                               'icon': icon,
+                               'duration': duration,
+                               'orig_air_date': orig_air_date,
+                               'synopsis': synopsis,
+                               'del_url': del_url
+                               })
+        return recordings
+
     def delete_recording(self, del_url):
         html = self._get_html(del_url)
         
@@ -230,7 +264,7 @@ class Ustvnow:
 
             d_entry = doc.createElement('desc');
             d_entry.setAttribute("lang", "en");
-            d_entry_content = doc.createTextNode(programme['synopsis']);
+            d_entry_content = doc.createTextNode(programme['description']);
             d_entry.appendChild(d_entry_content);
             pg_entry.appendChild(d_entry);
 
@@ -244,6 +278,11 @@ class Ustvnow:
             c_entry.appendChild(c_entry_content);
             pg_entry.appendChild(c_entry);
 
+            d_entry = doc.createElement('length');
+            d_entry.setAttribute("units", "seconds");
+            d_entry_content = doc.createTextNode(str(programme['actualremainingtime']));
+            d_entry.appendChild(d_entry_content);
+            pg_entry.appendChild(d_entry);
             en_entry = doc.createElement('episode-num');
             en_entry.setAttribute('system', 'dd_progid');
             en_entry_content = doc.createTextNode(programme['content_id']);
@@ -251,8 +290,8 @@ class Ustvnow:
             pg_entry.appendChild(en_entry);
 
             i_entry = doc.createElement('icon');
-            #i_entry.setAttribute("src", self.uBASE_URL + '/' + programme['img']);
             i_entry.setAttribute("src", 'http://mc.ustvnow.com/gtv/1/live/viewposter?srsid=' + str(programme['srsid']) + '&cs=' + programme['callsign'] + '&tid=' + programme['mediatype']);
+            #i_entry.setAttribute("src", self.uBASE_URL + '/' + programme['img']);
             pg_entry.appendChild(i_entry);
         return doc
 
@@ -371,13 +410,21 @@ class Ustvnow:
                 raise Exception()
         except Exception,e:
             Addon.log('_login_NEW, Failed!')
-            result = self.cache.cacheFunction(self._login_NEW_ALT)
-        if not result:
+            result = self.cache.cacheFunction(self._login_NEW)
+        if result == False:
             self.dlg.ok("USTVnow", "Connection FAILED!", "Please check your login credentials and try again later...")
         return result  
         
         
-    def _login_NEW_ALT(self):
+    def _login_NEW(self):
+        Addon.log('_login_NEW')
+        token = self._login_ORG() 
+        if token == False:
+            token = self._login_ALT()
+        return token
+        
+        
+    def _login_ALT(self):
         Addon.log('_login_NEW_ALT')
         self.cj = cookielib.CookieJar()
         opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cj)) 
@@ -386,25 +433,22 @@ class Ustvnow:
                                                'password': self.password, 
                                                'device':'gtv', 
                                                'redir':'0'})
-        response = self._fetch(url)
-        #response = opener.open(url)
+        response = opener.open(url)
         for cookie in self.cj:
             if cookie.name == 'token':
-                # #print '%s: %s' % (cookie.name, cookie.value)
                 return cookie.value
         return False
     
     
-    def _login_NEW(self):
-        Addon.log('_login_NEW')
+    def _login_ORG(self):
+        Addon.log('_login_ORG')
         self.cj = cookielib.CookieJar()
         opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cj))
         urllib2.install_opener(opener)
         url = self._build_url('iphone_login', {'username': self.user, 
                                                'password': self.password})
-        response = self._fetch(url)
+        response = opener.open(url)
         for cookie in self.cj:
-            # #print '%s: %s' % (cookie.name, cookie.value)
             if cookie.name == 'token':
                 return cookie.value
         return False

@@ -114,17 +114,38 @@ elif mode == 'live':
                              
 elif mode == 'recordings':
     stream_type = ['rtmp', 'rtsp'][int(Addon.get_setting('stream_type'))]
-    recordings = ustv.get_recordings(int(Addon.get_setting('quality')), 
+    quality = int(Addon.get_setting('quality'))
+    if usingNewCode == True:
+        recordings = ustv.get_recordings_NEW(quality, 
+                                     stream_type)
+    else:
+        recordings = ustv.get_recordings(quality, 
                                      stream_type)
     if recordings:
         for r in recordings:
+            #print r
             cm_del = (Addon.get_string(30003), 
                       'XBMC.RunPlugin(%s/?mode=delete&del=%s)' % 
                            (Addon.plugin_url, urllib.quote(r['del_url'])))
-            title = '%s (%s on %s)' % (r['title'], r['rec_date'], r['channel'])
+            title = '%s - %s (%s on %s)' % (r['title'], r['episode_title'], r['rec_date'], r['channel'])
+            if quality==3:
+                quality_name = 'High';
+            elif quality==2:
+                quality_name = 'High';
+            elif quality==1:
+                quality_name = 'Medium';
+            else:
+                quality_name = 'Low';
             Addon.add_video_item(r['stream_url'], {'title': title, 
-                                                   'plot': r['plot']},
-                                 img=r['icon'], cm=[cm_del], cm_replace=True)
+
+                                                   'plot': r['plot'],
+                                                   'plotoutline': r['synopsis'],
+                                                   'tvshowtitle': r['tvshowtitle'],
+                                                   'duration': r['duration'],
+                                                   'aired': r['orig_air_date'],
+                                                   'dateadded': r['rec_date']},
+                                 img=r['icon'], cm=[cm_del], cm_replace=True, HD=quality_name)
+        xbmcplugin.setContent(Addon.plugin_handle, 'episodes')
 elif mode == 'delete':
     dialog = xbmcgui.Dialog()
     ret = dialog.yesno(Addon.get_string(30000), Addon.get_string(30004), 
@@ -150,13 +171,26 @@ elif mode == 'tvguide':
         listings = ustv.get_tvguide(fpath, 'programs', name)
         if listings:
             for l in range(len(listings)):
-                print listings[l]
+                #print listings[l]
                 rURL = "plugin://plugin.video.ustvnow/?name="+listings[l][0]+"&mode=play"
+                if listings[l][3] == 'No description available':
+                    title = '%s - %s' % (listings[l][1], (listings[l][2]).replace('&amp;','&'))
+                else:
+                    title = '%s - %s - %s' % (listings[l][1], (listings[l][2]).replace('&amp;','&'), (listings[l][3]).replace('&amp;','&').replace('&quot;','"'))
                 Addon.add_video_item(rURL,
-                                     {'title': '%s - %s' % (listings[l][1], 
-                                                            (listings[l][2]).replace('&amp;','&')),
-                                      'plot': listings[l][3]},
+
+
+
+                                     {'title': title,
+                                      'Plot': listings[l][4],
+                                      'TVShowTitle': (listings[l][2]).replace('&amp;','&'),
+                                      'ChannelName': listings[l][0]},
                                      img=listings[l][6])
+#                                     {'title': '%s - %s - %s' % (listings[l][1], 
+#                                                            (listings[l][2]).replace('&amp;','&'),
+#                                                            (listings[l][3]).replace('&amp;','&')),
+#                                      'plot': listings[l][4]},
+#                                     img=listings[l][6])
     except:
         if Addon.makeXMLTV(ustv.get_guidedata(),urllib.unquote(fpath)) == True:
             listings = ustv.get_tvguide(fpath)

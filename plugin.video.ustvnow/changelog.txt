@@ -1,3 +1,9 @@
+[B]Version 12.0.9[/B]
+- "NEW" code exclusive features:
+    - Tweaked login
+    - Added TV Guide Artwork *Thanks yrabl.
+    - Improved Record/Favourites *Thanks yrabl.
+    
 [B]Version 12.0.8[/B]
 - "NEW" code exclusive features:
     - Tweaked File Service and Settings.
