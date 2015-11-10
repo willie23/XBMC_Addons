@@ -251,7 +251,8 @@ class Ustvnow:
             pg_entry.appendChild(en_entry);
 
             i_entry = doc.createElement('icon');
-            i_entry.setAttribute("src", self.uBASE_URL + '/' + programme['img']);
+            #i_entry.setAttribute("src", self.uBASE_URL + '/' + programme['img']);
+            i_entry.setAttribute("src", 'http://mc.ustvnow.com/gtv/1/live/viewposter?srsid=' + str(programme['srsid']) + '&cs=' + programme['callsign'] + '&tid=' + programme['mediatype']);
             pg_entry.appendChild(i_entry);
         return doc
 
