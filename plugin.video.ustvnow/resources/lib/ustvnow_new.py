@@ -22,6 +22,7 @@ import urllib, urllib2, socket
 import simplejson as json
 import xbmcgui, xbmc, xbmcvfs
 import Addon
+import time, datetime, calendar
 
 from xml.dom import minidom
 from time import time
@@ -59,7 +60,8 @@ class Ustvnow:
     def get_channels(self, quality=1, stream_type='rtmp'):
         Addon.log('get_channels')
         try:
-            result = self.guide.cacheFunction(self.get_channels_NEW, quality, stream_type)
+            result = self.guide.get_channels_NEW(self.get_channels_NEW, quality, stream_type)
+            # result = self.guide.cacheFunction(self.get_channels_NEW, quality, stream_type)
             if not result:
                 raise Exception()
         except:
@@ -74,25 +76,60 @@ class Ustvnow:
         return result  
         
         
+    # def get_channels_NEW(self, quality=1, stream_type='rtmp'):
+        # Addon.log('get_channels_NEW,' + str(quality) + ',' + stream_type)
+        # self.token = self._login()
+        # content = self._get_json('gtv/1/live/listchannels', {'token': self.token})
+        # channels = []
+        # ##print json.dumps(content);
+        # results = content['results']['streamnames'];
+        # for i in results:
+            # name = Addon.cleanChanName(i['sname'])
+            # url = "plugin://plugin.video.ustvnow/?name="+name+"&mode=play"
+            # channels.append({
+                # 'name': name,
+                # 'sname' : i['callsign'],
+                # 'url': url,
+                # 'icon': self.uBASE_URL + '/' + i['img']
+                # })
+            # if self.write_type == 1:
+                # Addon.makeSTRM(name, url)
+            # self.make_Playlists(quality, stream_type)
+        # return channels
+        
+        
     def get_channels_NEW(self, quality=1, stream_type='rtmp'):
         Addon.log('get_channels_NEW,' + str(quality) + ',' + stream_type)
         self.token = self._login()
-        content = self._get_json('gtv/1/live/listchannels', {'token': self.token})
+        content = self._get_json('gtv/1/live/channelguide', {'token': self.token,'format': stream_type, 'l': '1'})
         channels = []
         ##print json.dumps(content);
-        results = content['results']['streamnames'];
+        results = content['results'];
         for i in results:
-            name = Addon.cleanChanName(i['sname'])
-            url = "plugin://plugin.video.ustvnow/?name="+name+"&mode=play"
-            channels.append({
-                'name': name,
-                'sname' : i['callsign'],
-                'url': url,
-                'icon': self.uBASE_URL + '/' + i['img']
-                })
-            if self.write_type == 1:
-                Addon.makeSTRM(name, url)
-            self.make_Playlists(quality, stream_type)
+            print i
+            if i['order'] == 1:
+                name = Addon.cleanChanName(i['stream_code'])
+                url = "plugin://plugin.video.ustvnow/?name="+name+"&mode=play"
+                mediatype = i['mediatype']
+                poster_url = 'http://mc.ustvnow.com/gtv/1/live/viewposter?srsid=' + str(i['srsid']) + '&cs=' + i['callsign'] + '&tid=' + mediatype
+                mediatype = mediatype.replace('SH', 'tvshow').replace('EP', 'episode').replace('MV', 'movie')
+                channels.append({
+                    'name': name,
+                    'sname' : i['callsign'],
+                    'url': url,
+                    'episode_title': i['episode_title'],
+                    'title': i['title'],
+                    'plot': i['description'],
+                    'plotoutline': i['synopsis'],
+                    'mediatype': mediatype,
+                    'playable': True,
+                    'icon': self.uBASE_URL + '/' + i['img'],
+                    'poster_url': poster_url
+                    })
+                    
+                if self.write_type == 1:
+                    Addon.makeSTRM(name, url)
+                self.make_Playlists(quality, stream_type)
         return channels
             
             
@@ -127,9 +164,6 @@ class Ustvnow:
         Addon.log('get_channels')
         self.token = self._login()
         html = self._get_html('iphone_ajax', {'tab': 'iphone_viewdvrlist'})
-
-
-
         recordings = []
         for r in re.finditer('class="panel".+?title="(.+?)".+?src="(.+?)".+?' +
                              'class="nowplaying_item">(.+?)<\/td>.+?(?:<\/a>' +
@@ -150,20 +184,25 @@ class Ustvnow:
                                'title': title,
                                'plot': plot,
                                'rec_date': rec_date.strip(),
+                               'playable': True,
                                'icon': icon,
                                'del_url': del_url
                                })
         return recordings
     
-
-    def get_recordings_NEW(self, quality=1, stream_type='rtmp'):
+    
+    def get_recordings_NEW(self, quality=1, stream_type='rtmp', type='recordings'):
         Addon.log('get_recordings_NEW,' + str(quality) + ',' + stream_type)
         self.token = self._login(True)
         content = self._get_json('gtv/1/live/viewdvrlist', {'token': self.token, 'format': stream_type})
         recordings = []
+        scheduled = []
+        now = datetime.now();
         results = content['results'];
         for i in results:
-            print i
+
+            #print i
+            start_time = datetime.fromtimestamp(float(i['ut_start']));
             chan = Addon.cleanChanName(i['callsign'])
             icon = 'http://mc.ustvnow.com/gtv/1/live/viewposter?srsid=' + str(i['srsid']) + '&cs=' + i['callsign'] + '&tid=SH'
             title = i['title']
@@ -175,21 +214,48 @@ class Ustvnow:
             episode_title = i['episode_title']
             url = stream_type + '://' + i['dvrlocation'] + '.ustvnow.com:1935/' + i['app_name'] + '/mp4:' + [i['filename_low'], i['filename_med'], i['filename_high']][quality]
             del_url = 'iphone_ajax?tab=updatedvr&scheduleid=' + str(i['scheduleid']) + '&token=' + self.token + '&action=remove'
-            recordings.append({'channel': chan,
-                               'stream_url': url,
-                               'title': title,
-                               'episode_title': episode_title,
-                               'tvshowtitle': title,
-                               'plot': plot,
-                               'rec_date': rec_date,
-                               'icon': icon,
-                               'duration': duration,
-                               'orig_air_date': orig_air_date,
-                               'synopsis': synopsis,
-                               'del_url': del_url
-                               })
-        return recordings
+            if (type == 'recordings' and (now > start_time)):
+                recordings.append({'channel': chan,
+                                   'stream_url': url,
 
+                                   'title': title,
+                                   'episode_title': episode_title,
+                                   'tvshowtitle': title,
+
+                                   'plot': plot,
+                                   'rec_date': rec_date,
+
+                                   'icon': icon,
+                                   'duration': duration,
+                                   'orig_air_date': orig_air_date,
+                                   'synopsis': synopsis,
+                                   'playable': (now > start_time),
+                                   'del_url': del_url
+
+                                   })
+            elif (type == 'scheduled' and (now < start_time)):
+                scheduled.append({'channel': chan,
+                                   'stream_url': url,
+                                   'title': title,
+                                   'episode_title': episode_title,
+                                   'tvshowtitle': title,
+                                   'plot': plot,
+                                   'rec_date': rec_date,
+                                   'icon': icon,
+                                   'duration': duration,
+                                   'orig_air_date': orig_air_date,
+                                   'synopsis': synopsis,
+                                   'playable': (now > start_time),
+                                   'del_url': del_url
+                                   })
+        if (type == 'recordings'):
+            return recordings
+        elif (type == 'scheduled'):
+            return scheduled
+        else:
+            return []
+
+            
     def delete_recording(self, del_url):
         html = self._get_html(del_url)
         
@@ -198,9 +264,9 @@ class Ustvnow:
         Addon.log('get_guidedata')
         try:
             result = self.guide.cacheFunction(self.get_guidedata_NEW)
+            if not result:
+                raise Exception()
         except:
-            result = self.get_guidedata_NEW()
-        if not result:
             result = self.get_guidedata_NEW()
         if not result:
             result = []
@@ -277,7 +343,6 @@ class Ustvnow:
             c_entry_content = doc.createTextNode(programme['xcdrappname']);
             c_entry.appendChild(c_entry_content);
             pg_entry.appendChild(c_entry);
-
             d_entry = doc.createElement('length');
             d_entry.setAttribute("units", "seconds");
             d_entry_content = doc.createTextNode(str(programme['actualremainingtime']));

@@ -1,3 +1,8 @@
+[B]Version 12.0.10[/B]
+- "NEW" code exclusive features:
+    - Added Scheduling *Thanks yrabl.
+    - Improved UI *Thanks yrabl.
+    
 [B]Version 12.0.9[/B]
 - "NEW" code exclusive features:
     - Tweaked login

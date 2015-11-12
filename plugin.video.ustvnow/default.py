@@ -73,6 +73,7 @@ if mode == 'main':
     if usingNewCode == True:
         Addon.add_directory({'mode': 'favorites'}, Addon.get_string(30006))
         Addon.add_directory({'mode': 'tvguide'}, Addon.get_string(30007))
+        Addon.add_directory({'mode': 'scheduled'}, Addon.get_string(30111))
     if premium == True:
         Addon.add_directory({'mode': 'recordings'}, Addon.get_string(30002))
 
@@ -83,10 +84,23 @@ elif mode == 'live':
             rURL = "plugin://plugin.video.ustvnow/?name="+c['name']+"&mode=play"
             logo = xbmc.translatePath(os.path.join(plugin_path, 'resources', 'images', c['name']+'.png'))
             item = xbmcgui.ListItem(path=rURL)
+            #print c
             if usingNewCode == True:
                 name = c["name"];
                 sname = c["sname"];
                 icon = c["icon"];
+                poster_url = c["poster_url"];
+                episode_title = c["episode_title"];
+                title = c["title"];
+                plot = c["plot"];
+                plotoutline = c["plotoutline"];
+                mediatype = c["mediatype"];
+                if mediatype != "movie":
+                    tvshowtitle = title
+                if episode_title != "":
+                    title = '%s - %s - %s' % (name, (title).replace('&amp;','&').replace('&quot;','"'), (episode_title).replace('&amp;','&').replace('&quot;','"'))
+                else:
+                    title = '%s - %s' % (name, (title).replace('&amp;','&').replace('&quot;','"'))
                 for quality in range(1,4):
                     parameters = urllib.urlencode( {
                         'c': sname,
@@ -103,8 +117,13 @@ elif mode == 'live':
                         quality_name = 'High';
                         
                 Addon.add_video_item(rURL,
-                                     {'title': '%s' % (c['name'])},
-                                     img=logo, HD=quality_name)
+                
+                                     {'title': title,
+                                     'plot': plot,
+                                     'mediatype': mediatype,
+                                     'plotoutline': plotoutline},
+                                     img=logo, fanart=poster_url, HD=quality_name, playable=c['playable'])
+                xbmcplugin.setContent(Addon.plugin_handle, 'episodes')
             else:
                 Addon.add_video_item(rURL,
                                      {'title': '%s - %s' % (c['name'], 
@@ -117,7 +136,8 @@ elif mode == 'recordings':
     quality = int(Addon.get_setting('quality'))
     if usingNewCode == True:
         recordings = ustv.get_recordings_NEW(quality, 
-                                     stream_type)
+
+                                     stream_type, 'recordings')
     else:
         recordings = ustv.get_recordings(quality, 
                                      stream_type)
@@ -144,8 +164,39 @@ elif mode == 'recordings':
                                                    'duration': r['duration'],
                                                    'aired': r['orig_air_date'],
                                                    'dateadded': r['rec_date']},
-                                 img=r['icon'], cm=[cm_del], cm_replace=True, HD=quality_name)
+                                 img=r['icon'], cm=[cm_del], cm_replace=True, HD=quality_name, playable=r['playable'])
         xbmcplugin.setContent(Addon.plugin_handle, 'episodes')
+        
+elif mode == 'scheduled':
+    stream_type = ['rtmp', 'rtsp'][int(Addon.get_setting('stream_type'))]
+    quality = int(Addon.get_setting('quality'))
+    scheduled = ustv.get_recordings_NEW(quality, 
+                                 stream_type, 'scheduled')
+    if scheduled:
+        for r in scheduled:
+            #print r
+            cm_del = (Addon.get_string(30003), 
+                      'XBMC.RunPlugin(%s/?mode=delete&del=%s)' % 
+                           (Addon.plugin_url, urllib.quote(r['del_url'])))
+            title = '%s - %s (%s on %s)' % (r['title'], r['episode_title'], r['rec_date'], r['channel'])
+            if quality==3:
+                quality_name = 'High';
+            elif quality==2:
+                quality_name = 'High';
+            elif quality==1:
+                quality_name = 'Medium';
+            else:
+                quality_name = 'Low';
+            Addon.add_video_item(r['stream_url'], {'title': title, 
+                                                   'plot': r['plot'],
+                                                   'plotoutline': r['synopsis'],
+                                                   'tvshowtitle': r['tvshowtitle'],
+                                                   'duration': r['duration'],
+                                                   'aired': r['orig_air_date'],
+                                                   'dateadded': r['rec_date']},
+                                 img=r['icon'], cm=[cm_del], cm_replace=True, HD=quality_name, playable=False)
+        xbmcplugin.setContent(Addon.plugin_handle, 'episodes')
+        
 elif mode == 'delete':
     dialog = xbmcgui.Dialog()
     ret = dialog.yesno(Addon.get_string(30000), Addon.get_string(30004), 
@@ -178,9 +229,6 @@ elif mode == 'tvguide':
                 else:
                     title = '%s - %s - %s' % (listings[l][1], (listings[l][2]).replace('&amp;','&'), (listings[l][3]).replace('&amp;','&').replace('&quot;','"'))
                 Addon.add_video_item(rURL,
-
-
-
                                      {'title': title,
                                       'Plot': listings[l][4],
                                       'TVShowTitle': (listings[l][2]).replace('&amp;','&'),
@@ -223,4 +271,5 @@ elif mode=='play':
                 Addon.log(url)
                 item = xbmcgui.ListItem(path=url)
                 xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)
+                
 Addon.end_of_directory()

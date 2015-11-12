@@ -245,7 +245,7 @@ def add_music_item(item_id, infolabels, img='', fanart='', total_items=0):
                                 isFolder=False, totalItems=total_items)
 
 def add_video_item(url, infolabels, img='', fanart='', total_items=0, 
-                   cm=[], cm_replace=False, HD='Low'):
+                   cm=[], cm_replace=False, HD='Low', playable=True):
     infolabels = decode_dict(infolabels)
     if url.find('://') == -1:
         url = build_plugin_url({'play': url})
@@ -253,8 +253,13 @@ def add_video_item(url, infolabels, img='', fanart='', total_items=0,
     listitem = xbmcgui.ListItem(infolabels['title'], iconImage=img, 
                                 thumbnailImage=img)
     listitem.setInfo('video', infolabels)
-    listitem.setProperty('IsPlayable', 'true')
-    listitem.setProperty('fanart_image', fanart)
+    if playable:
+        listitem.setProperty('IsPlayable', 'true')
+        log('Item playable: %s' % (infolabels['title']))
+    else:
+        listitem.setProperty('IsPlayable', 'false')
+        log('Item unplayable: %s' % (infolabels['title']))
+    listitem.setArt({'fanart': fanart, 'icon': img})
     if HD == 'High':
         listitem.addStreamInfo('video', { 'width':1280 ,'height' : 720 })
     if HD == 'Medium':
