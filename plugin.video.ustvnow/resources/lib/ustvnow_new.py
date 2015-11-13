@@ -60,7 +60,7 @@ class Ustvnow:
     def get_channels(self, quality=1, stream_type='rtmp'):
         Addon.log('get_channels')
         try:
-            result = self.guide.get_channels_NEW(self.get_channels_NEW, quality, stream_type)
+            result = self.get_channels_NEW(quality, stream_type)
             # result = self.guide.cacheFunction(self.get_channels_NEW, quality, stream_type)
             if not result:
                 raise Exception()
