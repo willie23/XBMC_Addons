@@ -276,7 +276,7 @@ class Ustvnow:
     def get_guidedata_NEW(self):
         Addon.log('get_guidedata')
         self.token = self._login()
-        content = self._get_json('gtv/1/live/channelguide', {'token': self.token})
+        content = self._get_json('gtv/1/live/channelguide', {'token': self.token, 'l': '1440'})
         results = content['results'];
         now = time();
         doc = minidom.Document();
