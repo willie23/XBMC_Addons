@@ -235,7 +235,7 @@ def get_string(string_id):
 def add_music_item(item_id, infolabels, img='', fanart='', total_items=0):
     infolabels = decode_dict(infolabels)
     url = build_plugin_url({'play': item_id})
-    log('adding item: %s' % (infolabels['title'].decode('utf-8','ignore')))
+    log('adding item: %s' % (infolabels['title']))
     listitem = xbmcgui.ListItem(infolabels['title'], iconImage=img, 
                                 thumbnailImage=img)
     listitem.setInfo('music', infolabels)
