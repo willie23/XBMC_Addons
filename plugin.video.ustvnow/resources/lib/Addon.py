@@ -249,7 +249,6 @@ def add_video_item(url, infolabels, img='', fanart='', total_items=0,
     infolabels = decode_dict(infolabels)
     if url.find('://') == -1:
         url = build_plugin_url({'play': url})
-    log('adding item: %s' % (infolabels['title'].decode('utf-8','ignore')))
     listitem = xbmcgui.ListItem(infolabels['title'], iconImage=img, 
                                 thumbnailImage=img)
     listitem.setInfo('video', infolabels)
