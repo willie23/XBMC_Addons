@@ -1,3 +1,7 @@
+[B]Version 12.0.11[/B]
+- "NEW" code exclusive features:
+    - Tweaked Caching, boosted TVGuide and Channel load times.
+    
 [B]Version 12.0.10[/B]
 - "NEW" code exclusive features:
     - Added Scheduling *Thanks yrabl.

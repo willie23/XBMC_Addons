@@ -47,7 +47,7 @@ class Ustvnow:
         self.password = password
         self.premium = premium
         self.dlg = xbmcgui.Dialog()
-        self.cache  = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "cache",1)
+        self.cache  = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "cache",.5)
         self.guide  = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "guide",5)
         self.write_type = int(Addon.get_setting('write_type'))
         
@@ -57,11 +57,13 @@ class Ustvnow:
         return Addon.readXMLTV(filename, type, name)
         
         
-    def get_channels(self, quality=1, stream_type='rtmp'):
+    def get_channels(self, quality=1, stream_type='rtmp', cache=False):
         Addon.log('get_channels')
         try:
-            result = self.get_channels_NEW(quality, stream_type)
-            # result = self.guide.cacheFunction(self.get_channels_NEW, quality, stream_type)
+            if cache:
+                result = self.cache.cacheFunction(self.get_channels_NEW, quality, stream_type)
+            else:
+                result = self.get_channels_NEW(quality, stream_type)
             if not result:
                 raise Exception()
         except:
@@ -74,28 +76,6 @@ class Ustvnow:
                 'icon': 'img'
                 })]
         return result  
-        
-        
-    # def get_channels_NEW(self, quality=1, stream_type='rtmp'):
-        # Addon.log('get_channels_NEW,' + str(quality) + ',' + stream_type)
-        # self.token = self._login()
-        # content = self._get_json('gtv/1/live/listchannels', {'token': self.token})
-        # channels = []
-        # ##print json.dumps(content);
-        # results = content['results']['streamnames'];
-        # for i in results:
-            # name = Addon.cleanChanName(i['sname'])
-            # url = "plugin://plugin.video.ustvnow/?name="+name+"&mode=play"
-            # channels.append({
-                # 'name': name,
-                # 'sname' : i['callsign'],
-                # 'url': url,
-                # 'icon': self.uBASE_URL + '/' + i['img']
-                # })
-            # if self.write_type == 1:
-                # Addon.makeSTRM(name, url)
-            # self.make_Playlists(quality, stream_type)
-        # return channels
         
         
     def get_channels_NEW(self, quality=1, stream_type='rtmp'):
@@ -136,7 +116,7 @@ class Ustvnow:
     def make_Playlists(self, quality, stream_type):
         Addon.log('make_Playlists')
         if self.write_type > 1:
-            Addon.makeM3U(self.get_link(quality, stream_type))
+            Addon.makeM3U(self.get_link(quality, stream_type, True))
             
 # LIVETV           = BASE_URL + '/iphone/1/live/playingnow?pgonly=true&token=%s'
 # RECORDINGS       = BASE_URL + '/iphone/1/dvr/viewdvrlist?pgonly=true&token=%s'
@@ -158,41 +138,10 @@ class Ustvnow:
                 'icon': self.uBASE_URL + '/' + i['img']
                 })  
         return channels
-        
-        
-    def get_recordings(self, quality=1, stream_type='rtmp'):
-        Addon.log('get_channels')
-        self.token = self._login()
-        html = self._get_html('iphone_ajax', {'tab': 'iphone_viewdvrlist'})
-        recordings = []
-        for r in re.finditer('class="panel".+?title="(.+?)".+?src="(.+?)".+?' +
-                             'class="nowplaying_item">(.+?)<\/td>.+?(?:<\/a>' +
-                             '(.+?)<\/td>.+?)?vertical-align:bottom.+?">(.+?)' +
 
-                             '<\/div>.+?_self" href="(rtsp.+?)".+?href="(.+?)"', 
-                             html, re.DOTALL):
-            chan, icon, title, plot, rec_date, url, del_url = r.groups()
-
-            url = '%s%s%s' % (stream_type, url[4:-7], 
-                              ['350', '650', '950'][quality])
-            if plot:
-                plot = plot.strip()
-            else:
-                plot = ''
-            recordings.append({'channel': chan,
-                               'stream_url': url,
-                               'title': title,
-                               'plot': plot,
-                               'rec_date': rec_date.strip(),
-                               'playable': True,
-                               'icon': icon,
-                               'del_url': del_url
-                               })
-        return recordings
     
-    
-    def get_recordings_NEW(self, quality=1, stream_type='rtmp', type='recordings'):
-        Addon.log('get_recordings_NEW,' + str(quality) + ',' + stream_type)
+    def get_recordings(self, quality=1, stream_type='rtmp', type='recordings'):
+        Addon.log('get_recordings,' + str(quality) + ',' + stream_type)
         self.token = self._login(True)
         content = self._get_json('gtv/1/live/viewdvrlist', {'token': self.token, 'format': stream_type})
         recordings = []
@@ -267,6 +216,7 @@ class Ustvnow:
             if not result:
                 raise Exception()
         except:
+            Addon.log('get_guidedata Failed')
             result = self.get_guidedata_NEW()
         if not result:
             result = []
@@ -274,7 +224,7 @@ class Ustvnow:
 
         
     def get_guidedata_NEW(self):
-        Addon.log('get_guidedata')
+        Addon.log('get_guidedata_NEW')
         self.token = self._login()
         content = self._get_json('gtv/1/live/channelguide', {'token': self.token, 'l': '1440'})
         results = content['results'];
@@ -286,7 +236,7 @@ class Ustvnow:
         base.setAttribute("generator-info-name", "IPTV Plugin");
         base.setAttribute("generator-info-url", "http://www.xmltv.org/");
         doc.appendChild(base)
-        channels = self.get_channels();
+        channels = self.get_channels(cache=True);
 
         for channel in channels:
             name = channel['name'];
@@ -356,7 +306,6 @@ class Ustvnow:
 
             i_entry = doc.createElement('icon');
             i_entry.setAttribute("src", 'http://mc.ustvnow.com/gtv/1/live/viewposter?srsid=' + str(programme['srsid']) + '&cs=' + programme['callsign'] + '&tid=' + programme['mediatype']);
-            #i_entry.setAttribute("src", self.uBASE_URL + '/' + programme['img']);
             pg_entry.appendChild(i_entry);
         return doc
 
@@ -394,7 +343,6 @@ class Ustvnow:
             req = urllib2.Request(url, form_data)
         else:
             req = url
-        # req.add_header('User-Agent','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11')
         try:
             response = urllib2.urlopen(req)
             return response
@@ -428,7 +376,28 @@ class Ustvnow:
         return html
 
         
-    def get_link(self, quality=1, stream_type='rtmp'):
+    def get_link(self, quality=1, stream_type='rtmp', cache=False):
+        Addon.log('get_link')
+        try:
+            if cache:
+                result = self.cache.cacheFunction(self.get_link_NEW, quality, stream_type)
+            else:
+                result = self.get_link_NEW(quality, stream_type)
+            if not result:
+                raise Exception()
+        except:
+            result = self.get_link_NEW(quality, stream_type)
+        if not result:
+            result = [({
+                'name': 'USTVnow is temporarily unavailable, Try again...',
+                'now' : 'N/A',
+                'url': 'url',
+                'icon': 'img'
+                })]
+        return result  
+        
+        
+    def get_link_NEW(self, quality=1, stream_type='rtmp'):
         Addon.log('get_link')
         self.token = self._login(True)
         html = self._get_html('iphone_ajax', {'tab': 'iphone_playingnow', 
@@ -449,7 +418,6 @@ class Ustvnow:
             try:
                 if not url.startswith('http'):
                     now = {'title': title, 'plot': plot.strip()}
-                    # #print url
                     url = '%s%s%d' % (stream_type, url[4:-1], quality + 1)
                     aChannelname = {'name': name}
                     aChannel = {'name': name, 'url': url, 
@@ -459,8 +427,6 @@ class Ustvnow:
                        channels.append(aChannel)
             except:
                 pass
-                
-        channels.sort()
         return channels
                 
                 

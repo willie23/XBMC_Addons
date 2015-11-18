@@ -78,7 +78,7 @@ if mode == 'main':
         Addon.add_directory({'mode': 'recordings'}, Addon.get_string(30002))
 
 elif mode == 'live':
-    channels = ustv.get_channels(quality_type, stream_type)
+    channels = ustv.get_channels(quality_type, stream_type, True)
     if channels:
         for c in channels:
             rURL = "plugin://plugin.video.ustvnow/?name="+c['name']+"&mode=play"
@@ -113,7 +113,7 @@ elif mode == 'live':
                         quality_name = 'Low';
                     elif quality==2:
                         quality_name = 'Medium';
-                    elif quality==3:
+                    else:
                         quality_name = 'High';
                         
                 Addon.add_video_item(rURL,
@@ -135,7 +135,7 @@ elif mode == 'recordings':
     stream_type = ['rtmp', 'rtsp'][int(Addon.get_setting('stream_type'))]
     quality = int(Addon.get_setting('quality'))
     if usingNewCode == True:
-        recordings = ustv.get_recordings_NEW(quality, 
+        recordings = ustv.get_recordings(quality, 
 
                                      stream_type, 'recordings')
     else:
@@ -170,7 +170,7 @@ elif mode == 'recordings':
 elif mode == 'scheduled':
     stream_type = ['rtmp', 'rtsp'][int(Addon.get_setting('stream_type'))]
     quality = int(Addon.get_setting('quality'))
-    scheduled = ustv.get_recordings_NEW(quality, 
+    scheduled = ustv.get_recordings(quality, 
                                  stream_type, 'scheduled')
     if scheduled:
         for r in scheduled:
@@ -213,7 +213,7 @@ elif mode == 'guidedata':
     Addon.makeXMLTV(ustv.get_guidedata(),urllib.unquote(fpath))
     
 elif mode == 'playlist':
-    ustv.get_channels(quality_type, stream_type)
+    ustv.get_channels(quality_type, stream_type, True)
 
 elif mode == 'tvguide':
     fpath = os.path.join(write_path, 'xmltv.xml')    
@@ -234,11 +234,6 @@ elif mode == 'tvguide':
                                       'TVShowTitle': (listings[l][2]).replace('&amp;','&'),
                                       'ChannelName': listings[l][0]},
                                      img=listings[l][6])
-#                                     {'title': '%s - %s - %s' % (listings[l][1], 
-#                                                            (listings[l][2]).replace('&amp;','&'),
-#                                                            (listings[l][3]).replace('&amp;','&')),
-#                                      'plot': listings[l][4]},
-#                                     img=listings[l][6])
     except:
         if Addon.makeXMLTV(ustv.get_guidedata(),urllib.unquote(fpath)) == True:
             listings = ustv.get_tvguide(fpath)
@@ -260,7 +255,7 @@ elif mode=='play':
     Addon.log(name)
     channels = []
     if usingNewCode == True:
-        channels = ustv.get_link(quality_type, stream_type)
+        channels = ustv.get_link(quality_type, stream_type, True)
     else:
         channels = ustv.get_channels(quality_type, stream_type)
     if channels:
@@ -270,6 +265,5 @@ elif mode=='play':
                 url = c['url']
                 Addon.log(url)
                 item = xbmcgui.ListItem(path=url)
-                xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)
-                
+                xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)      
 Addon.end_of_directory()
