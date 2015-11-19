@@ -86,30 +86,35 @@ class Ustvnow:
         ##print json.dumps(content);
         results = content['results'];
         for i in results:
-            print i
-            if i['order'] == 1:
-                name = Addon.cleanChanName(i['stream_code'])
-                url = "plugin://plugin.video.ustvnow/?name="+name+"&mode=play"
-                mediatype = i['mediatype']
-                poster_url = 'http://mc.ustvnow.com/gtv/1/live/viewposter?srsid=' + str(i['srsid']) + '&cs=' + i['callsign'] + '&tid=' + mediatype
-                mediatype = mediatype.replace('SH', 'tvshow').replace('EP', 'episode').replace('MV', 'movie')
-                channels.append({
-                    'name': name,
-                    'sname' : i['callsign'],
-                    'url': url,
-                    'episode_title': i['episode_title'],
-                    'title': i['title'],
-                    'plot': i['description'],
-                    'plotoutline': i['synopsis'],
-                    'mediatype': mediatype,
-                    'playable': True,
-                    'icon': self.uBASE_URL + '/' + i['img'],
-                    'poster_url': poster_url
-                    })
-                    
-                if self.write_type == 1:
-                    Addon.makeSTRM(name, url)
-                self.make_Playlists(quality, stream_type)
+            try:
+                if i['order'] == 1:
+                    name = Addon.cleanChanName(i['stream_code'])
+                    url = "plugin://plugin.video.ustvnow/?name="+name+"&mode=play"
+                    mediatype = i['mediatype']
+                    poster_url = 'http://mc.ustvnow.com/gtv/1/live/viewposter?srsid=' + str(i['srsid']) + '&cs=' + i['callsign'] + '&tid=' + mediatype
+                    mediatype = mediatype.replace('SH', 'tvshow').replace('EP', 'episode').replace('MV', 'movie')
+                    if self.premium == False:
+                        if name not in ['CW','ABC','FOX','PBS','CBS','NBC','MY9']:
+                            raise Exception()
+                    channels.append({
+                        'name': name,
+                        'sname' : i['callsign'],
+                        'url': url,
+                        'episode_title': i['episode_title'],
+                        'title': i['title'],
+                        'plot': i['description'],
+                        'plotoutline': i['synopsis'],
+                        'mediatype': mediatype,
+                        'playable': True,
+                        'icon': self.uBASE_URL + '/' + i['img'],
+                        'poster_url': poster_url
+                        })
+                        
+                    if self.write_type == 1:
+                        Addon.makeSTRM(name, url)
+                    self.make_Playlists(quality, stream_type)
+            except:
+                pass
         return channels
             
             
@@ -141,6 +146,8 @@ class Ustvnow:
 
     
     def get_recordings(self, quality=1, stream_type='rtmp', type='recordings'):
+        if quality == 3:
+            quality -= 1
         Addon.log('get_recordings,' + str(quality) + ',' + stream_type)
         self.token = self._login(True)
         content = self._get_json('gtv/1/live/viewdvrlist', {'token': self.token, 'format': stream_type})
@@ -483,3 +490,9 @@ class Ustvnow:
             if cookie.name == 'token':
                 return cookie.value
         return False
+
+        
+    def clearCache(self):
+        Addon.log('clearCache')
+        self.cache.delete("%")
+        self.guide.delete("%")

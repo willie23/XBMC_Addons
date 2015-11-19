@@ -32,7 +32,7 @@ class Ustvnow:
         self.premium = premium
         self.dlg = xbmcgui.Dialog()
         
-    def get_channels(self, quality=1, stream_type='rtmp'):
+    def get_channels(self, quality=1, stream_type='rtmp', cache=False):
         if self._login():
             html = self._get_html('iphone_ajax', {'tab': 'iphone_playingnow', 
                                                   'token': self.token})
@@ -91,13 +91,23 @@ class Ustvnow:
                 else:
                     plot = ''
                 recordings.append({'channel': chan,
-                                   'stream_url': url,
-                                   'title': title,
-                                   'plot': plot,
-                                   'rec_date': rec_date.strip(),
-                                   'icon': icon,
-                                   'del_url': del_url
-                                   })
+                   'stream_url': url,
+
+                   'title': title,
+                   'episode_title': '',
+                   'tvshowtitle': title,
+
+                   'plot': plot,
+                   'rec_date': rec_date.strip(),
+
+                   'icon': icon,
+                   'duration': 0,
+                   'orig_air_date': '',
+                   'synopsis': '',
+                   'playable': (0),
+                   'del_url': del_url
+
+                   })
             return recordings
         else:
             self.dlg.ok("USTVnow", "Connection FAILED!", "Please check your login credentials and try again later...")

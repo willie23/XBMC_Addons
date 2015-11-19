@@ -1,3 +1,6 @@
+[B]Version 12.0.12[/B]
+- Old code removed, new code stable.
+    
 [B]Version 12.0.11[/B]
 - "NEW" code exclusive features:
     - Tweaked Caching, boosted TVGuide and Channel load times.
