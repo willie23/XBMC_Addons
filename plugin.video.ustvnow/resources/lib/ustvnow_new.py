@@ -57,7 +57,7 @@ class Ustvnow:
         return Addon.readXMLTV(filename, type, name)
         
         
-    def get_channels(self, quality=1, stream_type='rtmp', cache=False):
+    def get_channels(self, quality, stream_type, cache=False):
         Addon.log('get_channels')
         try:
             if cache:
@@ -78,7 +78,7 @@ class Ustvnow:
         return result  
         
         
-    def get_channels_NEW(self, quality=1, stream_type='rtmp'):
+    def get_channels_NEW(self, quality, stream_type):
         Addon.log('get_channels_NEW,' + str(quality) + ',' + stream_type)
         self.token = self._login()
         content = self._get_json('gtv/1/live/channelguide', {'token': self.token,'format': stream_type, 'l': '1'})
@@ -128,7 +128,7 @@ class Ustvnow:
 # FAVORITES        = BASE_URL + '/iphone/1/live/showfavs?pgonly=true&token=%s'
 
 
-    def get_favorites(self, quality=1, stream_type='rtmp'):
+    def get_favorites(self, quality, stream_type):
         self.token = self._login()
         content = self._get_json('gtv/1/live/listchannels', {'token': self.token})
         channels = []
@@ -145,7 +145,7 @@ class Ustvnow:
         return channels
 
     
-    def get_recordings(self, quality=1, stream_type='rtmp', type='recordings'):
+    def get_recordings(self, quality, stream_type, type='recordings'):
         if quality == 3:
             quality -= 1
         Addon.log('get_recordings,' + str(quality) + ',' + stream_type)
@@ -216,21 +216,24 @@ class Ustvnow:
         html = self._get_html(del_url)
         
         
-    def get_guidedata(self):
+    def get_guidedata(self, quality, stream_type, cache=False):
         Addon.log('get_guidedata')
         try:
-            result = self.guide.cacheFunction(self.get_guidedata_NEW)
+            if cache:
+                result = self.guide.cacheFunction(self.get_guidedata_NEW, quality, stream_type)
+            else:
+                result = self.get_guidedata_NEW(quality, stream_type)
             if not result:
-                raise Exception()
+                raise Exception()              
         except:
             Addon.log('get_guidedata Failed')
-            result = self.get_guidedata_NEW()
+            result = self.get_guidedata_NEW(quality, stream_type)
         if not result:
             result = []
         return result  
 
         
-    def get_guidedata_NEW(self):
+    def get_guidedata_NEW(self, quality, stream_type):
         Addon.log('get_guidedata_NEW')
         self.token = self._login()
         content = self._get_json('gtv/1/live/channelguide', {'token': self.token, 'l': '1440'})
@@ -243,7 +246,7 @@ class Ustvnow:
         base.setAttribute("generator-info-name", "IPTV Plugin");
         base.setAttribute("generator-info-url", "http://www.xmltv.org/");
         doc.appendChild(base)
-        channels = self.get_channels(cache=True);
+        channels = self.get_channels(quality, stream_type, True);
 
         for channel in channels:
             name = channel['name'];
@@ -383,7 +386,7 @@ class Ustvnow:
         return html
 
         
-    def get_link(self, quality=1, stream_type='rtmp', cache=False):
+    def get_link(self, quality, stream_type, cache=False):
         Addon.log('get_link')
         try:
             if cache:
@@ -404,7 +407,7 @@ class Ustvnow:
         return result  
         
         
-    def get_link_NEW(self, quality=1, stream_type='rtmp'):
+    def get_link_NEW(self, quality, stream_type):
         Addon.log('get_link')
         self.token = self._login(True)
         html = self._get_html('iphone_ajax', {'tab': 'iphone_playingnow', 
@@ -439,17 +442,17 @@ class Ustvnow:
                 
     def _login(self, force=False):
         Addon.log('_login')
-        result = ''
+        result = 'False'
         if force == True:
             self.cache.delete("%")
         try:
             result = self.cache.cacheFunction(self._login_NEW)
-            if not result:
+            if result == 'False':
                 raise Exception()
         except Exception,e:
             Addon.log('_login_NEW, Failed!')
             result = self.cache.cacheFunction(self._login_NEW)
-        if result == False:
+        if result == 'False':
             self.dlg.ok("USTVnow", "Connection FAILED!", "Please check your login credentials and try again later...")
         return result  
         
@@ -457,7 +460,7 @@ class Ustvnow:
     def _login_NEW(self):
         Addon.log('_login_NEW')
         token = self._login_ORG() 
-        if token == False:
+        if token == 'False':
             token = self._login_ALT()
         return token
         
@@ -475,7 +478,7 @@ class Ustvnow:
         for cookie in self.cj:
             if cookie.name == 'token':
                 return cookie.value
-        return False
+        return 'False'
     
     
     def _login_ORG(self):
@@ -489,7 +492,7 @@ class Ustvnow:
         for cookie in self.cj:
             if cookie.name == 'token':
                 return cookie.value
-        return False
+        return 'False'
 
         
     def clearCache(self):

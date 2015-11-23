@@ -29,7 +29,6 @@ email = Addon.get_setting('email')
 password = Addon.get_setting('password')
 premium = Addon.get_setting('subscription') == "true"
 premium_last = Addon.get_setting('subscription_last') == "true"
-stream_type = ['rtmp', 'rtsp'][int(Addon.get_setting('stream_type'))]
 dlg = xbmcgui.Dialog()
 addon = xbmcaddon.Addon(id='plugin.video.ustvnow')
 plugin_path = addon.getAddonInfo('path')
@@ -56,10 +55,11 @@ if not email:
         Addon.set_setting('subscription', 'true')
     else:
         Addon.set_setting('subscription', 'false')
-        
+ 
 if premium == False:
-    Addon.set_setting('quality', '0')
-quality_type = int(Addon.get_setting('quality'))
+    Addon.set_setting('quality_type', '0')       
+quality_type = int(Addon.get_setting('quality_type'))
+stream_type = ['rtmp', 'rtsp'][int(Addon.get_setting('stream_type'))]
     
 Addon.log('plugin url: ' + Addon.plugin_url)
 Addon.log('plugin queries: ' + str(Addon.plugin_queries))
@@ -104,7 +104,7 @@ elif mode == 'live':
                     'q': str(quality),
                     'u': email,
                     'p': password } );
-
+                    
                 if quality==1:
                     quality_name = 'Low';
                 elif quality==2:
@@ -188,13 +188,14 @@ elif mode == 'delete':
 
 elif mode == 'favorites':
     favorites = ustv.get_favorites(quality_type, stream_type)
+    
 elif mode == 'guidedata':
     # ex. xbmc.executebuiltin("XBMC.RunPlugin(plugin://plugin.video.ustvnow/?file=%s&mode=guidedata)" %urllib.quote(fpath))
     fpath = Addon.plugin_queries['file']               
-    Addon.makeXMLTV(ustv.get_guidedata(),urllib.unquote(fpath))
+    Addon.makeXMLTV(ustv.get_guidedata(quality_type, stream_type),urllib.unquote(fpath))
     
 elif mode == 'playlist':
-    ustv.get_channels(quality_type, stream_type, True)
+    ustv.get_channels(quality_type, stream_type)
 
 elif mode == 'tvguide':
     fpath = os.path.join(write_path, 'xmltv.xml')    
@@ -203,7 +204,6 @@ elif mode == 'tvguide':
         listings = ustv.get_tvguide(fpath, 'programs', name)
         if listings:
             for l in range(len(listings)):
-                #print listings[l]
                 rURL = "plugin://plugin.video.ustvnow/?name="+listings[l][0]+"&mode=play"
                 if listings[l][3] == 'No description available':
                     title = '%s - %s' % (listings[l][1], (listings[l][2]).replace('&amp;','&'))
@@ -216,7 +216,7 @@ elif mode == 'tvguide':
                                       'ChannelName': listings[l][0]},
                                      img=listings[l][6])
     except:
-        if Addon.makeXMLTV(ustv.get_guidedata(),urllib.unquote(fpath)) == True:
+        if Addon.makeXMLTV(ustv.get_guidedata(quality_type, stream_type),urllib.unquote(fpath)) == True:
             listings = ustv.get_tvguide(fpath)
             if listings:
                 for l in range(len(listings)):

@@ -33,12 +33,12 @@ while (not xbmc.abortRequested):
             MSG = 'STRM'
         now  = datetime.datetime.today()
         try:
-            Update_LastRun = Addon.get_setting("Update_NextRun")
+            Update_LastRun = Addon.getProperty("Update_NextRun")
             if not Update_LastRun:
                 raise exception()
         except:
             Update_LastRun = "1970-01-01 23:59:00.000000"
-            Addon.set_setting('Update_NextRun', str(Update_LastRun))
+            Addon.setProperty('Update_NextRun', str(Update_LastRun))
         try:
             SyncUpdate = datetime.datetime.strptime(Update_LastRun, "%Y-%m-%d %H:%M:%S.%f")
         except:
@@ -48,7 +48,8 @@ while (not xbmc.abortRequested):
             fpath = os.path.join(Addon.get_setting('write_folder'), 'xmltv.xml')    
             xbmc.executebuiltin("XBMC.RunPlugin(plugin://plugin.video.ustvnow/?file=%s&mode=guidedata)" %urllib.quote(fpath))
             xbmc.executebuiltin("XBMC.RunPlugin(plugin://plugin.video.ustvnow/?mode=playlist)")
-            xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("USTVnow", "%s/XMLTV Updated" %MSG, 1000, THUMB) )
+            if Addon.get_setting('silent') == 'false':
+                xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("USTVnow", "%s/XMLTV Updated" %MSG, 1000, THUMB) )
         Update_NextRun = ((now + datetime.timedelta(hours=6)).strftime("%Y-%m-%d %H:%M:%S.%f"))
-        Addon.set_setting('Update_NextRun', str(Update_NextRun))
-    xbmc.sleep(150000)
+        Addon.setProperty('Update_NextRun', str(Update_NextRun))
+    xbmc.sleep(1000)

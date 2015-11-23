@@ -44,6 +44,15 @@ def ascii(string):
            string = string.encode('ascii', 'ignore')
     return string
     
+def getProperty(str):
+    return xbmcgui.Window(10000).getProperty(str)
+
+def setProperty(str1, str2):
+    xbmcgui.Window(10000).setProperty(str1, str2)
+
+def clearProperty(str):
+    xbmcgui.Window(10000).clearProperty(str)
+    
 def cleanChanName(string):
     string = string.strip()
     string = string.replace('WLYH','CW').replace('WHTM','ABC').replace('WPMT','FOX').replace('WPSU','PBS').replace('WHP','CBS').replace('WGAL','NBC').replace('WHVLLD','MY9').replace('AETV','AE')
