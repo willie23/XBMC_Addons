@@ -36,11 +36,6 @@ from urllib2 import HTTPError, URLError
 
 socket.setdefaulttimeout(30)
 
-try:
-    import gc
-except:
-    pass
-
 # Commoncache plugin import
 try:
     import StorageServer
@@ -1309,24 +1304,24 @@ def VideoWindow():
     log("utils: VideoWindow, VWPath = " + str(VWPath))
     #Copy VideoWindow Patch file
     try:
-        if isLowPower() == True:
-            raise Exception()
-        else:
-            if not FileAccess.exists(VWPath):
-                log("utils: VideoWindow, VWPath not found")
-                FileAccess.copy(flePath, VWPath)
-                if FileAccess.exists(VWPath):
-                    log('utils: custom_script.pseudotv.live_9506.xml Copied')
-                    xbmc.executebuiltin("ReloadSkin()")
-                    VideoWindowPatch()   
-                else:
-                    raise Exception()
-            else:
-                log("utils: VideoWindow, VWPath found")
-                VideoWindowPatch()  
-                
+        # if isLowPower() == True:
+            # raise Exception()
+        # else:
+        if not FileAccess.exists(VWPath):
+            log("utils: VideoWindow, VWPath not found")
+            FileAccess.copy(flePath, VWPath)
             if FileAccess.exists(VWPath):
-                setProperty("PTVL.VideoWindow","true")
+                log('utils: custom_script.pseudotv.live_9506.xml Copied')
+                xbmc.executebuiltin("ReloadSkin()")
+                VideoWindowPatch()   
+            else:
+                raise Exception()
+        else:
+            log("utils: VideoWindow, VWPath found")
+            VideoWindowPatch()  
+            
+        if FileAccess.exists(VWPath):
+            setProperty("PTVL.VideoWindow","true")
     except Exception:
         VideoWindowPatch() 
         VideoWindowUninstall()  
@@ -1462,7 +1457,7 @@ def chkVersion():
             if isRepoInstalled() == False:
                 getRepo()
 
-def chkAutoplay():
+def chkAutoplay(silent=False):
     log('utils: chkAutoplay')
     fle = xbmc.translatePath("special://profile/guisettings.xml")
     try:
@@ -1476,10 +1471,13 @@ def chkAutoplay():
         log('utils: chkAutoplay, Musicautoplaynextitem is ' + str(Musicautoplaynextitem)) 
         totcnt = Videoautoplaynextitem + Musicautoplaynextitem
         if totcnt > 0:
-            okDialog("Its recommended you disable Kodi's"+' "Play the next video/song automatically" ' + "feature found under Kodi's video/playback and music/playback settings.")
+            setProperty("PTVL.Autoplay","true")
+            if not silent:
+                okDialog("Its recommended you disable Kodi's"+' "Play the next video/song automatically" ' + "feature found under Kodi's video/playback and music/playback settings.")
         else:
-            raise exception()
+            raise Exception()
     except:
+        setProperty("PTVL.Autoplay","false") 
         pass
         
 def chkSources():
@@ -1662,8 +1660,9 @@ def chkSettings2():
     
 def backupSettings2():
     log('utils: backupSettings2')
-    SETTINGS_FLE_BACKUP = os.path.join(BACKUP_LOC, 'settings2.' + (str(datetime.datetime.now()).split('.')[0]).replace(' ','.').replace(':','.') + '.xml')
-    Backup(SETTINGS_FLE, SETTINGS_FLE_BACKUP)
+    if getSize(SETTINGS_FLE) > SETTINGS_FLE_DEFAULT_SIZE:
+        SETTINGS_FLE_BACKUP = os.path.join(BACKUP_LOC, 'settings2.' + (str(datetime.datetime.now()).split('.')[0]).replace(' ','.').replace(':','.') + '.xml')
+        Backup(SETTINGS_FLE, SETTINGS_FLE_BACKUP)
 
 def restoreSettings2():
     log('utils: restoreSettings2')
@@ -1675,9 +1674,11 @@ def restoreSettings2():
         select = selectDialog(backuplist, 'Select backup to restore')   
         if select != -1:
             RESTORE_FILE = backuplist[select]+'.xml'
+            RESTORE_FLEPATH = os.path.join(BACKUP_LOC, RESTORE_FILE)
             if dlg.yesno("PseudoTV Live", 'Restoring will remove current channel configurations, Are you sure?'):
-                Restore(os.path.join(BACKUP_LOC, RESTORE_FILE, SETTINGS_FLE))
-                return infoDialog("Restore Complete")
+                Restore(RESTORE_FLEPATH, SETTINGS_FLE)
+                if getSize(SETTINGS_FLE) == getSize(RESTORE_FLEPATH):
+                    return infoDialog("Restore Complete")
     else:
         return infoDialog("No Backups found")
         
@@ -1737,6 +1738,9 @@ def preStart():
 
     # VideoWindow Patch.
     VideoWindow()
+    
+    # Check if autoplay is enabled
+    chkAutoplay(True)
     
     # Clear filelist Caches    
     if REAL_SETTINGS.getSetting("ClearCache") == "true":
@@ -2018,6 +2022,7 @@ def correctYoutubeSetting2(setting2):
      
 def purgeGarbage(): 
     try:
+        import gc
         # only purge when not building channel lists.
         if isBackgroundLoading() == False:
             # threshold = gc.get_threshold()

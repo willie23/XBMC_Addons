@@ -30,7 +30,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.playonbrowser" name="Playon Browser" version="1.0.3" provider-name="Sytone, Lunatixz">
+<addon id="plugin.video.playonbrowser" name="Playon Browser" version="1.0.4" provider-name="Sytone, Lunatixz">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.parsedom" version="2.5.2"/>
@@ -89,7 +89,7 @@
     </extension>
 </addon>
 
-<addon id="plugin.video.ustvnow" version="12.0.12b" name="USTVnow" provider-name="Lunatixz">
+<addon id="plugin.video.ustvnow" version="12.0.13" name="USTVnow" provider-name="Lunatixz">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.simplejson" version="3.3.0"/>
@@ -125,7 +125,7 @@
     </extension>
 </addon>
 
-<addon id="script.pseudotv.live" version="0.7.0e" name="PseudoTV Live" provider-name="Lunatixz">
+<addon id="script.pseudotv.live" version="0.7.1" name="PseudoTV Live" provider-name="Lunatixz">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.buggalo" version="1.1.6" optional="false"/>

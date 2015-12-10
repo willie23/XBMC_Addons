@@ -450,7 +450,7 @@ class Ustvnow:
             if result == 'False':
                 raise Exception()
         except Exception,e:
-            Addon.log('_login_NEW, Failed!')
+            Addon.log('_login, Failed!')
             result = self.cache.cacheFunction(self._login_NEW)
         if result == 'False':
             self.dlg.ok("USTVnow", "Connection FAILED!", "Please check your login credentials and try again later...")
