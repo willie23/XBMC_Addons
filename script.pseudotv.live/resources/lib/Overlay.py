@@ -729,7 +729,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
     def setOnNowArt(self):
         self.log('setOnNowArt')
         try:    
-            pos = self.list.getSelectedPosition()
+            pos = self.OnNowControlList.getSelectedPosition()
             type = self.OnNowArtLst[pos][0]
             title = self.OnNowArtLst[pos][1]
             year = self.OnNowArtLst[pos][2]
@@ -759,7 +759,8 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                 chnum = Channel + 1
                 chtype = self.getChtype(chnum)
                 chname = self.getChname(chnum)
-
+                chlogo = self.getChlogo(Channel, chname)
+                
                 ChannelChk = int(self.channels[Channel].getCurrentDuration())
                 if ChannelChk == 0:
                     raise Exception()
@@ -780,7 +781,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                 
                 if self.channels[Channel].isValid:
                     OnNowTitleLst.append("[COLOR=%s][B]%d|[/B][/COLOR] %s" % (ChanColor, chnum, title))
-                    
+
                     # prepare artwork
                     type = (self.channelList.unpackLiveID(LiveID))[0]
                     id = (self.channelList.unpackLiveID(LiveID))[1]
@@ -788,6 +789,27 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                     rating = (self.channelList.unpackLiveID(LiveID))[5]
                     Art = [type, title, year, chtype, chname, id, dbid, getMpath(mediapath), EXTtype(getProperty("OVERLAY.type3")), genre, rating]
                     OnNowArtLst.append(Art)
+                                        
+                    # setup listitem
+                    self.OnNowListItem = xbmcgui.ListItem("[COLOR=%s][B]%d|[/B][/COLOR] %s" % (ChanColor, chnum, title))
+                    self.OnNowListItem.setIconImage(chlogo)
+                    
+                    infoList = {}
+                    infoList['Duration']      = Duration
+                    infoList['MPAA']          = rating
+                    infoList['TVShowTitle']   = Title
+                    infoList['Title']         = Title
+                    infoList['originaltitle'] = showtitle
+                    infoList['sorttitle']     = Title
+                    infoList['Studio']        = chname
+                    infoList['Genre']         = genre
+                    infoList['Plot']          = Description
+                    infoList['tagline']       = EPTitle
+                    infoList['dateadded']     = timestamp
+                    infoList['code']          = id
+                    infoList['Year']          = int(year or "0")
+                    self.OnNowListItem.setInfo( 'Video', infoList)    
+        
             except Exception,e:
                 self.log('getOnNow, Failed!, ' + str(e))
         return OnNowTitleLst, OnNowArtLst
@@ -1656,22 +1678,22 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                 sideh = self.getControl(132).getHeight()
                 listWidth = self.getControl(132).getLabel()
                 tabHeight = self.getControl(1001).getHeight()
-                self.list = xbmcgui.ControlList(sidex, sidey, sidew, sideh, 'font12', self.myEPG.textcolor, MEDIA_LOC + BUTTON_NO_FOCUS, MEDIA_LOC + BUTTON_FOCUS, self.myEPG.focusedcolor, 1, 1, 1, 0, tabHeight, 0, tabHeight/2)
-                self.addControl(self.list)
-                self.list.addItems(items=self.OnNowTitleLst)
+                self.OnNowControlList = xbmcgui.ControlList(sidex, sidey, sidew, sideh, 'font12', self.myEPG.textcolor, MEDIA_LOC + BUTTON_NO_FOCUS, MEDIA_LOC + BUTTON_FOCUS, self.myEPG.focusedcolor, 1, 1, 1, 0, tabHeight, 0, tabHeight/2)
+                self.addControl(self.OnNowControlList)
+                self.OnNowControlList.addItems(items=self.OnNowTitleLst)
                 
                 for i in range(len(self.OnNowTitleLst)):
                     item = self.OnNowTitleLst[i]
                     channel = int(self.channelList.cleanLabels(item.split('|')[0]))
                     if channel == self.currentChannel:
-                        self.list.selectItem(i)
+                        self.OnNowControlList.selectItem(i)
                         break
                 
                 self.getControl(130).setVisible(True)
                 hide_busy_dialog()
                 xbmc.sleep(100)
-                self.list.setVisible(True)
-                self.setFocus(self.list)
+                self.OnNowControlList.setVisible(True)
+                self.setFocus(self.OnNowControlList)
                 self.setOnNowArt()
                 self.MenuControlTimer = threading.Timer(self.InfTimer, self.MenuControl,['MenuAlt',self.InfTimer,True])           
                 self.MenuControlTimer.name = "MenuControlTimer"  
@@ -2563,7 +2585,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                 try:
                     self.showingMenuAlt = False                   
                     self.setFocusId(1001)  
-                    self.list.setVisible(False)   
+                    self.OnNowControlList.setVisible(False)   
                     self.getControl(130).setVisible(False)
                     self.MenuControl('Menu',self.InfTimer)
                     xbmc.sleep(100)
@@ -3283,7 +3305,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             
             
     def playOnNow(self):
-        pos = self.list.getSelectedPosition()
+        pos = self.OnNowControlList.getSelectedPosition()
         item = self.OnNowTitleLst[pos]
         self.MenuControl('MenuAlt',self.InfTimer,True)
         self.MenuControl('Menu',self.InfTimer,True) 
@@ -3355,6 +3377,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                 infoList['tagline']       = getProperty("OVERLAY.Tagline")
                 infoList['dateadded']     = getProperty("OVERLAY.TimeStamp")
                 infoList['code']          = getProperty("OVERLAY.ID")
+                
                 try:
                     infoList['Year']          = int(getProperty("OVERLAY.Year"))
                     infoList['Season']        = int(getProperty("OVERLAY.Season"))

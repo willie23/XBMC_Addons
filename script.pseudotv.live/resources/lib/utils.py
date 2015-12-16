@@ -112,7 +112,7 @@ def isKodiRepo(plugin=''):
 def fillGithubItems(url, ext=None, removeEXT=False):
     log("utils: fillGithubItems, url = " + url)
     Sortlist = []
-    show_busy_dialog()
+    # show_busy_dialog()
     try:
         list = []
         catlink = re.compile('title="(.+?)">').findall(read_url_cached(url))
@@ -131,7 +131,7 @@ def fillGithubItems(url, ext=None, removeEXT=False):
     except Exception,e:
         log("utils: fillGithubItems, Failed! " + str(e))
         log(traceback.format_exc(), xbmc.LOGERROR)
-    hide_busy_dialog()
+    # hide_busy_dialog()
     return Sortlist
 
 #############
@@ -335,7 +335,7 @@ def FindLogo_Default(chname, chpath):
     log('utils: FindLogo_Default')
          
 def findGithubLogo(chname): 
-    log("utils: findGithubLogo")
+    log("utils: findGithubLogo, chname = " + chname)
     url = ''
     baseurl='https://github.com/PseudoTV/PseudoTV_Logos/tree/master/%s' % (chname[0]).upper()
     Studiolst = fillGithubItems(baseurl, '.png', removeEXT=True)
@@ -994,9 +994,11 @@ def getXBMCVersion():
     return int((xbmc.getInfoLabel('System.BuildVersion').split('.'))[0])
  
 def getPlatform():
-    platform = chkPlatform()
+    platform = getProperty("PTVL.Platform")
+    if not platform:
+        platform = chkPlatform()
+        setProperty("PTVL.Platform",platform)
     log("utils: getPlatform = " + platform)
-    setProperty("PTVL.Platform",platform)
     return platform
     
 def chkPlatform():
@@ -1678,6 +1680,7 @@ def restoreSettings2():
             if dlg.yesno("PseudoTV Live", 'Restoring will remove current channel configurations, Are you sure?'):
                 Restore(RESTORE_FLEPATH, SETTINGS_FLE)
                 if getSize(SETTINGS_FLE) == getSize(RESTORE_FLEPATH):
+                    REAL_SETTINGS.setSetting('ForceChannelReset', 'true')
                     return infoDialog("Restore Complete")
     else:
         return infoDialog("No Backups found")
@@ -2048,3 +2051,12 @@ def updateLibrary(type='video', path=''):
     
 def isBackgroundLoading():
     return getProperty("PTVL.BackgroundLoading") == 'true'
+    
+def splitStringItem(string, opt='@#@'):
+    return string.split(opt)
+    
+def joinListItem(list, opt='@#@'):
+    return opt.join(list)
+    
+# def createListItem(list)
+# def addListItem(item)

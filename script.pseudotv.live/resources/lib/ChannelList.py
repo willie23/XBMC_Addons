@@ -117,10 +117,10 @@ class ChannelList:
             self.backgroundUpdating = 0
             self.channelResetSetting = 0
             
-        if self.backgroundUpdating > 0:
-            self.updateDialog = xbmcgui.DialogProgress()
-        else:
-            self.updateDialog = xbmcgui.DialogProgressBG()
+        # if self.backgroundUpdating > 0:
+            # self.updateDialog = xbmcgui.DialogProgress()
+        # else:
+        self.updateDialog = xbmcgui.DialogProgressBG()
             
         if self.forceReset:
             REAL_SETTINGS.setSetting("INTRO_PLAYED","false")
@@ -338,6 +338,9 @@ class ChannelList:
                     if chtype == 8: 
                         # Reset livetv after 24hrs
                         if self.channels[channel - 1].totalTimePlayed < (60 * 60 * 24):
+                            createlist = False
+                        else:                
+                            self.setResetLST(channel - 1)
                             createlist = False
                     else:
                         # If this channel has been watched for longer than it lasts, reset the channel
@@ -579,7 +582,9 @@ class ChannelList:
         fileList = []
         
         #Set Local Limit or Global
-        if chtype in [7,10,11,15,16] and setting3:
+        if chtype in [7,10,11,15,16]:
+            setting3 = setting3.replace('Unlimited','0')
+            setting4 = setting4.replace('Default','0').replace('Random','1').replace('Reverse','2') 
             try:
                 limit = int(setting3)
                 if isLowPower() == True:
@@ -631,9 +636,9 @@ class ChannelList:
                 if setting2 == '31':
                     today = datetime.datetime.now()
                     month = today.strftime('%B')
-                    #If Month != Update
                     if setting1.lower() != month.lower():
-                        ADDON_SETTINGS.setSetting("Channel_" + str(channel) + "_1", month)   
+                        setting1 = month
+                        ADDON_SETTINGS.setSetting("Channel_" + str(channel) + "_1", month)
                 fileList = self.createYoutubeFilelist(setting1, setting2, setting3, setting4, limit)
 
         # RSS/iTunes/feedburner/Podcast   
@@ -738,8 +743,7 @@ class ChannelList:
             return False
 
         # Set Media Sort
-        setting4 = setting4.replace('Default','0').replace('Random','1').replace('Reverse','2') 
-        if chtype in [7, 10, 11, 12, 13, 15, 16]:
+        if chtype in [7, 10, 11, 12, 13, 15, 16] and self.myOverlay.isMaster == True:
             if setting4 == '1':
                 #RANDOM
                 israndom = True
@@ -768,12 +772,13 @@ class ChannelList:
             if len(fileList) > self.Playlist_Limit:
                 fileList = fileList[:self.Playlist_Limit]
         
-        self.log("makeChannelList, Using Media Sort " + msg)
         self.channels[channel - 1].isRandom = israndom
+        self.channels[channel - 1].isReverse = isreverse
+        self.log("makeChannelList, Using Media Sort " + msg)
         fileList = self.runActions(RULES_ACTION_LIST, channel, fileList)
         
         # inject BCT into filelist
-        if self.incBCTs == True and bctType != None:
+        if self.incBCTs == True and bctType != None and self.myOverlay.isMaster == True:
             fileList = self.insertBCT(chtype, channel, fileList, bctType)
             
         # Write each entry into the new playlist
@@ -1069,7 +1074,7 @@ class ChannelList:
                 break
                 
             LocalFLE = (LocalLST[i])[0]
-            duration = self.videoParser.getVideoLength(LocalFLE)
+            duration = self.getDuration(LocalFLE)
                                             
             if duration == 0 and LocalFLE[-4:].lower() == 'strm':
                 duration = 3600
@@ -2238,7 +2243,7 @@ class ChannelList:
         showList = []
         linesLST = []
         genre_filter = [setting1.lower()]
-        Playlist_List = 'http://raw.github.com/PseudoTV/pseudotv-live-community/master/youtube_playlists_networks.ini'
+        Playlist_List = 'http://raw.github.com/PseudoTV/PseudoTV_Lists/master/youtube_playlists_networks.ini'
         linesLST = read_url_cached(Playlist_List, return_type='readlines')
         if linesLST:
             for i in range(len(linesLST)):
@@ -2772,20 +2777,20 @@ class ChannelList:
         return isCurrent
                 
                 
-    def xmltv_ok(self, setting3):
-        self.log("xmltv_ok, setting3 = " + setting3)
+    def xmltv_ok(self, path):
+        self.log("xmltv_ok, setting3 = " + path)
         xmltvValid = False
-        if setting3[0:4] == 'http':
-            self.xmlTvFile = setting3
-            xmltvValid = self.url_ok(setting3)
-        elif setting3.lower() in ['pvr','zap2it','scheduledirect']:
+        if path[0:4] == 'http':
+            self.xmlTvFile = path
+            xmltvValid = self.url_ok(path)
+        elif path.lower() in ['pvr','zap2it','scheduledirect']:
             xmltvValid = True
-        elif setting3.lower() == 'ptvlguide':
+        elif path.lower() == 'ptvlguide':
             self.xmlTvFile = PTVLXML
             if FileAccess.exists(self.xmlTvFile):
                 xmltvValid = True
-        elif setting3 != '':
-            self.xmlTvFile = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('xmltvLOC'), str(setting3) +'.xml'))
+        elif path != '':
+            self.xmlTvFile = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('xmltvLOC'), str(path) +'.xml'))
             if FileAccess.exists(self.xmlTvFile):
                 xmltvValid = True
         # if xmltvValid == True and self.isXMLTVCurrent(self.xmlTvFile) != True:
@@ -2794,135 +2799,173 @@ class ChannelList:
         return xmltvValid
            
 
-    def Valid_ok(self, setting2):
-        self.log("Valid_ok_NEW")
+    def Valid_ok(self, url):
+        self.log("Valid_ok")
         #plugin check  
-        if setting2[0:6] == 'plugin':  
-            return self.plugin_ok(setting2)  
+        if url[0:6] == 'plugin':  
+            return self.plugin_ok(url)  
         #Override Check# 
         elif REAL_SETTINGS.getSetting('Override_ok') == "true":
             return True
         #rtmp check
-        elif setting2[0:4] == 'rtmp':
-            return True
-            # todo user path to rtmpdump bin
-            # return self.rtmpDump(setting2)  
+        elif url[0:4] == 'rtmp':
+            return self.rtmpDump(url)  
         #http check     
-        elif setting2[0:4] == 'http':
-            return self.url_ok(setting2)
+        elif url[0:4] == 'http':
+            return self.url_ok(url)
         #strm check  
-        elif setting2[-4:] == 'strm':         
-            return self.strm_ok(setting2)
+        elif url[-4:] == 'strm':         
+            return self.strm_ok(url)
         #pvr check
-        elif setting2[0:3] == 'pvr':
+        elif url[0:3] == 'pvr':
             return True  
         #upnp check
-        elif setting2[0:4] == 'upnp':
+        elif url[0:4] == 'upnp':
             return True 
         #udp check
-        elif setting2[0:3] == 'udp':
+        elif url[0:3] == 'udp':
             return True  
         #rtsp check
-        elif setting2[0:4] == 'rtsp':
+        elif url[0:4] == 'rtsp':
             return True  
         #HDHomeRun check
-        elif setting2[0:9] == 'hdhomerun':
+        elif url[0:9] == 'hdhomerun':
             return True  
   
   
-    def strm_ok(self, setting2):
-        self.log("strm_ok, " + str(setting2))
-        self.strmFailed = False
-        self.strmValid = False
-        rtmpOK = True
-        urlOK = True
-        pluginOK = True
+    def strm_ok(self, url):
+        self.log("strm_ok, " + str(url))
+        strmValid = False
         lines = ''
-        youtube_plugin = self.youtube_player_ok()
-             
-        # if youtube_plugin != False:
-            # fallback = youtube_plugin + 'h9Rl0A60qq4'
-        # else:
-            # fallback = INTRO
-
         try:
-            f = FileAccess.open(setting2, "r")
+            f = FileAccess.open(url, "r")
             linesLST = f.readlines()
             self.log("strm_ok.Lines = " + str(linesLST))
             f.close()
 
             for i in range(len(set(linesLST))):
                 lines = linesLST[i]
-                self.strmValid = self.Valid_ok(lines)
-
-                # if self.strmValid == False:
-                    # self.log("strm_ok, failed strmCheck; writing fallback video")
-                    # f = FileAccess.open(setting2, "w")
-                    # for i in range(len(linesLST)):
-                        # lines = linesLST[i]
-                        # if lines != fallback:
-                            # f.write(lines + '\n')
-                        # self.log("strm_ok, file write lines = " + str(lines))
-                    # f.write(fallback)
-                    # f.close()
-                    # self.strmValid = True 
-                               
+                strmValid = self.Valid_ok(lines)
+                if strmValid == True:
+                    return strmValid             
         except Exception,e:
             pass
-        return self.strmValid   
+        # if strmValid == False:
+            # self.writeStrm_ok(url)
+        return strmValid   
 
+        
+    def writeStrm_ok(self, url, fallback=INTRO_TUBE):
+        self.log("writeStrm_ok, " + str(url))
+        try:
+            f = FileAccess.open(url, "w")
+            for i in range(len(linesLST)):
+                lines = linesLST[i]
+                if lines != fallback:
+                    f.write(lines + '\n')
+                self.log("strm_ok, file write lines = " + str(lines))
+            f.write(fallback)
+            f.close()         
+        except Exception,e:
+            pass
+        
 
-    def getffprobeLength(filename):
-        FFPROBE = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'lib', 'ffprobe', self.FFpath))
-        result = subprocess.Popen([FFPROBE, filename],
-        stdout = subprocess.PIPE, stderr = subprocess.STDOUT)
-        return [x for x in result.stdout.readlines() if "Duration" in x]
+    def getDuration(self, filename):
+        self.log("getDuration")
+        duration = 0
+        duration = self.videoParser.getVideoLength(filename)
+        if duration == 0:
+            duration = self.getffprobeLength(filename)
+        return duration
+        
+        
+    def getffprobeLength(self, filename):
+        self.log("getffprobeLength")
+        try:
+            FFPROBE = xbmc.translatePath(REAL_SETTINGS.getSetting('ffmpegPath'))
+            result = subprocess.Popen([FFPROBE, filename],
+            stdout = subprocess.PIPE, stderr = subprocess.STDOUT)
+            duration = [x for x in result.stdout.readlines() if "Duration" in x]
+        except:
+            duration = 0
+        return duration
       
       
     def rtmpDump(self, stream):
-        self.rtmpValid = False
-        url = urllib.unquote(stream)
-        RTMPDUMP = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'lib', 'rtmpdump', self.OSpath))
-        self.log("RTMPDUMP = " + RTMPDUMP)
-        assert os.path.isfile(RTMPDUMP)
-        
-        if "playpath" in url:
-            url = re.sub(r'playpath',"-y playpath",url)
-            self.log("playpath url = " + str(url))
-            command = [RTMPDUMP, '-B 1', '-m 2', '-r', url,'-o','test.flv']
-            self.log("RTMPDUMP command = " + str(command))
-        else:
-            command = [RTMPDUMP, '-B 1', '-m 2', '-r', url,'-o','test.flv']
-            self.log("RTMPDUMP command = " + str(command))
-       
-        CheckRTMP = Popen(command, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
-        output = CheckRTMP.communicate()[0]
-        
-        if "ERROR: RTMP_ReadPacket" in output:
-            self.log("rtmpDump, ERROR: RTMP_ReadPacket")
-            self.rtmpValid = False 
-        elif "ERROR: Problem accessing the DNS." in output:
-            self.rtmpValid = False    
-            self.log("rtmpDump, ERROR: Problem accessing the DNS.")
-        elif "INFO: Connected..." in output:
-            self.log("rtmpDump, INFO: Connected...")
-            self.rtmpValid = True
-        else:
-            self.log("rtmpDump, ERROR?: Unknown response..." + str(output))
-            self.rtmpValid = False
-        
-        self.log("rtmpValid = " + str(self.rtmpValid))
-        return self.rtmpValid
+        self.log("rtmpDump")
+        rtmpValid = False
+        try:
+            # OSplat = REAL_SETTINGS.getSetting('os')
+            # if OSplat == '0':
+                # OSpath = 'androidarm/rtmpdump'
+            # elif OSplat == '1':
+                # OSpath = 'android86/rtmpdump'
+            # elif OSplat == '2':
+                # OSpath = 'atv1linux/rtmpdump'
+            # elif OSplat == '3':
+                # OSpath = 'atv1stock/rtmpdump'
+            # elif OSplat == '4':
+                # OSpath = 'atv2/rtmpdump'
+            # elif OSplat == '5':
+                # OSpath = 'ios/rtmpdump'
+            # elif OSplat == '6':
+                # OSpath = 'linux32/rtmpdump'
+            # elif OSplat == '7':
+                # OSpath = 'linux64/rtmpdump'
+            # elif OSplat == '8':
+                # OSpath = 'mac32/rtmpdump'
+            # elif OSplat == '9':
+                # OSpath = 'mac64/rtmpdump'
+            # elif OSplat == '10':
+                # OSpath = 'pi/rtmpdump'
+            # elif OSplat == '11':
+                # OSpath = 'win/rtmpdump.exe'
+            # elif OSplat == '12':
+                # OSpath = '/usr/bin/rtmpdump'
+                
+            url = urllib.unquote(stream)
+            RTMPDUMP = xbmc.translatePath(REAL_SETTINGS.getSetting('rtmpdumpPath'))
+            self.log("RTMPDUMP = " + RTMPDUMP)
+            assert os.path.isfile(RTMPDUMP)
+            
+            if "playpath" in url:
+                url = re.sub(r'playpath',"-y playpath",url)
+                self.log("playpath url = " + str(url))
+                command = [RTMPDUMP, '-B 1', '-m 2', '-r', url,'-o','test.flv']
+                self.log("RTMPDUMP command = " + str(command))
+            else:
+                command = [RTMPDUMP, '-B 1', '-m 2', '-r', url,'-o','test.flv']
+                self.log("RTMPDUMP command = " + str(command))
+           
+            CheckRTMP = Popen(command, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
+            output = CheckRTMP.communicate()[0]
+            
+            if "ERROR: RTMP_ReadPacket" in output:
+                self.log("rtmpDump, ERROR: RTMP_ReadPacket")
+                rtmpValid = False 
+            elif "ERROR: Problem accessing the DNS." in output:
+                rtmpValid = False    
+                self.log("rtmpDump, ERROR: Problem accessing the DNS.")
+            elif "INFO: Connected..." in output:
+                self.log("rtmpDump, INFO: Connected...")
+                rtmpValid = True
+            else:
+                self.log("rtmpDump, ERROR?: Unknown response..." + str(output))
+                rtmpValid = False
+        except:
+            pass
+        self.log("rtmpValid = " + str(rtmpValid))
+        return rtmpValid
         
                 
     def url_ok(self, url):
-        self.urlValid = False
+        urlValid = False
         try:
             if open_url(url):
-                self.urlValid = True
-        except urllib2.HTTPError:
+                urlValid = True
+        except urllib2.HTTPError,e:
             self.log("url_ok, ERROR: HTTP URL NOT VALID, ERROR: " + str(e))
-        self.log("urlValid = " + str(self.urlValid))
+        self.log("urlValid = " + str(urlValid))
         return self.urlValid
         
 
@@ -3338,7 +3381,7 @@ class ChannelList:
 
                     for i in range(len(LocalLST)):  
                         filename = xbmc.translatePath(os.path.join(PATH,((LocalLST[i])[0])))
-                        duration = self.videoParser.getVideoLength(filename)
+                        duration = self.getDuration(filename)
                         if duration > 0:
                             BumperCNT += 1
                             if self.background == False:
@@ -3472,7 +3515,7 @@ class ChannelList:
                             self.updateDialog.update(self.updateDialogProgress, "Updating Channel " + str(channel), "adding Local Commercials")
                         
                         filename = xbmc.translatePath(os.path.join(PATH,((LocalLST[i])[0])))
-                        duration = self.videoParser.getVideoLength(filename)
+                        duration = self.getDuration(filename)
                         
                         if duration == 0:
                             duration = 30
@@ -3732,7 +3775,7 @@ class ChannelList:
                         LocalFLE = LocalLST[i]
                         
                         if '-trailer' in LocalFLE:
-                            duration = self.videoParser.getVideoLength(LocalFLE)
+                            duration = self.getDuration(LocalFLE)
                             
                             if duration == 0:
                                 duration = 120
@@ -5054,7 +5097,7 @@ class ChannelList:
                                     # Accurate duration
                                     if not file.startswith(("plugin", "upnp")) and dur == 0 and isLowPower() != True:
                                         try:
-                                            dur = self.videoParser.getVideoLength(file)
+                                            dur = self.getDuration(file)
                                             dur_accurate = True
                                         except Exception,e:
                                             dur = 0
