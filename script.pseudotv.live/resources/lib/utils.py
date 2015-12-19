@@ -2018,12 +2018,14 @@ def parseFeed(link):
         # pass
 
 def correctYoutubeSetting2(setting2):
+    log("utils: correctYoutubeSetting2")
     setting2 = setting2.replace('Multi Playlist','7').replace('Multi Channel','8').replace('Raw gdata','9')
     setting2 = setting2.replace('User Favorites','4').replace('Search Query','5').replace('User Subscription','3')
     setting2 = setting2.replace('Seasonal','31').replace('Channel','1').replace('Playlist','2')
     return setting2
      
 def purgeGarbage(): 
+    log("utils: purgeGarbage")
     try:
         import gc
         # only purge when not building channel lists.
@@ -2053,10 +2055,14 @@ def isBackgroundLoading():
     return getProperty("PTVL.BackgroundLoading") == 'true'
     
 def splitStringItem(string, opt='@#@'):
+    log("utils: splitStringItem")
     return string.split(opt)
     
 def joinListItem(list, opt='@#@'):
-    return opt.join(list)
-    
+    log("utils: joinListItem")
+    try:
+        return opt.join(list)
+    except:
+        return str(list)
 # def createListItem(list)
 # def addListItem(item)

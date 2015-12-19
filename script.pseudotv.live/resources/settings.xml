@@ -114,9 +114,9 @@
             <setting id="autoFindCommunity_Youtube_Seasonal"  type="bool"   label="30817" subsetting="true" visible="eq(-24,true)" enable="eq(-5,true) + System.HasAddon(plugin.video.youtube)"                                  default="false"/>
             <setting id="autoFindCommunity_RSS"               type="bool"   label="30112" subsetting="true" visible="eq(-25,true)" enable="eq(-6,true) + System.HasNetwork"                                  default="false"/>
         <setting     id="AT_Donor"                            type="bool"                                   visible="false"                                                              default="false" />    
-        <setting                                              type="lsep"   label="30090"                   visible="eq(-27,true)"                                        default="" /> 
-            <setting id="autoFindPopcorn"                     type="bool"   label="30092" subsetting="true" visible="eq(-28,true)"  enable="eq(-2,true) + System.HasAddon(plugin.video.youtube)"                                      default="false"/>
-            <setting id="autoFindCinema"                      type="enum"   label="30908" subsetting="true" visible="eq(-29,true)" enable="eq(-3,true) + System.HasAddon(plugin.video.youtube)"                                      values=" |Default|IMAX" default="1" />  
+        <setting                                              type="lsep"   label="30090"                   visible="eq(-27,true) + eq(-1,true)"                                        default="" /> 
+            <setting id="autoFindPopcorn"                     type="bool"   label="30092" subsetting="true" visible="eq(-28,true) + eq(-2,true)"  enable="eq(-2,true) + System.HasAddon(plugin.video.youtube)"                                      default="false"/>
+            <setting id="autoFindCinema"                      type="enum"   label="30908" subsetting="true" visible="eq(-29,true) + eq(-3,true)" enable="eq(-3,true) + System.HasAddon(plugin.video.youtube)"                                      values=" |Default|IMAX" default="1" />  
         <setting                                              type="lsep"   label="30782"                   visible="eq(-30,true)"     default="" /> 
             <setting id="autoFindIPTV_Source"                 type="enum"   label="30965" subsetting="true" visible="eq(-31,true)" values=" |Local|Online" default="0" />
             <setting id="autoFindIPTV_Path_Local"             type="file"   label="30966" subsetting="true" visible="eq(-32,true) + eq(-1,1)"             source="auto" default=""/>
@@ -198,11 +198,10 @@
         <setting id="Community_Verified" subsetting="true" type="enum" enable="false" visible="eq(-1,true)"   label="30776" values="False|True" default="0"/>
         <setting id="Gmail_User" subsetting="true"   label="30906" visible="eq(-2,true)" type="text" default="User@gmail.com" />
         <setting id="Gmail_Pass" subsetting="true"   label="30907" visible="eq(-3,true)" type="text" option="hidden" default="Password" />
-        <setting id="Donor_Enabled"   label="30901" type="bool" default="false"/>
-        <setting id="Donor_Verified" subsetting="true" type="enum" enable="false" visible="eq(-1,true)"label="30777" values="False|True" default="0"/>
-        <setting id="Donor_UP" subsetting="true"   label="30902" visible="eq(-2,true)" type="text" default="Username:Password" />    
+        <setting id="Donor_Enabled"   label="30901" type="bool" default="false" visible="false"/>
+        <setting id="Donor_Verified" subsetting="true" type="enum" enable="false" visible="false" label="30777" values="False|True" default="0"/>
+        <setting id="Donor_UP" subsetting="true"   label="30902" visible="false" type="text" default="Username:Password" />    
         <setting label="30903"  subsetting="true" visible="eq(-3,true)" type="lsep" /> 
-        <setting type="sep" visible="true" />
         <setting id="Show_Disclaimer" type="action"   label="30999" action="RunScript($CWD/utilities.py, -showDisclaimer)"/>
     </category>
     

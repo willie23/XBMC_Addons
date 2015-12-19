@@ -1130,6 +1130,7 @@ class ChannelList:
         if not timestamp:
             timestamp = datetime.datetime.now()
         timestamp = str(timestamp).split('.')[0]
+
         try:
             showtitle = (trim(showtitle, 350, ''))
         except Exception,e:
@@ -1218,6 +1219,7 @@ class ChannelList:
         text = text.replace("\n", "")
         text = text.replace("\r", "")
         text = text.replace("\t", "")
+        text = text.replace("/",'')
         text = text.replace("\ ",'')
         text = text.replace("/ ",'')
         text = text.replace("\\",'/')
@@ -1743,11 +1745,7 @@ class ChannelList:
             # Add channel to ResetLST, on next update force channel rebuild
             self.setResetLST(self.settingChannel)
             chname = (self.getChannelName(9, self.settingChannel))
-            if setting3 == 'ptvlguide':
-                REAL_SETTINGS.setSetting('PTVLXML_FORCE', 'true')
-                showList = self.buildInternetTVFileList('5400', setting2, chname, 'Guidedata from ' + str(setting3) + ' is currently unavailable, and only available after donation. Thank You...', 24)  
-            else:
-                showList = self.buildInternetTVFileList('5400', setting2, chname, 'Guidedata from ' + str(setting3) + ' is currently unavailable, please verify channel configuration.', 24)
+            showList = self.buildInternetTVFileList('5400', setting2, chname, 'Guidedata from ' + str(setting3) + ' is currently unavailable, please verify channel configuration.', 24)
         else:
             if setting3 == 'ptvlguide':
                 REAL_SETTINGS.setSetting('PTVLXML_FORCE', 'false')
