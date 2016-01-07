@@ -15,15 +15,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
-import datetime, time, os, urllib
-import xbmc, xbmcaddon
-import _strptime
+import datetime, time, _strptime, os, urllib
+import xbmc, xbmcaddon, xbmcvfs
 
 from resources.lib import Addon
-
-addon = xbmcaddon.Addon(id='plugin.video.ustvnow')
-plugin_path = addon.getAddonInfo('path')
-THUMB = os.path.join(plugin_path,'icon.png')
 
 while (not xbmc.abortRequested):
     if int(Addon.get_setting('write_type')) != 0:
@@ -31,25 +26,29 @@ while (not xbmc.abortRequested):
             MSG = 'M3U'
         else:
             MSG = 'STRM'
+
         now  = datetime.datetime.today()
+        
         try:
             Update_LastRun = Addon.getProperty("Update_NextRun")
-            if not Update_LastRun:
+            if not Update_LastRun or xbmcvfs.exists(os.path.join(Addon.get_setting('write_folder'),'xmltv.xml')) == False:
                 raise exception()
         except:
             Update_LastRun = "1970-01-01 23:59:00.000000"
             Addon.setProperty('Update_NextRun', str(Update_LastRun))
+        
         try:
             SyncUpdate = datetime.datetime.strptime(Update_LastRun, "%Y-%m-%d %H:%M:%S.%f")
         except:
             SyncUpdate = datetime.datetime.strptime(Update_LastRun, "%Y-%m-%d %H:%M:%S.%f")
 
         if now > SyncUpdate:
-            fpath = os.path.join(Addon.get_setting('write_folder'), 'xmltv.xml')    
-            xbmc.executebuiltin("XBMC.RunPlugin(plugin://plugin.video.ustvnow/?file=%s&mode=guidedata)" %urllib.quote(fpath))
             xbmc.executebuiltin("XBMC.RunPlugin(plugin://plugin.video.ustvnow/?mode=playlist)")
+            
             if Addon.get_setting('silent') == 'false':
-                xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("USTVnow", "%s/XMLTV Updated" %MSG, 1000, THUMB) )
-        Update_NextRun = ((now + datetime.timedelta(hours=6)).strftime("%Y-%m-%d %H:%M:%S.%f"))
+                xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("USTVnow", "%s/XMLTV Updated" %MSG, 1000, Addon.ICON) )
+        
+        Update_NextRun = ((now + datetime.timedelta(hours=1)).strftime("%Y-%m-%d %H:%M:%S.%f"))
         Addon.setProperty('Update_NextRun', str(Update_NextRun))
-    xbmc.sleep(1000)
+    # Sleep for 1min
+    xbmc.sleep(60000)

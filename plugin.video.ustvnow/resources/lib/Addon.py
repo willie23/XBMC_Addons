@@ -18,17 +18,17 @@
 import urllib, pickle, cgi
 import os, sys, re
 import time, datetime, calendar
-try:
-    import xbmc, xbmcaddon, xbmcgui, xbmcplugin, xbmcvfs
-    is_xbmc = True
-except:
-    is_xbmc = False
-    #print 'not running on xbmc'
+import xbmc, xbmcaddon, xbmcgui, xbmcplugin, xbmcvfs
 
 from xml.dom import minidom
 from xml.etree import ElementTree as ET
 from datetime import date
 from datetime import timedelta
+
+addon = xbmcaddon.Addon(id='plugin.video.ustvnow')
+plugin_path = addon.getAddonInfo('path')
+ICON = os.path.join(plugin_path, 'icon.png')
+FANART = os.path.join(plugin_path, 'fanart.jpg')
 
 def log(msg, err=False):
     if err:
@@ -64,82 +64,71 @@ def cleanChannel(string):
     string = string.replace('WLYH','CW').replace('WHTM','ABC').replace('WPMT','FOX').replace('WPSU','PBS').replace('WHP','CBS').replace('WGAL','NBC').replace('My9','MY9').replace('AETV','AE').replace('USA','USA Network').replace('Channel','').replace('Network Network','Network')
     return string.strip()
       
-def readXMLTV(filename, type='channels', name=''):
-    #print ('readXMLTV')       
-    cached_readXMLTV = []
-    channels = []
-    now = datetime.datetime.now()
-    f = open(filename, "r")
-    context = ET.iterparse(f, events=("start", "end"))
-    context = iter(context)
-    event, root = context.next()
-    for event, elem in context:
-        if event == "end":
-            #print type
-            if type == 'channels':
-                if elem.tag == "channel":
-                    id = ascii(elem.get("id"))
-                    for title in elem.findall('display-name'):
-                        title = cleanChanName(title.text)
-                        channels.append(ascii(title.replace('<display-name>','').replace('</display-name>','')))
-                        break
-            elif type == 'programs':
-                if elem.tag == "programme":
-                    channel = elem.get("channel")
-                    channel = channel.upper()
-                    #print channel, name
-                    if name.lower() == channel.lower():
-                        #print 'match', channel, name
-                        showtitle = elem.findtext('title')
-                        #print showtitle
-                        description = elem.findtext("desc")
-                        #print description
-                        subtitle = elem.findtext("sub-title")
-                        #print subtitle
-                        icon = None
-                        iconElement = elem.find("icon")
-                        if iconElement is not None:
-                            icon = iconElement.get("src") 
-                        #print icon
-                        genre = 'Unknown'
-                        categories = ''
-                        categoryList = elem.findall("category")
-                        for cat in categoryList:
-                            categories += ', ' + cat.text
-                            if (cat.text).lower() == 'movie':
-                                movie = True
-                                genre = cat.text
-                            elif (cat.text).lower() == 'tvshow':
-                                genre = cat.text
-                            elif (cat.text).lower() == 'sports':
-                                genre = cat.text
-                            elif (cat.text).lower() == 'children':
-                                genre = 'Kids'
-                            elif (cat.text).lower() == 'kids':
-                                genre = cat.text
-                            elif (cat.text).lower() == 'news':
-                                genre = cat.text
-                            elif (cat.text).lower() == 'comedy':
-                                genre = cat.text
-                            elif (cat.text).lower() == 'drama':
-                                genre = cat.text 
-                        #print genre
-                        offset = ((time.timezone / 3600) - 5 ) * -1
-                        #print offset
-                        stopDate = parseXMLTVDate(elem.get('stop'), 0)
-                        startDate = parseXMLTVDate(elem.get('start'), 0)
-                        #print stopDate, startDate, now
-                        if (((now > startDate and now <= stopDate) or (now < startDate))):
-                            cached_readXMLTV.append([cleanChanName(channel), startDate, showtitle, description, subtitle, genre, icon])
-    if type == 'channels':
-        return channels
-    elif type == 'programs':
-        return cached_readXMLTV
-    else:
-        return []
-    # except Exception,e:
-        # #print ("readXMLTV, Failed! " + str(e))
-        # return ['XMLTV ERROR']
+def readXMLTV(filename, type='channels', name=''): 
+    try:
+        cached_readXMLTV = []
+        channels = []
+        now = datetime.datetime.now()
+        f = open(filename, "r")
+        context = ET.iterparse(f, events=("start", "end"))
+        context = iter(context)
+        event, root = context.next()
+        for event, elem in context:
+            if event == "end":
+                if type == 'channels':
+                    if elem.tag == "channel":
+                        id = ascii(elem.get("id"))
+                        for title in elem.findall('display-name'):
+                            title = cleanChanName(title.text)
+                            channels.append(ascii(title.replace('<display-name>','').replace('</display-name>','')))
+                            break
+                elif type == 'programs':
+                    if elem.tag == "programme":
+                        channel = elem.get("channel")
+                        channel = channel.upper()
+                        if name.lower() == channel.lower():
+                            showtitle = elem.findtext('title')
+                            description = elem.findtext("desc")
+                            subtitle = elem.findtext("sub-title")
+                            icon = None
+                            iconElement = elem.find("icon")
+                            if iconElement is not None:
+                                icon = iconElement.get("src") 
+                            genre = 'Unknown'
+                            categories = ''
+                            categoryList = elem.findall("category")
+                            for cat in categoryList:
+                                categories += ', ' + cat.text
+                                if (cat.text).lower() == 'movie':
+                                    movie = True
+                                    genre = cat.text
+                                elif (cat.text).lower() == 'tvshow':
+                                    genre = cat.text
+                                elif (cat.text).lower() == 'sports':
+                                    genre = cat.text
+                                elif (cat.text).lower() == 'children':
+                                    genre = 'Kids'
+                                elif (cat.text).lower() == 'kids':
+                                    genre = cat.text
+                                elif (cat.text).lower() == 'news':
+                                    genre = cat.text
+                                elif (cat.text).lower() == 'comedy':
+                                    genre = cat.text
+                                elif (cat.text).lower() == 'drama':
+                                    genre = cat.text 
+                            offset = ((time.timezone / 3600) - 5 ) * -1
+                            stopDate = parseXMLTVDate(elem.get('stop'), 0)
+                            startDate = parseXMLTVDate(elem.get('start'), 0)
+                            if (((now > startDate and now <= stopDate) or (now < startDate))):
+                                cached_readXMLTV.append([cleanChanName(channel), startDate, showtitle, description, subtitle, genre, icon])
+        if type == 'channels':
+            return channels
+        elif type == 'programs':
+            return cached_readXMLTV
+        else:
+            return []
+    except Exception,e:
+        return ['XMLTV ERROR']
             
 def parseXMLTVDate(dateString, offset=0):
     if dateString is not None:
@@ -241,19 +230,7 @@ def set_setting(setting, string):
 def get_string(string_id):
     return addon.getLocalizedString(string_id)   
 
-def add_music_item(item_id, infolabels, img='', fanart='', total_items=0):
-    infolabels = decode_dict(infolabels)
-    url = build_plugin_url({'play': item_id})
-    log('adding item: %s' % (infolabels['title']))
-    listitem = xbmcgui.ListItem(infolabels['title'], iconImage=img, 
-                                thumbnailImage=img)
-    listitem.setInfo('music', infolabels)
-    listitem.setProperty('IsPlayable', 'true')
-    listitem.setProperty('fanart_image',fanart)
-    xbmcplugin.addDirectoryItem(plugin_handle, url, listitem, 
-                                isFolder=False, totalItems=total_items)
-
-def add_video_item(url, infolabels, img='', fanart='', total_items=0, 
+def add_video_item(url, infolabels, img=ICON, fanart=FANART, total_items=0, 
                    cm=[], cm_replace=False, HD='Low', playable=True):
     infolabels = decode_dict(infolabels)
     if url.find('://') == -1:
@@ -279,7 +256,7 @@ def add_video_item(url, infolabels, img='', fanart='', total_items=0,
     xbmcplugin.addDirectoryItem(plugin_handle, url, listitem, 
                                 isFolder=False, totalItems=total_items)
 
-def add_directory(url_queries, title, img='', fanart='', total_items=0):
+def add_directory(url_queries, title, img=ICON, fanart=FANART, total_items=0):
     url = build_plugin_url(url_queries)
     log('adding dir: %s' % (title))
     listitem = xbmcgui.ListItem(decode(title), iconImage=img, thumbnailImage=img)
@@ -288,30 +265,6 @@ def add_directory(url_queries, title, img='', fanart='', total_items=0):
     listitem.setProperty('fanart_image', fanart)
     xbmcplugin.addDirectoryItem(plugin_handle, url, listitem, 
                                 isFolder=True, totalItems=total_items)
-
-def add_artist(artist, total_items=0):
-    url_queries = {'mode': 'get_music_directory', 'id': artist['id']}
-    add_directory(url_queries, artist['name'], total_items=total_items) 
-
-def add_song(song, img='', total_items=0):
-    infolabels = {'title': unicode(song.get('title', get_string(30003))),
-                  'artist': unicode(song.get('artist', get_string(30004))),
-                  'album': unicode(song.get('album', get_string(30005))),
-                  'tracknumber': int(song.get('track', 0)),
-                  'genre': unicode(song.get('genre', '')),
-                  'duration': int(song.get('duration', 0)),
-                 }
-    year = song.get('year', None)
-    if year:
-        infolabels['year'] = year
-    add_music_item(song['id'], infolabels, img, total_items)
-
-def add_album(album, img='', total_items=0):
-    infolabels = {'title': unicode(album.get('title', get_string(30003))),
-                  'artist': unicode(album.get('artist', get_string(30004))),
-                 }
-    add_directory({'mode': 'get_music_directory', 'id': album['id']}, 
-                  album['title'], img, total_items)
 
 def resolve_url(stream_url):
     xbmcplugin.setResolvedUrl(plugin_handle, True, 
@@ -364,8 +317,3 @@ def decode_dict(data):
         if type(v) is str or type(v) is unicode:
             data[k] = decode(v)
     return data
-
-if is_xbmc:
-    addon = xbmcaddon.Addon(id='plugin.video.ustvnow')
-    plugin_path = addon.getAddonInfo('path')
-

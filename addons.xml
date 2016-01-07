@@ -56,6 +56,39 @@
 </addon>
 
 <addon
+    id="plugin.video.pseudo.companion"
+    version="0.0.1"
+    name="PseudoCompanion"
+    provider-name="Lunatixz">
+    <requires>
+        <import addon="xbmc.python" version="2.14.0"/>
+        <import addon="script.module.t0mm0.common" version="2.0.0"/>
+        <import addon="script.module.beautifulsoup" version="3.2.1"/>
+        <import addon="script.module.simple.downloader" version="0.9.4"/>
+        <import addon="script.module.beautifulsoup4" />
+        <import addon="script.module.simple.downloader" version="0.9.4"/>
+        <import addon="script.module.requests" />
+        <import addon="script.module.httplib2" />
+        <import addon="script.module.youtube.dl" optional="true"/>
+        <import addon="plugin.video.youtube" version="3.0.0"/>
+        <import addon="script.module.urlresolver" optional="true"/>
+        <import addon="script.module.simplejson" />
+        <import addon="script.common.plugin.cache" version="2.5.2"/>
+        <import addon="script.module.metahandler" version="2.5.1"/>
+        <import addon="script.pseudotv.live" version="0.7.2"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="default.py">
+    <provides>video</provides>
+    </extension>
+    <extension point="xbmc.service" library="service.py" start="startup"/>
+    <extension point="xbmc.addon.metadata">
+        <platform>all</platform>
+        <summary lang="en">PseudoTV Live Companion Tool</summary>
+        <description lang="en">Control PseudoTV Live via Yatse app, Parse Exclusive Content, Extend PseudoTV Lives Functionality.</description>
+    </extension>
+</addon>
+
+<addon
     id="plugin.video.pseudo.library"
     version="0.0.2"
     name="PseudoLibrary"
@@ -89,9 +122,9 @@
     </extension>
 </addon>
 
-<addon id="plugin.video.ustvnow" version="12.0.13" name="USTVnow" provider-name="Lunatixz">
+<addon id="plugin.video.ustvnow" version="12.0.14" name="USTVnow" provider-name="Lunatixz">
     <requires>
-        <import addon="xbmc.python" version="2.1.0"/>
+        <import addon="xbmc.python" version="2.14.0"/>
         <import addon="script.module.simplejson" version="3.3.0"/>
         <import addon="script.common.plugin.cache" version="2.5.5"/>
     </requires>

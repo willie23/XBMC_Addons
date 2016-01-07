@@ -16,10 +16,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from resources.lib import Addon
-import sys, os
-import urllib
+import sys, os, urllib
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
+
+from resources.lib import Addon
+from resources.lib import ustvnow_new
 
 Addon.plugin_url = sys.argv[0]
 Addon.plugin_handle = int(sys.argv[1])
@@ -34,7 +35,6 @@ addon = xbmcaddon.Addon(id='plugin.video.ustvnow')
 plugin_path = addon.getAddonInfo('path')
 write_path = xbmc.translatePath(Addon.get_setting('write_folder'))
 
-from resources.lib import ustvnow_new
 ustv = ustvnow_new.Ustvnow(email, password, premium)
 
 if premium != premium_last:
@@ -43,21 +43,25 @@ if premium != premium_last:
 
 if not email:
     dlg.ok("USTVnow", "Please visit www.ustvnow.com", "and register for your login credentials")
+    # Enter Email
     retval = dlg.input('Enter USTVnow Account Email', type=xbmcgui.INPUT_ALPHANUM)
     if retval and len(retval) > 0:
         Addon.set_setting('email', str(retval))
         email = Addon.get_setting('email')
+    # Enter Password
     retval = dlg.input('Enter USTVnow Account Password', type=xbmcgui.INPUT_ALPHANUM)
     if retval and len(retval) > 0:
         Addon.set_setting('password', str(retval))
         password = Addon.get_setting('password')
+    # Subscription type
     if dlg.yesno("USTVnow", 'Are you a premium subscriber?'):
         Addon.set_setting('subscription', 'true')
     else:
         Addon.set_setting('subscription', 'false')
  
 if premium == False:
-    Addon.set_setting('quality_type', '0')       
+    Addon.set_setting('quality_type', '0')     
+    
 quality_type = int(Addon.get_setting('quality_type'))
 stream_type = ['rtmp', 'rtsp'][int(Addon.get_setting('stream_type'))]
     
@@ -71,12 +75,11 @@ if mode == 'main':
     Addon.add_directory({'mode': 'live'}, Addon.get_string(30001))
     Addon.add_directory({'mode': 'favorites'}, Addon.get_string(30006))
     Addon.add_directory({'mode': 'tvguide'}, Addon.get_string(30007))
-    if premium == True:
-        Addon.add_directory({'mode': 'scheduled'}, Addon.get_string(30111))
-        Addon.add_directory({'mode': 'recordings'}, Addon.get_string(30002))
+    Addon.add_directory({'mode': 'scheduled'}, Addon.get_string(30111))
+    Addon.add_directory({'mode': 'recordings'}, Addon.get_string(30002))
 
 elif mode == 'live':
-    channels = ustv.get_channels(quality_type, stream_type, True)
+    channels = ustv.get_channels_NEW(quality_type, stream_type)
     if channels:
         for c in channels:
             rURL = "plugin://plugin.video.ustvnow/?name="+c['name']+"&mode=play"
@@ -196,9 +199,10 @@ elif mode == 'guidedata':
     
 elif mode == 'playlist':
     ustv.get_channels(quality_type, stream_type)
+    Addon.makeXMLTV(ustv.get_guidedata(quality_type, stream_type),urllib.unquote(os.path.join(write_path, 'xmltv.xml')))
 
-elif mode == 'tvguide':
-    fpath = os.path.join(write_path, 'xmltv.xml')    
+elif mode == 'tvguide':  
+    fpath = os.path.join(write_path, 'xmltv.xml')  
     try:
         name = Addon.plugin_queries['name']
         listings = ustv.get_tvguide(fpath, 'programs', name)
@@ -235,8 +239,7 @@ elif mode=='play':
     name = Addon.plugin_queries['name']
     Addon.log(name)
     channels = []
-    channels = ustv.get_link(quality_type, stream_type, True)
-    
+    channels = ustv.get_link_NEW(quality_type, stream_type)
     if channels:
         Addon.log(str(channels))
         for c in channels:
@@ -244,5 +247,6 @@ elif mode=='play':
                 url = c['url']
                 Addon.log(url)
                 item = xbmcgui.ListItem(path=url)
-                xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)      
+                xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)
+                
 Addon.end_of_directory()

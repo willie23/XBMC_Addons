@@ -15,10 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
-import cookielib
-import os
-import re
-import urllib, urllib2, socket
+import sys, os, re
+import urllib, urllib2, socket, cookielib
 import simplejson as json
 import xbmcgui, xbmc, xbmcvfs
 import Addon
@@ -35,6 +33,7 @@ except Exception,e:
     import storageserverdummy as StorageServer
 
 socket.setdefaulttimeout(30)
+
 class Ustvnow:
     def __init__(self, user, password, premium):
         Addon.log('__init__')
@@ -47,23 +46,25 @@ class Ustvnow:
         self.password = password
         self.premium = premium
         self.dlg = xbmcgui.Dialog()
+        # cache
+        self.token  = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "token",.5)
         self.cache  = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "cache",.5)
-        self.guide  = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "guide",5)
-        self.write_type = int(Addon.get_setting('write_type'))
-        
-        
+        self.guide  = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "guide",2)
+        self.write_type = int(Addon.get_setting('write_type'))     
+        # LIVETV           = BASE_URL + '/iphone/1/live/playingnow?pgonly=true&token=%s'
+        # RECORDINGS       = BASE_URL + '/iphone/1/dvr/viewdvrlist?pgonly=true&token=%s'
+        # FAVORITES        = BASE_URL + '/iphone/1/live/showfavs?pgonly=true&token=%s'
+       
+     
     def get_tvguide(self, filename, type='channels', name=''):
         Addon.log('get_tvguide,' + type + ',' + name)
         return Addon.readXMLTV(filename, type, name)
         
         
-    def get_channels(self, quality, stream_type, cache=False):
+    def get_channels(self, quality, stream_type):
         Addon.log('get_channels')
         try:
-            if cache:
-                result = self.cache.cacheFunction(self.get_channels_NEW, quality, stream_type)
-            else:
-                result = self.get_channels_NEW(quality, stream_type)
+            result = self.guide.cacheFunction(self.get_channels_NEW, quality, stream_type)
             if not result:
                 raise Exception()
         except:
@@ -83,7 +84,6 @@ class Ustvnow:
         self.token = self._login()
         content = self._get_json('gtv/1/live/channelguide', {'token': self.token,'format': stream_type, 'l': '1'})
         channels = []
-        ##print json.dumps(content);
         results = content['results'];
         for i in results:
             try:
@@ -116,18 +116,14 @@ class Ustvnow:
             except:
                 pass
         return channels
-            
-            
+
+        
     def make_Playlists(self, quality, stream_type):
         Addon.log('make_Playlists')
         if self.write_type > 1:
-            Addon.makeM3U(self.get_link(quality, stream_type, True))
+            Addon.makeM3U(self.get_link(quality, stream_type))
+
             
-# LIVETV           = BASE_URL + '/iphone/1/live/playingnow?pgonly=true&token=%s'
-# RECORDINGS       = BASE_URL + '/iphone/1/dvr/viewdvrlist?pgonly=true&token=%s'
-# FAVORITES        = BASE_URL + '/iphone/1/live/showfavs?pgonly=true&token=%s'
-
-
     def get_favorites(self, quality, stream_type):
         self.token = self._login()
         content = self._get_json('gtv/1/live/listchannels', {'token': self.token})
@@ -156,8 +152,6 @@ class Ustvnow:
         now = datetime.now();
         results = content['results'];
         for i in results:
-
-            #print i
             start_time = datetime.fromtimestamp(float(i['ut_start']));
             chan = Addon.cleanChanName(i['callsign'])
             icon = 'http://mc.ustvnow.com/gtv/1/live/viewposter?srsid=' + str(i['srsid']) + '&cs=' + i['callsign'] + '&tid=SH'
@@ -216,13 +210,10 @@ class Ustvnow:
         html = self._get_html(del_url)
         
         
-    def get_guidedata(self, quality, stream_type, cache=False):
+    def get_guidedata(self, quality, stream_type):
         Addon.log('get_guidedata')
         try:
-            if cache:
-                result = self.guide.cacheFunction(self.get_guidedata_NEW, quality, stream_type)
-            else:
-                result = self.get_guidedata_NEW(quality, stream_type)
+            result = self.guide.cacheFunction(self.get_guidedata_NEW, quality, stream_type)
             if not result:
                 raise Exception()              
         except:
@@ -246,7 +237,7 @@ class Ustvnow:
         base.setAttribute("generator-info-name", "IPTV Plugin");
         base.setAttribute("generator-info-url", "http://www.xmltv.org/");
         doc.appendChild(base)
-        channels = self.get_channels(quality, stream_type, True);
+        channels = self.get_channels(quality, stream_type);
 
         for channel in channels:
             name = channel['name'];
@@ -364,7 +355,6 @@ class Ustvnow:
         Addon.log('_get_json')
         content = False
         url = self._build_json(path, queries)
-        #print url
         response = self._fetch(url)
         if response:
             content = json.loads(response.read())
@@ -386,13 +376,10 @@ class Ustvnow:
         return html
 
         
-    def get_link(self, quality, stream_type, cache=False):
+    def get_link(self, quality, stream_type):
         Addon.log('get_link')
         try:
-            if cache:
-                result = self.cache.cacheFunction(self.get_link_NEW, quality, stream_type)
-            else:
-                result = self.get_link_NEW(quality, stream_type)
+            result = self.cache.cacheFunction(self.get_link_NEW, quality, stream_type)
             if not result:
                 raise Exception()
         except:
@@ -419,7 +406,6 @@ class Ustvnow:
                                    '<\/td>.+?class="nowplaying_itemdesc".+?' +
                                    '<\/a>(.+?)<\/td>.+?href="(.+?)"',
                                    html, re.DOTALL):
-            # #print channel.groups()
             name, icon, title, plot, url = channel.groups()
             name = name.replace('\n','').replace('\t','').replace('\r','').replace('<fieldset> ','').replace('<div class=','').replace('>','').replace('"','').replace(' ','')
             if not name:
@@ -444,14 +430,14 @@ class Ustvnow:
         Addon.log('_login')
         result = 'False'
         if force == True:
-            self.cache.delete("%")
+            self.token.delete("%")
         try:
-            result = self.cache.cacheFunction(self._login_NEW)
+            result = self.token.cacheFunction(self._login_NEW)
             if result == 'False':
                 raise Exception()
         except Exception,e:
             Addon.log('_login, Failed!')
-            result = self.cache.cacheFunction(self._login_NEW)
+            result = self._login_NEW()
         if result == 'False':
             self.dlg.ok("USTVnow", "Connection FAILED!", "Please check your login credentials and try again later...")
         return result  
@@ -499,3 +485,4 @@ class Ustvnow:
         Addon.log('clearCache')
         self.cache.delete("%")
         self.guide.delete("%")
+        self.token.delete("%")
