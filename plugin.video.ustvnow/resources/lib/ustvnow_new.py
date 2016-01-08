@@ -51,9 +51,8 @@ class Ustvnow:
         self.cache  = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "cache",.5)
         self.guide  = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "guide",2)
         self.write_type = int(Addon.get_setting('write_type'))     
-        # LIVETV           = BASE_URL + '/iphone/1/live/playingnow?pgonly=true&token=%s'
-        # RECORDINGS       = BASE_URL + '/iphone/1/dvr/viewdvrlist?pgonly=true&token=%s'
-        # FAVORITES        = BASE_URL + '/iphone/1/live/showfavs?pgonly=true&token=%s'
+        self.LIVETV     = self.mBASE_URL + '/iphone/1/live/playingnow?pgonly=true&token=%s'
+        self.RECORDINGS = self.mBASE_URL + '/iphone/1/dvr/viewdvrlist?pgonly=true&token=%s'
        
      
     def get_tvguide(self, filename, type='channels', name=''):
@@ -124,21 +123,36 @@ class Ustvnow:
             Addon.makeM3U(self.get_link(quality, stream_type))
 
             
+    def set_favorites(self, channel):
+        Addon.log('set_favorites')
+        # <div class="ui-block-b"><label><input rel="external" class="updateFavorite" href="/iphone/1/live/updatefavs?prgsvcid=11534&token=bceayjtsg04lmlrknc3h" type="checkbox" id="favcb-11534static" name="favcb-11534static"/>Favorite</label>
+            
+            
     def get_favorites(self, quality, stream_type):
+        Addon.log('get_favorites')
         self.token = self._login()
-        content = self._get_json('gtv/1/live/listchannels', {'token': self.token})
-        channels = []
-        results = content['results']['streamnames'];
-        for i in results:
-            url = "plugin://plugin.video.ustvnow/?name="+i['sname']+"&mode=play"
-            name = Addon.cleanChanName(i['sname'])
-            channels.append({
-                'name': name,
-                'sname' : i['callsign'],
-                'url': url, 
-                'icon': self.uBASE_URL + '/' + i['img']
-                })  
-        return channels
+        FAVORITES  = self._get_html('iphone/1/live/showfavs', {'token': self.token, 'l': '1440'})
+        # content = self._get_json('gtv/1/live/listchannels', {'token': self.token, 'l': '1440'})
+        # channels = []
+        # results = content['results']['streamnames'];
+        # print results
+
+        # for i in range(len(results)):
+            # name = Addon.cleanChanName(results[i]['sname'])
+            # id = results[i]['prgsvcid']
+            # free = results[i]['t'] == 1 # free sub switch 1=free, 0=pay
+            # print name, id, fav
+
+          
+            # url = "plugin://plugin.video.ustvnow/?name="+i['sname']+"&mode=play"
+            # name = Addon.cleanChanName(i['sname'])
+            # channels.append({
+                # 'name': name,
+                # 'sname' : i['callsign'],
+                # 'url': url, 
+                # 'icon': self.uBASE_URL + '/' + i['img']
+                # })  
+        # return channels
 
     
     def get_recordings(self, quality, stream_type, type='recordings'):

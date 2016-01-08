@@ -73,7 +73,7 @@ Addon.log(mode)
 
 if mode == 'main':
     Addon.add_directory({'mode': 'live'}, Addon.get_string(30001))
-    Addon.add_directory({'mode': 'favorites'}, Addon.get_string(30006))
+    # Addon.add_directory({'mode': 'favorites'}, Addon.get_string(30006))
     Addon.add_directory({'mode': 'tvguide'}, Addon.get_string(30007))
     Addon.add_directory({'mode': 'scheduled'}, Addon.get_string(30111))
     Addon.add_directory({'mode': 'recordings'}, Addon.get_string(30002))
@@ -234,6 +234,7 @@ elif mode == 'tvguide':
                     listitem.setProperty('fanart_image', fanart)
                     xbmcplugin.addDirectoryItem(Addon.plugin_handle, url, listitem, 
                                                 isFolder=True, totalItems=len(listings))
+                    xbmcplugin.setContent(Addon.plugin_handle, 'episodes')
         
 elif mode=='play':
     name = Addon.plugin_queries['name']
