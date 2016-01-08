@@ -21,7 +21,11 @@ import xbmc, xbmcaddon, xbmcvfs
 from resources.lib import Addon
 
 while (not xbmc.abortRequested):
-    if int(Addon.get_setting('write_type')) != 0:
+    email = Addon.get_setting('email')
+    password = Addon.get_setting('password')
+    
+    if int(Addon.get_setting('write_type')) != 0 and email != '' and password != '':
+
         if int(Addon.get_setting('write_type')) in [2,3]:
             MSG = 'M3U'
         else:
