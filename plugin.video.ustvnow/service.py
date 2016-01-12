@@ -49,5 +49,5 @@ while (not xbmc.abortRequested):
         
         Update_NextRun = ((now + datetime.timedelta(hours=1)).strftime("%Y-%m-%d %H:%M:%S.%f"))
         Addon.setProperty('Update_NextRun', str(Update_NextRun))
-    # Sleep for 1min
-    xbmc.sleep(60000)
+    # Sleep for 1sec
+    xbmc.sleep(1000)
