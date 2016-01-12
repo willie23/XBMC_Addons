@@ -30,6 +30,7 @@ email = Addon.get_setting('email')
 password = Addon.get_setting('password')
 premium = Addon.get_setting('subscription') == "true"
 premium_last = Addon.get_setting('subscription_last') == "true"
+
 dlg = xbmcgui.Dialog()
 addon = xbmcaddon.Addon(id='plugin.video.ustvnow')
 plugin_path = addon.getAddonInfo('path')
@@ -42,7 +43,7 @@ if premium != premium_last:
     Addon.set_setting('subscription_last', Addon.get_setting('subscription'))
 
 if not email:
-    dlg.ok("USTVnow", "Please visit www.ustvnow.com", "and register for your login credentials")
+    dlg.ok("USTVnow", "Please visit www.ustvnow.com", "to register for login credentials.")
     # Enter Email
     retval = dlg.input('Enter USTVnow Account Email', type=xbmcgui.INPUT_ALPHANUM)
     if retval and len(retval) > 0:
@@ -54,11 +55,11 @@ if not email:
         Addon.set_setting('password', str(retval))
         password = Addon.get_setting('password')
     # Subscription type
-    if dlg.yesno("USTVnow", 'Are you a premium subscriber?'):
+    if dlg.yesno("USTVnow", 'Are you a Premium Subscriber?'):
         Addon.set_setting('subscription', 'true')
     else:
         Addon.set_setting('subscription', 'false')
- 
+         
 if premium == False:
     Addon.set_setting('quality_type', '0')     
     

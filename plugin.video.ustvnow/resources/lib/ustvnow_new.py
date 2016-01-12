@@ -28,15 +28,22 @@ from datetime import datetime, timedelta
 
 # Commoncache plugin import
 try:
-    import StorageServer
-except Exception,e:
-    import storageserverdummy as StorageServer
-
+    try:
+        import StorageServer
+    except Exception,e:
+        import storageserverdummy as StorageServer
+    cache  = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "cache",.5)
+    cache_token  = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "cache_token",.5)
+    cache_guide  = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "guide",1)
+except:
+    pass
+    
 socket.setdefaulttimeout(30)
 
 class Ustvnow:
     def __init__(self, user, password, premium):
         Addon.log('__init__')
+        self.dlg = xbmcgui.Dialog()
         self.mBASE_URL = 'http://m.ustvnow.com'
         self.uBASE_URL = 'http://lv2.ustvnow.com';
         # self.uBASE_URL = 'http://lv5.ustvnow.com';
@@ -45,15 +52,10 @@ class Ustvnow:
         self.user = user
         self.password = password
         self.premium = premium
-        self.dlg = xbmcgui.Dialog()
-        # cache
-        self.token  = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "token",.5)
-        self.cache  = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "cache",.5)
-        self.guide  = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "guide",2)
         self.write_type = int(Addon.get_setting('write_type'))     
         self.LIVETV     = self.mBASE_URL + '/iphone/1/live/playingnow?pgonly=true&token=%s'
         self.RECORDINGS = self.mBASE_URL + '/iphone/1/dvr/viewdvrlist?pgonly=true&token=%s'
-       
+
      
     def get_tvguide(self, filename, type='channels', name=''):
         Addon.log('get_tvguide,' + type + ',' + name)
@@ -63,7 +65,7 @@ class Ustvnow:
     def get_channels(self, quality, stream_type):
         Addon.log('get_channels')
         try:
-            result = self.guide.cacheFunction(self.get_channels_NEW, quality, stream_type)
+            result = cache_guide.cacheFunction(self.get_channels_NEW, quality, stream_type)
             if not result:
                 raise Exception()
         except:
@@ -159,7 +161,7 @@ class Ustvnow:
         if quality == 3:
             quality -= 1
         Addon.log('get_recordings,' + str(quality) + ',' + stream_type)
-        self.token = self._login(True)
+        self.token = self._login()
         content = self._get_json('gtv/1/live/viewdvrlist', {'token': self.token, 'format': stream_type})
         recordings = []
         scheduled = []
@@ -223,11 +225,11 @@ class Ustvnow:
     def delete_recording(self, del_url):
         html = self._get_html(del_url)
         
-        
+
     def get_guidedata(self, quality, stream_type):
         Addon.log('get_guidedata')
         try:
-            result = self.guide.cacheFunction(self.get_guidedata_NEW, quality, stream_type)
+            result = cache_guide.cacheFunction(self.get_guidedata_NEW, quality, stream_type)
             if not result:
                 raise Exception()              
         except:
@@ -393,7 +395,7 @@ class Ustvnow:
     def get_link(self, quality, stream_type):
         Addon.log('get_link')
         try:
-            result = self.cache.cacheFunction(self.get_link_NEW, quality, stream_type)
+            result = cache.cacheFunction(self.get_link_NEW, quality, stream_type)
             if not result:
                 raise Exception()
         except:
@@ -438,15 +440,18 @@ class Ustvnow:
             except:
                 pass
         return channels
-                
-                
+             
+
     def _login(self, force=False):
         Addon.log('_login')
         result = 'False'
         if force == True:
-            self.token.delete("%")
+            try:
+                cache_token.delete("%")
+            except:
+                pass
         try:
-            result = self.token.cacheFunction(self._login_NEW)
+            result = cache_token.cacheFunction(self._login_NEW)
             if result == 'False':
                 raise Exception()
         except Exception,e:
@@ -497,6 +502,9 @@ class Ustvnow:
         
     def clearCache(self):
         Addon.log('clearCache')
-        self.cache.delete("%")
-        self.guide.delete("%")
-        self.token.delete("%")
+        try:
+            self.cache.delete("%")
+            self.guide.delete("%")
+            self.token.delete("%")
+        except:
+            pass

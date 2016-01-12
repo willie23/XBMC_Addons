@@ -21,10 +21,7 @@ import xbmc, xbmcaddon, xbmcvfs
 from resources.lib import Addon
 
 while (not xbmc.abortRequested):
-    email = Addon.get_setting('email')
-    password = Addon.get_setting('password')
-    
-    if int(Addon.get_setting('write_type')) != 0 and email != '' and password != '':
+    if int(Addon.get_setting('write_type')) != 0 and Addon.get_setting('email') != '':
 
         if int(Addon.get_setting('write_type')) in [2,3]:
             MSG = 'M3U'
@@ -32,15 +29,13 @@ while (not xbmc.abortRequested):
             MSG = 'STRM'
 
         now  = datetime.datetime.today()
-        
         try:
             Update_LastRun = Addon.getProperty("Update_NextRun")
             if not Update_LastRun or xbmcvfs.exists(os.path.join(Addon.get_setting('write_folder'),'xmltv.xml')) == False:
-                raise exception()
-        except:
+                raise Exception()
+        except Exception,e:
             Update_LastRun = "1970-01-01 23:59:00.000000"
             Addon.setProperty('Update_NextRun', str(Update_LastRun))
-        
         try:
             SyncUpdate = datetime.datetime.strptime(Update_LastRun, "%Y-%m-%d %H:%M:%S.%f")
         except:

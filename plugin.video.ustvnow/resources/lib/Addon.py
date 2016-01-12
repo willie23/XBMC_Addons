@@ -147,9 +147,11 @@ def makeM3U(links):
     STRM_CACHE_LOC = xbmc.translatePath(get_setting('write_folder'))
     if not xbmcvfs.exists(STRM_CACHE_LOC):
         xbmcvfs.mkdir(STRM_CACHE_LOC)
+        
     flepath = os.path.join(STRM_CACHE_LOC,'ustvnow.m3u')
     if xbmcvfs.exists(flepath):
         xbmcvfs.delete(flepath)
+        
     playlist = open(flepath,'w')
     #Extended M3U format used here
     playlist.write('#EXTM3U'+'\n')
@@ -170,6 +172,7 @@ def makeSTRM(name, link):
     try:
         if not xbmcvfs.exists(STRM_CACHE_LOC):
             xbmcvfs.mkdir(STRM_CACHE_LOC)
+            
         filepath = os.path.join(STRM_CACHE_LOC,name + '.strm')
         if xbmcvfs.exists(filepath):
             return True
