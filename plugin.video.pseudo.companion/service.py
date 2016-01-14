@@ -20,23 +20,14 @@
 
 import xbmcplugin, xbmcgui, xbmcaddon, xbmcvfs
 
-def getProperty(str):
-    return xbmcgui.Window(10000).getProperty(str)
-
-def setProperty(str1, str2):
-    xbmcgui.Window(10000).setProperty(str1, str2)
-
-def clearProperty(str):
-    xbmcgui.Window(10000).clearProperty(str)
-    
 while (not xbmc.abortRequested):
-    PTVL_RUNNING = getProperty('PseudoTVRunning') == "True"
+    PTVL_RUNNING = xbmcgui.Window(10000).getProperty('PseudoTVRunning') == "True"
     if PTVL_RUNNING == True:
         STATE = 'true'
         STATUS = '[COLOR=green]ONLINE[/COLOR]'
     else:
         STATE = 'false'
         STATUS = '[COLOR=red]OFFLINE[/COLOR]'
-    setProperty('PseudoCompanion.STATE', STATE)
-    setProperty('PseudoCompanion.STATUS', STATUS)
+    xbmcgui.Window(10000).setProperty('PseudoCompanion.STATE', STATE)
+    xbmcgui.Window(10000).setProperty('PseudoCompanion.STATUS', STATUS)
     xbmc.sleep(1000)

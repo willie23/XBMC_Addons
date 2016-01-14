@@ -188,6 +188,7 @@ def makeSTRM(name, link):
 
 def makeXMLTV(data, filepath):
     log('makeXMLTV, filepath = ' + ascii(filepath))
+    finished = False
     try:
         if not xbmcvfs.exists(os.path.dirname(filepath)):
             xbmcvfs.mkdir(os.path.dirname(filepath))
@@ -205,11 +206,10 @@ def makeXMLTV(data, filepath):
         fle.close()
         log('writing item: %s' % (filepath))
         if xbmcvfs.exists(filepath):
-            return True
-        else:
-            return False
+            finished = True
     except:
-        return False
+        pass
+    return finished
        
 def show_error(details):
     show_dialog(details, get_string(30000), True)

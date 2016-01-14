@@ -28,16 +28,10 @@ from datetime import datetime, timedelta
 
 # Commoncache plugin import
 try:
-    try:
-        import StorageServer
-    except Exception,e:
-        import storageserverdummy as StorageServer
-    cache  = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "cache",.5)
-    cache_token  = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "cache_token",.5)
-    cache_guide  = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "guide",1)
-except:
-    pass
-    
+    import StorageServer
+except Exception,e:
+    import storageserverdummy as StorageServer
+
 socket.setdefaulttimeout(30)
 
 class Ustvnow:
@@ -55,8 +49,13 @@ class Ustvnow:
         self.write_type = int(Addon.get_setting('write_type'))     
         self.LIVETV     = self.mBASE_URL + '/iphone/1/live/playingnow?pgonly=true&token=%s'
         self.RECORDINGS = self.mBASE_URL + '/iphone/1/dvr/viewdvrlist?pgonly=true&token=%s'
-
-     
+        try:   
+            self.cache = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "cache",.5)
+            self.cache_token  = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "self.cache_token",.5)
+            self.cache_guide  = StorageServer.StorageServer("plugin://plugin.video.ustvnow/" + "guide",4)
+        except:
+            pass
+            
     def get_tvguide(self, filename, type='channels', name=''):
         Addon.log('get_tvguide,' + type + ',' + name)
         return Addon.readXMLTV(filename, type, name)
@@ -65,7 +64,7 @@ class Ustvnow:
     def get_channels(self, quality, stream_type):
         Addon.log('get_channels')
         try:
-            result = cache_guide.cacheFunction(self.get_channels_NEW, quality, stream_type)
+            result = self.cache_guide.cacheFunction(self.get_channels_NEW, quality, stream_type)
             if not result:
                 raise Exception()
         except:
@@ -229,7 +228,7 @@ class Ustvnow:
     def get_guidedata(self, quality, stream_type):
         Addon.log('get_guidedata')
         try:
-            result = cache_guide.cacheFunction(self.get_guidedata_NEW, quality, stream_type)
+            result = self.cache_guide.cacheFunction(self.get_guidedata_NEW, quality, stream_type)
             if not result:
                 raise Exception()              
         except:
@@ -395,7 +394,7 @@ class Ustvnow:
     def get_link(self, quality, stream_type):
         Addon.log('get_link')
         try:
-            result = cache.cacheFunction(self.get_link_NEW, quality, stream_type)
+            result = self.cache.cacheFunction(self.get_link_NEW, quality, stream_type)
             if not result:
                 raise Exception()
         except:
@@ -447,11 +446,11 @@ class Ustvnow:
         result = 'False'
         if force == True:
             try:
-                cache_token.delete("%")
+                self.cache_token.delete("%")
             except:
                 pass
         try:
-            result = cache_token.cacheFunction(self._login_NEW)
+            result = self.cache_token.cacheFunction(self._login_NEW)
             if result == 'False':
                 raise Exception()
         except Exception,e:
@@ -472,31 +471,37 @@ class Ustvnow:
         
     def _login_ALT(self):
         Addon.log('_login_NEW_ALT')
-        self.cj = cookielib.CookieJar()
-        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cj)) 
-        urllib2.install_opener(opener)
-        url = self._build_json('gtv/1/live/login', {'username': self.user, 
-                                               'password': self.password, 
-                                               'device':'gtv', 
-                                               'redir':'0'})
-        response = opener.open(url)
-        for cookie in self.cj:
-            if cookie.name == 'token':
-                return cookie.value
+        try:
+            self.cj = cookielib.CookieJar()
+            opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cj)) 
+            urllib2.install_opener(opener)
+            url = self._build_json('gtv/1/live/login', {'username': self.user, 
+                                                   'password': self.password, 
+                                                   'device':'gtv', 
+                                                   'redir':'0'})
+            response = opener.open(url)
+            for cookie in self.cj:
+                if cookie.name == 'token':
+                    return cookie.value
+        except:
+            pass
         return 'False'
     
     
     def _login_ORG(self):
         Addon.log('_login_ORG')
-        self.cj = cookielib.CookieJar()
-        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cj))
-        urllib2.install_opener(opener)
-        url = self._build_url('iphone_login', {'username': self.user, 
-                                               'password': self.password})
-        response = opener.open(url)
-        for cookie in self.cj:
-            if cookie.name == 'token':
-                return cookie.value
+        try:
+            self.cj = cookielib.CookieJar()
+            opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cj))
+            urllib2.install_opener(opener)
+            url = self._build_url('iphone_login', {'username': self.user, 
+                                                   'password': self.password})
+            response = opener.open(url)
+            for cookie in self.cj:
+                if cookie.name == 'token':
+                    return cookie.value
+        except:
+            pass
         return 'False'
 
         

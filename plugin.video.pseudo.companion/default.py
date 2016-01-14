@@ -314,11 +314,11 @@ def getOnline():
     
 def getMisc():
     getDEBUG()
-    getState()
+    getStatus()
     
     
-def getState():
-    title = getProperty('PTVL.STATUS_TEXT')
+def getStatus():
+    title = getProperty('PTVL.NOTIFY_LOG')
     debug_icon = os.path.join(ADDON_PATH,'resources','images','debug.png')
     label = 'STATUS:'
     content_type = 'movie'
@@ -329,7 +329,7 @@ def getState():
     infoList['Title']         = label
     infoList['Studio']        = label
     infoList['Year']          = '0'
-    addDir(label, title,'','getDEBUG','',debug_icon,debug_icon,'',infoList)
+    addDir(label, title,'','getMisc','',debug_icon,debug_icon,'',infoList)
     
 def getDEBUG(): 
     title = getProperty('PTVL.DEBUG_LOG')
@@ -343,7 +343,7 @@ def getDEBUG():
     infoList['Title']         = label
     infoList['Studio']        = label
     infoList['Year']          = '0'
-    addDir(label, title,'','getDEBUG','',debug_icon,debug_icon,'',infoList)
+    addDir(label, title,'','getMisc','',debug_icon,debug_icon,'',infoList)
                 
 def getTools():
     addDir('Media Sources','','','',8000)
@@ -358,10 +358,10 @@ def getMedia():
     
 def getLocal():
     log('getLocal') 
-    addDir('Browse Local Videos','','video','',6000)
-    addDir('Browse Local Musics','','music','',6000)
-    addDir('Browse Video Plugins','','video','',6001)
-    addDir('Browse Music Plugins','','music','',6001)
+    addDir('Browse Local Video','','video','',6000)
+    addDir('Browse Local Music','','music','',6000)
+    addDir('Browse Plugin Video ','','video','',6001)
+    addDir('Browse Plugin Music','','music','',6001)
     addDir('Browse PVR Backend','','pvr://','',6002)
     addDir('Browse UPNP Servers','','upnp://','',6002)
         
@@ -372,6 +372,7 @@ def getSideBar():
     addDir('Search','','','',4001)
     addDir('Last Channel','','','',9999)
     addDir('Favorites','','','',9999)
+    addDir('Favorites Flip','','','',9999)
     addDir('EPGType','','','',9999)
     addDir('Mute','','','',9999)
     addDir('Subtitle','','','',9999)
@@ -383,42 +384,42 @@ def getReminders():
     log('getReminders')
     try:
         ReminderLst = eval(getProperty("PTVL.ReminderLst"))
-        # # if ReminderLst and len(ReminderLst) > 0:
-        for n in range(len(ReminderLst)):
-            lineLST = ReminderLst[n]
-            record  =  lineLST['Record'] == 'True'
-            chtype  =  lineLST['Chtype']
-            tmpDate =  lineLST['TimeStamp']
-            title   =  lineLST['Title']
-            SEtitle =  lineLST['SEtitle']
-            chnum   =  lineLST['Chnum']
-            chname  =  lineLST['Chname']
-            poster  =  lineLST['poster']
-            fanart  =  lineLST['fanart']
-            chlogo  =  lineLST['LOGOART']
-            Notify_Time, epochBeginDate = cleanReminderTime(tmpDate)          
-            now = time.time()
-            if epochBeginDate > now:
-                label = ('[B]%s[/B] on channel [B]%s[/B] at [B]%s[/B]'%(title, chnum, str(Notify_Time)))
-                content_type = 'movie'
-                infoList = {}
-                infoList['mediatype']     = content_type
-                infoList['TVShowTitle']   = str(Notify_Time)
-                infoList['Genre']         = str(Notify_Time)
-                infoList['Title']         = title
-                infoList['Studio']        = 'chname'
-                infoList['Year']          = int(chnum or '0')
-                
-                infoArt = {}
-                infoArt['thumb']        = poster
-                infoArt['poster']       = poster
-                infoArt['fanart']       = fanart
-                infoArt['landscape']    = fanart
-                infoList['icon']        = chlogo
-                addDir(label, Notify_Time, str(chnum),'getReminders',10000,poster,chlogo,fanart,infoList,infoArt,content_type)
-        # else:
-            # raise Exception()
-    except:
+        if ReminderLst and len(ReminderLst) > 0:
+            for n in range(len(ReminderLst)):
+                lineLST = ReminderLst[n]
+                record  =  lineLST['Record'] == 'True'
+                chtype  =  lineLST['Chtype']
+                tmpDate =  lineLST['TimeStamp']
+                title   =  lineLST['Title']
+                SEtitle =  lineLST['SEtitle']
+                chnum   =  lineLST['Chnum']
+                chname  =  lineLST['Chname']
+                poster  =  lineLST['poster']
+                fanart  =  lineLST['fanart']
+                chlogo  =  lineLST['LOGOART']
+                Notify_Time, epochBeginDate = cleanReminderTime(tmpDate)          
+                now = time.time()
+                if epochBeginDate > now:
+                    label = ('[B]%s[/B] on channel [B]%s[/B] at [B]%s[/B]'%(title, chnum, str(Notify_Time)))
+                    content_type = 'tvshow'
+                    infoList = {}
+                    infoList['mediatype']     = content_type
+                    infoList['TVShowTitle']   = str(Notify_Time)
+                    infoList['Genre']         = str(Notify_Time)
+                    infoList['Title']         = title
+                    infoList['Studio']        = 'chname'
+                    infoList['Year']          = int(chnum or '0')
+                    
+                    infoArt = {}
+                    infoArt['thumb']        = poster
+                    infoArt['poster']       = poster
+                    infoArt['fanart']       = fanart
+                    infoArt['landscape']    = fanart
+                    infoList['icon']        = chlogo
+                    addDir(label, Notify_Time, str(chnum),'getReminders',10000,poster,chlogo,fanart,infoList,infoArt,content_type)
+        else:
+            raise Exception()
+    except Exception,e:
         addDir('No Reminders Set','','','','',PTVL_ICON,PTVL_ICON)
             
 def cleanReminderTime(tmpDate):
@@ -512,8 +513,8 @@ def OnNow(next=False):
         for i in range(len(OnNowLst)):
             OnNowLine = OnNowLst[i]
             OnNextLine = OnNextLst[i]
-            # get dict values
-            content_type = 'movie'
+            
+            content_type = 'tvshow'
             type         = OnNowLine['content_type']
             title        = OnNowLine['Title']
             rating       = OnNowLine['Rating']
@@ -535,20 +536,7 @@ def OnNow(next=False):
             label        = ('%d| %s' %(chnum, title))
             
             # if type in ['tvshow','episode']:
-                # SEtitle = SEtitle.replace(getChanTypeLabel(chtype),'')
-                # if SEtitle: 
-                    # SEtitle = ('%s - %s' % (label,SEtitle))
-                # nextSEtitle = nextSEtitle.replace(getChanTypeLabel(chtype),'')
-                # if nextSEtitle: 
-                    # nextSEtitle = ('%s - %s' % (nextTitle,nextSEtitle))
-            # elif type == 'movie':
-                # if tagline: 
-                    # SEtitle = ('%s - %s' % (label,tagline))
-                # if nexttagline: 
-                    # nextSEtitle = ('%s - %s' % (nextTitle,nextTagline))
-            # else: 
-                # SEtitle = label
-                # nextSEtitle = nextTitle
+                # title = ('%s - %s' % (title,SEtitle))
                 
             # setup infoList
             infoList = {}
@@ -569,11 +557,36 @@ def OnNow(next=False):
             infoArt['fanart']       = fanart
             infoArt['landscape']    = fanart
             infoList['icon']        = chlogo
-            
-            addDir(label,description,str(chnum),previous,10000,poster,chlogo,fanart,infoList,infoArt,content_type)
+            url = str({'content_type': content_type, 'Rating': rating, 'Description': description, 'Title': title, 'Chname': chname, 'Chname': chname, 'Chnum': chnum, 'Season': season, 'Episode': episode, 'playcount': playcount, 'poster': poster, 'fanart': fanart, 'chlogo': chlogo})
+            addDir(label,OnNowLine['Description'],str(chnum),previous,10000,poster,chlogo,fanart,infoList,infoArt,content_type)
     except:
         addDir('Try Again Later','','','',PTVL_ICON,PTVL_ICON)
-
+     
+def PreviewChannel(name, url, previous):
+    log('PreviewChannel')
+    PreviewLine = eval(url)
+    content_type = 'tvshow' 
+    infoList = {}
+    infoList['mediatype']     = PreviewLine['content_type']
+    infoList['MPAA']          = PreviewLine['Rating']
+    infoList['TVShowTitle']   = PreviewLine['Description']
+    infoList['Genre']         = PreviewLine['Description']
+    infoList['Title']         = PreviewLine['Title']
+    infoList['Studio']        = PreviewLine['Chname']
+    infoList['Year']          = int(PreviewLine['Chnum'] or '0')
+    infoList['Season']        = int(PreviewLine['Season'] or '0')
+    infoList['Episode']       = int(PreviewLine['Episode'] or '0')
+    infoList['playcount']     = int(PreviewLine['playcount'] or '0')
+    
+    infoArt = {}
+    infoArt['thumb']        = PreviewLine['poster']
+    infoArt['poster']       = PreviewLine['poster']
+    infoArt['fanart']       = PreviewLine['fanart']
+    infoArt['landscape']    = PreviewLine['fanart']
+    infoList['icon']        = PreviewLine['chlogo']
+    
+    addDir(name,PreviewLine['Description'],str(PreviewLine['Chnum']),previous,10000,PreviewLine['poster'],PreviewLine['chlogo'],PreviewLine['fanart'],infoList,infoArt,content_type)
+        
 def InputChannel(channel, previous):
     log('InputChannel = ' + str(channel))
     for n in range(len(str(channel))):  
@@ -583,7 +596,7 @@ def InputChannel(channel, previous):
     
 def NowWatching():
     log('NowWatching')
-    content_type = 'movie' 
+    content_type = 'tvshow' 
     infoList = {}
     infoList['mediatype']     = content_type
     infoList['MPAA']          = getProperty("OVERLAY.Rating")
@@ -773,6 +786,9 @@ elif mode == 9999: sendJSON(url)
 
 #PTVL Channel Input
 elif mode == 10000: InputChannel(int(url),previous)
+
+#PTVL Pre-Channel Input
+elif mode == 10001: PreviewChannel(name,url,previous)
 
 # if mode in [0,1,2,3,4,5,6]: back('Online')                      # Return to Online Menu
 # elif mode in [9995,9999]: back('Main')                        # Return to Main Menu

@@ -32,8 +32,7 @@ premium = Addon.get_setting('subscription') == "true"
 premium_last = Addon.get_setting('subscription_last') == "true"
 
 dlg = xbmcgui.Dialog()
-addon = xbmcaddon.Addon(id='plugin.video.ustvnow')
-plugin_path = addon.getAddonInfo('path')
+plugin_path = xbmcaddon.Addon(id='plugin.video.ustvnow').getAddonInfo('path')
 write_path = xbmc.translatePath(Addon.get_setting('write_folder'))
 
 ustv = ustvnow_new.Ustvnow(email, password, premium)
@@ -41,6 +40,9 @@ ustv = ustvnow_new.Ustvnow(email, password, premium)
 if premium != premium_last:
     ustv.clearCache()
     Addon.set_setting('subscription_last', Addon.get_setting('subscription'))
+         
+if premium == False:
+    Addon.set_setting('quality_type', '0')     
 
 if not email:
     dlg.ok("USTVnow", "Please visit www.ustvnow.com", "to register for login credentials.")
@@ -59,9 +61,6 @@ if not email:
         Addon.set_setting('subscription', 'true')
     else:
         Addon.set_setting('subscription', 'false')
-         
-if premium == False:
-    Addon.set_setting('quality_type', '0')     
     
 quality_type = int(Addon.get_setting('quality_type'))
 stream_type = ['rtmp', 'rtsp'][int(Addon.get_setting('stream_type'))]
@@ -144,7 +143,6 @@ elif mode == 'recordings':
             else:
                 quality_name = 'Low';
             Addon.add_video_item(r['stream_url'], {'title': title, 
-
                                                    'plot': r['plot'],
                                                    'plotoutline': r['synopsis'],
                                                    'tvshowtitle': r['tvshowtitle'],
@@ -241,7 +239,7 @@ elif mode=='play':
     name = Addon.plugin_queries['name']
     Addon.log(name)
     channels = []
-    channels = ustv.get_link_NEW(quality_type, stream_type)
+    channels = ustv.get_link(quality_type, stream_type)
     if channels:
         Addon.log(str(channels))
         for c in channels:
