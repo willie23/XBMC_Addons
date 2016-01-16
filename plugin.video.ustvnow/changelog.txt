@@ -1,3 +1,9 @@
+[B]Version 12.0.18[/B]
+- Fixed update service
+
+[B]Version 12.0.17[/B]
+- Fixed Commoncache issues
+
 [B]Version 12.0.16[/B]
 - Fixed Commoncache issues
 

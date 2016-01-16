@@ -20,9 +20,14 @@ import xbmc, xbmcaddon, xbmcvfs
 
 from resources.lib import Addon
 
-while (not xbmc.abortRequested):
-    if int(Addon.get_setting('write_type')) != 0 and Addon.get_setting('email') != '':
-
+monitor = xbmc.Monitor()
+while not monitor.abortRequested():
+    # Sleep/wait for abort for 10 seconds
+    if monitor.waitForAbort(10):
+        # Abort was requested while waiting. We should exit
+        break
+        
+    if int(Addon.get_setting('write_type')) != 0 and len(Addon.get_setting('email')) >= 1:
         if int(Addon.get_setting('write_type')) in [2,3]:
             MSG = 'M3U'
         else:
@@ -36,6 +41,7 @@ while (not xbmc.abortRequested):
         except Exception,e:
             Update_LastRun = "1970-01-01 23:59:00.000000"
             Addon.setProperty('Update_NextRun', str(Update_LastRun))
+        
         try:
             SyncUpdate = datetime.datetime.strptime(Update_LastRun, "%Y-%m-%d %H:%M:%S.%f")
         except:
@@ -47,7 +53,5 @@ while (not xbmc.abortRequested):
             if Addon.get_setting('silent') == 'false':
                 xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("USTVnow", "%s/XMLTV Updated" %MSG, 1000, Addon.ICON) )
         
-        Update_NextRun = ((now + datetime.timedelta(hours=1)).strftime("%Y-%m-%d %H:%M:%S.%f"))
-        Addon.setProperty('Update_NextRun', str(Update_NextRun))
-    # Sleep for 1sec
-    xbmc.sleep(1000)
+            Update_NextRun = ((now + datetime.timedelta(hours=1)).strftime("%Y-%m-%d %H:%M:%S.%f"))
+            Addon.setProperty('Update_NextRun', str(Update_NextRun))
