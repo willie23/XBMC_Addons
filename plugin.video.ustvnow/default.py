@@ -126,7 +126,8 @@ elif mode == 'live':
                 xbmcplugin.setContent(Addon.plugin_handle, 'episodes')
         except:
             for c in channels:
-                Addon.add_video_item(c['url'],{'title': '%s - %s' % (c['name'], c['now']['title']), 'plot': c['now']['plot']}, img=c['icon'])
+                logo = xbmc.translatePath(os.path.join(plugin_path, 'resources', 'images', c['name']+'.png'))
+                Addon.add_video_item(c['url'],{'title': '%s - %s' % (c['name'], c['now']['title']), 'plot': c['now']['plot']}, img=logo)
 elif mode == 'recordings':
     stream_type = ['rtmp', 'rtsp'][int(Addon.get_setting('stream_type'))]
     recordings = ustv.get_recordings(quality_type, stream_type, 'recordings')

@@ -117,7 +117,7 @@ class Ustvnow:
                 except:
                     pass
         except:
-            channels = self.get_link(self, quality, stream_type)
+            channels = self.get_link(quality, stream_type)
         return channels
 
         
