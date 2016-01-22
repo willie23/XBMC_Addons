@@ -18,9 +18,10 @@
 
 import os, sys, re
 import xbmcaddon, xbmc, xbmcgui, xbmcvfs
-import Settings, pyfscache
+import Settings
 
 from FileAccess import FileLock
+from pyfscache import *
 
 # Commoncache plugin import
 try:
@@ -41,6 +42,7 @@ DEBUG = REAL_SETTINGS.getSetting('enable_Debug') == "true"
 PTVL_RUNNING = xbmcgui.Window(10000).getProperty('PseudoTVRunning') == "True"
 
 def log(msg, level = xbmc.LOGDEBUG):
+    xbmcgui.Window(10000).setProperty('PTVL.DEBUG_LOG', msg)
     if DEBUG != True and level == xbmc.LOGDEBUG:
         return
     xbmc.log(ADDON_ID + '-' + ADDON_VERSION + '-' + uni(msg), level)
@@ -77,13 +79,16 @@ ART_TIMER = [6,12,24,48,72]
 SHORT_CLIP_ENUM = [15,30,60,90,120,240,360,480]#in seconds
 INFOBAR_TIMER = [3,5,10,15,20,25]#in seconds
 LIMIT_VALUES = [25,50,100,250,500,1000,5000,0]#Media Per/Channel, 0 = Unlimited
+SEEK_FORWARD = [10, 30, 60, 180, 300, 600, 1800]
+SEEK_BACKWARD = [-10, -30, -60, -180, -300, -600, -1800]
 TIMEOUT = 15 * 1000
 TOTAL_FILL_CHANNELS = 20
 PREP_CHANNEL_TIME = 60 * 60 * 24 * 5
 ALLOW_CHANNEL_HISTORY_TIME = 60 * 60 * 24 * 1
-NOTIFICATION_CHECK_TIME = 5
-NOTIFICATION_TIME_BEFORE_END = 240
-NOTIFICATION_DISPLAY_TIME = 8
+NOTIFICATION_CHECK_TIME = 15 #in seconds
+NOTIFICATION_TIME_BEFORE_END = 240 #in seconds
+NOTIFICATION_DISPLAY_TIME = 6 #in seconds
+REMINDER_COUNTDOWN = 1 #mins
 
 # Rules/Modes
 RULES_ACTION_START = 1
@@ -102,12 +107,12 @@ MODE_RANDOM = 8
 MODE_REALTIME = 16
 MODE_SERIAL = MODE_RESUME | MODE_ALWAYSPAUSE | MODE_ORDERAIRDATE
 MODE_STARTMODES = MODE_RANDOM | MODE_REALTIME | MODE_RESUME
-
 # Maximum is 10
 RULES_PER_PAGE = 7
-
 # Chtype Limit
 NUMBER_CHANNEL_TYPES = 17
+# Channel Limit
+CHANNEL_LIMIT = 999
 
 #UPNP Clients
 IPP1 = REAL_SETTINGS.getSetting("UPNP1_IPP")
@@ -188,7 +193,10 @@ if not xbmcvfs.exists(MEDIA_LOC):
 if not xbmcvfs.exists(EPGGENRE_LOC):
     print 'forcing default DEFAULT_EPGGENRE_LOC'
     EPGGENRE_LOC = DEFAULT_EPGGENRE_LOC               
-           
+     
+TAG_LOC = os.path.join(MEDIA_LOC,'flags','tags','')
+STAR_LOC = os.path.join(MEDIA_LOC,'flags','rating','')
+     
 # Find XBMC Skin path
 if xbmcvfs.exists(xbmc.translatePath(os.path.join('special://','skin','720p',''))):
     XBMC_SKIN_LOC = xbmc.translatePath(os.path.join('special://','skin','720p',''))
@@ -208,10 +216,14 @@ GlobalFileLock = FileLock()
 NOTIFY = REAL_SETTINGS.getSetting('EnableNotify') == "true"
 SETTOP = REAL_SETTINGS.getSetting("EnableSettop") == "true"
 ENHANCED_DATA = REAL_SETTINGS.getSetting('EnhancedGuideData') == 'true'
+FIND_LOGOS = REAL_SETTINGS.getSetting('Enable_FindLogo') == "true" 
 FILELIST_LIMIT = [4096,8192,16384]
 MAXFILE_DURATION = 16000
 RSS_REFRESH = 900
 ONNOW_REFRESH = 450
+ONNOW_REFRESH_LOW = 900
+SETTOP_REFRESH = 3600
+IDLE_TIMER = 180 #3min
 
 # Settings2 filepaths
 SETTINGS_FLE = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.xml'))
@@ -236,12 +248,9 @@ artwork5 = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "artwo
 artwork6 = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "artwork6",((24 * 7) * 4))       #Artwork Purge
 
 # pyfscache globals
-cache_daily = pyfscache.FSCache(REQUESTS_LOC, days=1, hours=0, minutes=0)
-cache_weekly = pyfscache.FSCache(REQUESTS_LOC, days=7, hours=0, minutes=0)
-cache_monthly = pyfscache.FSCache(REQUESTS_LOC, days=28, hours=0, minutes=0)
-    
-# 1hr re    
-SETTOP_REFRESH = 3600
+cache_daily = FSCache(REQUESTS_LOC, days=1, hours=0, minutes=0)
+cache_weekly = FSCache(REQUESTS_LOC, days=7, hours=0, minutes=0)
+cache_monthly = FSCache(REQUESTS_LOC, days=28, hours=0, minutes=0)
 
 try:
     MEDIA_LIMIT = LIMIT_VALUES[int(REAL_SETTINGS.getSetting('MEDIA_LIMIT'))]
@@ -302,16 +311,16 @@ CHANBUG_COLOR = COLOR_CHANNUM[int(REAL_SETTINGS.getSetting('COLOR_CHANNUM'))]
 #Actions
 #https://github.com/xbmc/xbmc/blob/master/xbmc/input/Key.h
 # https://github.com/xbmc/xbmc/blob/master/xbmc/input/ButtonTranslator.cpp
-ACTION_MOVE_LEFT = 1
-ACTION_MOVE_RIGHT = 2
-ACTION_MOVE_UP = 3
-ACTION_MOVE_DOWN = 4
-ACTION_PAGEUP = 5
-ACTION_PAGEDOWN = 6
-ACTION_SELECT_ITEM = 7
+ACTION_MOVE_LEFT = [1,511]
+ACTION_MOVE_RIGHT = [2,521]
+ACTION_MOVE_UP = [3,531]
+ACTION_MOVE_DOWN = [4,541]
+ACTION_PAGEUP = [5,540]
+ACTION_PAGEDOWN = [6,550]
+ACTION_SELECT_ITEM = [7,411]
 ACTION_PREVIOUS_MENU = [9, 10, 92, 247, 257, 275, 61467, 61448]
 ACTION_DELETE_ITEM = 80
-ACTION_SHOW_INFO = 11
+ACTION_SHOW_INFO = [11,401]
 ACTION_PAUSE = 12
 ACTION_PLAYER_PLAYPAUSE = 249 #Play/pause. If playing it pauses, if paused it plays.
 ACTION_STOP = 13
@@ -329,7 +338,7 @@ ACTION_NUMBER_9 = 67
 ACTION_INVALID = 999
 ACTION_SHOW_SUBTITLES = 25 #turn subtitles on/off. 
 ACTION_AUDIO_NEXT_LANGUAGE = 56 #Select next language in movie
-ACTION_CONTEXT_MENU = 117
+ACTION_CONTEXT_MENU = [117,420]
 ACTION_RECORD = 170 #PVR Backend Record
 ACTION_SHOW_CODEC = 27
 ACTION_ASPECT_RATIO = 19 
@@ -337,6 +346,26 @@ ACTION_SHIFT = 118
 ACTION_SYMBOLS = 119
 ACTION_CURSOR_LEFT  = 120
 ACTION_CURSOR_RIGHT = 121
+
+# touch actions
+ACTION_TOUCH_TAP = 401
+ACTION_TOUCH_TAP_TEN = 410
+ACTION_TOUCH_LONGPRESS = 411
+ACTION_TOUCH_LONGPRESS_TEN = 420
+ACTION_GESTURE_NOTIFY = 500
+ACTION_GESTURE_BEGIN = 501
+ACTION_GESTURE_ZOOM = 502
+ACTION_GESTURE_ROTATE = 503
+ACTION_GESTURE_PAN = 504
+ACTION_GESTURE_SWIPE_LEFT = 511
+ACTION_GESTURE_SWIPE_LEFT_TEN = 520
+ACTION_GESTURE_SWIPE_RIGHT = 521
+ACTION_GESTURE_SWIPE_RIGHT_TEN = 530
+ACTION_GESTURE_SWIPE_UP = 531
+ACTION_GESTURE_SWIPE_UP_TEN = 540
+ACTION_GESTURE_SWIPE_DOWN = 541
+ACTION_GESTURE_SWIPE_DOWN_TEN   =  550
+
 #unused
 ACTION_NEXT_ITEM = 14
 ACTION_PREV_ITEM = 15
@@ -356,7 +385,6 @@ ACTION_TELETEXT_RED = 215
 ACTION_TELETEXT_GREEN = 216
 ACTION_TELETEXT_YELLOW = 217
 ACTION_TELETEXT_BLUE = 218
-#unused
 #define ACTION_MUTE                   91
 #define ACTION_CHANNEL_SWITCH         183 #last channel?
 #define ACTION_TOGGLE_WATCHED         200 // Toggle watched status (videos)

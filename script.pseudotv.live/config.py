@@ -17,11 +17,8 @@
 # along with PseudoTV Live.  If not, see <http://www.gnu.org/licenses/>.
 
 import xbmc, xbmcgui, xbmcaddon
-import subprocess, os
+import subprocess, os, sys, re, random
 import datetime, time, threading
-import datetime
-import sys, re
-import random
 
 from urllib import unquote
 from xml.dom.minidom import parse, parseString
@@ -131,7 +128,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             self.deleteChannel(curchan)
             self.clearLabel(self.getFocusId())
                     
-        elif action == ACTION_SHOW_INFO: # Change Channel Number 
+        elif action in ACTION_SHOW_INFO: # Change Channel Number 
             if xbmcgui.Window(10000).getProperty("PseudoTVRunning") != "True":
                 curchan = self.listcontrol.getSelectedPosition() + 1
                 self.changeChanNum(curchan)
@@ -180,7 +177,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         elif chantype == 7:
             ADDON_SETTINGS.setSetting(setting1, self.getControl(200).getLabel())
             ADDON_SETTINGS.setSetting(setting3, self.getControl(201).getLabel())
-            ADDON_SETTINGS.setSetting(setting4, self.getControl(202).getLabel())
+            ADDON_SETTINGS.setSetting(setting4, (self.getControl(202).getLabel()).replace('Default','0').replace('Random','1').replace('Reverse','2'))
         elif chantype == 8: #LiveTV
             ADDON_SETTINGS.setSetting(setting1, self.getControl(216).getLabel())
             ADDON_SETTINGS.setSetting(setting2, self.getControl(217).getLabel())
@@ -422,12 +419,9 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             setting3 = self.getControl(212).getLabel()
             if len(setting3) <= 1:
                 infoDialog("Enter Channel & XMLTV Name")
-            else:              
-                if setting3 == 'ptvlguide':
-                    SyncXMLTV()
-                
+            else:                              
                 dname = self.getControl(213).getLabel()
-                xmltvFle = xmltvFile(setting3)
+                xmltvFle = xmltvflePath(setting3)
                 dnameID, CHid = self.chnlst.findZap2itID(dname, xmltvFle)
                 if dnameID != 'XMLTV ERROR':
                     self.getControl(216).setLabel(CHid)
@@ -717,7 +711,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         self.getControl(controlid).setLabel(thelist[index])
         
         # Disable Submit button
-        if isCom() and thelist[index] not in ['PVR','HDhomerun','UPNP','Local Music','Local Video','User Subscription','User Favorites','Search Query','Raw gdata','Seasonal']:
+        if isCom() and thelist[index] not in ['PVR','HDhomerun','UPNP','Local Music','Local Video','User Subscription','User Favorites','Search Query','Raw gdata','Seasonal','Plugin','LiveTV','InternetTV']:
             self.getControl(115).setVisible(True)
         else:
             self.getControl(115).setVisible(False)
@@ -812,7 +806,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         self.fillInDetails(channel)        
         
         # Disable Submit button
-        if isCom() and chantype in [0,8,9,10,11,15]:
+        if isCom() and chantype in [0,10,11]:
             self.getControl(115).setVisible(True)
         else:
             self.getControl(115).setVisible(False)
@@ -835,13 +829,13 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             chansetting1 = ADDON_SETTINGS.getSetting("Channel_" + str(channel) + "_1")
             chansetting2 = ADDON_SETTINGS.getSetting("Channel_" + str(channel) + "_2")
             chansetting3 = ADDON_SETTINGS.getSetting("Channel_" + str(channel) + "_3")
-            chansetting4 = (ADDON_SETTINGS.getSetting("Channel_" + str(channel) + "_4"))
+            chansetting4 = ADDON_SETTINGS.getSetting("Channel_" + str(channel) + "_4")
             channame = self.getChname(channel)
-
         except:
             self.log("Unable to get some setting")
-
-        chansetting4 = chansetting4.replace('0','Default').replace('1','Random').replace('2','Reverse')
+        
+        if chantype in [7,10,11,12,13,14,15,16]:
+            chansetting4 = chansetting4.replace('0','Default').replace('1','Random').replace('2','Reverse')
         self.getControl(109).setLabel(self.getChanTypeLabel(chantype))
    
         if chantype == 0:
@@ -1047,16 +1041,19 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         self.getControl(106).setVisible(False)
         self.dlg = xbmcgui.DialogProgress()
         self.dlg.create("PseudoTV Live", "Preparing Configuration")
-        self.dlg.update(1)        
-        self.dlg.update(50)
-        self.chnlst.fillMusicInfo()       
-        self.dlg.update(60)
-        self.chnlst.fillTVInfo()
-        self.dlg.update(70)
+        self.dlg.update(10)    
+        self.chnlst.fillMusicInfo()     
+        self.dlg.update(20)   
+        self.chnlst.fillTVInfo()   
+        self.dlg.update(30)
         self.chnlst.fillMovieInfo()
-        self.dlg.update(80)
+        self.dlg.update(40)
         self.chnlst.fillPluginList()
-        self.dlg.update(90)
+        self.dlg.update(50)
+        self.chnlst.fillPVR()
+        self.dlg.update(60)
+        self.chnlst.fillHDHR()
+        self.dlg.update(70)
         self.mixedGenreList = self.chnlst.makeMixedList(self.chnlst.showGenreList, self.chnlst.movieGenreList) + ['']
         self.networkList = self.chnlst.networkList + ['']
         self.studioList = self.chnlst.studioList + ['']
@@ -1080,13 +1077,14 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             self.chnlst.pluginPathList = ['plugin.video.playonbrowser'] + self.chnlst.pluginPathList
             self.chnlst.pluginNameList = ['[COLOR=blue][B]Playon[/B][/COLOR]'] + self.chnlst.pluginNameList
 
-        if isCom() == True:
-            self.pluginPathList = [''] + self.chnlst.pluginPathList
-            self.pluginNameList = ['[COLOR=blue][B]Community List[/B][/COLOR]'] + self.chnlst.pluginNameList
-            self.SourceList = self.SourceList + ['Community List']
-        else:
-            self.pluginPathList = self.chnlst.pluginPathList
-            self.pluginNameList = self.chnlst.pluginNameList
+        # Removed LiveTV/InternetTV and Plugin Community list for Kodi repo compliance.
+        # if isCom() == True:
+            # self.pluginPathList = [''] + self.chnlst.pluginPathList
+            # self.pluginNameList = ['[COLOR=blue][B]Community List[/B][/COLOR]'] + self.chnlst.pluginNameList
+            # self.SourceList = self.SourceList + ['Community List']
+        # else:
+        self.pluginPathList = self.chnlst.pluginPathList
+        self.pluginNameList = self.chnlst.pluginNameList
             
         for i in range(len(self.chnlst.showList)):
             self.showList.append(self.chnlst.showList[i][0])
@@ -1095,7 +1093,8 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         self.mixedGenreList.sort(key=lambda x: x.lower())
         self.listcontrol = self.getControl(102)
 
-        for i in range(999):
+        self.dlg.update(80)
+        for i in range(CHANNEL_LIMIT):
             theitem = xbmcgui.ListItem()
             theitem.setLabel(str(i + 1))
             self.listcontrol.addItem(theitem)
@@ -1274,7 +1273,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
 
             
     def fillSources(self, type, source, path=None):
-        self.log("fillSources, type = " + type + ", source = " + source)
+        self.log("fillSources, type = " + type + ", source = " + source + ", path = " + str(path))
         if path:
             self.log("fillSources, path = " + path)
         dlg = xbmcgui.Dialog()
@@ -1283,8 +1282,8 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             if source == 'PVR':
                 self.log("PVR")
                 show_busy_dialog()
-                NameLst, PathLst = self.chnlst.fillPVR()
-                hide_busy_dialog()
+                NameLst, PathLst, IconLst = self.chnlst.PVRList
+                hide_busy_dialog() 
                 select = selectDialog(NameLst, 'Select Kodi PVR Channel')
                 if select != -1:
                     name = self.chnlst.cleanLabels(NameLst[select], 'upper')
@@ -1295,7 +1294,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             elif source == 'HDhomerun':
                 self.log("HDhomerun")
                 show_busy_dialog()
-                NameLst, PathLst = self.chnlst.fillHDHR()
+                NameLst, PathLst = self.chnlst.HDHRList
                 hide_busy_dialog()
                 select = selectDialog(NameLst, 'Select HDhomerun Channel')
                 if select != -1:
@@ -1338,14 +1337,9 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                                 path = PathLst[select]      
                     return self.chnlst.cleanLabels(NameLst[select]), PathLst[select]
                 else:
-                    if isDon() == True:
-                        select = selectDialog(self.pluginNameList[1:], 'Select Plugin')
-                        if select != -1:
-                            return self.chnlst.cleanLabels((self.pluginNameList[1:])[select]), 'plugin://' + (self.pluginPathList[1:])[select]
-                    else:
-                        select = selectDialog(self.pluginNameList, 'Select Plugin')
-                        if select != -1:
-                            return self.chnlst.cleanLabels((self.pluginNameList)[select]), 'plugin://' + (self.pluginPathList)[select]
+                    select = selectDialog(self.pluginNameList, 'Select Plugin')
+                    if select != -1:
+                        return self.chnlst.cleanLabels((self.pluginNameList)[select]), 'plugin://' + (self.pluginPathList)[select]
            
             elif source == 'Playon':
                 self.log("Playon")
@@ -1698,7 +1692,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         try:
             sender = (REAL_SETTINGS.getSetting('Gmail_User'))            
             if sender == 'email@gmail.com':
-                okDialog('Enter your gmail address & password','Found in settings under the "Community/Donor" tab')
+                okDialog('Enter your gmail address & password','Found in settings under the "Community" tab')
                 return
             sendGmail(subject, body, attach)
             MSG = 'Submisson Complete'
@@ -1720,7 +1714,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
     def updateListing(self, channel = -1):
         self.log("updateListing")
         start = 0
-        end = 999
+        end = CHANNEL_LIMIT
 
         if channel > -1:
             start = channel - 1

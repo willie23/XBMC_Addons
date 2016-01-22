@@ -19,7 +19,6 @@
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 import os
 
-from time import sleep
 from resources.lib.utils import *
 
 # Plugin Info
@@ -36,8 +35,7 @@ def autostart():
     xbmc.log('script.pseudotv.live-Service: autostart')
     infoDialog("AutoStart Enabled")
     AUTOSTART_TIMER = [0,5,10,15,20]#in seconds
-    IDLE_TIME = AUTOSTART_TIMER[int(REAL_SETTINGS.getSetting('timer_amount'))] 
-    sleep(IDLE_TIME)
+    xbmc.sleep(AUTOSTART_TIMER[int(REAL_SETTINGS.getSetting('timer_amount'))] * 1000)
     xbmc.executebuiltin('RunScript("' + ADDON_PATH + '/default.py' + '")')
     
 if xbmc.getCondVisibility('Window.IsActive(addonsettings)') != True:
@@ -45,15 +43,18 @@ if xbmc.getCondVisibility('Window.IsActive(addonsettings)') != True:
     if REAL_SETTINGS.getSetting("Auto_Start") == "true":
         autostart()
     
-# monitor class causes severe performance issues, resorted to while loop
+monitor = xbmc.Monitor()
+#settings monitor class causes severe performance issues, resorted to while loop
 hasSomethingChanged = False
-while (not xbmc.abortRequested):
+while not monitor.abortRequested():
+    # Sleep/wait for abort for 10 seconds
+    if monitor.waitForAbort(10):
+        # Abort was requested while waiting. We should exit
+        break
+        
     if getProperty("PseudoTVRunning") != "True":
-        chkAPIS(REAL_SETTINGS.getSetting('APIs'))
         if xbmc.getCondVisibility('Window.IsActive(addonsettings)') == True:
             hasSomethingChanged = True
-        else:
-            if hasSomethingChanged == True:
-                hasSomethingChanged = False
-                chkChanges()
-    xbmc.sleep(1000)
+        if hasSomethingChanged == True:
+            hasSomethingChanged = False
+            chkChanges()

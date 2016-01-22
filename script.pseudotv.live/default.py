@@ -41,14 +41,9 @@ def PseudoTV():
     try:
         setProperty("PseudoTVRunning", "True")
         import resources.lib.Overlay as Overlay
-        
         if hasVersionChanged(__version__) == True: 
-            HandleUpgrade()
-        else:
-            chkVersion()
-            
+            HandleUpgrade()            
         preStart()
-    
         MyOverlayWindow = Overlay.TVOverlay("script.pseudotv.live.TVOverlay.xml", __cwd__, Skin_Select)
 
         for curthread in threading.enumerate():
@@ -61,12 +56,10 @@ def PseudoTV():
                 log("Joined " + curthread.name)               
                 
         del MyOverlayWindow
-        setProperty("PseudoTVRunning", "False")    
     except Exception,e:
         log('default: PseudoTV Overlay Failed! ' + str(e))
-        setProperty("PseudoTVRunning", "False")
         buggalo.onExceptionRaised()
-        return
+    setProperty("PseudoTVRunning", "False")
         
 #Start PseudoTV
 # Adapting a solution from ronie (http://forum.xbmc.org/showthread.php?t=97353)

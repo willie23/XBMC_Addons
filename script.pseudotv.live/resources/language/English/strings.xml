@@ -12,9 +12,7 @@
         <string id="30006">Time between channel resets</string>
         <string id="30007">Default channel times at startup</string>
         <string id="30008">Background Updating</string>  
-        <string id="30998">Enable Settop Box Mode</string>
-        <string id="31000">Refresh Interval (Hours)</string>
-        <string id="30289">Update channels after library scan</string>
+        <string id="30998">Enable Settop Box Mode [24/7 Operation]</string>
         <string id="30046">Show Notifications</string>
         <string id="30056">Use Navigation Sound Effects</string>
 
@@ -24,7 +22,6 @@
     <string id="32055">Preferred Language</string>  
     <string id="32056">Preferred Region</string>  
     <string id="30374">Enable Quickflip</string>
-    <string id="30302">Channel Change Delay (seconds)</string>
     <string id="30303">Startup Channel</string> 
     <string id="30304">Enter Preferred Channel</string>
     <string id="30311">Disable Watch Flagging</string>
@@ -32,7 +29,7 @@
     <string id="30408">Jump to Channel on Reminder</string>
     <string id="30215">Hide very short videos</string>
     <string id="30216">Duration of "short" videos (seconds)</string>  
-    <string id="30310">Media Limit Per Channel</string>
+    <string id="30310">Media Limit [Global]</string>
     <string id="30373">Mute between channel change</string>
     <string id="30379">Enable Direct Channel Input</string>
     <string id="30050">Enable global menu [Experimental]</string>
@@ -40,6 +37,8 @@
     <string id="30159">Enable Automatic Channel Backup</string>
     <string id="31311">Start Over Option after</string>
     <string id="31315">SmartSeek Strms Over</string>
+    <string id="30447">Seek step backward [I](Isengard)[/I]</string>
+    <string id="30446">Seek step forward [I](Isengard)[/I]</string>
     
 <string id="30100">Sharing</string>
     <string id="30101">Channel Sharing:</string>
@@ -71,18 +70,19 @@
         <string id="30212">EPG Color by</string>
         <string id="30213">Include Movie Genres</string>
         <string id="30214">Menu uses Channel</string>
-        <string id="30229">Show Detailed Info ie."[TV-14]"</string>
+        <string id="30229">Show extra epg Tags (ie. HD,CC,Ratings)</string>
     <string id="30220">Overlay Options:</string>
         <string id="30203">Select Overlay Number Color</string>
         <string id="30221">Show info when changing channels</string>
+        <string id="30227">Show info when show starts</string>
         <string id="30222">Info window duration (seconds)</string>   
         <string id="30224">Always show channel bug</string>
         <string id="30228">Use Unaltered Channel bug</string>
         <string id="30226">Show Coming Up Next box</string>
         <string id="30229">Use Classic Coming Up Next box</string>
-        <string id="30227">Coming Up Artwork Type</string>
+        <string id="30329">Enable Subtitles when Available</string>
 <string id="30400">DVR</string>  
-	<string id="30397">Enable XMLTV Service</string>
+	<string id="30397">Enable trakt scrobbler</string>
 	<string id="30404">XMLTV file location</string>
     <string id="30801">Enable DVR (Coming Soon)</string>
     <string id="30802">Record Folder</string>
@@ -91,6 +91,7 @@
     <string id="30710">Enter API KEY</string>
     <string id="30711">Enable CouchPotato</string>
     <string id="30719">Configure Simple Downloader</string>
+    <string id="30720">Configure Youtube Downloader</string>
 <string id="30070">AutoTune</string>
         <string id="30071">Enable Autotuning</string>
         <string id="30072">Warning!! this will delete your current channel configuration</string>
@@ -124,10 +125,10 @@
                             <string id="30113">Find Recommended Youtube Channels</string>
                             <string id="30114">Find Recommended Youtube Playlists</string>
                             <string id="30817">Find Seasonal Youtube Playlists</string>
-                            <string id="30090">Donor Extras:</string>  
                                 <string id="30116">Find LiveTV Channels</string>
                                 <string id="30117">Find InternetTV Channels</string>
                                 <string id="30111">Find Plugin Channels</string>
+                                <string id="30090">Extras:</string>
                                 <string id="30092">Popcorn Movie Channel</string>
                                 <string id="30950">PseudoCinema Movie Channel</string>  
                                 <string id="30908">PseudoCinema Experience</string>
@@ -144,9 +145,10 @@
                                 <string id="30974">Enter PLX URL</string>
                    
     <string id="30700">AutoTune Options:</string>
-    <string id="33310">AutoTune Limit Per Channel</string>
+    <string id="33310">AutoTune Channel Limit</string>
     <string id="30372">Reserve Channels 501-999 for AutoTuning</string>
-    <string id="30699">Kodi PVR Guide Data from</string>
+    <string id="30699">Kodi PVR GuideData from</string>
+    <string id="30771">Select XMLTV.xml file</string>
     <string id="30701">AutoTune Genres:</string>
     <string id="30702">TV</string>
     <string id="30703">Movies</string>
@@ -170,7 +172,7 @@
             <string id="30514">Select Region</string>
             <string id="30515">Preferred Commercial Resolution</string>
             <string id="30516">Enable iSpot.tv*, Select Type</string>
-            <string id="30517">Youtube Configuration</string>
+            <string id="30517">Youtube Playlist</string>
             <string id="30518">Number of Commercials Between Shows</string>
             <string id="30519">Add As Seen On TV Commercials</string>
             <string id="30520">(T)railers:</string> 
@@ -184,11 +186,9 @@
                 <string id="30530">Number of Trailers Between Shows</string>
                 
 <string id="39000">Community</string>
+    <string id="39001">Community Lists requires a vaild email in-order to submit channels.</string>
+    <string id="39002">Users cannot access the list until they are willing to submit entries.</string>
     <string id="30776">Community Verified:</string>
-    <string id="30777">Donor Verified:</string>
-    <string id="30901">Enable Donor Features</string>
-    <string id="30902">Enter Username:Password</string>
-    <string id="30903">Thank you for your support!</string>
     <string id="30905">Enable Community List</string>
     <string id="30906">Enter your gmail address</string>
     <string id="30907">Enter your gmail password</string>
@@ -215,26 +215,30 @@
     <string id="30999">[COLOR=orange]Disclaimer[/COLOR]</string>
     
 <string id="30900">Debugging</string>
+    <string id="30308">Playback Timers: (Use with Caution!)</string>
+    <string id="30309">Wait for Playback (seconds)</string> 
+    <string id="30319">Force Playback timeout (seconds)</string> 
+    <string id="30302">Channel Change Delay (seconds)</string>
+    <string id="30914">Controls: (Use with Caution!)</string>
+    <string id="39958">Include 3D Content [Global]</string>
+    <string id="30997">Include Strm Content [Global]</string>
+    <string id="39997">Include BCT Content [Global]</string>
     <string id="30990">DEBUGGING: (Use with Caution!)</string>
     <string id="30993">Enable Log Debugging</string>
     <string id="39999">Enable File Cache</string>
-    <string id="39958">Include 3D Content (Global)</string>
-    <string id="30997">Include Strm Content (Global)</string>
-    <string id="39997">Include BCT Content (Global)</string>
     <string id="30991">Override Stream Validation</string>
     <string id="30992">Disable Google Analytics</string>
     <string id="36996">Opting out? No personal information is shared,</string>
     <string id="36997">only data relevant to the continuation of this project.</string>
     <string id="30943">Override Optimized Settings ie. Disable "LowPower"</string>
-    <string id="30308">Playback Timers</string>
-    <string id="30309">Wait for Playback (seconds)</string> 
-    <string id="30319">Force Playback timeout (seconds)</string> 
+    <string id="30944">Force LiveTV reset on every startup</string>
     <string id="30912">Personal APIKEY (Optional)</string>
     <string id="30922">TMDB APIKEY</string>
     <string id="30932">TVDB APIKEY</string>
     <string id="30942">FANART.TV APIKEY</string>
-    <string id="30944">Force LiveTV reset on every startup</string>
-    <string id="30197">Binaries (Optional)</string>
-    <string id="30198">ffprobe location</string>
-    <string id="30199">rtmpdump location</string>
+    <string id="30197">binaries (Optional)</string>
+    <string id="30198">ffmepg path</string>
+    <string id="30199">rtmpdump path</string>
+    <string id="30939">Miscellaneous</string>
+    <string id="30934">Enable accurate duration</string>
 </strings>
