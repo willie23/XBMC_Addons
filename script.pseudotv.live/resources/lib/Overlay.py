@@ -766,7 +766,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             self.MenuControlTimer = threading.Timer(self.InfTimer, self.MenuControl,['MenuAlt',self.InfTimer,True])           
             self.MenuControlTimer.name = "MenuControlTimer"  
                     
-            if len(self.OnNowLst) > 0:
+            if len(getProperty("OVERLAY.OnNowLst")) > 0:
                 show_busy_dialog()
                 curchannel = 0
                 self.showingMenuAlt = True
@@ -1129,6 +1129,8 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
     def SmartSeek(self, mediapath, seektime1, seektime2, overtime):
         self.log("SmartSeek")
         seektime = 0
+        if mediapath.startswith((BYPASS_SEEK)):
+            return seektime
         if seektime1 < overtime:
             try:
                 self.Player.seekTime(seektime1)
@@ -2079,6 +2081,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                         self.log("notificationAction, showComingUp")
                         
                         # Nextshow Info
+                        self.clearProp('OVERLAY.NEXT')
                         nextshow = self.getPlaylistPOS(chtype, self.currentChannel, 1)
                         ComingUpType = int(REAL_SETTINGS.getSetting("EnableComingUp"))
                         label = self.channels[self.currentChannel - 1].getItemTitle(nextshow).replace(',', '')
@@ -2117,13 +2120,6 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             pass
         self.startNotificationTimer()
         
-
-
-
-
-
-
-
 
     def currentWindow(self):
         currentWindow = ''
@@ -2334,7 +2330,8 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
 
         if REAL_SETTINGS.getSetting("AutoJump") == "true":
             if handle_wait(REMINDER_COUNTDOWN,"Show Reminder",'[B]%s[/B] on channel [B]%s[/B] at [B]%s[/B] ?'%(title,chnum,str(Notify_Time))) == True:
-                self.setChannel(self.fixChannel(int(chnum)))
+                if self.currentChannel != int(chnum):
+                    self.setChannel(self.fixChannel(int(chnum)))
         else:
             for i in range(REMINDER_COUNTDOWN):
                 if i == 0:
@@ -2886,18 +2883,21 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         clearProperty("%s.clearart"%pType)
         clearProperty("%s.clearlogo"%pType)
         clearProperty("%s.landscape"%pType)
+        clearProperty("%s.landscape"%pType)
         clearProperty("%s.Year"%pType)
         clearProperty("%s.ID"%pType)
         clearProperty("%s.Genre"%pType)
         clearProperty("%s.Rating"%pType)
         clearProperty("%s.Tagline"%pType)
         clearProperty("%s.Title"%pType)
+        clearProperty("%s.TimeStamp"%pType)
         clearProperty("%s.Showtitle"%pType)
         clearProperty("%s.Cleantitle"%pType)
         clearProperty("%s.Chtype"%pType)
+        clearProperty("%s.Chname"%pType)
+        clearProperty("%s.Chnum"%pType)
         clearProperty("%s.Mpath"%pType)
         clearProperty("%s.Mediapath"%pType)
-        clearProperty("%s.Chname"%pType)
         clearProperty("%s.SEtitle"%pType)
         clearProperty("%s.Type"%pType)
         clearProperty("%s.DBID"%pType)
@@ -2908,6 +2908,9 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         clearProperty("%s.Episode"%pType)
         clearProperty("%s.isNEW"%pType)
         clearProperty("%s.isManaged"%pType)
+        clearProperty("%s.isHD"%pType)
+        clearProperty("%s.hasCC"%pType)
+        clearProperty("%s.Stars"%pType)
 
           
     def end(self, action=False):
