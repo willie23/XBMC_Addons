@@ -3374,7 +3374,11 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
 
                 self.Player.play(url, listitem);
             elif url.startswith('ustvnow'):
-                self.setPlayselected(self.ustv.getChannellink(url.split('://')[1]))
+                link = self.ustv.getChannellink(url.split('://')[1])
+                if link.startswith(('rtmp','rtsp')):
+                    self.setPlayselected(link)
+                else:
+                    self.lastActionTrigger()
             elif url.startswith(('plugin','PlayMedia')):
                 if not url.startswith('PlayMedia'):
                     url = ('PlayMedia('+url+')')
