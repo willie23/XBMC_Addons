@@ -43,6 +43,7 @@ from apis import tmdb
 from datetime import date
 from datetime import timedelta
 from BeautifulSoup import BeautifulSoup
+from ustvnow import ustvnow
 
 socket.setdefaulttimeout(30)
 
@@ -60,6 +61,7 @@ except Exception,e:
 
 class ChannelList:
     def __init__(self):
+        self.xmlTvFile = ''
         self.networkList = []
         self.studioList = []
         self.mixedGenreList = []
@@ -84,13 +86,11 @@ class ChannelList:
         self.startTime = 0
         self.background = True    
         self.videoParser = VideoParser()
+        self.ustv = ustvnow()
         random.seed() 
-    
-    
+
     def readConfig(self):
         self.startTime = time.time()
-        self.ResetLST = (REAL_SETTINGS.getSetting("ResetLST")).split(',')
-        self.log('Channel Reset List is ' + str(self.ResetLST))
         self.forceReset = REAL_SETTINGS.getSetting('ForceChannelReset') == "true"
         self.log('Force Reset is ' + str(self.forceReset))
         self.startMode = int(REAL_SETTINGS.getSetting("StartMode"))
@@ -109,7 +109,7 @@ class ChannelList:
         self.cpAPI = couchpotato.CouchPotato(REAL_SETTINGS.getSetting('couchpotato.baseurl'),REAL_SETTINGS.getSetting('couchpotato.apikey'))
         self.Playlist_Limit = PlaylistLimit()
         self.findMaxChannels()
-                
+
         if SETTOP:
             self.backgroundUpdating = 0
             self.channelResetSetting = 0
@@ -313,7 +313,7 @@ class ChannelList:
         if chtype == 8:  
             # Force livetv rebuild
             forcerebuild = REAL_SETTINGS.getSetting('ForceLiveChannelReset') == "true"
-            if str(channel) in self.ResetLST or forcerebuild == True:
+            if channel in self.myOverlay.ResetLST or forcerebuild == True:
                 self.log('setupChannel ' + str(channel) + ', forcerebuild = True')
                 needsreset = True
                 self.delResetLST(channel)
@@ -935,7 +935,7 @@ class ChannelList:
             self.mixedGenreList = self.makeMixedList(self.showGenreList, self.movieGenreList)
             self.mixedGenreList.sort(key=lambda x: x.lower())
 
-    
+
     def makeMixedList(self, list1, list2):
         self.log("makeMixedList")
         newlist = []
@@ -947,10 +947,11 @@ class ChannelList:
                 if curitem == a.lower():
                     newlist.append(item)
                     break
-                    
+
+        self.log("makeMixedList return " + str(newlist))
         return newlist
-    
-    
+
+        
     def createGenreMixedPlaylist(self, genre):
         flename = xbmc.makeLegalFilename(GEN_CHAN_LOC + 'mixed_' + genre + '.xsp')
         
@@ -1546,22 +1547,6 @@ class ChannelList:
         self.log("found genres " + str(self.movieGenreList))
         self.log("fillMovieInfo return " + str(self.studioList))
 
-
-    def makeMixedList(self, list1, list2):
-        self.log("makeMixedList")
-        newlist = []
-
-        for item in list1:
-            curitem = item.lower()
-
-            for a in list2:
-                if curitem == a.lower():
-                    newlist.append(item)
-                    break
-
-        self.log("makeMixedList return " + str(newlist))
-        return newlist
-
         
     # replace with json request info todo
     def isMedia3D(self, path):
@@ -1639,7 +1624,6 @@ class ChannelList:
             excludeLST = setting2.split(',')
         except:
             excludeLST = []
-            pass
   
         excludeLST += EX_FILTER
         excludeLST = ([x.lower() for x in excludeLST if x != ''])
@@ -1740,14 +1724,8 @@ class ChannelList:
             # Add channel to ResetLST, on next update force channel rebuild
             self.setResetLST(self.settingChannel)
             chname = (self.getChannelName(9, self.settingChannel))
-            if setting3.lower() == 'ptvlguide':
-                desc = 'Guidedata from ' + str(setting3) + ' is currently unavailable, please verify channel configuration.'
-            elif setting3.lower() == 'ustvnow':
-                desc = 'Guidedata from ' + str(setting3) + ' is currently unavailable, please enable "File Generator" in ustvnow plugin.'
-            else:
-                desc = 'Guidedata from ' + str(setting3) + ' is currently unavailable, please verify channel configuration.'
+            desc = 'Guidedata from ' + str(setting3) + ' is currently unavailable, please verify channel configuration.'
             showList = self.buildInternetTVFileList('5400', setting2, chname, desc, 24)
-
         return showList     
         
         
@@ -2806,29 +2784,21 @@ class ChannelList:
         xmltvValid = False
         if path[0:4] == 'http':
             self.xmlTvFile = path
-            xmltvValid = self.url_ok(path)
+            return self.url_ok(path)
         elif path.lower() in ['pvr','zap2it','scheduledirect']:
-            xmltvValid = True
+            return True
         elif path.lower() == 'ustvnow':
-            USTV_ID = 'plugin.video.ustvnow'
-            USTV_SETTINGS = xbmcaddon.Addon(id=USTV_ID)
-            if USTV_SETTINGS.getSetting('write_type') == 0:
-                okDialog('Please configure USTVnow plugin to genreate necessary files')                
+            if self.ustv.getXMLTV() == True:
+                self.xmlTvFile = USTVXML                
             else:
-                self.xmlTvFile = os.path.join(USTV_SETTINGS.getSetting('write_folder'),'xmltv.xml')
-                if FileAccess.exists(self.xmlTvFile):
-                    xmltvValid = True
+                return False
         elif path.lower() == 'ptvlguide':
             self.xmlTvFile = PTVLXML
-            if FileAccess.exists(self.xmlTvFile):
-                xmltvValid = True
         elif path != '':
             self.xmlTvFile = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('xmltvLOC'), str(path) +'.xml'))
-            if FileAccess.exists(self.xmlTvFile):
-                xmltvValid = True
-        # if xmltvValid == True and self.isXMLTVCurrent(self.xmlTvFile) != True:
-            # xmltvValid == False
-        self.log("xmltvValid = " + str(xmltvValid))
+        
+        if FileAccess.exists(self.xmlTvFile):
+            xmltvValid = True            
         return xmltvValid
            
 
@@ -3494,7 +3464,7 @@ class ChannelList:
         return TrailerLST
         
       
-    def InternetTrailer(self, Cinema):
+    def InternetTrailer(self, Cinema=False):
         self.log("InternetTrailer, Cinema = " + str(Cinema))
         TrailerLST = []
         duration = 0
@@ -3855,7 +3825,7 @@ class ChannelList:
                         pass
                         
                 if XMLTVMatchlst:
-                    select = selectDialog(XMLTVMatchlst, 'Select matching id to [B]%s[/B]' % orgCHname, 30000)
+                    select = selectDialog(XMLTVMatchlst, 'Select matching id to [B]%s[/B]' % orgCHname, 5000)
                     if select != -1:
                         dnameID = self.cleanString(XMLTVMatchlst[select])
                         CHid = dnameID.split(' : ')[1]
@@ -4007,7 +3977,7 @@ class ChannelList:
                 if names and paths:
                     name = self.cleanLabels(names.group(1))
                     path = paths.group(1)
-                    if name.lower() != 'super favourites' and name.lower() != '.playon browser' and name.lower() != 'playon browser':
+                    if name.lower() not in ['super favourites','playon browser','hdhomerun','pseudolibrary','pseudocompanion']:
                         TMPpluginList.append(name+','+path)  
                     
             SortedpluginList = sorted_nicely(TMPpluginList)
@@ -4050,6 +4020,20 @@ class ChannelList:
         PVRPath = xbmcvfs.listdir(PVRverPath)
         return os.path.join(PVRverPath,PVRPath[1][channel])
 
+        
+    def fillUSTVnow(self):
+        self.log('fillUSTVnow')
+        NameLst = []
+        IconLst = []
+        PathLst = []
+        channels = self.ustv.getChannelNames()
+        for i in range(len(channels)):
+            CHname = channels[i][0]
+            NameLst.append(('[COLOR=blue][B]%s[/B][/COLOR] - %s') % (str(i+1), CHname))
+            PathLst.append('ustvnow://'+ CHname)
+            IconLst.append(channels[i][0])
+        return NameLst,PathLst,IconLst
+        
         
     def fillPVR(self):
         self.log('fillPVR')
@@ -4260,6 +4244,7 @@ class ChannelList:
         
     def getHDHRChannels(self, favorite=False):
         self.log("getHDHRChannels")
+        DupChk = []
         Channels = []
         FavChannels = []
         list = ''
@@ -4295,11 +4280,13 @@ class ChannelList:
                         if drms != None and len(drms.group(1)) > 0:
                             drm = bool(drms.group(1))
                                         
-                        if fav == True:
+                        if fav == True and chname not in DupChk:
+                            DupChk.append(chname)
                             FavChannels.append([chnum,chname,fav,drm,link])
                         Channels.append([chnum,chname,fav,drm,link])
                 except:
                     pass
+        del DupChk[:]
         if favorite == True:
             return FavChannels
         else:
@@ -4600,7 +4587,7 @@ class ChannelList:
             if names and paths:
                 name = self.cleanLabels(names.group(1))
                 path = paths.group(1)
-                if type == 'video' and path.startswith('plugin.video') and not path.startswith('plugin.video.pseudo.companion'):
+                if type == 'video' and path.startswith('plugin.video'):
                     thumbnail = removeNonAscii(thumbnails.group(1))
                     fanart = removeNonAscii(fanarts.group(1))
                     self.Items = xbmcgui.ListItem(label=name, thumbnailImage = thumbnail)
@@ -5097,20 +5084,16 @@ class ChannelList:
     def setResetLST(self, channel=None):
         if not channel:
             channel = self.settingChannel
-        self.ResetLST.append(str(channel))
-        self.ResetLST = removeStringElem(self.ResetLST)
-        self.ResetLST = sorted_nicely(self.ResetLST)
-        newResetLST = (','.join(self.ResetLST))
-        REAL_SETTINGS.setSetting('ResetLST', newResetLST)
+        self.myOverlay.ResetLST.append(channel)
+        self.myOverlay.ResetLST = sorted(set(self.myOverlay.ResetLST))
+        REAL_SETTINGS.setSetting('ResetLST', str(self.myOverlay.ResetLST))
         self.log('setResetLST added channel ' + str(channel))
         
         
     def delResetLST(self, channel=None):
         if not channel:
             channel = self.settingChannel
-        if str(channel) in self.ResetLST:
-            self.ResetLST = removeStringElem(self.ResetLST, str(channel))
-            self.ResetLST = sorted_nicely(self.ResetLST)
-            newResetLST = (','.join(self.ResetLST))
-            REAL_SETTINGS.setSetting('ResetLST', newResetLST)
+        if channel in self.myOverlay.ResetLST:
+            self.myOverlay.ResetLST =  [x for x in self.myOverlay.ResetLST if x!=channel]
+            REAL_SETTINGS.setSetting('ResetLST', str(self.myOverlay.ResetLST))
             self.log('delResetLST removed channel ' + str(channel))

@@ -82,22 +82,26 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
 
     def onInit(self):
         self.log("onInit")
-        REAL_SETTINGS.setSetting('Autotune', "false")
-        REAL_SETTINGS.setSetting('Warning1', "false") 
-        # self.KodiVideoSources()    
-        
-        for i in range(NUMBER_CHANNEL_TYPES):
-            try:
-                self.getControl(120 + i).setVisible(False)
-            except:
-                pass
+        #Disable Autotune Task if enabled but not performed  
+        if REAL_SETTINGS.getSetting("Autotune") == "true" and REAL_SETTINGS.getSetting("Warning1") == "true":
+            REAL_SETTINGS.setSetting('Autotune', "false")
+            REAL_SETTINGS.setSetting('Warning1', "false")
+            self.closeConfig()
+            # todo close settings window and open config
+            # xbmc.executebuiltin("Dialog.Close(all, true)")
+        else:  
+            for i in range(NUMBER_CHANNEL_TYPES):
+                try:
+                    self.getControl(120 + i).setVisible(False)
+                except:
+                    pass
 
-        migratemaster = Migrate()
-        migratemaster.migrate()
-        self.prepareConfig()
-        self.myRules = AdvancedConfig("script.pseudotv.live.AdvancedConfig.xml", ADDON_PATH, "Default")
-        self.log("onInit return")
-        
+            migratemaster = Migrate()
+            migratemaster.migrate()
+            self.prepareConfig()
+            self.myRules = AdvancedConfig("script.pseudotv.live.AdvancedConfig.xml", ADDON_PATH, "Default")
+            self.log("onInit return")
+            
 
     def onFocus(self, controlId):
         pass
@@ -109,7 +113,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             if dlg.yesno("PseudoTV Live", "Changes Detected, Do you want to save all changes?"):
                 self.writeChanges()
         if channel > 0:
-            xbmc.executebuiltin('XBMC.AlarmClock( Restarting Configuration Manager, XBMC.RunScript(' + ADDON_PATH + '/config.py, %s),0.1,true)'%str(channel))
+            xbmc.executebuiltin('XBMC.AlarmClock( Restarting Configuration Manager, XBMC.RunScript(' + ADDON_PATH + '/config.py, %s),0.5,true)'%str(channel))
         self.close()
         
         
@@ -393,11 +397,18 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                     title, retval = self.fillSources('LiveTV', self.getControl(214).getLabel(), self.getControl(217).getLabel())
                     
             if retval and len(retval) > 0:
-                if self.getControl(214).getLabel() == 'PVR' or self.getControl(214).getLabel() == 'HDhomerun':
+                if self.getControl(214).getLabel() in ['PVR','HDhomerun','USTVnow']:
                     chid, title = title.split(' - ')
+                    
+                    #set xmltv file
+                    self.clearLabel([212,216])
                     if self.getControl(214).getLabel() == 'PVR':
                         self.getControl(212).setLabel('pvr')
                         self.getControl(216).setLabel(chid)
+                    elif self.getControl(214).getLabel() == 'USTVnow':
+                        self.getControl(212).setLabel('ustvnow')
+                        xbmc.executebuiltin("SendClick(216)")
+                        
                 elif self.getControl(214).getLabel() == 'Plugin' or self.getControl(214).getLabel() == 'UPNP':
                     self.getControl(211).setLabel(title)
 
@@ -458,7 +469,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                     pass
                     
             if retval and len(retval) > 0:
-                if self.getControl(224).getLabel() == 'PVR' or self.getControl(224).getLabel() == 'HDhomerun':
+                if self.getControl(224).getLabel() in ['PVR','HDhomerun','USTVnow']:
                     chid, title = title.split(' - ')
                 elif self.getControl(224).getLabel() == 'Community List':
                     title, genre = title.split(' - ')
@@ -482,21 +493,13 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         elif controlId == 225:      # InternetTV Source Type, left
             self.changeListData(self.SourceList, 224, -1)
             self.LockBrowse = False
-            self.clearLabel(221)
-            self.clearLabel(227)
-            self.clearLabel(222)
-            self.clearLabel(223)
-            self.clearLabel(226)
+            self.clearLabel([221,222,223,226,227])
             
         elif controlId == 220:      # InternetTV Source Type, right
             self.changeListData(self.SourceList, 224, 1)
             self.LockBrowse = False
-            self.clearLabel(221)
-            self.clearLabel(227)
-            self.clearLabel(222)
-            self.clearLabel(223)
-            self.clearLabel(226)
-        
+            self.clearLabel([221,222,223,226,227])
+            
         #Youtube
         elif controlId == 230:      # Youtube Type, left
             self.changeListData(self.YoutubeList, 232, -1)
@@ -514,10 +517,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                 self.getControl(233).setVisible(False)
             else:
                 self.getControl(233).setVisible(True)
-            self.clearLabel(233)
-            self.clearLabel(234)
-            self.clearLabel(235)
-            self.clearLabel(236)
+            self.clearLabel([233,234,235,236])
                 
         elif controlId == 231:      # Youtube Type, right
             self.changeListData(self.YoutubeList, 232, 1)             
@@ -535,10 +535,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                 self.getControl(233).setVisible(False)
             else:
                 self.getControl(233).setVisible(True)
-            self.clearLabel(233)
-            self.clearLabel(234)
-            self.clearLabel(235)
-            self.clearLabel(236)
+            self.clearLabel([233,234,235,236])
                 
         elif controlId == 233:    # Youtube Community List,Browse Select
             if (self.getControl(232).getLabel()).startswith('Seasonal'): 
@@ -561,7 +558,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                     self.setChname(title)           
                 except:
                     infoDialog("Select Youtube Type")
-                    pass
+                    
         elif controlId == 234:    # Youtube Channel, input
             retval = dlg.input(self.getControl(234).getLabel(), type=xbmcgui.INPUT_ALPHANUM)
             if retval and len(retval) > 0:
@@ -711,7 +708,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         self.getControl(controlid).setLabel(thelist[index])
         
         # Disable Submit button
-        if isCom() and thelist[index] not in ['PVR','HDhomerun','UPNP','Local Music','Local Video','User Subscription','User Favorites','Search Query','Raw gdata','Seasonal','Plugin','LiveTV','InternetTV']:
+        if isCom() and thelist[index] not in ['PVR','HDhomerun','USTVnow','UPNP','Local Music','Local Video','User Subscription','User Favorites','Search Query','Raw gdata','Seasonal','Plugin','LiveTV','InternetTV']:
             self.getControl(115).setVisible(True)
         else:
             self.getControl(115).setVisible(False)
@@ -1054,6 +1051,8 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         self.dlg.update(60)
         self.chnlst.fillHDHR()
         self.dlg.update(70)
+        self.chnlst.fillUSTVnow()
+        self.dlg.update(80)
         self.mixedGenreList = self.chnlst.makeMixedList(self.chnlst.showGenreList, self.chnlst.movieGenreList) + ['']
         self.networkList = self.chnlst.networkList + ['']
         self.studioList = self.chnlst.studioList + ['']
@@ -1064,7 +1063,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         self.MediaLimitList = ['25','50','100','150','200','250','500','1000','5000','Unlimited','']
         self.SortOrderList = ['Default','Random','Reverse','']
         self.ExternalPlaylistSources = ['Local File','URL']
-        self.SourceList = ['PVR','HDhomerun','Local Video','Local Music','Plugin','UPNP','Kodi Favourites','Youtube Live','URL','M3U Playlist','XML Playlist','PLX Playlist']
+        self.SourceList = ['PVR','HDhomerun','USTVnow','Local Video','Local Music','Plugin','UPNP','Kodi Favourites','Youtube Live','URL','M3U Playlist','XML Playlist','PLX Playlist']
         # self.YoutubeList = ['Channel','Playlist','User Subscription','User Favorites','Search Query','Multi Playlist','Multi Channel','Seasonal']
         self.YoutubeList = ['Channel','Playlist','Multi Playlist','Multi Channel','Seasonal','Search Query']
         self.YTFilter = ['User Subscription','User Favorites','Search Query']
@@ -1161,12 +1160,15 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
     def clearLabel(self, id=-1):
         self.log("clearLabel, id = " + str(id))
         if id != -1: 
-            try:
-                self.getControl(id).setLabel(' ') 
-                self.getControl(id).setLabel('')
-            except:
-                pass
+            for i in range(len(id)):
+                lid = id[i]
+                try:
+                    self.getControl(lid).setLabel(' ') 
+                    self.getControl(lid).setLabel('')
+                except:
+                    pass
         else:
+            # clear all channel labels
             for i in range(NUMBER_CHANNEL_TYPES):
                 if i >= 7:
                     base = (120 + ((i + 1) * 10))
@@ -1286,7 +1288,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                 hide_busy_dialog() 
                 select = selectDialog(NameLst, 'Select Kodi PVR Channel')
                 if select != -1:
-                    name = self.chnlst.cleanLabels(NameLst[select], 'upper')
+                    name = self.chnlst.cleanLabels(NameLst[select])
                     path = PathLst[select]
                     if len(path) > 0:
                         return name, path
@@ -1298,11 +1300,23 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                 hide_busy_dialog()
                 select = selectDialog(NameLst, 'Select HDhomerun Channel')
                 if select != -1:
-                    name = self.chnlst.cleanLabels(NameLst[select], 'upper')
+                    name = self.chnlst.cleanLabels(NameLst[select])
                     path = PathLst[select]
                     if len(path) > 0:
                         return name, path
                     
+            elif source == 'USTVnow':
+                self.log("USTVnow")
+                show_busy_dialog()
+                NameLst,PathLst,IconLst = self.chnlst.fillUSTVnow()
+                hide_busy_dialog()
+                select = selectDialog(NameLst, 'Select USTVnow Channel')
+                if select != -1:
+                    name = self.chnlst.cleanLabels(NameLst[select])
+                    path = PathLst[select]
+                    if len(path) > 0:
+                        return name, path
+                
             elif source == 'Local Video':
                 self.log("Local Video")
                 retval = browse(1, "Select File", "video", ".avi|.mp4|.m4v|.3gp|.3g2|.f4v|.mov|.mkv|.flv|.ts|.m2ts|.strm")

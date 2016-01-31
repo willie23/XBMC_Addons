@@ -12,7 +12,7 @@
         <string id="30006">Time between channel resets</string>
         <string id="30007">Default channel times at startup</string>
         <string id="30008">Background Updating</string>  
-        <string id="30998">Enable Settop Box Mode [24/7 Operation]</string>
+        <string id="30998">Enable Settop Box Mode [Automatic Updating]</string>
         <string id="30046">Show Notifications</string>
         <string id="30056">Use Navigation Sound Effects</string>
 
@@ -82,8 +82,8 @@
         <string id="30229">Use Classic Coming Up Next box</string>
         <string id="30329">Enable Subtitles when Available</string>
 <string id="30400">DVR</string>  
-	<string id="30397">Enable trakt scrobbler</string>
-	<string id="30404">XMLTV file location</string>
+    <string id="30397">Enable trakt scrobbler</string>
+    <string id="30404">XMLTV file location</string>
     <string id="30801">Enable DVR (Coming Soon)</string>
     <string id="30802">Record Folder</string>
     <string id="30708">Enable SickBeard</string>
@@ -92,6 +92,12 @@
     <string id="30711">Enable CouchPotato</string>
     <string id="30719">Configure Simple Downloader</string>
     <string id="30720">Configure Youtube Downloader</string>
+    <string id="31110">USTVnow:</string>
+    <string id="31111">Stream Quality</string>
+    <string id="31112">Stream Type</string>
+    <string id="31113">Premium Subscription</string>
+    <string id="31114">Account Email</string>
+    <string id="31115">Account Password</string>
 <string id="30070">AutoTune</string>
         <string id="30071">Enable Autotuning</string>
         <string id="30072">Warning!! this will delete your current channel configuration</string>
@@ -241,4 +247,5 @@
     <string id="30199">rtmpdump path</string>
     <string id="30939">Miscellaneous</string>
     <string id="30934">Enable accurate duration</string>
+    <string id="30935">Enable Seeking for specified Plugins</string>
 </strings>

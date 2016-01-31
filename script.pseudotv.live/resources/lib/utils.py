@@ -671,9 +671,8 @@ def get_data(url, data_type ='json'):
         else:
             data = req.read()
         req.close()
-    except Exception,e:
+    except urllib2.URLError, e:
         log("utils: get_data, Failed! " + str(e))
-        log(traceback.format_exc(), xbmc.LOGERROR)
         data = 'Empty'
     return data
         
@@ -809,6 +808,18 @@ def selectDialog(list, header=ADDON_NAME, autoclose=0):
         select = xbmcgui.Dialog().select(header, list, autoclose)
         return select
 
+def mselectDialog(list, header=ADDON_NAME, autoclose=0):
+    if len(list) > 0:
+        select = xbmcgui.Dialog().multiselect(header, list, autoclose)
+        return select
+
+def matchMselect(list, select):
+    if select:
+        slist = []
+        for i in range(len(select)):
+            slist.append(list[select[i]]) 
+        return slist
+
 def yesnoDialog(str1, str2='', header=ADDON_NAME, yes='', no=''):
     answer = xbmcgui.Dialog().yesno(header, str1, str2, '', yes, no)
     return answer
@@ -836,6 +847,12 @@ def clearProperty(str):
 ##############
 # XBMC Tools #
 ##############
+ 
+def appendPlugin(list):
+    nlist = []
+    for i in range(len(list)):
+        nlist.append('plugin://'+list[i])
+    return nlist
  
 def verifyPlayMedia(cmd):
     return True
@@ -1208,7 +1225,6 @@ def getGithubZip(url, lib, addonpath, MSG):
         MSG = MSG + ' Installed'
     except: 
         MSG = MSG + ' Failed to install, Try Again Later'
-        pass
         
     xbmc.executebuiltin("XBMC.UpdateLocalAddons()"); 
     infoDialog(MSG)
@@ -1385,7 +1401,7 @@ def ClearPlaylists():
 def ClearCache(type='Filelist'):
     log('utils: ClearCache ' + type)  
     if type == 'Filelist':
-        try:    
+        try:
             daily.delete("%") 
             weekly.delete("%")
             monthly.delete("%")
@@ -1499,12 +1515,32 @@ def HandleUpgrade():
     ClearPlaylists()
     
     # Force Channel rebuild
-    REAL_SETTINGS.setSetting('ForceChannelReset', 'true') 
+    # REAL_SETTINGS.setSetting('ForceChannelReset', 'true') 
 
     # Install PTVL Isengard Context Export, Workaround for addon.xml 'optional' flag not working.
     # set 'optional' as true so users can remove if unwanted.
     if getXBMCVersion() > 14 and isContextInstalled() == False:
         getContext()
+        
+def isPTVLOutdated():
+    log('utils: isPTVLOutdated')
+    f = open(xbmc.translatePath(os.path.join(ADDON_PATH,'addon.xml'))  , mode='r')
+    link = f.read()
+    f.close()
+    match = re.compile('" version="(.+?)" name="PseudoTV Live"').findall(link)
+    
+    for vernum in match:
+        log("utils: isPTVLOutdated, Current Version = " + str(vernum))
+    try:
+        link = open_url('https://raw.githubusercontent.com/Lunatixz/XBMC_Addons/master/script.pseudotv.live/addon.xml').read() 
+        link = link.replace('\r','').replace('\n','').replace('\t','').replace('&nbsp;','')
+        match = re.compile('" version="(.+?)" name="PseudoTV Live"').findall(link)
+    except:
+        pass   
+    if len(match) > 0:
+        if vernum != str(match[0]):
+            return True
+    return False
         
 def preStart(): 
     log('utils: preStart')
@@ -1751,11 +1787,17 @@ def joinListItem(list, opt='@#@'):
     except:
         return str(list)
 
+def isUSTVnow():
+    if len(REAL_SETTINGS.getSetting('ustv_email')) > 1 and len(REAL_SETTINGS.getSetting('ustv_password')) > 1:
+        return True
+    else:
+        return False
+        
 def listXMLTV():
     log("utils: listXMLTV")
     xmltvLst = []   
     EXxmltvLst = ['pvr','Enter URL','scheduledirect (Coming Soon)']
-    if isPlugin('plugin.video.ustvnow'):
+    if isUSTVnow() == True:
         EXxmltvLst.append('ustvnow')
     dirs,files = xbmcvfs.listdir(XMLTV_CACHE_LOC)
     dir,file = xbmcvfs.listdir(XMLTV_LOC)

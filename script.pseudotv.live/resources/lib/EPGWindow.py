@@ -211,9 +211,9 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         self.log('FEEDtoggle')
         try:
             if getProperty("PTVL.FEEDtoggle") == "true":
-                self.getControl(105).setVisible(True)
+                self.getControl(505).setVisible(True)
             else:
-                self.getControl(105).setVisible(False)
+                self.getControl(505).setVisible(False)
         except:
             pass
 
@@ -357,9 +357,8 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             self.log('setChannelButtons return')
         except:
             xbmc.log('self.addControls(myadds) in use')
-            pass
+
             
-        
     # round the given time down to the nearest half hour
     def roundToHalfHour(self, thetime):
         n = datetime.datetime.fromtimestamp(thetime)
@@ -437,8 +436,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                 # Find the show that was running at the given time for the current channel.
                 if curchannel == self.MyOverlayWindow.currentChannel:
                     if chtype == 8 and len(self.MyOverlayWindow.channels[curchannel - 1].getItemtimestamp(playlistpos)) > 0:
-                        tmpDate = self.MyOverlayWindow.channels[curchannel - 1].getItemtimestamp(playlistpos)
-                        epochBeginDate = datetime_to_epoch(tmpDate)
+                        epochBeginDate = datetime_to_epoch(self.MyOverlayWindow.channels[curchannel - 1].getItemtimestamp(playlistpos))
                         videotime = time.time() - epochBeginDate
                         reftime = time.time()
                     else:                        
@@ -447,8 +445,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                 else:
                     if chtype == 8 and len(self.MyOverlayWindow.channels[curchannel - 1].getItemtimestamp(playlistpos)) > 0:
                         playlistpos = self.MyOverlayWindow.channels[curchannel - 1].playlistPosition
-                        tmpDate = self.MyOverlayWindow.channels[curchannel - 1].getItemtimestamp(playlistpos)
-                        epochBeginDate = datetime_to_epoch(tmpDate)
+                        epochBeginDate = datetime_to_epoch(self.MyOverlayWindow.channels[curchannel - 1].getItemtimestamp(playlistpos))
                         #loop to ensure we get the current show in the playlist
                         while epochBeginDate + self.MyOverlayWindow.channels[curchannel - 1].getItemDuration(playlistpos) <  time.time():
                             epochBeginDate += self.MyOverlayWindow.channels[curchannel - 1].getItemDuration(playlistpos)
@@ -508,7 +505,12 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
 
                             if prevlen < 60:
                                 tmpdur += prevlen / 2
-
+                    
+                    # # Check LiveTV for outdated timestamp:                       
+                    # elif chtype == 8 and shouldskip == False and datetime_to_epoch(self.MyOverlayWindow.channels[curchannel - 1].getItemtimestamp(playlistpos)) + self.MyOverlayWindow.channels[curchannel - 1].getItemDuration(playlistpos) < time.time():
+                        # self.chanlist.setResetLST(curchannel)
+                        # shouldskip = True
+                        
                     width = int((basew / 5400.0) * tmpdur)
                     if width < 30 and shouldskip == False:
                         width = 30
@@ -551,7 +553,10 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                         #Create Control array
                         self.channelButtons[row].append(xbmcgui.ControlButton(xpos, basey, width, baseh, mylabel, focusTexture=self.textureButtonFocus, noFocusTexture=self.textureButtonNoFocus, alignment=4, shadowColor=self.shadowColor, font=self.textfont, textColor=self.textcolor, focusedColor=self.focusedcolor))
                         self.addButtonTags(row, xpos, basey, width, baseh, mylabel, EPGtags)
-                        
+                    
+                    #elif chtype == 8 and shouldskip == True and datetime_to_epoch(self.MyOverlayWindow.channels[curchannel - 1].getItemtimestamp(playlistpos)) + self.MyOverlayWindow.channels[curchannel - 1].getItemDuration(playlistpos) < time.time():
+                        # self.channelButtons[row].append(xbmcgui.ControlButton(xpos, basey, width, baseh, self.MyOverlayWindow.getChname(curchannel), focusTexture=self.textureButtonFocus, noFocusTexture=self.textureButtonNoFocus, alignment=4, shadowColor=self.shadowColor, font=self.textfont, textColor=self.textcolor, focusedColor=self.focusedcolor))
+
                     totaltime += tmpdur
                     reftime += tmpdur
                     playlistpos += 1

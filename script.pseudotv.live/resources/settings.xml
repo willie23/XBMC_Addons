@@ -10,10 +10,10 @@
                 <setting id="AutoOff_Mode" type="enum"   label="30009" values="Exit PTVL|Quit Kodi|Sleep PC|Shutdown PC|EG Trigger|CEC TVStandby" default="0"/>
                 <setting id="Idle_Screensaver" type="bool"   label="29999" default="false" />
                 <setting id="ForceChannelReset" type="bool"   label="30005" default="false" />
-                <setting id="ChannelResetSetting" type="enum"   label="30006" values="Automatic|Daily|Weekly|Monthly|Never|Every Time" default="0"/>
                 <setting id="StartMode" type="enum"   label="30007" values="Resume|Real Time|Random" default="1" />
-                <setting id="ThreadMode" type="enum"   label="30008" values="On|Minimum Use|Off" default="0" />
                 <setting id="EnableSettop" type="bool"   label="30998" default="false"/>
+                <setting id="ThreadMode" type="enum"   label="30008" visible="eq(-1,False)" values="On|Minimum Use|Off" default="0" />
+                <setting id="ChannelResetSetting" type="enum"   label="30006" visible="eq(-2,False)" values="Automatic|Daily|Weekly|Monthly|Never|Every Time" default="0"/>
                 <setting id="MEDIA_LIMIT"   label="30310" type="enum" values="25|50|100|250|500|1000|5000|Unlimited" default="1"/>
                 <setting id="EnableNotify" type="bool"   label="30046" default="true"/>
                 <setting id="AutoBackup" type="bool"   label="30159" default="false"/>
@@ -25,6 +25,7 @@
         <setting id="os" type="enum" values="Android Arm|Android x86|ATV1 Linux|ATV1 Stock|ATV2|IOS|Linux 32bit|Linux 64bit|Mac 32bit|Mac 64bit|Rasberry Pi|Windows|TLBB" label="30402" default="11" />
         <setting id="limit_preferred_language" type="select"   label="32055" values="Chinese|Dutch|English|Finnish|French|German|Hungarian|Italian|Japanese|Polish|Portuguese|Russian|Spanish|Swedish" default="English"/>
         <setting id="limit_preferred_region" type="select"   label="32056" values="Andorra|United Arab Emirates|Afghanistan|Antigua and Barbuda|Anguilla|Albania|Armenia|Netherlands Antilles|Angola|Antarctica|Argentina|American Samoa|Austria|Australia|Aruba|Aland|Azerbaijan|Bosnia and Herzegovina|Barbados|Bangladesh|Belgium|Burkina Faso|Bulgaria|Bahrain|Burundi|Benin|Saint Barthelemy|Bermuda|Brunei|Bolivia|Brazil|Bahamas|Bhutan|Bouvet Island|Botswana|Belarus|Belize|Canada|Cocos (Keeling) Islands|Congo (Kinshasa)|Central African Republic|Congo (Brazzaville)|Switzerland|Cote dIvoire|Cook Islands|Chile|Cameroon|China|Colombia|Costa Rica|Cuba|Cape Verde|Christmas Island|Cyprus|Czech Republic|Germany|Djibouti|Denmark|Dominica|Dominican Republic|Algeria|Ecuador|Estonia|Egypt|Western Sahara|Eritrea|Spain|Ethiopia|Finland|Fiji|Falkland Islands|Micronesia|Faroe Islands|France|Gabon|United Kingdom|Grenada|Georgia|French Guiana|Guernsey|Ghana|Gibraltar|Greenland|Gambia|Guinea|Guadeloupe|Equatorial Guinea|Greece|South Georgia and South Sandwich Islands|Guatemala|Guam|Guinea-Bissau|Guyana|Hong Kong|Heard and McDonald Islands|Honduras|Croatia|Haiti|Hungary|Indonesia|name|English country name| |Ireland|Israel|Isle of Man|India|British Indian Ocean Territory|Iraq|Iran|Iceland|Italy|Jersey|Jamaica|Jordan|Japan|Kenya|Kyrgyzstan|Cambodia|Kiribati|Comoros|Saint Kitts and Nevis|North Korea|South Korea|Kuwait|Cayman Islands|Kazakhstan|Laos|Lebanon|Saint Lucia|Liechtenstein|Sri Lanka|Liberia|Lesotho|Lithuania|Luxembourg|Latvia|Libya|Morocco|Monaco|Moldova|Montenegro|Saint Martin|Madagascar|Marshall Islands|Macedonia|Mali|Myanmar|Mongolia|Macau|Northern Mariana Islands|Martinique|Mauritania|Montserrat|Malta|Mauritius|Maldives|Malawi|Mexico|Malaysia|Mozambique|Namibia|New Caledonia|Niger|Norfolk Island|Nigeria|Nicaragua|Netherlands|Norway|Nepal|Nauru|Niue|New Zealand|Oman|Panama|Peru|French Polynesia|Papua New Guinea|Philippines|Pakistan|Poland|Saint Pierre and Miquelon|Pitcairn|Puerto Rico|Palestine|Portugal|Palau|Paraguay|Qatar|Reunion|Romania|Serbia|Russian Federation|Rwanda|Saudi Arabia|Solomon Islands|Seychelles|Sudan|Sweden|Singapore|Saint Helena|Slovenia|Svalbard and Jan Mayen Islands|name|English country name| |Slovakia|Sierra Leone|San Marino|Senegal|Somalia|Suriname|Sao Tome and Principe|El Salvador|Syria|Swaziland|Turks and Caicos Islands|Chad|French Southern Lands|Togo|Thailand|Tajikistan|Tokelau|Timor-Leste|Turkmenistan|Tunisia|Tonga|Turkey|Trinidad and Tobago|Tuvalu|Taiwan|Tanzania|Ukraine|Uganda|United States Minor Outlying Islands|United States|Uruguay|Uzbekistan|Vatican City|Saint Vincent and the Grenadines|Venezuela|British Virgin Islands|Virgin Islands US|Vietnam|Vanuatu|Wallis and Futuna Islands|Samoa|Yemen|Mayotte|South Africa|Zambia|Zimbabwe" default="United States"/>
+        <setting id="BYPASS_SEEK" type="action"   label="30935" action="RunScript($CWD/utilities.py, -BYPASS_SEEK)"/> 
         <setting id="Enable_quickflip" type="bool"   label="30374" default="false"/>
         <setting id="DirectInput" type="bool"   label="30379" default="true"/>
         <setting id="StreamOverTime" type="enum"   label="31315" default="8" values="Always|10%|20%|30%|40%|50%|60%|70%|80%|90%|Disable"/>
@@ -82,6 +83,12 @@
         <setting id="couchpotato.apikey" subsetting="true"   label="30710" visible="eq(-2,true)" type="text" default="Enter API KEY"/>
         <setting id="SimpleDownloader" type="action"   label="30719" option="close"  visible="System.HasAddon(script.module.simple.downloader)" action="RunScript($CWD/utilities.py, -SimpleDownloader)"/>
         <setting id="YTDownloader" type="action"   label="30720" option="close"  visible="System.HasAddon(script.module.youtube.dl)" action="RunScript($CWD/utilities.py, -YTDownloader)"/>
+        <setting label="31110" type="lsep"/>
+        <setting id="ustv_quality_type" type="enum" label="31111" values="400kbps|750kbps|1024kbps|HD" default="0" />
+        <setting id="ustv_stream_type" type="enum" label="31112" values="rtmp|rtsp" default="0" />
+        <setting id="ustv_subscription" type="bool" label="31113" default="false" />
+        <setting id="ustv_email" type="text" label="31114" default="" />
+        <setting id="ustv_password" type="text" option="hidden" label="31115" default="" />
     </category>  
 <!--Autotune-->
     <category label="30070">
@@ -97,7 +104,7 @@
             <setting id="autoFindLivePVR"                     type="bool"   label="30075" subsetting="true" visible="eq(-5,true)" enable="Pvr.HasTVChannels" default="false"/>
             <setting id="autoFindLiveHD"                      type="enum"   label="30097" subsetting="true" visible="eq(-6,true)" values=" |Dual - Strms|Prime/Extend - Favourites" default="0" />
             <setting id="autoFindLiveHDPath"                  type="folder" label="30098" subsetting="true" visible="!eq(-1,0) + !eq(-1,2)" source="auto" default=""/>
-            <setting id="autoFindUSTVNOW"                     type="bool"   label="30074" subsetting="true" visible="eq(-8,true)" enable="System.HasAddon(plugin.video.ustvnow)" default="false"/>
+            <setting id="autoFindUSTVNOW"                     type="bool"   label="30074" subsetting="true" visible="eq(-8,true)" default="false"/>
             <!-- Autotune Local -->
         <setting                                              type="lsep"   label="30076"                   visible="eq(-9,true)"/>
             <setting id="autoFindNetworks"                    type="bool"   label="30078" subsetting="true" visible="eq(-10,true)" enable="Library.HasContent(TVShows)"default="false"/>
@@ -231,7 +238,7 @@
     </category>
     
 <!--Debugging-->
-    <category label="30900">  
+    <category label="30900"> 
         <setting label="30308" type="lsep"/>
         <setting id="ActionTimeInt" type="slider"   label="30309" range="2,2,10" option="int" default="2"/>
         <setting id="PlayTimeoutInt" type="slider"   label="30319" range="2,2,120" option="int" default="30"/>
@@ -257,10 +264,10 @@
         <setting id="TVDB_API"  label="30932" option="hidden" type="text" default="078845CE15BC08A7" />
         <setting id="FANTV_API"  label="30942" option="hidden" type="text" default="0da4365d363db853f10fd800b6a245e5" />
         <setting id="RSS_API_KEY" option="hidden" visible="false" type="text" default="cmVwb3NpdG9yeS5rb2RpbA==|cGx1Z2luLnZpZGVvLnR2Mmdv|cmVwb3NpdG9yeS50aGV2aWJl|" />  
-        <setting id="YT_API_KEY"  label="30942" option="hidden" type="text" default="AIzaSyAnwpqhAmdRShnEHnxLiOUjymHlG4ecE7c" />
-        <setting id="GOOGLE_API_KEY"  label="30942" option="hidden" type="text" default="rKPHzBmsYrFYROD98HS0Bt6rScBccAVm" />
-        <setting id="LOGODB_API_KEY"  label="30942" option="hidden" type="text" default="8332" />
-        <setting id="DOX_API_KEY"  label="30942" option="hidden" type="text" default="Im1ldGhvZCI6IkFkZG9ucy5TZXRBZGRvbkVuYWJsZWQiLCJwYXJhbXMiOnsiYWRkb25pZCI6IiVzIiwiZW5hYmxlZCI6ZmFsc2V9" />
+        <setting id="YT_API_KEY"  option="hidden" type="text" default="AIzaSyAnwpqhAmdRShnEHnxLiOUjymHlG4ecE7c" />
+        <setting id="GOOGLE_API_KEY"  option="hidden" type="text" default="rKPHzBmsYrFYROD98HS0Bt6rScBccAVm" />
+        <setting id="LOGODB_API_KEY" option="hidden" type="text" default="8332" />
+        <setting id="DOX_API_KEY"  option="hidden" type="text" default="Im1ldGhvZCI6IkFkZG9ucy5TZXRBZGRvbkVuYWJsZWQiLCJwYXJhbXMiOnsiYWRkb25pZCI6IiVzIiwiZW5hYmxlZCI6ZmFsc2V9" />
         <setting label="30197" type="lsep"/>
         <setting id="ffmpegPath" type="folder" label="30198" source="auto" default="C:\ffmpeg\bin\"/>
         <setting id="rtmpdumpPath" type="file" label="30199" source="auto" default="C:\rtmpdump\bin\"/>
