@@ -95,7 +95,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                     self.getControl(120 + i).setVisible(False)
                 except:
                     pass
-
+                    
             migratemaster = Migrate()
             migratemaster.migrate()
             self.prepareConfig()
@@ -407,7 +407,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                         self.getControl(216).setLabel(chid)
                     elif self.getControl(214).getLabel() == 'USTVnow':
                         self.getControl(212).setLabel('ustvnow')
-                        xbmc.executebuiltin("SendClick(216)")
+                        self.getControl(216).setLabel(title)
                         
                 elif self.getControl(214).getLabel() == 'Plugin' or self.getControl(214).getLabel() == 'UPNP':
                     self.getControl(211).setLabel(title)
@@ -1092,7 +1092,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         self.mixedGenreList.sort(key=lambda x: x.lower())
         self.listcontrol = self.getControl(102)
 
-        self.dlg.update(80)
+        self.dlg.update(85)
         for i in range(CHANNEL_LIMIT):
             theitem = xbmcgui.ListItem()
             theitem.setLabel(str(i + 1))
