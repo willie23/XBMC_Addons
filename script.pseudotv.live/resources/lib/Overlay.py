@@ -1001,10 +1001,6 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             else:
                 self.channels[self.currentChannel - 1].setPaused(False)
                     
-        # initialize new channel
-        if self.currentChannel == channel and getProperty("PTVL.INIT_CHANNELSET") == 'true':
-            return
-            
         self.getControl(102).setVisible(False)
         self.getControl(104).setVisible(False)
         self.getControl(119).setVisible(False)

@@ -589,7 +589,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         elif controlId == 280:# Browse plugin list
             select = selectDialog(self.pluginNameList, 'Select Plugin')
             if select != -1:
-                self.clearLabel(281)
+                self.clearLabel([281])
                 self.PluginSourceName = self.chnlst.cleanLabels((self.pluginNameList[select]))
                 if self.PluginSourceName == 'Community List':
                     Name, Option1, Option2, Option3, Option4 = self.fillSources('Plugin', 'Community List')
@@ -601,17 +601,17 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                     self.getControl(280).setLabel(PLname)
                     
                     if not Dirname:
-                        self.clearLabel(281)
+                        self.clearLabel([281])
                     else:
                         self.getControl(281).setLabel(Dirname)
                     
                     if not Option1:
-                        self.clearLabel(282)
+                        self.clearLabel([282])
                     else:
                         self.getControl(282).setLabel(Option1)
                         
                     if not Option2:
-                        self.clearLabel(283)
+                        self.clearLabel([283])
                     else:
                         self.getControl(283).setLabel(Option2)
 
@@ -672,6 +672,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             if retval and len(retval) > 0:
                 self.getControl(291).setLabel(retval)
                 self.getControl(292).setLabel(retval)
+                self.setChname('Unknown') 
         elif controlId == 293:    # UPNP Exclude, input
             self.setExclude(293)
         elif controlId == 294:    # UPNP MediaLimit, select 
@@ -905,7 +906,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             self.getControl(273).setLabel(chansetting4)
         elif chantype == 15:
             # Clear browse
-            self.clearLabel(281)
+            self.clearLabel([281])
             # Find and fill Plugin name and path
             try:
                 PlugPath = (chansetting1.replace('plugin://','')).split('/')[0]
@@ -1068,14 +1069,6 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         self.YoutubeList = ['Channel','Playlist','Multi Playlist','Multi Channel','Seasonal','Search Query']
         self.YTFilter = ['User Subscription','User Favorites','Search Query']
         
-        if self.chnlst.plugin_ok('plugin.program.super.favourites'):
-            self.chnlst.pluginPathList = ['plugin.program.super.favourites'] + self.chnlst.pluginPathList
-            self.chnlst.pluginNameList = ['[COLOR=blue][B]Super Favourites[/B][/COLOR]'] + self.chnlst.pluginNameList
-        
-        if self.chnlst.plugin_ok('plugin.video.playonbrowser'):
-            self.chnlst.pluginPathList = ['plugin.video.playonbrowser'] + self.chnlst.pluginPathList
-            self.chnlst.pluginNameList = ['[COLOR=blue][B]Playon[/B][/COLOR]'] + self.chnlst.pluginNameList
-
         # Removed LiveTV/InternetTV and Plugin Community list for Kodi repo compliance.
         # if isCom() == True:
             # self.pluginPathList = [''] + self.chnlst.pluginPathList
@@ -1153,13 +1146,13 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
          
     def resetLabels(self):
         self.log("resetLabels")
-        self.clearLabel(280) # Browse plugin list
-        self.clearLabel(281) # Browse Plugin Directories
+        self.clearLabel([280]) # Browse plugin list
+        self.clearLabel([281]) # Browse Plugin Directories
             
             
     def clearLabel(self, id=-1):
         self.log("clearLabel, id = " + str(id))
-        if id != -1: 
+        if id != -1:
             for i in range(len(id)):
                 lid = id[i]
                 try:

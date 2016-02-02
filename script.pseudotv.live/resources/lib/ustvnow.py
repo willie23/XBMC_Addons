@@ -168,67 +168,76 @@ class ustvnow:
 
     def _login_ALT(self):
         self.log('_login_ALT')
-        self.cj = cookielib.CookieJar()
-        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cj))
-        urllib2.install_opener(opener)
-        url = self._build_json('gtv/1/live/login', {'username': self.user,
-                                               'password': self.password,
-                                               'device':'gtv',
-                                               'redir':'0'})
-        response = opener.open(url)
-        for cookie in self.cj:
-            if cookie.name == 'token':
-                return cookie.value
+        try:
+            self.cj = cookielib.CookieJar()
+            opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cj))
+            urllib2.install_opener(opener)
+            url = self._build_json('gtv/1/live/login', {'username': self.user,
+                                                   'password': self.password,
+                                                   'device':'gtv',
+                                                   'redir':'0'})
+            response = opener.open(url)
+            for cookie in self.cj:
+                if cookie.name == 'token':
+                    return cookie.value
+        except:
+            pass
         return 'False'
 
 
     def _login_ORG(self):
         self.log('_login_ORG')
-        self.cj = cookielib.CookieJar()
-        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cj))
-        urllib2.install_opener(opener)
-        url = self._build_url('iphone_login', {'username': self.user,
-                                               'password': self.password})
-        response = opener.open(url)
-        for cookie in self.cj:
-            if cookie.name == 'token':
-                return cookie.value
+        try:
+            self.cj = cookielib.CookieJar()
+            opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cj))
+            urllib2.install_opener(opener)
+            url = self._build_url('iphone_login', {'username': self.user,
+                                                   'password': self.password})
+            response = opener.open(url)
+            for cookie in self.cj:
+                if cookie.name == 'token':
+                    return cookie.value
+        except:
+            pass
         return 'False'
 
 
     def get_link(self, quality, stream_type, chname=False):
-        self.log('get_link')            
-        html = self._get_html('iphone_ajax', {'tab': 'iphone_playingnow',
-                                              'token': self.token})
+        self.log('get_link')
         channels = []
-        for channel in re.finditer('class="panel".+?title="(.+?)".+?src="' +
-                                   '(.+?)".+?class="nowplaying_item">(.+?)' +
-                                   '<\/td>.+?class="nowplaying_itemdesc".+?' +
-                                   '<\/a>(.+?)<\/td>.+?href="(.+?)"',
-                                   html, re.DOTALL):
-            show_busy_dialog()
-            name, icon, title, plot, url = channel.groups()
-            name = name.replace('\n','').replace('\t','').replace('\r','').replace('<fieldset> ','').replace('<div class=','').replace('>','').replace('"','').replace(' ','')
-            if not name:
-                name = ((icon.rsplit('/',1)[1]).replace('.png','')).upper()
-                name = self.cleanChanName(name)
-                self.log('get_link, parsing '+ name)
-            try:
-                if not url.startswith('http'):
-                    link = '%s%s%d' % (stream_type, url[4:-1], quality + 1)
-                    if chname != False and chname.lower() == name.lower():
-                        hide_busy_dialog()
-                        if link == '%s%d' % (stream_type, quality + 1):
-                            self.token = 'False'
-                            return self.getChannellink(chname)
-                        elif not link.startswith(stream_type):
-                            return self.getChannellink(chname)
-                        self.log('get_link, link = '+link)
-                        return link
-                    else:
-                        channels.append([name, link])
-            except:
-                pass
+        try:
+            html = self._get_html('iphone_ajax', {'tab': 'iphone_playingnow',
+                                                  'token': self.token})
+            for channel in re.finditer('class="panel".+?title="(.+?)".+?src="' +
+                                       '(.+?)".+?class="nowplaying_item">(.+?)' +
+                                       '<\/td>.+?class="nowplaying_itemdesc".+?' +
+                                       '<\/a>(.+?)<\/td>.+?href="(.+?)"',
+                                       html, re.DOTALL):
+                show_busy_dialog()
+                name, icon, title, plot, url = channel.groups()
+                name = name.replace('\n','').replace('\t','').replace('\r','').replace('<fieldset> ','').replace('<div class=','').replace('>','').replace('"','').replace(' ','')
+                if not name:
+                    name = ((icon.rsplit('/',1)[1]).replace('.png','')).upper()
+                    name = self.cleanChanName(name)
+                    self.log('get_link, parsing '+ name)
+                try:
+                    if not url.startswith('http'):
+                        link = '%s%s%d' % (stream_type, url[4:-1], quality + 1)
+                        if chname != False and chname.lower() == name.lower():
+                            hide_busy_dialog()
+                            if link == '%s%d' % (stream_type, quality + 1):
+                                self.token = 'False'
+                                return self.getChannellink(chname)
+                            elif not link.startswith(stream_type):
+                                return self.getChannellink(chname)
+                            self.log('get_link, link = '+link)
+                            return link
+                        else:
+                            channels.append([name, link])
+                except:
+                    pass
+        except:
+            pass
         hide_busy_dialog()
         return channels
 

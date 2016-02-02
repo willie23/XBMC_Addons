@@ -2877,8 +2877,8 @@ class ChannelList:
         self.log("getDuration")
         duration = 0
         duration = self.videoParser.getVideoLength(filename)
-        if duration == 0:
-            duration = self.getffprobeLength(filename)
+        # if duration == 0:
+            # duration = self.getffprobeLength(filename)
         return duration
         
         
@@ -3262,8 +3262,7 @@ class ChannelList:
                     for i in range(len(LocalLST)):    
                         if self.background == False:
                             self.updateDialog.update(self.updateDialogProgress, "Updating Channel " + str(channel), "adding Local Commercials")
-                        
-                        filename = xbmc.translatePath(os.path.join(PATH,((LocalLST[i])[0])))
+                        filename = xbmc.translatePath(os.path.join(PATH,LocalLST[i][0]))
                         duration = self.getDuration(filename)
                         
                         if duration == 0:
@@ -3977,7 +3976,7 @@ class ChannelList:
                 if names and paths:
                     name = self.cleanLabels(names.group(1))
                     path = paths.group(1)
-                    if name.lower() not in ['super favourites','playon browser','hdhomerun','pseudolibrary','pseudocompanion']:
+                    if name.lower() not in ['super favourites','hdhomerun','pseudolibrary','pseudocompanion']:
                         TMPpluginList.append(name+','+path)  
                     
             SortedpluginList = sorted_nicely(TMPpluginList)
@@ -4026,6 +4025,11 @@ class ChannelList:
         NameLst = []
         IconLst = []
         PathLst = []
+        
+        user = REAL_SETTINGS.getSetting('ustv_email')
+        if user == "":
+            return NameLst,PathLst,IconLst 
+            
         channels = self.ustv.getChannelNames()
         for i in range(len(channels)):
             CHname = channels[i][0]
