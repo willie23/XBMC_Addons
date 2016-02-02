@@ -3186,7 +3186,6 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             xbmc.executebuiltin('XBMC.AlarmClock( Powering Down Device, XBMC.Powerdown(),0.5,true)')
             
 
-
     def isWindowOpen(self):
         if getProperty("PTVL.EPG_Opened") == "true":
             return 'EPG'
@@ -3468,7 +3467,6 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         
     def openEPG(self):
         self.log("openEPG")
-        
         # Pause Background channel building while EPG is opened
         if self.channelThread.isAlive():
             self.channelThread.pause()
@@ -3487,14 +3485,15 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
 
         if self.newChannel != 0:
             self.setChannel(self.fixChannel(self.newChannel))
-    
+
+            
+    def showWeather(self):
+        self.log("showWeather")
+        json_query = '{"jsonrpc":"2.0","method":"GUI.ActivateWindow","params":{"window":"weather"},"id":1}'
+        self.channelList.sendJSON(json_query);
+        
+        
 # xbmc.executebuiltin('StartAndroidActivity("com.netflix.mediaclient"),return')
-# call weather
-# http://localhost:9000/jsonrpc?request={"jsonrpc":"2.0","method":"GUI.ActivateWindow","params":{"window":"weather"},"id":18}
-# set fullscreen
-# http://localhost:9000/jsonrpc?request={"jsonrpc":"2.0","method":"GUI.SetFullscreen","params":{"fullscreen":true},"id":19}
-# call vod
 # http://localhost:9000/jsonrpc?request={"jsonrpc":"2.0","method":"GUI.ActivateWindow","params":{"window":"videoosd"},"id":5}
-# call settings
 # http://localhost:9000/jsonrpc?request={"jsonrpc":"2.0","method":"GUI.ActivateWindow","params":{"window":"osdaudiosettings"},"id":17}
 # http://localhost:9000/jsonrpc?request={"jsonrpc":"2.0","method":"GUI.ActivateWindow","params":{"window":"osdvideosettings"},"id":16}

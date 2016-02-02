@@ -1512,7 +1512,7 @@ def HandleUpgrade():
     xbmc.executebuiltin("RunScript(" + ADDON_PATH + "/utilities.py,-showChangelog)")
           
     # Remove m3u playlists
-    ClearPlaylists()
+    # ClearPlaylists()
     
     # Force Channel rebuild
     # REAL_SETTINGS.setSetting('ForceChannelReset', 'true') 

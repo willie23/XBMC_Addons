@@ -74,28 +74,31 @@ class ustvnow:
     def getChannellink(self, chname):
         self.log('getChannellink, chname = ' + chname)
         if self.token == 'False':
-            self.token = self.getToken
+            self.token = self.getToken()
         return self.get_link(self.quality_type, self.stream_type, chname)
 
 
     def getChannelNames(self):
         self.log('getChannelNames')
-        content = self._get_json('gtv/1/live/listchannels', {'token': self.token, 'l': '1440'})
-        channels = []
-        results = content['results']['streamnames'];
+        try:
+            content = self._get_json('gtv/1/live/listchannels', {'token': self.token, 'l': '1440'})
+            channels = []
+            results = content['results']['streamnames'];
 
-        for i in range(len(results)):
-            name = self.cleanChanName(results[i]['sname'])
-            id = results[i]['prgsvcid']
-            icon = self.uBASE_URL + '/' + results[i]['img']
-            free = results[i]['t'] == 1 # free sub switch 1=free, 0=pay
+            for i in range(len(results)):
+                name = self.cleanChanName(results[i]['sname'])
+                id = results[i]['prgsvcid']
+                icon = self.uBASE_URL + '/' + results[i]['img']
+                free = results[i]['t'] == 1 # free sub switch 1=free, 0=pay
 
-            if self.premium == True:
-                channels.append([name,icon])
-            else:
-                if free:
+                if self.premium == True:
                     channels.append([name,icon])
-        return channels
+                else:
+                    if free:
+                        channels.append([name,icon])
+            return channels
+        except:
+            pass
 
 
     def _fetch(self, url, form_data=False):
