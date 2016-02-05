@@ -6,7 +6,7 @@ import cPickle
 import time
 import base64
 import inspect
-import xbmcvfs
+import xbmc,xbmcvfs
 
 __all__ = ["CacheError", "FSCache", "make_digest",
            "auto_cache_function", "cache_function", "to_seconds"]
@@ -407,19 +407,25 @@ def load(filename):
   Helper function that simply pickle loads the first object
   from the file named by `filename`.
   """
-  f = open(filename, 'rb')
-  obj = cPickle.load(f)
-  f.close()
-  return obj
-
+  try:
+    f = open(xbmc.translatePath(filename), 'rb')
+    obj = cPickle.load(f)
+    f.close()
+    return obj
+  except:
+    pass
+        
 def dump(obj, filename):
   """
   Helper function that simply pickle dumps the object
   into the file named by `filename`.
   """
-  f = open(filename, 'wb')
-  cPickle.dump(obj, f, cPickle.HIGHEST_PROTOCOL)
-  f.close()
+  try:
+    f = open(xbmc.translatePath(filename), 'wb')
+    cPickle.dump(obj, f, cPickle.HIGHEST_PROTOCOL)
+    f.close()
+  except:
+    pass
 
 def auto_cache_function(f, cache):
   """
