@@ -202,8 +202,8 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                 self.channelLabel[i].setVisible(False)
             except:
                 pass
-        self.FEEDtoggle()
         self.channelLabelTimer = threading.Timer(5.0, self.hideChannelLabel)        
+        self.FEEDtoggle()
         self.log('onInit return')
 
 

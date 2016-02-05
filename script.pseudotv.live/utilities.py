@@ -100,7 +100,7 @@ def showChtype():
     select = selectDialog(ChtypeLst, 'Select Channel Type')
     if select != -1:
         help(ChtypeLst[select])
-
+                   
 if sys.argv[1] == '-SimpleDownloader':
     xbmcaddon.Addon(id='script.module.simple.downloader').openSettings()  
 elif sys.argv[1] == '-showChangelog':

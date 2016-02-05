@@ -43,7 +43,7 @@ from apis import tmdb
 from datetime import date
 from datetime import timedelta
 from BeautifulSoup import BeautifulSoup
-from parsers import ustvnow
+from ustvnow import ustvnow
 
 socket.setdefaulttimeout(30)
 
@@ -86,7 +86,7 @@ class ChannelList:
         self.startTime = 0
         self.background = True    
         self.videoParser = VideoParser()
-        self.ustv = ustvnow.ustvnow()
+        self.ustv = ustvnow()
         random.seed() 
 
     def readConfig(self):
@@ -468,7 +468,7 @@ class ChannelList:
         self.log("clearPlaylistHistory")
 
         if self.channels[channel - 1].isValid == False:
-            self.log("clearPlaylistHistory, channel " + str(channel) + " playlist not valid")
+            self.log("channel not valid, ignoring")
             return
 
         # if we actually need to clear anything
@@ -2805,11 +2805,11 @@ class ChannelList:
     def Valid_ok(self, url):
         self.log("Valid_ok")
         #plugin check  
-        #Override Check# 
-        if REAL_SETTINGS.getSetting('Override_ok') == "true":
-            return True
-        elif url[0:6] == 'plugin':  
+        if url[0:6] == 'plugin':  
             return self.plugin_ok(url)  
+        #Override Check# 
+        elif REAL_SETTINGS.getSetting('Override_ok') == "true":
+            return True
         #rtmp check
         elif url[0:4] == 'rtmp':
             return self.rtmpDump(url)  
@@ -4800,7 +4800,7 @@ class ChannelList:
                                             if dur == 0:
                                                 dur = ladur
                                                                                                                                
-                                    if  dur == 0 and file.startswith(("plugin", "upnp")):
+                                    if file.startswith(("plugin", "upnp")) and dur == 0:
                                         dur = 3600    
                                              
                                     # Remove any file types that we don't want (ex. IceLibrary, ie. Strms)
@@ -5101,16 +5101,3 @@ class ChannelList:
             self.myOverlay.ResetLST =  [x for x in self.myOverlay.ResetLST if x!=channel]
             REAL_SETTINGS.setSetting('ResetLST', str(self.myOverlay.ResetLST))
             self.log('delResetLST removed channel ' + str(channel))
-            
-
-    def dict2tmpstr(self, dList):
-        self.log('dict2tmpstr')
-        filelist = []
-        self.startDate = self.startTime
-        for i in range(dList):
-            dict = dList[i]
-            timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(self.startDate))
-            self.startDate += int(dict['duration'])
-            GenreLiveID = [dict['genre'], dict['type'], dict['id'], dict['thumburl'], False, 1, dict['rating'], dict['hd'], dict['cc'], dict['stars']]
-            filelist.append(self.makeTMPSTR(dict['duration'], dict['title'], dict['subtitle'], dict['description'], GenreLiveID, dict['link'], timestamp))
-        return filelist

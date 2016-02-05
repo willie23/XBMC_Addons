@@ -21,7 +21,7 @@
     <string id="30402">Choose Your Operating System</string>  
     <string id="32055">Preferred Language</string>  
     <string id="32056">Preferred Region</string>  
-    <string id="30374">Enable Quickflip [Surfing Ignores plugins/strms]</string>
+    <string id="30374">Enable Quickflip</string>
     <string id="30303">Startup Channel</string> 
     <string id="30304">Enter Preferred Channel</string>
     <string id="30311">Disable Watch Flagging</string>
@@ -35,8 +35,8 @@
     <string id="30050">Enable global menu [Experimental]</string>
     <string id="30158">Menu style</string>
     <string id="30159">Enable Automatic Channel Backup</string>
-    <string id="31311">Start Over Option after % Played</string>
-    <string id="31315">Smart Seek plugins/strms Over % Seeked</string>
+    <string id="31311">Start Over Option after</string>
+    <string id="31315">SmartSeek Strms Over</string>
     <string id="30447">Seek step backward [I](Isengard)[/I]</string>
     <string id="30446">Seek step forward [I](Isengard)[/I]</string>
     
@@ -242,7 +242,6 @@
     <string id="30922">TMDB APIKEY</string>
     <string id="30932">TVDB APIKEY</string>
     <string id="30942">FANART.TV APIKEY</string>
-    <string id="30924">GUIDEBOX APIKEY</string>
     <string id="30197">binaries (Optional)</string>
     <string id="30198">ffmepg path</string>
     <string id="30199">rtmpdump path</string>
