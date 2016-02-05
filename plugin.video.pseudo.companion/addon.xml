@@ -6,7 +6,6 @@
         <import addon="script.module.simple.downloader" version="0.9.4"/>
         <import addon="script.module.requests" />
         <import addon="script.module.httplib2" />
-        <import addon="script.module.urlresolver"/>
         <import addon="script.module.simplejson" /> 
         <import addon="script.module.metahandler" version="2.5.1"/>	
         <import addon="script.common.plugin.cache" version="2.5.2"/>
