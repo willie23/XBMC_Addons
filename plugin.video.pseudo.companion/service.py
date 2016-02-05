@@ -18,9 +18,15 @@
 
 # -*- coding: utf-8 -*-
 
-import xbmcplugin, xbmcgui, xbmcaddon, xbmcvfs
+import xbmc, xbmcgui, xbmcaddon, xbmcvfs
+import os
 
-while (not xbmc.abortRequested):
+monitor = xbmc.Monitor()
+while not monitor.abortRequested():
+    # Sleep/wait for abort for 10 seconds
+    if monitor.waitForAbort(10):
+        # Abort was requested while waiting. We should exit
+        break
     PTVL_RUNNING = xbmcgui.Window(10000).getProperty('PseudoTVRunning') == "True"
     if PTVL_RUNNING == True:
         STATE = 'true'
@@ -30,4 +36,3 @@ while (not xbmc.abortRequested):
         STATUS = '[COLOR=red]OFFLINE[/COLOR]'
     xbmcgui.Window(10000).setProperty('PseudoCompanion.STATE', STATE)
     xbmcgui.Window(10000).setProperty('PseudoCompanion.STATUS', STATUS)
-    xbmc.sleep(1000)

@@ -793,6 +793,56 @@ elif mode == 10001: PreviewChannel(name,url,previous)
 # if mode in [0,1,2,3,4,5,6]: back('Online')                      # Return to Online Menu
 # elif mode in [9995,9999]: back('Main')                        # Return to Main Menu
 
+# #ptvlguide
+# PTVLXML = os.path.join(XMLTV_CACHE_LOC, 'ptvlguide.xml')
+# PTVLXMLZIP = os.path.join(LOCK_LOC, 'ptvlguide.zip')
+# PTVLXMLURL = PTVLURL + 'ptvlguide.zip'
+
+# #BASEURL
+# try:
+    # UPASS = REAL_SETTINGS.getSetting('Donor_UP')
+# except:
+    # UPASS = "Username:Password"
+
+# PTVLURL = 'http://pseudotvlive.com/ptvl/'
+# PTVLURLUP = 'http://%s@pseudotvlive.com/ptvl/' %UPASS
+
+# def isRepoInstalled():
+    # repo = isPlugin('repository.lunatixz')
+    # log('utils: isRepoInstalled = ' + str(repo))
+    # return repo
+      
+# def getRepo():
+    # log('utils: getRepo')
+    # if isRepoInstalled() == False:
+        # if dlg.yesno("PseudoTV Live", 'Install the Lunatixz Repository?'):   
+            # url='https://github.com/Lunatixz/XBMC_Addons/raw/master/zips/repository.lunatixz/repository.lunatixz-1.0.zip'
+            # name = 'repository.lunatixz.zip' 
+            # MSG = 'Lunatixz Repository Installed'    
+            # path = xbmc.translatePath(os.path.join('special://home/addons','packages'))
+            # addonpath = xbmc.translatePath(os.path.join('special://','home/addons'))
+            # lib = os.path.join(path,name)
+            # getGithubZip(url, lib, addonpath, MSG)
+    # else:
+        # infoDialog('Lunatixz Repository Already Installed')
+                
+# def chkVersion():
+    # log('utils: chkVersion')
+    # curver = xbmc.translatePath(os.path.join(ADDON_PATH,'addon.xml'))    
+    # source = open(curver, mode='r')
+    # link = source.read()
+    # source.close()
+    # match = re.compile('" version="(.+?)" name="PseudoTV Live"').findall(link)
+    
+    # for vernum in match:
+        # log("utils: Current Version = " + str(vernum))
+    # try:
+        # link = open_url('https://raw.githubusercontent.com/Lunatixz/XBMC_Addons/master/script.pseudotv.live/addon.xml').read() 
+        # link = link.replace('\r','').replace('\n','').replace('\t','').replace('&nbsp;','')
+        # match = re.compile('" version="(.+?)" name="PseudoTV Live"').findall(link)
+    # except:
+        # pass   
+
 xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_NONE )
 xbmcplugin.setContent(int(sys.argv[1]), 'episodes')
 xbmcplugin.endOfDirectory(int(sys.argv[1]),cacheToDisc=False) # End List
