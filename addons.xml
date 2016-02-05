@@ -57,10 +57,7 @@
 <addon id="plugin.video.pseudo.companion" version="0.0.3" name="PseudoCompanion" provider-name="Lunatixz">
     <requires>
         <import addon="xbmc.python" version="2.14.0"/>
-        <import addon="script.module.beautifulsoup" version="3.2.1"/>
-        <import addon="script.module.simple.downloader" version="0.9.4"/>
         <import addon="script.module.requests" />
-        <import addon="script.module.httplib2" />
         <import addon="script.module.simplejson" />
         <import addon="script.module.metahandler" version="2.5.1"/>
         <import addon="script.common.plugin.cache" version="2.5.2"/>
@@ -73,7 +70,7 @@
     <extension point="xbmc.addon.metadata">
         <platform>all</platform>
         <summary lang="en">PseudoTV Live Companion Tool</summary>
-        <description lang="en">Control PseudoTV Live via Yatse app, Parse Exclusive Content, Extend PseudoTV Lives Functionality.</description>
+        <description lang="en">Control PseudoTV Live via Yatse app. Parse Exclusive Content... Extend PseudoTV Lives Functionality.</description>
     </extension>
 </addon>
 
