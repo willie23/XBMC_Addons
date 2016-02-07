@@ -200,10 +200,9 @@ class MyPlayer(xbmc.Player):
             clearTraktScrob()
 
             if self.ignoreNextStop == False:
-                # start sleeptimer to shutdown pseudotv live on stop
-                # if self.overlay.sleepTimeValue == 0:
-                    # self.overlay.sleepTimeValue = 1
-                    # self.overlay.startSleepTimer()
+                if self.overlay.sleepTimeValue == 0:
+                    self.overlay.sleepTimeValue = 1
+                    self.overlay.startSleepTimer()
                 self.stopped = True
             else:
                 self.ignoreNextStop = False
@@ -3341,12 +3340,12 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             
                 
     def setPlayselected(self, url):
-        self.log('setPlayselected')
         try:
             if url.startswith(('http','pvr','rtmp','rtsp','hdhomerun','upnp')):
                 if url.startswith(('rtmp','rtsp')):
                     url += ' live=true timeout=%s' % str((int(round((self.PlayTimeoutInt/int(self.ActionTimeInt))))/4)*3)
 
+                self.log('setPlayselected, url = ' + url)
                 listitem = xbmcgui.ListItem(getProperty("OVERLAY.Title"))
                 listitem.setIconImage(getProperty("OVERLAY.LOGOART"))
                 content_type = getProperty("OVERLAY.Type").replace("tvshow","episode").replace("other","video").replace("music","musicvideo")           
@@ -3426,6 +3425,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             else:
                 raise Exception()
         except Exception,e:
+            self.log('setPlayselected, Failed! ' + str(e))
             self.Player.play(url)
         return
         

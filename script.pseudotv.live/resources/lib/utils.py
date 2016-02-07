@@ -32,6 +32,7 @@ from email import Encoders
 from xml.dom.minidom import parse, parseString
 from urllib import unquote, quote
 from urllib2 import HTTPError, URLError
+from pyfscache import *
 
 socket.setdefaulttimeout(30)
 
@@ -1728,9 +1729,7 @@ def xmltvflePath(setting3):
     elif setting3.lower() == 'ptvlguide':
         xmltvFle = PTVLXML
     elif setting3.lower() == 'ustvnow':
-        USTV_ID = 'plugin.video.ustvnow'
-        USTV_SETTINGS = xbmcaddon.Addon(id=USTV_ID)
-        xmltvFle = os.path.join(USTV_SETTINGS.getSetting('write_folder'),'xmltv.xml')
+        xmltvFle = USTVXML                
     else:
         xmltvFle = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('xmltvLOC'), str(setting3) +'.xml'))
     return xmltvFle
