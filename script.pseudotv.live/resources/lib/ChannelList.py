@@ -3009,9 +3009,9 @@ class ChannelList:
         elif path.lower() in ['pvr','zap2it','scheduledirect']:
             return True
         elif path.lower() == 'ustvnow':
-            if FileAccess.exists(PTVLXML):
-                self.xmlTvFile = PTVLXML      
-            elif self.ustv.getXMLTV() == True:
+            # if FileAccess.exists(PTVLXML):
+                # self.xmlTvFile = PTVLXML      
+            if self.ustv.getXMLTV() == True:
                 self.xmlTvFile = USTVXML                
             else:
                 return False
