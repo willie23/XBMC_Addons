@@ -59,7 +59,7 @@ class MKVParser:
         datasize = 1
         data = 1
 
-        while self.File.tell() < fileend and datasize > 0 and data > 0:
+        while self.File.tell() < fileend and datasize > 0 and data > 0 and not monitor.abortRequested():
             data = self.getEBMLId()
             datasize = self.getDataSize()
 
@@ -126,7 +126,7 @@ class MKVParser:
         data = self.getEBMLId()
 
         # Look for the segment header
-        while data != 0x18538067 and self.File.tell() < filesize and data > 0 and datasize > 0:
+        while data != 0x18538067 and self.File.tell() < filesize and data > 0 and datasize > 0 and not monitor.abortRequested():
             datasize = self.getDataSize()
 
             try:
@@ -141,7 +141,7 @@ class MKVParser:
         data = self.getEBMLId()
 
         # Find segment info
-        while data != 0x1549A966 and self.File.tell() < filesize and data > 0 and datasize > 0:
+        while data != 0x1549A966 and self.File.tell() < filesize and data > 0 and datasize > 0 and not monitor.abortRequested():
             datasize = self.getDataSize()
 
             try:

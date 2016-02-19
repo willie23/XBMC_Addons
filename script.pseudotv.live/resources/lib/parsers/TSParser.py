@@ -79,7 +79,7 @@ class TSParser:
         start = 0
         self.packetLength = 0
 
-        while maxbytes > 0:
+        while maxbytes > 0 and not monitor.abortRequested():
             maxbytes -= 1
 
             try:
@@ -130,7 +130,7 @@ class TSParser:
         except:
             return 0
 
-        while maxpackets > 0:
+        while maxpackets > 0 and not monitor.abortRequested():
             packet = self.readTSPacket()
             maxpackets -= 1
 
@@ -159,7 +159,7 @@ class TSParser:
 
         maxpackets = 12000
 
-        while maxpackets > 0:
+        while maxpackets > 0 and not monitor.abortRequested():
             packet = self.readTSPacket()
             maxpackets -= 1
 

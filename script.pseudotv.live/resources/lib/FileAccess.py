@@ -342,7 +342,7 @@ class FileLock:
         locked = True
         lines = []
 
-        while(locked == True and attempts < FILE_LOCK_MAX_FILE_TIMEOUT):
+        while(locked == True and attempts < FILE_LOCK_MAX_FILE_TIMEOUT) and not Globals.monitor.abortRequested():
             locked = False
 
             if curval > -1:

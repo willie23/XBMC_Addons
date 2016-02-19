@@ -80,7 +80,7 @@ class MP4Parser:
 
         data = self.readBlock()
 
-        while data.boxtype != 'moov' and data.size > 0:
+        while data.boxtype != 'moov' and data.size > 0 and not monitor.abortRequested():
             try:
                 self.File.seek(data.size, 1)
             except:
@@ -91,7 +91,7 @@ class MP4Parser:
 
         data = self.readBlock()
 
-        while data.boxtype != 'mvhd' and data.size > 0:
+        while data.boxtype != 'mvhd' and data.size > 0 and not monitor.abortRequested():
             try:
                 self.File.seek(data.size, 1)
             except:

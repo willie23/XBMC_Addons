@@ -21,7 +21,7 @@ import os, sys, time, urllib
 
 from resources.lib.Globals import *
 from resources.lib.utils import *
-from resources.lib.ChannelList import ChannelList
+# from resources.lib.ChannelList import ChannelList
 
 def showText(heading, text):
     log('utilities: showText')
@@ -78,11 +78,11 @@ def DeleteSettings2():
     # Return to PTVL Settings
     REAL_SETTINGS.openSettings()
     
-def addBypass():
-    chnlst = ChannelList()
-    chnlst.fillPluginList()
-    BYPASS_LST = matchMselect(chnlst.pluginPathList, mselectDialog(chnlst.pluginNameList, header='Enable Seeking for specified Plugins'))
-    REAL_SETTINGS.setSetting("BYPASS_LST",str(BYPASS_LST))
+# def addBypass():
+    # chnlst = ChannelList()
+    # chnlst.fillPluginList()
+    # BYPASS_LST = matchMselect(chnlst.pluginPathList, mselectDialog(chnlst.pluginNameList, header='Enable Seeking for specified Plugins'))
+    # REAL_SETTINGS.setSetting("BYPASS_LST",str(BYPASS_LST))
     
 def ClearTempKey():
     log('utilities: ClearTempKey')
