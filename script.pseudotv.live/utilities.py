@@ -78,11 +78,11 @@ def DeleteSettings2():
     # Return to PTVL Settings
     REAL_SETTINGS.openSettings()
     
-# def addBypass():
-    # chnlst = ChannelList()
-    # chnlst.fillPluginList()
-    # BYPASS_LST = matchMselect(chnlst.pluginPathList, mselectDialog(chnlst.pluginNameList, header='Enable Seeking for specified Plugins'))
-    # REAL_SETTINGS.setSetting("BYPASS_LST",str(BYPASS_LST))
+def addBypass():
+    chnlst = ChannelList()
+    chnlst.fillPluginList()
+    BYPASS_LST = matchMselect(chnlst.pluginPathList, mselectDialog(chnlst.pluginNameList, header='Disable Seeking for specified Plugins'))
+    REAL_SETTINGS.setSetting("BYPASS_LST",str(BYPASS_LST))
     
 def ClearTempKey():
     log('utilities: ClearTempKey')

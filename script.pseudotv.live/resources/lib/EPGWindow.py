@@ -421,8 +421,11 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             del self.channelTags[row][:]
 
             # playlistpos = int(xbmc.PlayList(xbmc.PLAYLIST_VIDEO).getposition())
-            # playlistpos = int(xbmc.PlayList(xbmc.PLAYLIST_MUSIC).getposition())
-            playlistpos = self.MyOverlayWindow.channels[curchannel - 1].playlistPosition
+            if chtype <= 7:
+                playlistpos = int(xbmc.PlayList(xbmc.PLAYLIST_MUSIC).getposition())
+            else:
+                playlistpos = self.MyOverlayWindow.channels[curchannel - 1].playlistPosition
+            self.log('setButtons, playlistpos = ' + str(playlistpos))
             
             # if the channel is paused, then only 1 button needed
             if self.MyOverlayWindow.channels[curchannel - 1].isPaused:

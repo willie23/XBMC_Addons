@@ -678,11 +678,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                         chtype = self.getChtype(chnum)
                         chname = self.getChname(chnum)
                         chlogo = self.getChlogo(chnum)
-                        
-                        ChanColor = (self.channelbugcolor).replace('0x','')
-                        if self.isChanFavorite(chnum):
-                            ChanColor = 'gold'   
-                        
+
                         if self.channels[Channel].isValid:
                             # prepare channel guide
                             channel_dict = {'Chtype': chtype, 'Chnum': chnum, 'Chname': chname, 'LOGOART': chlogo}
@@ -698,7 +694,15 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                             Duration = self.channels[Channel].getItemDuration(position) 
                             timestamp = self.channels[Channel].getItemtimestamp(position) 
                             mediapath = self.channels[Channel].getItemFilename(position)  
+                        
+                            ChanColor = (self.channelbugcolor).replace('0x','')
+                            if self.isChanFavorite(chnum):
+                                ChanColor = 'gold'
 
+                            # SepColor = (self.channelbugcolor).replace('0x','')
+                            # if genre not in [COLOR_GRAY_TYPE + COLOR_ltGRAY_TYPE]:
+                                # SepColor = self.getGenreColor(genre).replace('#','')+'00'
+                                
                             # prepare artwork
                             type, id, dbepid, managed, playcount, rating, hd, cc, stars, year = self.channelList.unpackLiveID(LiveID)
                             year, title, showtitle = getTitleYear(label, year)
@@ -3581,7 +3585,36 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         if self.newChannel != 0:
             self.setChannel(self.fixChannel(self.newChannel))
         return
+
         
+    def getGenreColor(self, genre):
+        if genre in COLOR_RED_TYPE:
+            return COLOR_RED
+        elif genre in COLOR_GREEN_TYPE:
+            return COLOR_GREEN
+        elif genre in COLOR_mdGREEN_TYPE:
+            return COLOR_mdGREEN
+        elif genre in COLOR_BLUE_TYPE:
+            return COLOR_BLUE
+        elif genre in COLOR_ltBLUE_TYPE:
+            return COLOR_ltBLUE
+        elif genre in COLOR_CYAN_TYPE:
+            return COLOR_CYAN
+        elif genre in COLOR_ltCYAN_TYPE:
+            return COLOR_ltCYAN
+        elif genre in COLOR_PURPLE_TYPE:
+            return COLOR_PURPLE
+        elif genre in COLOR_ltPURPLE_TYPE:
+            return COLOR_ltPURPLE
+        elif genre in COLOR_ORANGE_TYPE:
+            return COLOR_ORANGE
+        elif genre in COLOR_YELLOW_TYPE:
+            return COLOR_YELLOW
+        elif genre in COLOR_GRAY_TYPE:
+            return COLOR_GRAY
+        else:#Unknown 
+            return COLOR_ltGRAY
+
             
     def showWeather(self):
         self.log("showWeather")

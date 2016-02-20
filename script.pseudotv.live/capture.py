@@ -136,7 +136,9 @@ class Main:
                         if self.DBIDType == 'tvshow':
                             self.chantype = 6
                         elif self.DBIDType == '':
-                            self.chantype = 7                        
+                            self.chantype = 7    
+                    else:
+                        infoDialog("Not a valid source")                    
                     self.buildChannel()
                 else:
                     infoDialog("Channel "+str(self.channel)+" already in use")
