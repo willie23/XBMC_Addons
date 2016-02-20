@@ -3817,7 +3817,7 @@ class ChannelList:
         for folder in folders:
             if FileAccess.exists(xbmc.translatePath(folder)):
                 # get all files and subfolders
-                dirs,files = xbmcvfs.listdir(os.path.join(folder,''))
+                dirs,files = xbmcvfs.listdir(os.path.join(xbmc.translatePath(folder),''))
                 # natural sort
                 convert = lambda text: int(text) if text.isdigit() else text
                 alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
@@ -4669,15 +4669,14 @@ class ChannelList:
                     
     def durationInSeconds(self, dur):
         self.log("durationInSeconds")
-        if len(str(dur)) < 3 or len(str(dur)) > 4:
-            if len(str(dur)) in [1,2]:
-                return dur * 60
-            elif len(str(dur)) == 3:
-                ndur = dur * 60
-                if ndur > MAXFILE_DURATION:
-                    return dur
-                else:
-                    return ndur
+        if len(str(dur)) in [1,2]:
+            return dur * 60
+        elif len(str(dur)) == 3:
+            ndur = dur * 60
+            if ndur > MAXFILE_DURATION:
+                return dur
+            else:
+                return ndur
         return dur
            
 
@@ -5105,7 +5104,8 @@ class ChannelList:
 
                                         # convert minutes to seconds when needed
                                         if dur_accurate == False and file.startswith(("plugin", "upnp")):
-                                            dur = self.durationInSeconds(dur)
+                                            if (len(str(dur)) < 3 or len(str(dur)) > 5):
+                                                dur = self.durationInSeconds(dur)
                                         
                                         # accurate real-time scheduling does not apply to chtypes <= 7, only chtype = 8. Doesn't hurt to keep track of it anyway, future feature?
                                         timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(self.startDate))
