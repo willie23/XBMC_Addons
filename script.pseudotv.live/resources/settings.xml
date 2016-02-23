@@ -243,8 +243,8 @@
 <!--Debugging-->
     <category label="30900"> 
         <setting label="30308" type="lsep"/>
-        <setting id="ActionTimeInt" type="slider"   label="30309" range="2,2,10" option="int" default="2"/>
-        <setting id="PlayTimeoutInt" type="slider"   label="30319" range="2,2,120" option="int" default="60"/>
+        <setting id="ActionTimeInt" type="slider"   label="30309" range="2,2,60" option="int" default="8"/>
+        <setting id="PlayTimeoutInt" type="slider"   label="30319" range="2,2,120" option="int" default="90"/>
         <setting id="channelDelay" type="enum"   label="30302" default="0" values="None|0.25|0.5|0.75|1.0|1.25|1.5|1.75|2.0"/>
         <setting label="30914" type="lsep"/>
         <setting id="Include3D" type="bool"   label="39958" default="true"/>

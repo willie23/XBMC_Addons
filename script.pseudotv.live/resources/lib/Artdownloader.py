@@ -184,7 +184,7 @@ class Artdownloader:
                 return self.DownloadMissingArt(type, title, year, id, arttype, cachefile, chname, mpath, arttypeEXT)
             else:
                 if id == '0':
-                    if dbid != '0' and (type == 'youtube' or mpath.startswith(self.chanlist.youtube_player_ok())):
+                    if dbid != '0' and (type == 'youtube' or mpath.startswith(self.chanlist.youtube_player)):
                         self.log('FindArtwork, YOUTUBE')
                         return "http://i.ytimg.com/vi/"+dbid+"/mqdefault.jpg"
                     elif type == 'rss' and dbid != '0':

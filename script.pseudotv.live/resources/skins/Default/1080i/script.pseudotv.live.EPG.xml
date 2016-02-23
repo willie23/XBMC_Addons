@@ -791,8 +791,8 @@
             <height>180</height>
             <align>center</align>
             <aspectratio>keep</aspectratio>
-            <texture fallback="">$INFO[Window(10000).Property(EPG.landscape)]</texture>
             <animation effect="fade" start="95" end="95" condition="True">Conditional</animation>
+            <texture fallback="">$INFO[Window(10000).Property(EPG.landscape)]</texture>
         </control>        
         <control type="image">
             <description>Dynamic art2</description>

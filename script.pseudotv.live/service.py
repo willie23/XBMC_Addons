@@ -91,17 +91,6 @@ def chkChanges():
     if CURR_TRAILERS != LAST_TRAILERS:
         REAL_SETTINGS.setSetting('ForceChannelReset', "true")
         REAL_SETTINGS.setSetting('Last_trailers', CURR_TRAILERS)
-    
-    CURR_ENHANCED_DATA = REAL_SETTINGS.getSetting('EnhancedGuideData')
-    try:
-        LAST_ENHANCED_DATA = REAL_SETTINGS.getSetting('Last_EnhancedGuideData')
-    except:
-        REAL_SETTINGS.setSetting('Last_EnhancedGuideData', CURR_ENHANCED_DATA)
-    LAST_ENHANCED_DATA = REAL_SETTINGS.getSetting('Last_EnhancedGuideData')
-    
-    if CURR_ENHANCED_DATA != LAST_ENHANCED_DATA:
-        REAL_SETTINGS.setSetting('ForceChannelReset', "true")
-        REAL_SETTINGS.setSetting('Last_EnhancedGuideData', CURR_ENHANCED_DATA)
         
     CURR_MEDIA_LIMIT = REAL_SETTINGS.getSetting('MEDIA_LIMIT')
     try:
@@ -114,7 +103,7 @@ def chkChanges():
         REAL_SETTINGS.setSetting('ForceChannelReset', "true")
         REAL_SETTINGS.setSetting('Last_MEDIA_LIMIT', CURR_MEDIA_LIMIT)
            
-#Service
+#Service Start ##################################################################
 if xbmc.getCondVisibility('Window.IsActive(addonsettings)') != True:
     if xbmc.getCondVisibility('Window.IsActive(addonsettings)') == False:
         chkChanges()

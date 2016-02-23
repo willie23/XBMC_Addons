@@ -47,7 +47,6 @@ class ustvnow:
         self.ActionTimeInt = int(REAL_SETTINGS.getSetting("ActionTimeInt"))
         self.PlayTimeoutInt = int(REAL_SETTINGS.getSetting("PlayTimeoutInt"))
         self.token = USTV_Token
-        self.monitor = xbmc.Monitor()
         
     def log(self, msg, level = xbmc.LOGDEBUG):
         log('USTVnow: ' + msg, level)
@@ -57,7 +56,7 @@ class ustvnow:
         self.log('getToken')
         cnt = 0
         self.userChk = self._get_json('gtv/1/live/getcustomerkey', {'token': self.token})['username']
-        while self.userChk != self.user and not self.monitor.abortRequested():
+        while self.userChk != self.user:
             self.log('getToken, Working...')
             cnt += 1
             if cnt > int(round((self.PlayTimeoutInt/int(self.ActionTimeInt))))/2:

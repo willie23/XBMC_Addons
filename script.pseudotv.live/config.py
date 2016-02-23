@@ -160,25 +160,25 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         setting3 = "Channel_" + chan + "_3"
         setting4 = "Channel_" + chan + "_4"
         
-        if chantype == 0:
+        if chantype == 0:#Custom XSP
             ADDON_SETTINGS.setSetting(setting1, self.getControl(330).getLabel2())
-        elif chantype == 1:
+        elif chantype == 1:#TV Network
             ADDON_SETTINGS.setSetting(setting1, self.getControl(142).getLabel())
-        elif chantype == 2:
+        elif chantype == 2:#TV Genre
             ADDON_SETTINGS.setSetting(setting1, self.getControl(152).getLabel())
-        elif chantype == 3:
+        elif chantype == 3:#Movie Genre
             ADDON_SETTINGS.setSetting(setting1, self.getControl(162).getLabel())
-        elif chantype == 4:
+        elif chantype == 4:#Movie Studio
             ADDON_SETTINGS.setSetting(setting1, self.getControl(172).getLabel())
-        elif chantype == 5:
+        elif chantype == 5:#Mixed Genre
             ADDON_SETTINGS.setSetting(setting1, self.getControl(182).getLabel())
-        elif chantype == 6:
+        elif chantype == 6:#TV Show
             ADDON_SETTINGS.setSetting(setting1, self.getControl(190).getLabel())
             if self.getControl(194).isSelected():
                 ADDON_SETTINGS.setSetting(setting2, str(MODE_ORDERAIRDATE))
             else:
                 ADDON_SETTINGS.setSetting(setting2, "0")
-        elif chantype == 7:
+        elif chantype == 7:#Directory
             ADDON_SETTINGS.setSetting(setting1, self.getControl(200).getLabel())
             ADDON_SETTINGS.setSetting(setting3, self.getControl(201).getLabel())
             ADDON_SETTINGS.setSetting(setting4, (self.getControl(202).getLabel()).replace('Default','0').replace('Random','1').replace('Reverse','2'))
@@ -225,7 +225,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             ADDON_SETTINGS.setSetting(setting2, self.getControl(293).getLabel())
             ADDON_SETTINGS.setSetting(setting3, self.getControl(294).getLabel())
             ADDON_SETTINGS.setSetting(setting4, self.getControl(295).getLabel().replace('Default','0').replace('Random','1').replace('Reverse','2'))
-        elif chantype == 9999:
+        elif chantype == 9999:#NULL
             ADDON_SETTINGS.setSetting(setting1, '')
             ADDON_SETTINGS.setSetting(setting2, '')
             ADDON_SETTINGS.setSetting(setting3, '')
@@ -369,9 +369,9 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         elif controlId == 181:      # Mixed Genre channel, right
             self.changeListData(self.mixedGenreList, 182, 1)
         elif controlId == 190:      # TV Show channel, left
-            select = selectDialog(self.showList, 'Select TV Show')
+            select = mselectDialog(self.showList, 'Select TV Show')
             if select != -1:
-                self.getControl(190).setLabel(self.showList[select])
+                self.getControl(190).setLabel('|'.join(matchMselect(self.showList,select)))
         
         #Directory
         elif controlId == 200:      # Directory channel, select
@@ -1707,7 +1707,6 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         except Exception,e:
             self.log("listSubmisson, Failed! " + str(e))  
             ErrorNotify("Submission Failed!") 
-            pass   
 
             
     def writeChanges(self):

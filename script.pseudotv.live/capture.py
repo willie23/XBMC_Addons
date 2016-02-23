@@ -147,10 +147,11 @@ class Main:
         self.log("chantype = "+str(self.chantype))
             
             
+    # export bulk channels, add subfolders as channels.
     def buildNetworks(self, url):
         self.log("buildNetworks, url = " + url)
         detail = uni(self.chnlst.requestList(url))
-        if dlg.yesno("PseudoTV Live", 'Add %d Network Channels?' % len(detail)):
+        if dlg.yesno("PseudoTV Live", 'Add %d Channels?' % len(detail)):
             show_busy_dialog()
             for f in detail:
                 files = re.search('"file" *: *"(.*?)",', f)
@@ -165,15 +166,16 @@ class Main:
                         self.chantype = 15
                         self.setting1 = file
                         self.setting2 = ''
-                        self.setting3 = str(MEDIA_LIMIT)
-                        self.setting4 = '0'
+                        self.setting3 = ''
+                        self.setting4 = '1'
                         self.channame = name
                         self.saveSettings()
                         self.fixChannel(self.channel)
             hide_busy_dialog()
             self.openManager()
             
-            
+    
+    # find next available channel when exporting bulk channels.
     def fixChannel(self, channel):
         while self.getChtype(self.channel+1) != 9999:
             self.channel +=1
@@ -194,7 +196,7 @@ class Main:
             
         elif self.chantype == 7:
             self.setting1 = xbmc.translatePath(self.Path)
-            self.setting3 = str(MEDIA_LIMIT)
+            self.setting3 = ''
             self.setting4 = '0'
             self.channame = self.Label
             
@@ -228,7 +230,7 @@ class Main:
                 self.setting1 = ((self.Path).replace('plugin://plugin.video.','').replace('youtube/playlist/','').replace('spotitube/?limit&mode=listyoutubeplaylist&type=browse&url=','')).replace('/','')
 
             self.setting2 = str(self.YTtype)
-            self.setting3 = str(MEDIA_LIMIT)
+            self.setting3 = ''
             self.setting4 = '0'
             self.channame = self.Label
             
@@ -243,14 +245,14 @@ class Main:
         elif self.chantype == 15:
             self.setting1 = self.Path
             self.setting2 = ''
-            self.setting3 = str(MEDIA_LIMIT)
+            self.setting3 = ''
             self.setting4 = '0'
             self.channame = self.Label +' - '+ self.AddonName
             
         elif self.chantype == 16:
             self.setting1 = self.Path
             self.setting2 = ''
-            self.setting3 = str(MEDIA_LIMIT)
+            self.setting3 = ''
             self.setting4 = '0'
             self.channame = self.Label
             
