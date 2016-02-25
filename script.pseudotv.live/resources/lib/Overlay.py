@@ -2714,8 +2714,6 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         self.fillArtwork(type, title, year, chtype, chname, id, dbid, mpath, pType)
         # todo rss ticker that matches genre
         # if pType == 'OVERLAY':  
-
-
             # getRSSFeed(getProperty("OVERLAY.Genre")) 
            
         
@@ -2811,14 +2809,18 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
 
       
     def isNew(self, pType='OVERLAY'):
-        self.log('isNew') 
-        if isLowPower() == False:
-            self.isNewTimer = threading.Timer(0.5, self.isNew_Thread, [pType])
-            self.isNewTimer.name = "isNewTimer"       
-            if self.isNewTimer.isAlive():
-                self.isNewTimer.cancel()
-            self.isNewTimer.start()
-
+        self.log('isNew')
+        try:
+            if isLowPower() == False:
+                self.isNewTimer = threading.Timer(0.5, self.isNew_Thread, [pType])
+                self.isNewTimer.name = "isNewTimer"       
+                if self.isNewTimer.isAlive():
+                    self.isNewTimer.cancel()
+                    self.isNewTimer.join()
+                self.isNewTimer.start()
+        except:
+            pass
+     
      
     def isManaged_Thread(self, pType):
         self.log("isManaged_Thread")
@@ -2850,6 +2852,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             # self.isManagedTimer.name = "isManagedTimer"       
             # if self.isManagedTimer.isAlive():
                 # self.isManagedTimer.cancel()
+                # self.isManagedTimer.join()
             # self.isManagedTimer.start()
             
             

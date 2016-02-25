@@ -252,6 +252,8 @@ cache_daily = FSCache(REQUESTS_LOC, days=1, hours=0, minutes=0)
 cache_weekly = FSCache(REQUESTS_LOC, days=7, hours=0, minutes=0)
 cache_monthly = FSCache(REQUESTS_LOC, days=28, hours=0, minutes=0)
 
+MUSIC_TYPES = ['.mp3','.flac','.mp4']
+MEDIA_TYPES = ['.avi', '.mp4', '.m4v', '.3gp', '.3g2', '.f4v', '.mov', '.mkv', '.flv', '.ts', '.m2ts', '.mts', '.strm']
 try:
     MEDIA_LIMIT = LIMIT_VALUES[int(REAL_SETTINGS.getSetting('MEDIA_LIMIT'))]
 except:

@@ -611,27 +611,33 @@ class ChannelList:
         bctType = None
         fileList = []
         
-        #Set Local Limit or Global
-        if chtype in [7,10,11,15,16]:
-            setting3 = setting3.replace('Unlimited','0')
+        # Correct Youtube/Media Limit/Sort Values from outdated configurations
+        if chtype in [7,10,11,13,15,16]:
+            if chtype == 10:
+                setting2 = setting2.replace('7','Multi Playlist').replace('8','Multi Channel').replace('3','User Subscription')
+                setting2 = setting2.replace('4','User Favorites').replace('5','Search Query').replace('9','Raw gdata')
+                setting2 = setting2.replace('31','Seasonal').replace('1','Channel').replace('2','Playlist')   
+            setting3 = setting3.replace('Unlimited','0').replace('Global','')
             setting4 = setting4.replace('Default','0').replace('Random','1').replace('Reverse','2') 
+        
             try:
                 limit = int(setting3)
+                # Enforce Media limits for LowPower profiles
                 if isLowPower() == True:
                     raise Exception()
             except Exception,e:
                 limit = MEDIA_LIMIT
             self.log("makeChannelList, Overriding Global Parse-limit to " + str(limit))
+
+        elif chtype == 8:
+            limit = 259200 #72hrs (seconds)
+        elif chtype == 9:
+            limit = int(86400 / int(setting1))
+        elif MEDIA_LIMIT == 0:
+            limit = 10000
         else:
-            if chtype == 8:
-                limit = 259200 #72hrs (seconds)
-            elif chtype == 9:
-                limit = int(86400 / int(setting1))
-            elif MEDIA_LIMIT == 0:
-                limit = 10000
-            else:
-                limit = MEDIA_LIMIT
-            self.log("makeChannelList, Using Global Parse-limit " + str(limit))
+            limit = MEDIA_LIMIT
+        self.log("makeChannelList, Using Global Parse-limit " + str(limit))
 
         # Directory
         if chtype == 7:
@@ -2424,7 +2430,6 @@ class ChannelList:
         YTMSG = setting1
         if self.youtube_player != 'False':
             limit = int(limit)
-            # if setting2 == '1' or setting2 == '3' or setting2 == '4':
             if setting2 == '1':
                 YTMSG = 'Channel ' + setting1
                 showList = self.getYoutubeVideos(1, setting1, '', limit, YTMSG)
@@ -3785,7 +3790,6 @@ class ChannelList:
     # Adapted from Ronie's screensaver.picture.slideshow * https://github.com/XBMC-Addons/screensaver.picture.slideshow/blob/master/resources/lib/utils.py    
     def walk(self, path):     
         self.log("walk " + path)
-        VIDEO_TYPES = ('.avi', '.mp4', '.m4v', '.3gp', '.3g2', '.f4v', '.mov', '.mkv', '.flv', '.ts', '.m2ts', '.mts', '.strm')
         video = []
         folders = []
         # multipath support
@@ -3806,7 +3810,7 @@ class ChannelList:
                 files.sort(key=alphanum_key)
                 for item in files:
                     # filter out all video
-                    if os.path.splitext(item)[1].lower() in VIDEO_TYPES:
+                    if os.path.splitext(item)[1].lower() in MEDIA_TYPES:
                         video.append([os.path.join(folder,item), ''])
                 for item in dirs:
                     # recursively scan all subfolders
@@ -4642,7 +4646,17 @@ class ChannelList:
             self.getFileListCache(chtype, channel, True)
             return True
             
-                    
+            
+    def durationAdjust(self, dur):
+        self.log("durationAdjust")
+        if dur == 1800:
+            return 1800 - 480 #22min runtime
+        elif dur == 3600:
+            return 3600 - 1080 #42min runtime
+        else:
+            return dur
+        
+        
     def durationInSeconds(self, dur):
         self.log("durationInSeconds")
         if len(str(dur)) in [1,2]:
@@ -4897,8 +4911,8 @@ class ChannelList:
                                             if dur == 0:
                                                 dur = ladur
                                    
-                                    if  dur == 0 and file.startswith(("plugin", "upnp")):
-                                        dur = 9999    
+                                    # if  dur == 0 and file.startswith(("plugin", "upnp")):
+                                        # dur = 9999    
                                              
                                     # Remove any file types that we don't want (ex. IceLibrary, ie. Strms)
                                     if self.incIceLibrary == False:
@@ -5099,8 +5113,12 @@ class ChannelList:
                                             pass
 
                                         meta = False
-                                        if dur >= 900:
+                                        # disable enhanced metadata for "shortclips"
+                                        if dur >= BYPASS_EPG_SECONDS:
                                             meta = True
+                                            
+                                        if type == 'tvshow' and dur_accurate == False:
+                                            dur = self.durationAdjust(dur)
                                             
                                         managed =  False # todo check sickbeard/sonar/couchpotato
                                         cc = False # todo check subs or teltext?

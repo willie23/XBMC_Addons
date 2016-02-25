@@ -1,5 +1,6 @@
+[*] In-app channel manager now defaults to "Global" Media limit and "Default" Sort order for select channel types.
 [*] Tweaked Global Media Limits, Export channel limits and random rules.
-[*] Updated Kodi playlist generating & Improved channel content aggregation. 
+[*] Updated smart-playlist generating & Improved channel content aggregation. 
 [*] Added multi-selection dialog to tvshow selection.
 [*] Fixed playlist clear/load timings to correct resume points not being set.
 [*] Added bulk channel exporting thru the export tool. Plugin folder labeled 'Networks' or 'Channels' will export all subfolders as channels.

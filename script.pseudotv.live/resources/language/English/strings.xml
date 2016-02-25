@@ -25,17 +25,18 @@
     <string id="30303">Startup Channel</string> 
     <string id="30304">Enter Preferred Channel</string>
     <string id="30311">Disable Watch Flagging</string>
-	<string id="30405">Find Missing GuideData</string>
+	<string id="30405">Find Missing GuideData [Art & Meta]</string>
     <string id="30408">Jump to Channel on Reminder</string>
     <string id="30215">Hide very short videos</string>
     <string id="30216">Duration of "short" videos (seconds)</string>  
     <string id="30310">Media Limit [Global]</string>
     <string id="30373">Mute between channel change</string>
-    <string id="30379">Enable Direct Channel Input</string>
+    <string id="30379">Enable Direct Channel Input [Disable 'OK']</string>
     <string id="30050">Enable global menu [Experimental]</string>
     <string id="30158">Menu style</string>
     <string id="30159">Enable Automatic Channel Backup</string>
     <string id="31311">Start Over Option after % Played</string>
+    <string id="30935">Disable Seeking for specified Plugins</string>
     <string id="31315">Smart Seek plugins/strms Over % Seeked</string>
     <string id="30447">Seek step backward [I](Isengard)[/I]</string>
     <string id="30446">Seek step forward [I](Isengard)[/I]</string>
@@ -249,5 +250,4 @@
     <string id="30199">rtmpdump path</string>
     <string id="30939">Miscellaneous</string>
     <string id="30934">Enable accurate duration</string>
-    <string id="30935">Enable Seeking for specified Plugins</string>
 </strings>

@@ -1457,7 +1457,7 @@ def isPTVLOutdated():
         
 def preStart(): 
     log('utils: preStart')
-    chkAPIS(RSS_API_KEY)
+    # chkAPIS(RSS_API_KEY)
     
     # Optimize settings based on sys.platform
     chkLowPower()
