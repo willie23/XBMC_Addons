@@ -1,3 +1,6 @@
+[*] Added bulk 'channels' export for Kodi PVR.
+[*] Removed Community List submission tool, and relocated Community List to the PseudoCompanion tool for Kodi repo compliance.
+[*] [COLOR=blue][B]^ v.0.7.4 ^[/B][/COLOR]
 [*] In-app channel manager now defaults to "Global" Media limit and "Default" Sort order for select channel types.
 [*] Tweaked Global Media Limits, Export channel limits and random rules.
 [*] Updated smart-playlist generating & Improved channel content aggregation. 

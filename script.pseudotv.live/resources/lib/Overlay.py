@@ -885,16 +885,13 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
 
     def getPlaylistPOS(self, chtype, channel, offdif=0):
         self.log('getPlaylistPOS')   
-        
-        infoOffset = self.infoOffset
-        if infoOffset == 0 and offdif > 0:
-            infoOffset += offdif
-
 
         if self.OnDemand == True:
             position = -999
+            
+        # correct position to hideShortItems
         elif chtype <= 7 and self.hideShortItems and self.infoOffset != 0:
-            position = xbmc.PlayList(xbmc.PLAYLIST_MUSIC).getposition() + offdif
+            position = xbmc.PlayList(xbmc.PLAYLIST_MUSIC).getposition() + self.infoOffset + offdif
             curoffset = 0
             modifier = 1
             if self.infoOffset < 0:
@@ -904,23 +901,21 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                 position = self.channels[channel - 1].fixPlaylistIndex(position + modifier)
                 if self.channels[channel - 1].getItemDuration(position) >= self.shortItemLength:
                     curoffset += 1
+                    
+        elif chtype == 8 and len(self.channels[channel - 1].getItemtimestamp(0)) > 0:
+            self.channels[channel - 1].setShowPosition(0)
+            tmpDate = self.channels[channel - 1].getItemtimestamp(0) 
+            epochBeginDate = datetime_to_epoch(tmpDate)
+            position = self.channels[channel - 1].playlistPosition
+            #beginDate = datetime.datetime(t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec)
+            #loop till we get to the current show this is done to display the correct show on the info listing for Live TV types
+            
+            while epochBeginDate + self.channels[channel - 1].getCurrentDuration() <  time.time():
+                epochBeginDate += self.channels[channel - 1].getCurrentDuration()
+                self.channels[channel - 1].addShowPosition(1)
+            position = self.channels[channel - 1].playlistPosition + self.infoOffset + offdif
         else:
-            if chtype == 8 and len(self.channels[channel - 1].getItemtimestamp(0)) > 0:
-                self.channels[channel - 1].setShowPosition(0)
-                tmpDate = self.channels[channel - 1].getItemtimestamp(0) 
-                epochBeginDate = datetime_to_epoch(tmpDate)
-                position = self.channels[channel - 1].playlistPosition
-                #beginDate = datetime.datetime(t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec)
-                #loop till we get to the current show this is done to display the correct show on the info listing for Live TV types
-                
-                while epochBeginDate + self.channels[channel - 1].getCurrentDuration() <  time.time():
-                    epochBeginDate += self.channels[channel - 1].getCurrentDuration()
-                    self.channels[channel - 1].addShowPosition(1)
-                position = self.channels[channel - 1].playlistPosition
-                position += self.infoOffset + offdif
-            else: #original code   
-                position = self.channels[channel - 1].playlistPosition + self.infoOffset + offdif
-                #position = xbmc.PlayList(xbmc.PLAYLIST_MUSIC).getposition() + self.infoOffset + offdif
+            position = xbmc.PlayList(xbmc.PLAYLIST_MUSIC).getposition() + self.infoOffset + offdif
         self.log('getPlaylistPOS, position = ' + str(position)) 
         return position
         

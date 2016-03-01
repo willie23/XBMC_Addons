@@ -36,28 +36,8 @@ def autostart():
     xbmc.sleep(AUTOSTART_TIMER[int(REAL_SETTINGS.getSetting('timer_amount'))] * 1000)
     xbmc.executebuiltin('RunScript("' + ADDON_PATH + '/default.py' + '")')
 
-def ComCHK():
-    xbmc.log('script.pseudotv.live-Service: ComCHK')    
-    # Community users are required to supply their gmail info in-order to use the community submission tool, SEE DISCLAIMER!! 
-    # Community List is free, not a membership. Users do not have to signup for anything, they supply their own email information only required to participate in the exchange of channel configurations.
-    # Submission tool uses emails to submit channel configurations, which are then added to a public (github) list: https://github.com/PseudoTV/PseudoTV_Lists, https://github.com/PseudoTV/PseudoTV_Playlists
-    # Community lists includes: Youtube, Vimeo, RSS, Kodi Smartplaylists. Submissions take 24-48hrs to reflect on git list.
-    # Lists can not contain illegal pirated links since they consist of Youtube/Vimeo and RSS xml links.
-    if REAL_SETTINGS.getSetting("Community_Enabled") == "true" and REAL_SETTINGS.getSetting("Gmail_User") != "email@gmail.com":
-        if REAL_SETTINGS.getSetting("Community_Verified") != "1": 
-            REAL_SETTINGS.setSetting("Community_Verified", "1")
-            REAL_SETTINGS.setSetting("AT_Community","true")
-            xbmc.executebuiltin("Notification(%s, %s, %d, %s)" % (ADDON_NAME, "Community List Activated", 1000, THUMB))
-        xbmcgui.Window(10000).setProperty("Verified_Community", 'true')
-    else:
-        if REAL_SETTINGS.getSetting("Community_Verified") != "0": 
-            REAL_SETTINGS.setSetting("Community_Verified", "0")
-            REAL_SETTINGS.setSetting("AT_Community","false")
-        xbmcgui.Window(10000).setProperty("Verified_Community", 'false')
-   
 def chkChanges():
     xbmc.log('script.pseudotv.live-Service: chkChanges')
-    ComCHK()
     
     CURR_BUMPER = REAL_SETTINGS.getSetting('bumpers')
     try:

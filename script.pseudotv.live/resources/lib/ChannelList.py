@@ -358,22 +358,21 @@ class ChannelList:
                 if self.channels[channel - 1].setPlaylist(CHANNELS_LOC + 'channel_' + str(channel) + '.m3u') == True:
                     self.channels[channel - 1].isValid = True
                     self.channels[channel - 1].fileName = CHANNELS_LOC + 'channel_' + str(channel) + '.m3u'
+                    timedif = time.time() - self.lastResetTime
                     returnval = True
 
                     if self.channelResetSetting == 0:
                         # Reset livetv after 24hrs
-                        if chtype == 8 and self.channels[channel - 1].totalTimePlayed < (60 * 60 * 24):
+                        if chtype == 8 and timedif < (60 * 60 * 24):
                             createlist = False
+                        elif chtype == 8 and self.channels[channel - 1].totalTimePlayed < (60 * 60 * 24):
+                            createlist = False
+                            
                         # If this channel has been watched for longer than it lasts, reset the channel
                         if self.channels[channel - 1].totalTimePlayed < self.channels[channel - 1].getTotalDuration():
                             createlist = False
-                        # elif chtype <= 7 and self.channels[channel - 1].totalTimePlayed < self.channels[channel - 1].getTotalDuration():
-                            # createlist = False
-                        # elif chtype >= 10 and time.time() - self.lastResetTime < (60 * 60 * 24):
-                            # createlist = False
 
                     if self.channelResetSetting > 0 and self.channelResetSetting < 4:
-                        timedif = time.time() - self.lastResetTime
                     
                         if self.channelResetSetting == 1 and timedif < (60 * 60 * 24):
                             createlist = False
@@ -4300,6 +4299,7 @@ class ChannelList:
                             TMPfavouritesList.append(name+'@#@'+path) 
             SortedFavouritesList = sorted_nicely(TMPfavouritesList)
             for i in range(len(SortedFavouritesList)):  
+                # append as string element for quick sorting; todo dict, sort using keys.
                 FavouritesNameList.append((SortedFavouritesList[i]).split('@#@')[0])  
                 FavouritesPathList.append((SortedFavouritesList[i]).split('@#@')[1])          
         except Exception,e:
@@ -4312,150 +4312,17 @@ class ChannelList:
         
         
     def fillExternalList(self, type, source='', list='Community', Random=False):
-        self.log('fillExternalList, type = ' + type + ', source = ' + source)
-        show_busy_dialog()
-        TMPExternalList = []
-        ExternalNameList = []
-        SortedExternalList = []
-        ExternalSetting1List = []
-        ExternalSetting2List = []
-        ExternalSetting3List = []
-        ExternalSetting4List = []
-        RSSURL = 'http://raw.github.com/PseudoTV/PseudoTV_Lists/master/rss.ini'
-        YoutubeChannelURL = 'http://raw.github.com/PseudoTV/PseudoTV_Lists/master/youtube_channels.ini'
-        YoutubePlaylistURL = 'http://raw.github.com/PseudoTV/PseudoTV_Lists/master/youtube_playlists.ini'
-        YoutubeChannelNetworkURL = 'http://raw.github.com/PseudoTV/PseudoTV_Lists/master/youtube_channels_networks.ini'
-        YoutubePlaylistNetworkURL = 'http://raw.github.com/PseudoTV/PseudoTV_Lists/master/youtube_playlists_networks.ini'
-        
-        if type == 'YouTube':
-            if source == 'Channel':
-                url = YoutubeChannelURL
-                id = '1'
-            elif source == 'Playlist':
-                url = YoutubePlaylistURL
-                id = '2'
-            elif source == 'Multi Playlist':
-                url = YoutubePlaylistNetworkURL
-                id = '7'
-            elif source == 'Multi Channel': 
-                url = YoutubeChannelNetworkURL
-                id = '8'
-        elif type == 'RSS':
-            url = RSSURL
-            id = '1'
-        try:
-            # responce = open_url(url).readlines()
-            responce = read_url_cached(url, return_type='readlines')
-            data = removeStringElem(responce)#remove empty lines
-            for i in range(len(data)):
-                Pluginvalid = False
-                line = data[i].replace("\n","").replace('""',"")
+        self.log('fillExternalList')
+        if isCompanionInstalled == True:
+            try:
+                fillLST = eval(getProperty("PTVL.%s.%s.fillLst" %(list, source)))
+                if Random == True:
+                    shuffle(fillLST)
+            except:
+                fillLST = []
+            return fillLST
 
-                if type == 'RSS' or source == 'Channel' or source == 'Playlist':
-                    line = line.split(",")
-                else:
-                    line = line.split("|")
-
-                if len(line) == 7:
-                    if not str(line).startswith(';'):
-                        genre = (line[0])
-                        chtype = (line[1])
-                        setting_1 = (line[2])
-                        setting_2 = (line[3])
-                        setting_3 = (line[4])
-                        setting_4 = (line[5])
-                        channel_name = self.cleanLabels(line[6])
-                        
-                        if genre.lower() == 'tv':
-                            genre = '[COLOR=yellow]'+genre+'[/COLOR]'
-                        elif genre.lower() == 'movies':
-                            genre = '[COLOR=cyan]'+genre+'[/COLOR]'
-                        elif genre.lower() == 'episodes':
-                            genre = '[COLOR=yellow]'+genre+'[/COLOR]'
-                        elif genre.lower() == 'sports':
-                            genre = '[COLOR=red]'+genre+'[/COLOR]'
-                        elif genre.lower() == 'news':
-                            genre = '[COLOR=green]'+genre+'[/COLOR]'
-                        elif genre.lower() == 'kids':
-                            genre = '[COLOR=orange]'+genre+'[/COLOR]'
-                        elif genre.lower() == 'music':
-                            genre = '[COLOR=purple]'+genre+'[/COLOR]'
-                        elif genre.lower() == 'other':
-                            genre = '[COLOR=grey]'+genre+'[/COLOR]'
-                        genre = genre.upper()
-                        
-                        if chtype == '15':
-                            Pluginvalid = self.plugin_ok(setting_1)
-                            channel_name = (((setting_1.split('//')[1]).split('/')[0]).replace('plugin.video.','').replace('plugin.audio.','')).upper() + ': ' + genre + ' | ' + channel_name
-                        
-                        elif chtype == '9':
-                            Pluginvalid = self.Valid_ok(setting_2)
-                            channel_name = channel_name + ' - ' + genre
-                        
-                        elif chtype == '8':
-                            Pluginvalid = self.Valid_ok(setting_2)                  
-                            if setting_2[0:9].lower() != 'plugin://':
-                                setting_2 = 'plugin://' + setting_2                     
-                            if setting_2.startswith('plugin://'):    
-                                channel_name = (((setting_2.split('//')[1]).split('/')[0]).replace('plugin.video.','').replace('plugin.audio.','')).upper() + ' - ' + channel_name
-                            else:
-                                channel_name =  'Internet - ' + channel_name
-                            
-                        elif chtype == '10':
-                            if len(setting_2) == 0:
-                                setting_2 = id
-                            Pluginvalid = self.youtube_ok(setting_2, setting_1)
-                            channel_name = channel_name + ' - ' + genre
-
-                        if Pluginvalid != False:
-                            TMPExternalList.append(channel_name+'@#@'+setting_1+'@#@'+setting_2+'@#@'+setting_3+'@#@'+setting_4)
-
-                elif len(line) == 2:
-                    if not str(line).startswith(';'):
-                        setting_1 = line[0]
-                        channel_name = line[1]
-                        if setting_1.startswith('http'):
-                            Pluginvalid = self.Valid_ok(setting_1)
-                            if Pluginvalid != False:
-                                TMPExternalList.append(channel_name+'@#@'+setting_1+'@#@'+id+'@#@'+'25'+'@#@'+'Default')
-                        else:
-                            if self.youtube_player != 'False':
-                                TMPExternalList.append(channel_name+'@#@'+setting_1+'@#@'+id+'@#@'+'25'+'@#@'+'Default')
-                
-                elif len(line) == 3:
-                    if not str(line).startswith(';'):
-                        type = line[0]
-                        url = line[1]
-                        channel_name = line[2]
-                        if type.lower() == source.lower():
-                            if url.startswith('http'):
-                                Pluginvalid = self.Valid_ok(url)
-                                if Pluginvalid != False:
-                                    # append as string element for easier sorting; todo dict, sort using keys.
-                                    TMPExternalList.append(channel_name+'@#@'+url+'@#@'+''+'@#@'+''+'@#@'+'')
-                                    
-            if Random == True:
-                SortedExternalList = TMPExternalList
-                random.shuffle(SortedExternalList)
-            else:
-                SortedExternalList = sorted_nicely(TMPExternalList)
-                
-            for n in range(len(SortedExternalList)):
-                if SortedExternalList[n] != None:
-                    ExternalNameList.append((SortedExternalList[n]).split('@#@')[0])   
-                    ExternalSetting1List.append((SortedExternalList[n]).split('@#@')[1])
-                    ExternalSetting2List.append((SortedExternalList[n]).split('@#@')[2])
-                    ExternalSetting3List.append((SortedExternalList[n]).split('@#@')[3])
-                    ExternalSetting4List.append((SortedExternalList[n]).split('@#@')[4])
-        except Exception,e:
-            self.log("fillExternalList, Failed! " + str(e))
-
-        if len(TMPExternalList) == 0:
-            ExternalNameList = ['This list is empty or unavailable, Please try again later.']
-        hide_busy_dialog() 
-        return ExternalNameList, ExternalSetting1List, ExternalSetting2List, ExternalSetting3List, ExternalSetting4List
-              
-        
+            
     def getHDHRChannels(self, favorite=False):
         self.log("getHDHRChannels")
         DupChk = []
@@ -4649,8 +4516,8 @@ class ChannelList:
             
     def durationAdjust(self, dur):
         self.log("durationAdjust")
-        if dur == 1800:
-            return 1800 - 480 #22min runtime
+        if dur in [1500,1800]:
+            return 1320 #22min runtime
         elif dur == 3600:
             return 3600 - 1080 #42min runtime
         else:

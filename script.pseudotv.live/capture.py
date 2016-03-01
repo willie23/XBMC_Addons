@@ -124,9 +124,13 @@ class Main:
                             else:
                                 self.chantype = 9
                         else:
-                            if self.Path.lower().startswith(('pvr')):
+                            if self.Path.lower().startswith(('pvr')) and self.Label.startswith('Channels'):
                                 self.chantype = 8
-                            elif self.isFolder == True and self.Label.lower() in ['networks','channels'] and self.Path.lower().startswith(('plugin')):
+                                return self.buildNetworks(self.Path+'tv/All channels/')
+                            elif self.Path.lower().startswith(('pvr')):
+                                self.chantype = 8
+                            elif self.isFolder == True and self.Label.lower() in ['pseudonetworks','networks','channels'] and self.Path.lower().startswith(('plugin')):
+                                self.chantype = 15
                                 return self.buildNetworks(self.Path)
                             elif self.isFolder == True and self.Path.lower().startswith(('plugin')):
                                 self.chantype = 15
@@ -163,14 +167,23 @@ class Main:
                     file = (files.group(1).replace("\\\\", "\\"))
                     
                     if filetype == 'directory':
-                        self.chantype = 15
-                        self.setting1 = file
-                        self.setting2 = ''
-                        self.setting3 = ''
-                        self.setting4 = '1'
-                        self.channame = name
-                        self.saveSettings()
-                        self.fixChannel(self.channel)
+                        if self.chantype == 15:
+                            self.setting1 = file
+                            self.setting2 = ''
+                            self.setting3 = ''
+                            self.setting4 = '1'
+                            self.channame = name
+                            self.saveSettings()
+                            self.fixChannel(self.channel)
+                    elif filetype == 'file':
+                        if self.chantype == 8:
+                            self.setting1 = file
+                            self.setting2 = name
+                            self.setting3 = 'pvr'
+                            self.setting4 = ''
+                            self.channame = name
+                            self.saveSettings()
+                            self.fixChannel(self.channel)
             hide_busy_dialog()
             self.openManager()
             
