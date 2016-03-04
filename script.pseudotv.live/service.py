@@ -39,6 +39,17 @@ def autostart():
 def chkChanges():
     xbmc.log('script.pseudotv.live-Service: chkChanges')
     
+    CURR_MEDIA_LIMIT = REAL_SETTINGS.getSetting('MEDIA_LIMIT')
+    try:
+        LAST_MEDIA_LIMIT = REAL_SETTINGS.getSetting('Last_MEDIA_LIMIT')
+    except:
+        REAL_SETTINGS.setSetting('Last_MEDIA_LIMIT', CURR_MEDIA_LIMIT)
+    LAST_MEDIA_LIMIT = REAL_SETTINGS.getSetting('Last_MEDIA_LIMIT')
+    
+    if CURR_MEDIA_LIMIT != LAST_MEDIA_LIMIT:
+        REAL_SETTINGS.setSetting('ForceChannelReset', "true")
+        REAL_SETTINGS.setSetting('Last_MEDIA_LIMIT', CURR_MEDIA_LIMIT)
+           
     CURR_BUMPER = REAL_SETTINGS.getSetting('bumpers')
     try:
         CURR_BUMPER = REAL_SETTINGS.getSetting('Last_bumpers')
@@ -71,18 +82,7 @@ def chkChanges():
     if CURR_TRAILERS != LAST_TRAILERS:
         REAL_SETTINGS.setSetting('ForceChannelReset', "true")
         REAL_SETTINGS.setSetting('Last_trailers', CURR_TRAILERS)
-        
-    CURR_MEDIA_LIMIT = REAL_SETTINGS.getSetting('MEDIA_LIMIT')
-    try:
-        LAST_MEDIA_LIMIT = REAL_SETTINGS.getSetting('Last_MEDIA_LIMIT')
-    except:
-        REAL_SETTINGS.setSetting('Last_MEDIA_LIMIT', CURR_MEDIA_LIMIT)
-    LAST_MEDIA_LIMIT = REAL_SETTINGS.getSetting('Last_MEDIA_LIMIT')
-    
-    if CURR_MEDIA_LIMIT != LAST_MEDIA_LIMIT:
-        REAL_SETTINGS.setSetting('ForceChannelReset', "true")
-        REAL_SETTINGS.setSetting('Last_MEDIA_LIMIT', CURR_MEDIA_LIMIT)
-           
+#todo LogoDB_Type
 #Service Start ##################################################################
 if xbmc.getCondVisibility('Window.IsActive(addonsettings)') != True:
     if xbmc.getCondVisibility('Window.IsActive(addonsettings)') == False:
@@ -94,8 +94,8 @@ monitor = xbmc.Monitor()
 #settings monitor class causes severe performance issues, resorted to while loop
 hasSomethingChanged = False
 while not monitor.abortRequested():
-    # Sleep/wait for abort for 10 seconds
-    if monitor.waitForAbort(10):
+    # Sleep/wait for abort for 1 seconds
+    if monitor.waitForAbort(1):
         # Abort was requested while waiting. We should exit
         break
         
@@ -105,3 +105,10 @@ while not monitor.abortRequested():
         if hasSomethingChanged == True:
             hasSomethingChanged = False
             chkChanges()
+    else:
+        # Use kodi bug to force kill library scan which impacts PTVL performance
+        # http://forum.kodi.tv/showthread.php?tid=241729
+        if monitor.onScanStarted('video'):
+            xbmc.executebuiltin("UpdateLibrary(video)")
+        elif monitor.onScanStarted('music'):
+            xbmc.executebuiltin("UpdateLibrary(music)")

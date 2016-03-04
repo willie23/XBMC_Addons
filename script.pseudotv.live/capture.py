@@ -52,7 +52,7 @@ class Main:
         if not self.plot:
             if self.plotOutline:
                 self.Description = self.plotOutline
-            elif not self.Description:   
+            elif not self.Description:
                 self.Description = self.Label
         else:  
             self.Description = self.plot

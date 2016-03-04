@@ -1277,8 +1277,6 @@ def chkLowPower():
             REAL_SETTINGS.setSetting('sickbeard.enabled', "false")
             REAL_SETTINGS.setSetting('couchpotato.enabled', "false")
             infoDialog("Settings Optimized for Performance")
-        elif platform in ['Pro']:
-            REAL_SETTINGS.setSetting('EnhancedGuideData', "true")
     else:
         log("utils: chkLowPower Override = True")
     log("utils: chkLowPower = " + getProperty("PTVL.LOWPOWER"))

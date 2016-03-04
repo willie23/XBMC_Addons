@@ -61,7 +61,7 @@ except Exception,e:
     
 try:
     from metahandler import metahandlers
-    metaget = metahandlers.MetaData(preparezip=False)
+    metaget = metahandlers.MetaData(preparezip=False, tmdb_api_key=TMDB_API_KEY)
 except Exception,e:  
     ENHANCED_DATA = False
     xbmc.log("script.pseudotv.live-ChannelList: metahandler Import Failed" + str(e))    
@@ -252,11 +252,6 @@ class ChannelList:
                     self.maxChannels = i + 1
                     self.enteredChannelCount += 1
    
-            # if self.forceReset and chtype in [1,2,3,4,5,6,12]:
-                # ADDON_SETTINGS.setSetting('Channel_' + str(i + 1) + '_changed', "True")
-            # elif self.forceReset:
-                # self.freshBuild = True
-                
             if self.forceReset:
                 ADDON_SETTINGS.setSetting('Channel_' + str(i + 1) + '_changed', "True")
             
@@ -269,7 +264,6 @@ class ChannelList:
                     else:
                         chname = self.getChannelName(chtype, (i + 1))
                     FindLogo(chtype, chname)
-
         setBackgroundLabel('Initializing: Channels') 
         self.log('findMaxChannels return ' + str(self.maxChannels))
 
@@ -361,13 +355,14 @@ class ChannelList:
                     timedif = time.time() - self.lastResetTime
                     returnval = True
 
-                    if self.channelResetSetting == 0:
-                        # Reset livetv after 24hrs
-                        if chtype == 8 and timedif < (60 * 60 * 24):
-                            createlist = False
-                        elif chtype == 8 and self.channels[channel - 1].totalTimePlayed < (60 * 60 * 24):
-                            createlist = False
+                    # Reset livetv after 24hrs
+                    if chtype == 8 and timedif < (60 * 60 * 24):
+                        createlist = False
+                        
+                    if chtype == 8 and self.channels[channel - 1].totalTimePlayed < (60 * 60 * 24):
+                        createlist = False
                             
+                    if self.channelResetSetting == 0:
                         # If this channel has been watched for longer than it lasts, reset the channel
                         if self.channels[channel - 1].totalTimePlayed < self.channels[channel - 1].getTotalDuration():
                             createlist = False

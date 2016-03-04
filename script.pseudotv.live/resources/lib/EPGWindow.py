@@ -103,9 +103,8 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
 
         
     def onInit(self):
-        self.log('onInit')
-        now = datetime.datetime.now()     
-        
+        self.log('onInit')          
+        now = datetime.datetime.now()  
         if self.clockMode == "0":
             timeex = now.strftime("%I:%M%p").lower()
         else:
@@ -202,20 +201,17 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                 self.channelLabel[i].setVisible(False)
             except:
                 pass
-        self.FEEDtoggle()
-        self.channelLabelTimer = threading.Timer(5.0, self.hideChannelLabel)        
+        self.channelLabelTimer = threading.Timer(5.0, self.hideChannelLabel)       
+        self.FEEDtoggle()  
         self.log('onInit return')
 
 
     def FEEDtoggle(self):   
         self.log('FEEDtoggle')
         try:
-            if getProperty("PTVL.FEEDtoggle") == "true":
-                self.getControl(505).setVisible(True)
-            else:
-                self.getControl(505).setVisible(False)
+            self.getControl(505).setVisible(getProperty("PTVL.FEEDtoggle") == "true")
         except:
-            pass
+            self.getControl(505).setVisible(False)
 
         
     # setup all channel buttons for a given time
