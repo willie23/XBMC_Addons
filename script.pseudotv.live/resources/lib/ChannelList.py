@@ -529,8 +529,10 @@ class ChannelList:
                 return ''
             elif chtype == 0:
                 return self.getSmartPlaylistName(opt)
-            elif chtype == 1 or chtype == 2 or chtype == 6:
+            elif chtype == 1 or chtype == 2:
                 return opt
+            elif chtype == 6:
+                return opt.split('|')[0]
             elif chtype == 3:
                 return opt + " TV"
             elif chtype == 4:
@@ -621,7 +623,6 @@ class ChannelList:
                     raise Exception()
             except Exception,e:
                 limit = MEDIA_LIMIT
-            self.log("makeChannelList, Overriding Global Parse-limit to " + str(limit))
 
         elif chtype == 8:
             limit = 259200 #72hrs (seconds)
@@ -631,7 +632,7 @@ class ChannelList:
             limit = 10000
         else:
             limit = MEDIA_LIMIT
-        self.log("makeChannelList, Using Global Parse-limit " + str(limit))
+        self.log("makeChannelList, Using Parse-limit " + str(limit))
 
         # Directory
         if chtype == 7:
@@ -4222,13 +4223,16 @@ class ChannelList:
         
     def getPVRLink(self, channel):
         self.log('getPVRLink')
-        if getXBMCVersion() < 14:
-            PVRverPath = "pvr://channels/tv/All TV channels/"
-        else:
-            PVRverPath = "pvr://channels/tv/All channels/"   
-        PVRPath = xbmcvfs.listdir(PVRverPath)
-        return os.path.join(PVRverPath,PVRPath[1][channel])
-
+        try:
+            if getXBMCVersion() < 14:
+                PVRverPath = "pvr://channels/tv/All TV channels/"
+            else:
+                PVRverPath = "pvr://channels/tv/All channels/"   
+            PVRPath = xbmcvfs.listdir(PVRverPath)
+            return os.path.join(PVRverPath,PVRPath[1][channel])
+        except:
+            pass
+        
         
     def fillUSTVnow(self):
         self.log('fillUSTVnow')
@@ -4768,13 +4772,13 @@ class ChannelList:
                                                     dur_accurate = True
                                                 except Exception,e:
                                                     dur = 0
-                                                    
+                                                
                                             # Less accurate duration
                                             if dur == 0:
                                                 dur = ladur
                                    
-                                    # if  dur == 0 and file.startswith(("plugin", "upnp")):
-                                        # dur = 9999    
+                                    if  dur == 0 and file.startswith(("plugin", "upnp")):
+                                        dur = 3600    
                                              
                                     # Remove any file types that we don't want (ex. IceLibrary, ie. Strms)
                                     if self.incIceLibrary == False:
@@ -4997,7 +5001,7 @@ class ChannelList:
                                             else:
                                                 fileList.append(tmpstr)     
                                 
-                                elif filetype == 'directory' and self.filecount < limit:
+                                elif filetype == 'directory' and (self.filecount < limit and self.dircount < dirlimit):
                                     self.log('getFileList, directory')
 
                                     if self.background == False:
@@ -5075,3 +5079,4 @@ class ChannelList:
             GenreLiveID = [dict['genre'], dict['type'], dict['id'], dict['thumburl'], False, 1, dict['rating'], dict['hd'], dict['cc'], dict['stars'], dict['year']]
             filelist.append(self.makeTMPSTR(dict['duration'], dict['title'], dict['year'], dict['subtitle'], dict['description'], GenreLiveID, dict['link'], timestamp))
         return filelist
+        
