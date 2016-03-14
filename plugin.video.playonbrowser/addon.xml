@@ -11,10 +11,9 @@
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary lang="en">Allows you to browse m.playon.tv from your remote.</summary>
-    <description lang="en">Allows you to interact with the playon web interface using the standard controls in kodi.</description>
-    <disclaimer lang="en">Requires Playon Software</disclaimer>
-    <language>en</language>
+    <summary lang="en_US">Allows you to browse m.playon.tv from your remote.</summary>
+    <description lang="en_US">Allows you to interact with the playon web interface using the standard controls in kodi.</description>
+    <disclaimer lang="en_US">Requires Playon Software</disclaimer>
     <platform>all</platform>
     <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
     <forum>http://forum.kodi.tv/showthread.php?tid=233136</forum>

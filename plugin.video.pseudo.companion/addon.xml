@@ -1,12 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.pseudo.companion" version="0.0.3" name="PseudoCompanion" provider-name="Lunatixz">
+<addon id="plugin.video.pseudo.companion" version="0.0.4" name="PseudoCompanion" provider-name="Lunatixz">
     <requires>
         <import addon="xbmc.python" version="2.14.0"/>
-        <import addon="script.module.requests" />
-        <import addon="script.module.simplejson" /> 
-        <import addon="script.module.metahandler" version="2.5.1"/>	
-        <import addon="script.common.plugin.cache" version="2.5.2"/>
         <import addon="script.pseudotv.live" version="0.7.2"/>	
+        <import addon="context.pseudotv.live.export" version="1.0.8"/>
+        <import addon="script.module.buggalo" version="1.1.6" optional="false"/>
+        <import addon="script.module.requests" version="2.7.0" optional="false"/>
+        <import addon="script.module.pyfscache" version="0.9.12" optional="false"/>
+        <import addon="script.module.feedparser" version="5.1.3" optional="false"/>
+        <import addon="script.module.simplejson" version="3.3.0" optional="false"/>
+        <import addon="script.module.beautifulsoup" version="3.2.1" optional="false"/>
+        <import addon="script.module.metahandler" version="2.7.0" optional="false"/>
+        <import addon="script.common.plugin.cache" version="2.5.5" optional="false"/>
+        <import addon="script.module.t0mm0.common" version="2.1.1" optional="false"/>
+        <import addon="plugin.video.youtube" version="5.1.8" optional="true"/>
+        <import addon="plugin.video.vimeo" version="4.1.4" optional="true"/>
     </requires>
     <extension point="xbmc.python.pluginsource" library="default.py">
     <provides>video</provides>
@@ -14,7 +22,7 @@
     <extension point="xbmc.service" library="service.py" start="startup"/>
     <extension point="xbmc.addon.metadata">
         <platform>all</platform>
-        <summary lang="en">PseudoTV Live Companion Tool</summary>
-        <description lang="en">Control PseudoTV Live via Yatse app. Parse Exclusive Content... Extend PseudoTV Lives Functionality.</description>
+        <summary lang="en_US">PseudoTV Live Companion Tool</summary>
+        <description lang="en_US">Control PseudoTV Live via Yatse app. Parse Exclusive Content... Extend PseudoTV Lives Functionality.</description>
     </extension>
 </addon>

@@ -5,9 +5,9 @@
     </requires>
     <extension library="lib" point="xbmc.python.module" />
     <extension point="xbmc.addon.metadata">
-        <summary lang="en"></summary>
-        <description lang="en">packed for kodi from https://github.com/jcstroud/pyfscache</description>
-        <disclaimer lang="en">packed for kodi from https://github.com/jcstroud/pyfscache</disclaimer>
+        <summary lang="en_US"></summary>
+        <description lang="en_US">packed for kodi from https://github.com/jcstroud/pyfscache</description>
+        <disclaimer lang="en_US">packed for kodi from https://github.com/jcstroud/pyfscache</disclaimer>
         <forum></forum>
         <website>http://www.jamesstroud.com/software/pyfscache/</website>
         <license>BSD</license>

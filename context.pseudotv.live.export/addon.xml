@@ -17,10 +17,8 @@
         </item>
     </extension>
     <extension point="xbmc.addon.metadata">
-        <description lang="en">Export sources to PseudoTV Live for easy channel creation.</description>
         <description lang="en_US">>Export sources to PseudoTV Live for easy channel creation.</description>
         <platform>all</platform>
-        <language>en</language>
         <license>GNU GENERAL PUBLIC LICENSE. Version 3, June 2007</license>
         <source>https://github.com/Lunatixz/XBMC_Addons/tree/master/context.pseudotv.live.export</source>
         <email>pseudotvlive@gmail.com</email>

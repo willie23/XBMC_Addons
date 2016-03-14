@@ -17,308 +17,120 @@
 # along with PseudoTV.  If not, see <http://www.gnu.org/licenses/>.
 
 # -*- coding: utf-8 -*-
-import urllib, urllib2, cookielib, requests
-import time, datetime, operator
-import os, sys, re, traceback
-import xbmcplugin, xbmcgui, xbmcaddon, xbmcvfs
+import os, re, sys, time, zipfile, requests, random, traceback
+import urllib, urllib2,cookielib, base64, fileinput, shutil, socket, httplib, urlparse, HTMLParser
+import xbmc, xbmcgui, xbmcplugin, xbmcvfs, xbmcaddon
+import time, _strptime, string, datetime, ftplib, hashlib, smtplib, feedparser, imp, operator
 
-# Plugin Info
-ADDON_ID = 'plugin.video.pseudo.companion'
-REAL_SETTINGS = xbmcaddon.Addon(id=ADDON_ID)
-ADDON_ID = REAL_SETTINGS.getAddonInfo('id')
-ADDON_NAME = REAL_SETTINGS.getAddonInfo('name')
-ADDON_PATH = (REAL_SETTINGS.getAddonInfo('path').decode('utf-8'))
-ADDON_VERSION = REAL_SETTINGS.getAddonInfo('version')
-ICON = os.path.join(ADDON_PATH, 'icon.png')
-FANART = os.path.join(ADDON_PATH, 'fanart.jpg')
-PTVL_ICON = os.path.join(ADDON_PATH,'resources','images','icon.png')
-PTVL_ICON_GRAY = os.path.join(ADDON_PATH,'resources','images','icon_gray.png')
-DEBUG = True # DEBUG = REAL_SETTINGS.getSetting('enable_Debug') == "true"
-
-def log(msg, level = xbmc.LOGDEBUG):
-    if DEBUG != True and level == xbmc.LOGDEBUG:
-        return
-    xbmc.log(ADDON_ID + '-' + ADDON_VERSION + '-' + uni(msg), level)
-
-def removeNonAscii(s): return "".join(filter(lambda x: ord(x)<128, s))
+if sys.version_info < (2, 7):
+    import simplejson as json
+else:
+    import json
     
-def utf(string, encoding = 'utf-8'):
-    if isinstance(string, basestring):
-        if not isinstance(string, unicode):
-            string = unicode(string, encoding, 'ignore')
-    return string
-  
-def ascii(string):
-    if isinstance(string, basestring):
-        if isinstance(string, unicode):
-           string = string.encode('ascii', 'ignore')
-    return string
-    
-def uni(string):
-    if isinstance(string, basestring):
-        if isinstance(string, unicode):
-           string = string.encode('utf-8', 'ignore' )
-    return string
-
-def cleanString(string):
-    newstr = uni(string)
-    newstr = newstr.replace('&', '&amp;')
-    newstr = newstr.replace('>', '&gt;')
-    newstr = newstr.replace('<', '&lt;')
-    return uni(newstr)
-
-def uncleanString(string):
-    newstr = uni(string)
-    newstr = newstr.replace('&amp;', '&')
-    newstr = newstr.replace('&gt;', '>')
-    newstr = newstr.replace('&lt;', '<')
-    return uni(newstr)
-    
-def cleanLabels(text, format=''):
-    text = uni(text)
-    text = re.sub('\[COLOR (.+?)\]', '', text)
-    text = re.sub('\[/COLOR\]', '', text)
-    text = re.sub('\[COLOR=(.+?)\]', '', text)
-    text = re.sub('\[color (.+?)\]', '', text)
-    text = re.sub('\[/color\]', '', text)
-    text = re.sub('\[Color=(.+?)\]', '', text)
-    text = re.sub('\[/Color\]', '', text)
-    text = text.replace("[]",'')
-    text = text.replace("[UPPERCASE]",'')
-    text = text.replace("[/UPPERCASE]",'')
-    text = text.replace("[LOWERCASE]",'')
-    text = text.replace("[/LOWERCASE]",'')
-    text = text.replace("[B]",'')
-    text = text.replace("[/B]",'')
-    text = text.replace("[I]",'')
-    text = text.replace("[/I]",'')
-    text = text.replace('[D]','')
-    text = text.replace('[F]','')
-    text = text.replace("[CR]",'')
-    text = text.replace("[HD]",'')
-    text = text.replace("()",'')
-    text = text.replace("[CC]",'')
-    text = text.replace("[Cc]",'')
-    text = text.replace("[Favorite]", "")
-    text = text.replace("[DRM]", "")
-    text = text.replace('(cc).','')
-    text = text.replace('(n)','')
-    text = text.replace("(SUB)",'')
-    text = text.replace("(DUB)",'')
-    text = text.replace('(repeat)','')
-    text = text.replace("(English Subtitled)", "")    
-    text = text.replace("*", "")
-    text = text.replace("\n", "")
-    text = text.replace("\r", "")
-    text = text.replace("\t", "")
-    text = text.replace("/",'')
-    text = text.replace("\ ",'')
-    text = text.replace("/ ",'')
-    text = text.replace("/",'')
-    text = text.replace("\\",'/')
-    text = text.replace("//",'/')
-    text = text.replace('plugin.video.','')
-    text = text.replace('plugin.audio.','')
-
-    if format == 'title':
-        text = text.title().replace("'S","'s")
-    elif format == 'upper':
-        text = text.upper()
-    elif format == 'lower':
-        text = text.lower()
-    else:
-        text = text
-        
-    text = uncleanString(text.strip())
-    return text  
-    
-def addDir(name,description,url,previous,mode,thumb=ICON,icon=ICON,fanart=FANART,infoList=False,infoArt=False,content_type='video',showcontext=False):
-    log('addDir')
-    liz = xbmcgui.ListItem(name)
-    liz.setIconImage(icon)
-    if content_type in ['video','movie','tvshow']:
-        liz.setThumbnailImage(thumb)
-    else:
-        liz.setThumbnailImage(fanart)
-    liz.setProperty("Fanart_Image", fanart)
-    liz.setProperty('IsPlayable', 'false')
-    
-    if showcontext == True:
-        contextMenu = []
-        contextMenu.append(('Create Strms','XBMC.RunPlugin(%s&mode=200&name=%s)'%(u, name)))
-        liz.addContextMenuItems(contextMenu)
-                 
-    u=sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.quote_plus(name)+"&previous="+urllib.quote_plus(previous)
-        
-    if infoList == False:
-        liz.setInfo(type="Video", infoLabels={ "Title": name, "Plot": description, "mediatype": content_type})
-    else:
-        liz.setInfo(type="Video", infoLabels=infoList)
-        
-    if infoArt != False:
-        liz.setArt(infoArt) 
-        
-    xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True)
+from pyfscache import *
+from xml.etree import ElementTree as ET
+from xml.dom.minidom import parse, parseString
+from datetime import timedelta
+from metahandler import metahandlers
+from utils import *
       
-def addLink(name,description,url,previous,mode,thumb=ICON,icon=ICON,fanart=FANART,infoList=False,infoArt=False,showcontext=False,total=0):
-    log('addLink') 
-    liz = xbmcgui.ListItem(name)
-    liz.setIconImage(icon)
-    liz.setThumbnailImage(thumb)
-    liz.setProperty("Fanart_Image", fanart)
-    liz.setProperty('IsPlayable', 'true')
-    
-    if showcontext == True:
-        contextMenu = []
-        contextMenu.append(('Create Strms','XBMC.RunPlugin(%s&mode=200&name=%s)'%(u, name)))
-        liz.addContextMenuItems(contextMenu)
-                
-    u=sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.quote_plus(name)+"&previous="+urllib.quote_plus(previous)
-                
-    if infoList == False:
-        liz.setInfo(type="Video", infoLabels={ "Title": name, "Plot": description})
-    else:
-        liz.setInfo(type="Video", infoLabels=infoList)
-    
-    if infoArt != False:
-        liz.setArt(infoArt) 
-        
-    xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,totalItems=total)
-
-def getProperty(str):
-    return xbmcgui.Window(10000).getProperty(str)
-
-def setProperty(str1, str2):
-    xbmcgui.Window(10000).setProperty(str1, str2)
-
-def clearProperty(str):
-    xbmcgui.Window(10000).clearProperty(str)
-
-def sendJSON(command):
-    log('sendJSON')
-    data = ''
+def getLBchannels(limit=100):
+    log("getLBchannels") 
     try:
-        data = xbmc.executeJSONRPC(uni(command))
-    except UnicodeEncodeError:
-        data = xbmc.executeJSONRPC(ascii(command))
-    return uni(data)
-           
-def requestItem(file, fletype='video'):
-    log("requestItem") 
-    json_query = ('{"jsonrpc":"2.0","method":"Player.GetItem","params":{"playerid":1,"properties":["thumbnail","fanart","title","year","mpaa","imdbnumber","description","season","episode","playcount","genre","duration","runtime","showtitle","album","artist","plot","plotoutline","tagline","tvshowid"]}, "id": 1}')
-    json_folder_detail = sendJSON(json_query)
-    return re.compile( "{(.*?)}", re.DOTALL ).findall(json_folder_detail)
-          
-def requestList(path, fletype='video'):
-    log("requestList, path = " + path) 
-    json_query = ('{"jsonrpc": "2.0", "method": "Files.GetDirectory", "params": {"directory": "%s", "media": "%s", "properties":["thumbnail","fanart","title","year","mpaa","imdbnumber","description","season","episode","playcount","genre","duration","runtime","showtitle","album","artist","plot","plotoutline","tagline","tvshowid"]}, "id": 1}'%(path,fletype))
-    json_folder_detail = sendJSON(json_query)
-    return re.compile( "{(.*?)}", re.DOTALL ).findall(json_folder_detail)      
-   
-def fillPluginItems(url, media_type='video', file_type=False, strm=False, strm_name='', strm_type='Other'):
-    log('fillPluginItems')
-    if not file_type:
-        detail = uni(requestList(url, media_type))
-    else:
-        detail = uni(requestItem(url, media_type))
-    for f in detail:
-        files = re.search('"file" *: *"(.*?)",', f)
-        filetypes = re.search('"filetype" *: *"(.*?)",', f)
-        labels = re.search('"label" *: *"(.*?)",', f)
-        thumbnails = re.search('"thumbnail" *: *"(.*?)",', f)
-        fanarts = re.search('"fanart" *: *"(.*?)",', f)
-        descriptions = re.search('"description" *: *"(.*?)",', f)
-        
-        if filetypes and labels and files:
-            filetype = filetypes.group(1)
-            label = cleanLabels(labels.group(1))
-            file = (files.group(1).replace("\\\\", "\\"))
+        line = getDonlist('lb.ini')
+        if not line:
+            raise
             
-            if not descriptions:
-                description = ''
-            else:
-                description = cleanLabels(descriptions.group(1))
-                
-            thumbnail = removeNonAscii(thumbnails.group(1))
-            fan = removeNonAscii(fanarts.group(1))
+        data = getJson(line[0]+PTVL_SETTINGS.getSetting("GBOX_API")+'/' + (line[1] %('all',limit)))
+        rtItems = data["results"]
+        for i in range(len(rtItems)):
+            Item = rtItems[i]
+            title = Item["title"]
+            thumb = Item["artwork_448x252"]
+            chid = str(Item["id"])
+            addDir(title,'',chid,'getLBchannels',3010,thumb,thumb)
             
-            if REAL_SETTINGS.getSetting('Link_Type') == '0':
-                link = sys.argv[0]+"?url="+urllib.quote_plus(file)+"&mode="+str(10)+"&name="+urllib.quote_plus(label)
-            else:
-                link = file
+        if len(line) > 0:
+            addDir('Popcorn Movies','','','getLBchannels',3002,POPCORN_ICON,POPCORN_ICON)
+            getParamount()
+        getExternalChannels('YouTube','Networks')
+    except:
+        return
+    
+    
+def getLBchannelsItems(id, limit=100):
+    log("getLBchannelsItems")
+    try:
+        line = getDonlist('lb.ini')
+        if not line:
+            raise
             
-            if strm_type in ['TV','Episodes']:
-                path = os.path.join('TV',strm_name)
-                filename = strm_name + ' - ' + label
-                print path, filename
-                
-            if filetype == 'file':
-                if strm:
-                    writeSTRM(cleanStrms(path), cleanStrms(filename) ,link)
-                else:
-                    addLink(label,description,file,'',5001,thumb=thumbnail,fanart=fan,total=len(detail))
-            else:
-                if strm:
-                    fillPluginItems(file, media_type, file_type, strm, label, strm_type)
-                else:
-                    addDir(label,description,file,'',6002,thumb=thumbnail,fanart=fan)
-    xbmcplugin.endOfDirectory(int(sys.argv[1]))
-        
-def fillPlugins(type='video'):
-    log('fillPlugins, type = ' + type)
-    json_query = ('{"jsonrpc":"2.0","method":"Addons.GetAddons","params":{"type":"xbmc.addon.%s","properties":["name","path","thumbnail","description","fanart","summary"]}, "id": 1 }'%type)
-    json_detail = sendJSON(json_query)
-    detail = re.compile( "{(.*?)}", re.DOTALL ).findall(json_detail)
-    for f in detail:
-        names = re.search('"name" *: *"(.*?)",', f)
-        paths = re.search('"addonid" *: *"(.*?)",', f)
-        thumbnails = re.search('"thumbnail" *: *"(.*?)",', f)
-        fanarts = re.search('"fanart" *: *"(.*?)",', f)
-        descriptions = re.search('"description" *: *"(.*?)",', f)
-        if not descriptions:
-            descriptions = re.search('"summary" *: *"(.*?)",', f)
-        if descriptions:
-            description = cleanLabels(descriptions.group(1))
-        else:
-            description = ''
-        if names and paths:
-            name = cleanLabels(names.group(1))
-            path = paths.group(1)
-            if type == 'video' and path.startswith('plugin.video') and not path.startswith('plugin.video.pseudo.companion'):
-                thumbnail = removeNonAscii(thumbnails.group(1))
-                fan = removeNonAscii(fanarts.group(1))
-                addDir(name,description,'plugin://'+path,'',6002,thumb=thumbnail,fanart=fan)
-    xbmcplugin.endOfDirectory(int(sys.argv[1]))
+        data = getJson(line[0]+PTVL_SETTINGS.getSetting("GBOX_API")+'/' + (line[1] % (str(id),limit)))
+        rtItems = data["results"]
+        channelItem = []
+        for i in range(len(rtItems)):
+            Item = rtItems[i]
+            content_type = Item["content_type"].replace('Episode Clip','episode')
+            title = cleanLabels(Item["title"])
+            thumb = uni(Item["thumbnail_400x225"])
+            link = uni(youtube_player_ok + Item["free_web_sources"][0]['link'].replace('https://www.youtube.com/watch?v=',''))
+            Description = cleanLabels(Item["overview"].replace("\n",' ').replace("\'",'')).split('http:')[0]
 
+            # setup infoList
+            infoList = {}
+            infoList['mediatype']     = content_type
+            infoList['Duration']      = int(Item["duration"])
+            infoList['Title']         = title
+            infoList['Plot']          = Description
+            infoList['Season']        = int(Item["season_number"] or '0')
+            infoList['Episode']       = int(Item["episode_number"] or '0')
+            # setup infoArt
+            infoArt = {}
+            infoArt['thumb']        = thumb
+            infoArt['poster']       = thumb
+            infoArt['landscape']    = thumb
+
+            # 'imdbid':Item["imdb_id"]
+            # 'tvdbid':Item["tvdb"]
+            addLink(title,Description,link,'getLBchannelsItems',5001,thumb,thumb,infoList=infoList,infoArt=infoArt,total=len(rtItems))
+    except:
+        return
+        
 def getSources():
     log('getSources')
+    DonCHK()
     STATE = getProperty('PseudoCompanion.STATE') == 'true'
     STATUS = getProperty('PseudoCompanion.STATUS')
     if STATE == True:
         addDir('PseudoTV Live: '+STATUS,'','','getSources',9000,PTVL_ICON,PTVL_ICON)
     else:
         addDir('PseudoTV Live: '+STATUS,'','','getSources','',PTVL_ICON_GRAY,PTVL_ICON_GRAY)
-    addDir('Channel Tools','','','',9001)
-
+        addDir('Channel Tools','','','',9001)
+    if isDon() == True:
+        addDir('Donor Exclusives','','','',9002)
+    else:
+        addDir('PseudoNetworks','','','',2001)
+        
 def getOnline():
     log('getOnline')
-    # NowWatching()
-    addDir('On Now','What On Now!','','',1,PTVL_ICON,PTVL_ICON)
-    # addDir('On Next','What On Next!','','',2,PTVL_ICON,PTVL_ICON)
-    addDir('Channel Guide','Channel Listing','','',3,PTVL_ICON,PTVL_ICON)
+    getNowWatching()
+    getChannelGuide()
+    getSidebar()
+    getMiscs()
     addDir('Scheduled Reminders','Coming Soon','','',4,PTVL_ICON,PTVL_ICON)
     addDir('Scheduled Recordings','Coming Soon','','',5,PTVL_ICON,PTVL_ICON)
     addDir('Recorded TV','Coming Soon','','',6,PTVL_ICON,PTVL_ICON)
-    addDir('Sidebar','Sidebar Controls','','',7,PTVL_ICON,PTVL_ICON)
-    addDir('Misc.','','','',8,PTVL_ICON,PTVL_ICON)
+    
     
 def getMisc():
-    getDEBUG()
     getStatus()
-    
-    
+    getNotice()
+    getPlayer()
+    getDEBUG()
+    getError()
+     
 def getStatus():
-    title = getProperty('PTVL.NOTIFY_LOG')
+    title = getProperty('PTVL.STATUS_LOG')
     debug_icon = os.path.join(ADDON_PATH,'resources','images','debug.png')
     label = 'STATUS:'
     content_type = 'movie'
@@ -329,8 +141,36 @@ def getStatus():
     infoList['Title']         = label
     infoList['Studio']        = label
     infoList['Year']          = '0'
-    addDir(label, title,'','getMisc','',debug_icon,debug_icon,'',infoList)
+    addLink('1', title,'','getMisc',-1,debug_icon,debug_icon,'',infoList,total=1)
     
+def getNotice():
+    title = getProperty('PTVL.NOTIFY_LOG')
+    debug_icon = os.path.join(ADDON_PATH,'resources','images','debug.png')
+    label = 'NOTICE:'
+    content_type = 'movie'
+    infoList = {}
+    infoList['mediatype']     = content_type
+    infoList['TVShowTitle']   = label
+    infoList['Genre']         = title
+    infoList['Title']         = label
+    infoList['Studio']        = label
+    infoList['Year']          = '0'
+    addLink('2', title,'','getMisc',-1,debug_icon,debug_icon,'',infoList,total=1)
+                
+def getPlayer():
+    title = getProperty('PTVL.PLAYER_LOG')
+    debug_icon = os.path.join(ADDON_PATH,'resources','images','debug.png')
+    label = 'PLAYER:'
+    content_type = 'movie'
+    infoList = {}
+    infoList['mediatype']     = content_type
+    infoList['TVShowTitle']   = label
+    infoList['Genre']         = title
+    infoList['Title']         = label
+    infoList['Studio']        = label
+    infoList['Year']          = '0'
+    addLink('3', title,'','getMisc',-1,debug_icon,debug_icon,'',infoList,total=1)
+        
 def getDEBUG(): 
     title = getProperty('PTVL.DEBUG_LOG')
     debug_icon = os.path.join(ADDON_PATH,'resources','images','debug.png')
@@ -343,43 +183,80 @@ def getDEBUG():
     infoList['Title']         = label
     infoList['Studio']        = label
     infoList['Year']          = '0'
-    addDir(label, title,'','getMisc','',debug_icon,debug_icon,'',infoList)
-                
-def getTools():
-    addDir('Media Sources','','','',8000)
-    addDir('Channel Manager','','','',8001)
+    addLink('4', title,'','getMisc',-1,debug_icon,debug_icon,'',infoList,total=1)
+         
+def getError():
+    title = getProperty('PTVL.ERROR_LOG')
+    debug_icon = os.path.join(ADDON_PATH,'resources','images','debug.png')
+    label = 'ERROR:'
+    content_type = 'movie'
+    infoList = {}
+    infoList['mediatype']     = content_type
+    infoList['TVShowTitle']   = label
+    infoList['Genre']         = title
+    infoList['Title']         = label
+    infoList['Studio']        = label
+    infoList['Year']          = '0'
+    addLink('5', title,'','getMisc',-1,debug_icon,debug_icon,'',infoList,total=1)
+   
+def getExclusives():
+    getMedia()
+    getOnlineMedia()
+    # addDir('Update Guidedata','','','getTools',11000)
     
+def getTools():
+    addDir('Channel Manager','','','getTools',8001)
+    addDir('Browse Local Media','','','getMedia',7003)
+    
+def getGuideData():
+    SyncXMLTV_NEW()
+    addLink('Guidedata Last Checked: %s' %REAL_SETTINGS.getSetting("SyncPTV_ChckRun"),'','','getExclusives',-1)
+    addLink('Guidedata Last Updated: %s' %REAL_SETTINGS.getSetting("SyncPTV_LastRun"),'','','getExclusives',-1)
+    addLink('Guidedata Next Updated: %s' %REAL_SETTINGS.getSetting("SyncPTV_NextRun"),'','','getExclusives',-1)
+
 def getMedia():
     log('getMedia')
-    addDir('BCT Sources','','','',7000)
-    addDir('BringThePopcorn','','','',7001)
-    addDir('PseudoCinema','','','',7002)
-    addDir('Local Media','','','',7003)
+    addDir('BCT Sources','','','getMedia',7000)
+    addDir('PseudoCinema','','','getMedia',7002,PC_ICON,PC_ICON)
+    addDir('Popcorn Movies','','genres','getMedia',3001,POPCORN_ICON,POPCORN_ICON)
+    
+def getDonExclusive():
+    if isDon() == True:
+        getExclusives()
+    else:
+        getDonate()
+
+def getDonate():
+    addDir('Donor Exclusives Only Avaiable after Donation','','','getDonExclusive',-1)
+    addDir('Visit www.pseudotvlive.com','','','getDonExclusive',-1)
+    addDir('Enter Donor Login Information in settings','','','getDonExclusive',10004)
+
+def getOnlineMedia():
+    addDir('PseudoNetworks','','','getOnlineMedia',3000,WORLD_ICON,WORLD_ICON)
     
 def getLocal():
     log('getLocal') 
-    addDir('Browse Local Video','','video','',6000)
-    addDir('Browse Local Music','','music','',6000)
-    addDir('Browse Plugin Video ','','video','',6001)
-    addDir('Browse Plugin Music','','music','',6001)
-    addDir('Browse PVR Backend','','pvr://','',6002)
-    addDir('Browse UPNP Servers','','upnp://','',6002)
+    addDir('Local Video','','video','',6000)
+    addDir('Local Music','','music','',6000)
+    addDir('Plugin Video ','','video','',6001)
+    addDir('Plugin Music','','music','',6001)
+    addDir('PVR Backend','','pvr://','',6002)
+    addDir('UPNP Servers','','upnp://','',6002)
         
 def getSideBar():
-    NowWatching()
-    addDir('OnNow','What On Now!','','',1,PTVL_ICON,PTVL_ICON)
-    addDir('Browse','','','',4000)
-    addDir('Search','','','',4001)
-    addDir('Last Channel','','','',9999)
-    addDir('Favorites','','','',9999)
-    addDir('Favorites Flip','','','',9999)
-    addDir('EPGType','','','',9999)
-    addDir('Mute','','','',9999)
-    addDir('Subtitle','','','',9999)
-    addDir('Player Settings','','','',9999)
-    addDir('Sleep','','','',9999)
-    addDir('Exit','','','',9999)
+    addDir('Now Watching','','1000','getSideBar',9998)
+    addDir('Browse','','','getSideBar',4000)
+    addDir('Search','','','getSideBar',4001)
+    addDir('Last Channel','','{"jsonrpc":"2.0","method":"Input.ExecuteAction","params":{"action":"shift"},"id":9}','getSideBar',9999)
+    addDir('Favorites Flip','','{"jsonrpc":"2.0","method":"Input.ExecuteAction","params":{"action":"symbols"},"id":8}','getSideBar',9999)
+    addDir('Mute','','','getSideBar',4002)
+    addDir('Subtitle','','1008','getSideBar',9998)
+    addDir('Player Settings','','','getSideBar',4003)
+    addDir('Sleep','','{"jsonrpc":"2.0","method":"Input.ExecuteAction","params":{"action":"aspectratio"},"id":7}','getSideBar',9999)
+    addDir('Exit','','1011','getSideBar',9998)
     
+    # addDir('Show Info','','','',4004)#ACTION_SHOW_INFO
+    # addDir('Show MoreInfo','','','',4005)#ACTION_CONTEXT_MENU
 def getReminders():
     log('getReminders')
     try:
@@ -422,15 +299,6 @@ def getReminders():
     except Exception,e:
         addDir('No Reminders Set','','','','',PTVL_ICON,PTVL_ICON)
             
-def cleanReminderTime(tmpDate):
-    try:#sloppy fix, for threading issue with strptime.
-        t = time.strptime(tmpDate, '%Y-%m-%d %H:%M:%S')
-    except:
-        t = time.strptime(tmpDate, '%Y-%m-%d %H:%M:%S')
-    Notify_Time = time.strftime('%I:%M%p, %A', t)
-    epochBeginDate = time.mktime(t)
-    return Notify_Time, epochBeginDate    
-        
 def ChannelGuide():
     log('ChannelGuide') 
     try:
@@ -455,45 +323,6 @@ def ChannelGuide():
             addDir(label,'',str(chnum),'ChannelGuide',10000,chlogo,chlogo,chlogo,infoList,False,content_type)
     except:
         addDir('Try Again Later','','','',PTVL_ICON,PTVL_ICON)
-            
-def getChanTypeLabel(chantype):
-    if chantype == 0:
-        return "Custom Playlist"
-    elif chantype == 1:
-        return "TV Network"
-    elif chantype == 2:
-        return "Movie Studio"
-    elif chantype == 3:
-        return "TV Genre"
-    elif chantype == 4:
-        return "Movie Genre"
-    elif chantype == 5:
-        return "Mixed Genre"
-    elif chantype == 6:
-        return "TV Show"
-    elif chantype == 7:
-        return "Directory"
-    elif chantype == 8:
-        return "LiveTV"
-    elif chantype == 9:
-        return "InternetTV"
-    elif chantype == 10:
-        return "Youtube"
-    elif chantype == 11:
-        return "RSS"
-    elif chantype == 12:
-        return "Music (Coming Soon)"
-    elif chantype == 13:
-        return "Music Videos (Coming Soon)"
-    elif chantype == 14:
-        return "Exclusive (Coming Soon)"
-    elif chantype == 15:
-        return "Plugin"
-    elif chantype == 16:
-        return "UPNP"
-    elif chantype == 9999:
-        return "None"
-    return ''
         
 def OnNow(next=False):
     log('OnNow')
@@ -577,48 +406,94 @@ def PreviewChannel(name, url, previous):
     infoList['Season']        = int(PreviewLine['Season'] or '0')
     infoList['Episode']       = int(PreviewLine['Episode'] or '0')
     infoList['playcount']     = int(PreviewLine['playcount'] or '0')
-    
     infoArt = {}
     infoArt['thumb']        = PreviewLine['poster']
     infoArt['poster']       = PreviewLine['poster']
     infoArt['fanart']       = PreviewLine['fanart']
     infoArt['landscape']    = PreviewLine['fanart']
-    infoList['icon']        = PreviewLine['chlogo']
-    
+    infoList['icon']        = PreviewLine['chlogo']   
     addDir(name,PreviewLine['Description'],str(PreviewLine['Chnum']),previous,10000,PreviewLine['poster'],PreviewLine['chlogo'],PreviewLine['fanart'],infoList,infoArt,content_type)
         
 def InputChannel(channel, previous):
     log('InputChannel = ' + str(channel))
-    for n in range(len(str(channel))):  
+    for n in range(len(str(channel))):   
         json_query = ('{"jsonrpc":"2.0","method":"Input.ExecuteAction","params":{"action":"number%s"},"id":2}') % (str(channel)[n])
         sendJSON(json_query)
     back(previous)
     
-def NowWatching():
+def sendJSON(command, previous=None):
+    log('utils: sendJSON, command = ' + command)
+    data = ''
+    try:
+        data = xbmc.executeJSONRPC(uni(command))
+    except UnicodeEncodeError:
+        data = xbmc.executeJSONRPC(ascii(command))
+    back(previous)
+    return uni(data)
+       
+def sendClick(id, previous):
+    log('sendClick, id = ' + str(id))
+    window_id = xbmcgui.getCurrentWindowDialogId()
+    window = xbmcgui.Window(window_id)
+    # trigger sidebar
+    if id in [1000,1001,1002,1003,1004,1005,1006,1007,1008,1009,1010,1011]:
+        showInfo()
+        xbmc.sleep(1000)
+        goLeft()
+        xbmc.sleep(1000)
+    window.setFocusId(id)
+    xbmc.sleep(1000)
+    xbmc.executebuiltin("SendClick(%d,%d)" %(window_id,int(id)))
+    back(previous)
+
+def getNowWatching():
     log('NowWatching')
-    content_type = 'tvshow' 
     infoList = {}
-    infoList['mediatype']     = content_type
-    infoList['MPAA']          = getProperty("OVERLAY.Rating")
-    infoList['TVShowTitle']   = 'Next: ' + getProperty("OVERLAY.NEXT.Title")
+    infoList['mediatype']     = 'tvshow'
     infoList['Genre']         = 'Next: ' + getProperty("OVERLAY.NEXT.Title")
-    infoList['Title']         = 'Now: ' + getProperty("OVERLAY.Title")
-    infoList['Studio']        = getProperty("OVERLAY.Chname")
-    infoList['Year']          = int(getProperty("OVERLAY.Chnum") or '0')
-    infoList['Season']        = int(getProperty("OVERLAY.Season") or '0')
-    infoList['Episode']       = int(getProperty("OVERLAY.Episode") or '0')
-    infoList['playcount']     = int(getProperty("OVERLAY.Playcount") or '0')
-    
+    infoList['Title']         = 'Now: ' + getProperty("OVERLAY.PLAYING.Title")
+    infoList['Studio']        = getProperty("OVERLAY.PLAYING.Chname")
+    infoList['Year']          = int(getProperty("OVERLAY.PLAYING.Chnum") or '0')
     infoArt = {}
-    infoArt['thumb']        = getProperty("OVERLAY.poster")
-    infoArt['poster']       = getProperty("OVERLAY.poster")
-    infoArt['banner']       = getProperty("OVERLAY.banner")
-    infoArt['fanart']       = getProperty("OVERLAY.fanart")
-    infoArt['clearart']     = getProperty("OVERLAY.clearart")
-    infoArt['clearlogo']    = getProperty("OVERLAY.clearlogo")
-    infoArt['landscape']    = getProperty("OVERLAY.landscape")
+    infoArt['thumb']        = (getProperty("OVERLAY.PLAYING.poster") or PTVL_ICON)
+    infoArt['fanart']       = (getProperty("OVERLAY.PLAYING.landscape") or getProperty("OVERLAY.PLAYING.fanart") or FANART)
+    addDir('1','','','getOnline',1,infoList=infoList,infoArt=infoArt)
+        
+def getChannelGuide():
+    infoList = {}
+    infoList['mediatype']     = 'video'
+    infoList['Title']         = 'Channel Guide'
+    infoArt = {}
+    infoArt['thumb']        = PTVL_ICON
+    infoArt['fanart']       = FANART
+    addDir('2','','','getOnline',3,infoList=infoList,infoArt=infoArt)
     
-    addDir('1',getProperty("OVERLAY.Description"),getProperty("OVERLAY.Chnum"),'getOnline',10000,getProperty("OVERLAY.poster"),getProperty("OVERLAY.LOGOART"),getProperty("OVERLAY.landscape"),infoList,infoArt,content_type)
+def getOnNow():
+    infoList = {}
+    infoList['mediatype']     = 'video'
+    infoList['Title']         = 'On Now'
+    infoArt = {}
+    infoArt['thumb']        = PTVL_ICON
+    infoArt['fanart']       = FANART
+    addDir('3','','','getOnline',1,infoList=infoList,infoArt=infoArt)
+        
+def getSidebar():
+    infoList = {}
+    infoList['mediatype']     = 'video'
+    infoList['Title']         = 'Sidebar'
+    infoArt = {}
+    infoArt['thumb']        = PTVL_ICON
+    infoArt['fanart']       = FANART
+    addDir('4','','','getOnline',7,infoList=infoList,infoArt=infoArt)
+    
+def getMiscs():
+    infoList = {}
+    infoList['mediatype']     = 'video'
+    infoList['Title']         = 'Misc.'
+    infoArt = {}
+    infoArt['thumb']        = PTVL_ICON
+    infoArt['fanart']       = FANART
+    addDir('8','','','getOnline',8,infoList=infoList,infoArt=infoArt)
         
 def getLocalVideo():
     comingsoon()
@@ -634,6 +509,10 @@ def getControls():
     log('getControls')
     comingsoon()
     
+def export(name,url,previous):
+    log('export')
+    print name,url,previous
+
 def getPTVLGuide():
     log('getPTVLGuide')
     comingsoon()
@@ -649,14 +528,215 @@ def getRecorded():
 def getBCTs():
     log('getBCTs')
     comingsoon()
+
+def getParamount():
+    try:
+        line = getDonlist('pv.ini')
+        if not line:
+            raise
+    except:
+        return
+
+    addDir('New Releases','',line[0],'getParamount',3012,NEWR_ICON,NEWR_ICON)
+    addDir('Movies 4 Men','',line[1],'getParamount',3012,MMOVIE_ICON,MMOVIE_ICON)
+    addDir('Action Movies','',line[2],'getParamount',3012,ACTION_ICON,ACTION_ICON)
+    addDir('Classics Movies','',line[3],'getParamount',3012,CLASSIC_ICON,CLASSIC_ICON)
+    addDir('Comedy Movies','',line[4],'getParamount',3012,COMEDY_ICON,COMEDY_ICON)
+    addDir('Drama Movies','',line[5],'getParamount',3012,DRAMA_ICON,DRAMA_ICON)
+    addDir('Horror Movies','',line[6],'getParamount',3012,HORROR_ICON,HORROR_ICON)
+    addDir('Sci-Fi Movies','',line[7],'getParamount',3012,SCIFI_ICON,SCIFI_ICON)
+    addDir('Thriller Movies','',line[8],'getParamount',3012,THRILLER_ICON,THRILLER_ICON)
+    addDir('Western Movies','',line[9],'getParamount',3012,WESTERN_ICON,WESTERN_ICON)
+
+def getParamountItems(url):
+    getYoutubeVideos('movie', 'getParamountItems', 2, url, '', 200, '')
     
 def getPopcorn():
     log('getPopcorn')
-    comingsoon()
+    qualitys = ['1080p','720p','480p']
+    for i in range(len(qualitys)):
+        item = qualitys[i]
+        addDir(item,'','','getPopcorn',3002,POPCORN_ICON,POPCORN_ICON)
+ 
+def getPopcorn1(opt):
+    log('getPopcorn1')
+    if opt in ['Popular All','Popular Today','Popcorn Movies']:
+        if opt in ['Popular All','Popcorn Movies']:
+            rss = 'rss?o=-popularity_day'
+        else:
+            rss = 'rss?o=-popularity_all'
+        return getPopcornItems(rss.lower())
+    else:
+        rss = ('rss?q='+opt.replace('p',''))
+        years = ['2010-Now','2000-2010','1990-2000','1980-1990','1970-1980','1960-1970','1950-1960','1940-1950','1930-1940','1920-1930','1910-1920']
+        for i in range(len(years)):
+            item = years[i]
+            addDir(item,'',rss,'getPopcorn',3003,POPCORN_ICON,POPCORN_ICON)
     
+def getPopcorn2(opt, opt1):
+    log('getPopcorn2')
+    rss = opt1 + ('&y='+opt)
+    genres = ['Action','Adventure','Animation','British','Comedy','Crime','Disaster','Drama','Eastern','Erotic','Family','Fanfilm','Fantasy','Filmnoir','Foreign','History','Holiday','Horror','Indie','Kids','Music','Musical','Mystery','Neo-noir','Road movie','Romance','Science fiction','Short','Sport','Sports film','Suspense','Thriller','Tv movie','War','Western']
+    for i in range(len(genres)):
+        item = genres[i]
+        addDir(item,'',rss,'getPopcorn',3004,POPCORN_ICON,POPCORN_ICON)
+        
+def getPopcorn3(opt, opt1):
+    log('getPopcorn3')
+    rss = opt1 + ('&g='+opt.replace(' ','+'))
+    return getPopcornItems(rss.lower())
+
+def getPopcornItems(url):
+    log("getPopcornItems, url = " + url)
+    setProperty("POPrss", '')
+    showList = []
+    filecount = 0
+    
+    try:
+        line = getDonlist('popcorn.ini')
+        if not line:
+            raise
+    except:
+        addDir('Try Again Later','','','',POPCORN_ICON,POPCORN_ICON)
+        return
+        
+    feed = feedparser.parse(line[0] + url)
+    for i in range(0,len(feed['entries'])):
+        try:
+            title = feed['entries'][i].title
+            link = str(feed['entries'][i].links[0])
+            link = str(link.split("{'href': u'")[1])
+            link = str(link.split("', ")[0])
+            description = str(feed['entries'][i].description)
+
+            #Parse Movie info for watch link
+            try:
+                link = read_url_cached(link)
+                imdbid = str(re.compile('<a href="http://www.imdb.com/title/(.+?)"').findall(link)) 
+                imdbid = imdbid.replace("['", "").replace("']", "")
+                watch = str(re.compile('<a href="/watch/(.+?)"').findall(link))
+                watch = watch.replace("['", "").replace("']", "")
+                watch = line[0] + '/watch/' + watch
+            except Exception,e:
+                pass
+
+            #Parse watch link for youtube link
+            # try:
+            link = read_url_cached(watch)
+            tubelink = str(re.compile('location = "(.+?)"').findall(link)[0])
+            xbmclink = tubelink.replace("https://", "").replace("http://", "").replace("www.youtube.com/watch?v=", youtube_player_ok).replace("http://www.youtube.com/watch?hd=1&v=", youtube_player_ok)
+            log("popcorn, xbmclink = " + xbmclink)   
+            # except Exception,e:
+                # pass
+
+            #parse youtube for movie info.
+            tubeID = tubelink.replace("https://", "").replace("http://", "").replace("www.youtube.com/watch?v=", "").replace("http://www.youtube.com/watch?hd=1&v=", "")
+            tubeAPI = 'http://gdata.youtube.com/feeds/api/videos?max-results=1&q=' + tubeID
+            tubefeed = feedparser.parse(tubeAPI)
+            showtitle, showdescription, showduration, showthumbnail, showChname, showGenre = getYoutubeMeta(tubeID)
+            
+            if tubefeed: 
+                log("popcorn, tubeAPI = " + tubeAPI)   
+                # parse missing info from youtube
+                if title == None:
+                    try:
+                        title = tubefeed['entries'][0].title
+                    except Exception,e:
+                        title = showtitle
+                        
+                if description == None:
+                    try:
+                        description = tubefeed['entries'][0].description
+                    except Exception,e:
+                        description = showdescription 
+                try:
+                    duration = tubefeed['entries'][0].yt_duration['seconds']
+                except Exception,e:
+                    duration = showduration
+                try:
+                    thumburl = tubefeed.entries[0].media_thumbnail[0]['url']
+                except Exception,e:
+                    thumburl = showthumbnail                
+                
+                year, title, showtitle = getTitleYear(title)
+                meta = metaget.get_meta('movie', title, str(year)) 
+                
+                # setup infoList
+                infoList = {}
+                infoList['mediatype']     = 'movies'
+                infoList['Duration']      = int(duration)
+                infoList['Title']         = uni(showtitle)
+                infoList['Year']          = int(year or '0')
+                infoList['Genre']         = uni(meta['genre'] or 'Unknown')
+                infoList['Plot']          = uni(meta['plot'] or description)
+                infoList['tagline']       = uni(meta['tagline'])
+                infoList['imdbnumber']    = uni(meta['imdb_id'])
+                infoList['mpaa']          = uni(meta['mpaa'] or 'NR')
+                infoList['ratings']       = float(meta['rating'] or '0.0')
+                        
+                # setup infoArt
+                infoArt = {}
+                infoArt['thumb']        = (meta['cover_url'] or thumburl)
+                infoArt['poster']       = (meta['cover_url'] or thumburl)
+                infoArt['fanart']       = (meta['backdrop_url'] or thumburl)   
+                infoArt['landscape']    = (meta['backdrop_url'] or thumburl)                       
+                addLink(showtitle,description,xbmclink,'getPopcornItems',5001,infoList=infoList,infoArt=infoArt,total=len(feed['entries']))
+        except Exception,e:
+            log("popcorn, Failed! " + str(e))                        
+    if len(feed['entries']) == 0:
+        addDir('Try Again Later','','','',POPCORN_ICON,POPCORN_ICON)    
+        
 def getCinema():
     log('getCinema')
-    comingsoon()
+    addDir('Cinema Theme: Default','','1','getCinema',12000,PC_ICON,PC_ICON)
+    addDir('Cinema Theme: IMAX','','2','getCinema',12000,PC_ICON,PC_ICON)
+
+def fillCE(theme):
+    log('fillCE')
+    try:
+        theme = int(theme)-1
+        line = getDonlist('ce.ini')
+        if not line:
+            raise
+    except:
+        return
+        
+    CE_THEME = ['Default','IMAX'][theme]
+    
+    CE_INTRO = line[0]
+    Thumb = "http://i.ytimg.com/vi/"+CE_INTRO+"/mqdefault.jpg"
+    Url = youtube_player_ok + CE_INTRO
+    addLink('1: '+CE_THEME+' Intro','CE_INTRO',Url,'fillCE',5001,Thumb,Thumb)
+    
+    CE_CELL = (((line[6])).split(','))[theme]
+    Thumb = "http://i.ytimg.com/vi/"+CE_CELL+"/mqdefault.jpg"
+    Url = youtube_player_ok + CE_CELL
+    addLink('2: '+CE_THEME+' Quiet','CE_CELL',Url,'fillCE',5001,Thumb,Thumb)
+
+    CE_COMING_SOON = (((line[3])).split(','))[theme]
+    Thumb = "http://i.ytimg.com/vi/"+CE_COMING_SOON+"/mqdefault.jpg"
+    Url = youtube_player_ok + CE_COMING_SOON
+    addLink('3: '+CE_THEME+' Coming Soon','CE_COMING_SOON',Url,'fillCE',5001,Thumb,Thumb)
+    
+    CE_PREMOVIE = (((line[5])).split(','))[theme]
+    Thumb = "http://i.ytimg.com/vi/"+CE_PREMOVIE+"/mqdefault.jpg"
+    Url = youtube_player_ok + CE_PREMOVIE
+    addLink('3: '+CE_THEME+' PreMovie','CE_PREMOVIE',Url,'fillCE',5001,Thumb,Thumb)
+        
+    CE_FEATURE_PRESENTATION = (((line[4])).split(','))[theme]
+    Thumb = "http://i.ytimg.com/vi/"+CE_FEATURE_PRESENTATION+"/mqdefault.jpg"
+    Url = youtube_player_ok + CE_FEATURE_PRESENTATION
+    addLink('4: '+CE_THEME+' Feature Presentation','CE_FEATURE_PRESENTATION',Url,'fillCE',5001,Thumb,Thumb)
+        
+    CE_3D = line[1]
+    Thumb = "http://i.ytimg.com/vi/"+CE_3D+"/mqdefault.jpg"
+    Url = youtube_player_ok + CE_3D
+    addLink('5: '+CE_THEME+' 3D Glasses','CE_3D',Url,'fillCE',5001,Thumb,Thumb)
+
+    CE_INTERMISSION = line[2]
+    Thumb = "http://i.ytimg.com/vi/"+CE_INTERMISSION+"/mqdefault.jpg"
+    Url = youtube_player_ok + CE_INTERMISSION
+    addLink('6: '+CE_THEME+' Intermission','CE_INTERMISSION',Url,'fillCE',5001,Thumb,Thumb)
 
 def back(parent):
     log('back')
@@ -674,11 +754,18 @@ def back(parent):
         OnNow()
     elif parent == 'OnNext':
         OnNow(next=True)
+    elif parent == 'getSideBar':
+        getSideBar()
     elif parent == 'getReminders':
         getReminders()
         
 def playURL(url):
     log('playURL')
+    # if getProperty('PseudoTVRunning') == "True":
+        # setProperty('PTVL.DIRECT_PLAY','true')
+        # setProperty('PTVL.DIRECT_URL',url)
+    # else:
+    setProperty('PTVL.DIRECT_PLAY','false')
     item = xbmcgui.ListItem(path=url)
     xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)
 
@@ -710,7 +797,7 @@ def get_params():
                 param[splitparams[0]]=splitparams[1]
     log('param = ' + str(param))
     return param
-
+ 
 params=get_params()
 
 try:
@@ -719,10 +806,12 @@ except:
     url=getURL(sys.argv[2])
 try:
     name=urllib.unquote_plus(params["name"])
+    log("Name: "+str(name))
 except:
     name=''
 try:
     previous=urllib.unquote_plus(params["previous"])
+    log("Previous: "+str(previous))
 except:
     previous = None
 try:
@@ -733,14 +822,13 @@ except:
     
 if not url is None:
     log("URL: "+str(url.encode('utf-8')))
-log("Name: "+str(name))
 
 if mode == None: getSources()
 
 elif mode == -1: print 'null'
 
 #getOnline
-elif mode == 0: NowWatching()
+elif mode == 0: getNowWatching()
 elif mode == 1: OnNow()
 elif mode == 2: OnNow(next=True)
 elif mode == 3: ChannelGuide()
@@ -750,13 +838,26 @@ elif mode == 6: getRecorded()
 elif mode == 7: getSideBar()
 elif mode == 8: getMisc()
 
+elif mode == 200: fillPluginItems(url, strm=True, strm_path=previous, strm_name=name, strm_type=getType())
+
+elif mode == 2000: getExternalChannel(url)
+elif mode == 2001: getExternalChannels('YouTube','Networks')
+
+#getOnlineMedia
+elif mode == 3000: getLBchannels()
+elif mode == 3010: getLBchannelsItems(int(url))
+elif mode == 3001: getPopcorn()
+elif mode == 3002: getPopcorn1(name)
+elif mode == 3003: getPopcorn2(name, url)
+elif mode == 3004: getPopcorn3(name, url)
+elif mode == 3011: getParamount()
+elif mode == 3012: getParamountItems(url)
+
 #sidebar
 elif mode == 4000: getLocal()
-elif mode == 4001: comingsoon()
-elif mode == 4002: comingsoon()
-elif mode == 4003: comingsoon()
-elif mode == 4004: comingsoon()
-elif mode == 4005: comingsoon()
+elif mode == 4001: showSearch()
+elif mode == 4002: mute()
+elif mode == 4003: showOSD()
 
 #misc
 elif mode == 5000: getPTVLGuide()
@@ -769,9 +870,9 @@ elif mode == 6002: fillPluginItems(url)
 
 #getMedia
 elif mode == 7000: getBCTs()
-elif mode == 7001: getPopcorn()
 elif mode == 7002: getCinema()
 elif mode == 7003: getLocal()
+elif mode == 7004: getOnlineMedia()
 
 #getTools
 elif mode == 8000: getMedia()
@@ -780,9 +881,10 @@ elif mode == 8001: getPTVLManager()
 #getSources
 elif mode == 9000: getOnline()
 elif mode == 9001: getTools()
+elif mode == 9002: getDonExclusive()
 
-#PTVL Json Input
-elif mode == 9999: sendJSON(url)
+elif mode == 9998: sendClick(int(url),previous)
+elif mode == 9999: sendJSON(url,previous)
 
 #PTVL Channel Input
 elif mode == 10000: InputChannel(int(url),previous)
@@ -790,58 +892,20 @@ elif mode == 10000: InputChannel(int(url),previous)
 #PTVL Pre-Channel Input
 elif mode == 10001: PreviewChannel(name,url,previous)
 
+#PTVL Export to PTVL
+elif mode == 10002: export(name,url,previous)
+
+elif mode == 10003: getYoutubePlaylist(url)
+
+elif mode == 10004: REAL_SETTINGS.openSettings()
+elif mode == 10005: PTVL_SETTINGS.openSettings()
+
+elif mode == 11000: getGuideData()
+
+elif mode == 12000: fillCE(url)
+
 # if mode in [0,1,2,3,4,5,6]: back('Online')                      # Return to Online Menu
 # elif mode in [9995,9999]: back('Main')                        # Return to Main Menu
-
-# #ptvlguide
-# PTVLXML = os.path.join(XMLTV_CACHE_LOC, 'ptvlguide.xml')
-# PTVLXMLZIP = os.path.join(LOCK_LOC, 'ptvlguide.zip')
-# PTVLXMLURL = PTVLURL + 'ptvlguide.zip'
-
-# #BASEURL
-# try:
-    # UPASS = REAL_SETTINGS.getSetting('Donor_UP')
-# except:
-    # UPASS = "Username:Password"
-
-# PTVLURL = 'http://pseudotvlive.com/ptvl/'
-# PTVLURLUP = 'http://%s@pseudotvlive.com/ptvl/' %UPASS
-
-# def isRepoInstalled():
-    # repo = isPlugin('repository.lunatixz')
-    # log('utils: isRepoInstalled = ' + str(repo))
-    # return repo
-      
-# def getRepo():
-    # log('utils: getRepo')
-    # if isRepoInstalled() == False:
-        # if dlg.yesno("PseudoTV Live", 'Install the Lunatixz Repository?'):   
-            # url='https://github.com/Lunatixz/XBMC_Addons/raw/master/zips/repository.lunatixz/repository.lunatixz-1.0.zip'
-            # name = 'repository.lunatixz.zip' 
-            # MSG = 'Lunatixz Repository Installed'    
-            # path = xbmc.translatePath(os.path.join('special://home/addons','packages'))
-            # addonpath = xbmc.translatePath(os.path.join('special://','home/addons'))
-            # lib = os.path.join(path,name)
-            # getGithubZip(url, lib, addonpath, MSG)
-    # else:
-        # infoDialog('Lunatixz Repository Already Installed')
-                
-# def chkVersion():
-    # log('utils: chkVersion')
-    # curver = xbmc.translatePath(os.path.join(ADDON_PATH,'addon.xml'))    
-    # source = open(curver, mode='r')
-    # link = source.read()
-    # source.close()
-    # match = re.compile('" version="(.+?)" name="PseudoTV Live"').findall(link)
-    
-    # for vernum in match:
-        # log("utils: Current Version = " + str(vernum))
-    # try:
-        # link = open_url('https://raw.githubusercontent.com/Lunatixz/XBMC_Addons/master/script.pseudotv.live/addon.xml').read() 
-        # link = link.replace('\r','').replace('\n','').replace('\t','').replace('&nbsp;','')
-        # match = re.compile('" version="(.+?)" name="PseudoTV Live"').findall(link)
-    # except:
-        # pass   
 
 xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_NONE )
 xbmcplugin.setContent(int(sys.argv[1]), 'episodes')
