@@ -92,7 +92,7 @@ class MyPlayer(xbmc.Player):
         return title
         
     
-    def isActuallyPlaying(self, time=500):
+    def isActuallyPlaying(self, time=250):
         ActuallyPlaying = False
         if self.overlay.isExiting == True or self.isPlaybackPaused() == True:
             return True
@@ -100,6 +100,9 @@ class MyPlayer(xbmc.Player):
             return True
 
         if self.isPlaybackValid() == True:
+            if self.getPlayerFile().startswith(("upnp")):
+                return True
+                
             start_time = self.getPlayerTime()
             start_title = self.getPlayerTitle()
             xbmc.sleep(time)
@@ -846,6 +849,11 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         if not channel:
             channel = self.currentChannel
         self.channels[channel - 1].isValid = False
+        # todo remove invalid channel configurations?
+        # setBackgroundLabel('Exiting: Removing Invalid Channels %s' %str(i))
+        # chtype = self.getChtype(i)
+        # ADDON_SETTINGS.setSetting('Channel_' + str(i) + '_type','9999')
+          
                     
                     
     def InvalidateChannel(self, channel):
@@ -1128,7 +1136,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         self.egTrigger('PseudoTV_Live - Loading: %s' % chname)
         self.runActions(RULES_ACTION_OVERLAY_SET_CHANNEL_END, channel, self.channels[channel - 1])
         setProperty("PTVL.INIT_CHANNELSET","true")
-        self.startOnNowTimer(30)
+        self.startOnNowTimer(TimeRemainder(ONNOW_REFRESH/2))
         self.log('setChannel, setChannel return')
         
         
@@ -2127,7 +2135,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                             elif ComingUpType == 1:
                                 self.infoOffset = ((nextshow) - self.notificationLastShow)
                                 self.showInfo(self.InfTimer)
-                        xbmc.sleep(NOTIFICATION_TIME_BEFORE_END*1000)
+                        time.sleep(NOTIFICATION_TIME_BEFORE_END)
         except:
             pass
         self.startNotificationTimer()
@@ -2233,7 +2241,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                     elif self.notPlayingCount == playActionTime: 
                         if self.Player.isPlaybackValid() == False:
                             self.FailedPlayingCount += 1
-                            self.channels[self.currentChannel - 1].isValid = False
+                            self.setInvalidateChannel()
                             self.CloseDialog()
                             self.startPlayerTimer(self.ActionTimeInt)
                             self.lastActionTrigger() 
@@ -2960,18 +2968,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         clearProperty("%s.hasCC"%pType)
         clearProperty("%s.Stars"%pType)
 
-        
-    def removeInvalid(self):
-        self.log('removeInvalid')    
-        for i in range(self.maxChannels):
-            if self.channels[i].isValid == False:
-                print i
-                # todo remove invalid channel configurations?
-                # setBackgroundLabel('Exiting: Removing Invalid Channels %s' %str(i))
-                # chtype = self.getChtype(i)
-                # ADDON_SETTINGS.setSetting('Channel_' + str(i) + '_type','9999')
-          
-          
+
     def end(self, action=False):
         self.log('end')
         # Prevent the player from setting the sleep timer
@@ -2996,9 +2993,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             setBackgroundLabel('Exiting: Removing File Locks')
             GlobalFileLock.unlockFile('MasterLock')
         GlobalFileLock.close()
-        
-        self.removeInvalid()
-        
+                
         # destroy window
         try:
             del self.myDVR

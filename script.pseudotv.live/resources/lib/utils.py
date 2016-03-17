@@ -1486,8 +1486,6 @@ def preStart():
             
     # Backup/Restore settings2
     chkSettings2()
-    
-    return
         
 ##############
 # PTVL Tools #

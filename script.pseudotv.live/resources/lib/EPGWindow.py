@@ -506,9 +506,9 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                             if prevlen < 60:
                                 tmpdur += prevlen / 2
                     
-                    # # Check LiveTV for outdated timestamp:                       
-                    # elif chtype == 8 and shouldskip == False and datetime_to_epoch(self.MyOverlayWindow.channels[curchannel - 1].getItemtimestamp(playlistpos)) + self.MyOverlayWindow.channels[curchannel - 1].getItemDuration(playlistpos) < time.time():
-                        # self.chanlist.setResetLST(curchannel)
+                    # Check LiveTV for outdated timestamp:                       
+                    # elif chtype == 8 and datetime_to_epoch(self.MyOverlayWindow.channels[curchannel - 1].getItemtimestamp(playlistpos)) + self.MyOverlayWindow.channels[curchannel - 1].getItemDuration(playlistpos) < time.time():
+                        # # self.chanlist.setResetLST(curchannel)
                         # shouldskip = True
                         
                     width = int((basew / 5400.0) * tmpdur)
@@ -554,8 +554,8 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                         self.channelButtons[row].append(xbmcgui.ControlButton(xpos, basey, width, baseh, mylabel, focusTexture=self.textureButtonFocus, noFocusTexture=self.textureButtonNoFocus, alignment=4, shadowColor=self.shadowColor, font=self.textfont, textColor=self.textcolor, focusedColor=self.focusedcolor))
                         self.addButtonTags(row, xpos, basey, width, baseh, mylabel, EPGtags)
                     
-                    #elif chtype == 8 and shouldskip == True and datetime_to_epoch(self.MyOverlayWindow.channels[curchannel - 1].getItemtimestamp(playlistpos)) + self.MyOverlayWindow.channels[curchannel - 1].getItemDuration(playlistpos) < time.time():
-                        # self.channelButtons[row].append(xbmcgui.ControlButton(xpos, basey, width, baseh, self.MyOverlayWindow.getChname(curchannel), focusTexture=self.textureButtonFocus, noFocusTexture=self.textureButtonNoFocus, alignment=4, shadowColor=self.shadowColor, font=self.textfont, textColor=self.textcolor, focusedColor=self.focusedcolor))
+                    # elif chtype == 8 and shouldskip == True:
+                        # self.channelButtons[row].append(xbmcgui.ControlButton(xpos, basey, basew, baseh, self.MyOverlayWindow.getChname(curchannel), focusTexture=self.textureButtonFocus, noFocusTexture=self.textureButtonNoFocus, alignment=4, shadowColor=self.shadowColor, font=self.textfont, textColor=self.textcolor, focusedColor=self.focusedcolor))
 
                     totaltime += tmpdur
                     reftime += tmpdur

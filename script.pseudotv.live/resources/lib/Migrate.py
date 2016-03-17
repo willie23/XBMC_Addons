@@ -174,7 +174,6 @@ class Migrate:
                     CHid = PVRChannels[i][0]
                     CHname = chanlist.cleanLabels(PVRChannels[i][1])
                     CHthmb = PVRChannels[i][2]
-                    GrabLogo(CHthmb, CHname + ' PVR')
                     
                     # parse external xmltv file, else use pvr backend.
                     if Globals.REAL_SETTINGS.getSetting("PVR_Listing") == '1':

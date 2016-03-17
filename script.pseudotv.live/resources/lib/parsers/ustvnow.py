@@ -310,6 +310,7 @@ class ustvnow:
                 raise Exception()
         except:
             self.log('get_guidedata Failed')
+            setBackgroundLabel('USTVnow: Downloading Guidedata')
             result = self.get_guidedata_NEW(quality, stream_type)
         if not result:
             result = []
@@ -318,7 +319,6 @@ class ustvnow:
 
     def get_guidedata_NEW(self, quality, stream_type):
         self.log('get_guidedata_NEW')
-        setBackgroundLabel('USTVnow: Downloading Guidedata')
         cnt = 0
         content = self._get_json('gtv/1/live/channelguide', {'token': self.token, 'l': '1440'})
         results = content['results'];
@@ -438,7 +438,7 @@ class ustvnow:
         xmllst = self.cleanChanName(xmllst)
         fle.write("%s" % xmllst)
         fle.close()
-        if finished == False:
-            self.token = 'False'
-            self.getXMLTV()
+        # if finished == False:
+            # self.token = 'False'
+            # self.getXMLTV()
         return finished

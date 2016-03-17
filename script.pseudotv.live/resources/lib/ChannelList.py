@@ -329,8 +329,8 @@ class ChannelList:
         # Force rebuild
         if channel in self.myOverlay.ResetLST:
             self.log('setupChannel ' + str(channel) + ', forcerebuild = True')
-            needsreset = True
             self.delResetLST(channel)
+            needsreset = True
                 
         # LiveTV Force Reset
         if chtype == 8 and REAL_SETTINGS.getSetting('ForceLiveChannelReset') == "true":
@@ -361,13 +361,11 @@ class ChannelList:
                     timedif = time.time() - self.lastResetTime
                     returnval = True
                     
-                    if chtype == 8:
-                        # Reset livetv after 24hrs
-                        if timedif < (60 * 60 * 24):
-                            createlist = False   
-                        elif self.channels[channel - 1].totalTimePlayed < (60 * 60 * 24):
-                            createlist = False
-                    else:      
+                    if chtype == 8: 
+                        # Reset livetv after 24hrs                    
+                        if timedif < (60 * 60 * 24) or self.channels[channel - 1].totalTimePlayed < (60 * 60 * 24):
+                            createlist = False         
+                    else: 
                         if self.channelResetSetting == 0:
                             # If this channel has been watched for longer than it lasts, reset the channel
                             if self.channels[channel - 1].totalTimePlayed < self.channels[channel - 1].getTotalDuration():
@@ -1928,9 +1926,8 @@ class ChannelList:
                 showList = self.fillLiveTV(setting1, setting2, setting3, setting4, chname, limit)
         if not showList:
             self.setChannelChanged(self.settingChannel)
-            chname = (self.getChannelName(9, self.settingChannel))
             desc = 'Guidedata from ' + str(setting3) + ' is currently unavailable, please verify channel configuration.'
-            showList = self.buildInternetTVFileList('5400', setting2, chname, desc, 24)
+            showList = self.buildInternetTVFileList('5400', setting2, self.getChannelName(9, self.settingChannel), desc, 24)
         return showList     
         
         
@@ -2198,8 +2195,8 @@ class ChannelList:
                                 self.updateDialog.update(self.updateDialogProgress, "Updating Channel " + str(self.settingChannel), "adding %s Videos" % str(showcount/60/60))
                 root.clear()
             f.close()                   
-            if len(showList) == 0:
-                self.log('fillLiveTV, Unable to find xmltv data for ' + setting1)
+            if showcount < 86400:
+                self.setResetLST(self.settingChannel)
         except Exception,e:
             self.log("fillLiveTV Failed!" + str(e), xbmc.LOGERROR)
         return showList
@@ -2387,10 +2384,9 @@ class ChannelList:
                             self.updateDialog.update(self.updateDialogProgress, "Updating Channel " + str(self.settingChannel), "adding %s Videos" % str(showcount/60/60))
                             
                         if showcount >= limit:
-                            break
-        
-            if showcount == 0:
-                self.log('Unable to find pvr guidedata for ' + setting1)
+                            break     
+            if showcount < 86400:
+                self.setResetLST(self.settingChannel)
         except Exception,e:
             self.log("fillLiveTVPVR Failed!" + str(e), xbmc.LOGERROR) 
             pass
@@ -5074,9 +5070,7 @@ class ChannelList:
         self.log('getStreamDetails') 
         
         
-    def setResetLST(self, channel=None):
-        if not channel:
-            channel = self.settingChannel
+    def setResetLST(self, channel):
         self.myOverlay.ResetLST.append(channel)
         self.myOverlay.ResetLST = sorted(set(self.myOverlay.ResetLST))
         REAL_SETTINGS.setSetting('ResetLST', str(self.myOverlay.ResetLST))
