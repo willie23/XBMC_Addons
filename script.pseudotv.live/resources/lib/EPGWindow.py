@@ -408,10 +408,10 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             chtype = self.MyOverlayWindow.getChtype(curchannel)      
             chname = self.MyOverlayWindow.getChname(curchannel)
             
-            if xbmc.Player().isPlaying() == False:
-                self.log('setButtons, No video is playing, not adding buttons')
-                self.closeEPG()
-                return False
+            # if xbmc.Player().isPlaying() == False:
+                # self.log('setButtons, No video is playing, not adding buttons')
+                # self.closeEPG()
+                # return False
 
             # Backup all of the buttons to an array
             self.toRemove.extend(self.channelButtons[row])

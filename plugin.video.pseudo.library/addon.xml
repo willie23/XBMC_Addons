@@ -14,7 +14,7 @@
         <import addon="script.module.urlresolver" optional="true"/>
         <import addon="script.module.simplejson" /> 
         <import addon="script.common.plugin.cache" version="2.5.2"/>
-        <import addon="script.module.metahandler" version="2.5.1"/>	
+        <import addon="script.module.metahandler" version="2.9.0"/>	
     </requires>
     <extension point="xbmc.python.pluginsource" library="default.py">
     <provides>video</provides>

@@ -438,7 +438,7 @@ class ustvnow:
         xmllst = self.cleanChanName(xmllst)
         fle.write("%s" % xmllst)
         fle.close()
-        # if finished == False:
-            # self.token = 'False'
-            # self.getXMLTV()
+        if finished == False:
+            self.token = 'False'
+            self.getXMLTV()
         return finished

@@ -37,8 +37,8 @@ ADDON_ID = 'plugin.video.pseudo.companion'
 REAL_SETTINGS = xbmcaddon.Addon(id=ADDON_ID)
 ADDON_ID = REAL_SETTINGS.getAddonInfo('id')
 ADDON_NAME = REAL_SETTINGS.getAddonInfo('name').decode('utf-8')
-ADDON_PATH = REAL_SETTINGS.getAddonInfo('path').decode('utf-8')
-ADDON_SETTINGS = REAL_SETTINGS.getAddonInfo('profile').decode('utf-8')
+ADDON_PATH = REAL_SETTINGS.getAddonInfo('path')
+ADDON_SETTINGS = REAL_SETTINGS.getAddonInfo('profile')
 ADDON_VERSION = REAL_SETTINGS.getAddonInfo('version')
 
 # PTVL Info
@@ -49,8 +49,8 @@ LOGODB_API_KEY = PTVL_SETTINGS.getSetting('LOGODB_API_KEY')
 
 # Globals
 metaget = metahandlers.MetaData(preparezip=False)
-ICON = THUMB = os.path.join(ADDON_PATH, 'icon.png')
-FANART = os.path.join(ADDON_PATH, 'fanart.jpg')
+PTVC_ICON = os.path.join(ADDON_PATH, 'icon.png')
+PTVC_FANART = os.path.join(ADDON_PATH, 'fanart.jpg')
 PTVL_ICON = os.path.join(ADDON_PATH,'resources','images','icon.png')
 PTVL_ICON_GRAY = os.path.join(ADDON_PATH,'resources','images','icon_gray.png')
 PC_ICON = os.path.join(ADDON_PATH,'resources','images','pseudocinema.jpg')
@@ -105,13 +105,13 @@ def log(msg, level = xbmc.LOGDEBUG):
     xbmc.log(ADDON_ID + '-' + ADDON_VERSION + '-' + uni(msg), level)
 
 def Comingsoon():
-    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Coming Soon", 1000, THUMB) )
+    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Coming Soon", 1000, PTVC_ICON) )
     
 def Unavailable():
-    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Unavailable", 1000, THUMB) )
+    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Unavailable", 1000, PTVC_ICON) )
     
 def TryAgain():
-    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Try Again Later...", 1000, THUMB) )
+    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", "Try Again Later...", 1000, PTVC_ICON) )
 
 def show_busy_dialog():
     xbmc.executebuiltin('ActivateWindow(busydialog)')
@@ -300,12 +300,23 @@ def CleanCHnameSeq(text):
     return (''.join(i for i in text if not i.isdigit())).lstrip()
 
 def FindLogo(chname):
-    url = False
+    log('utils: FindLogo')
+    FindLogoThread = threading.Timer(0.5, FindLogo_Thread, [chname])
+    FindLogoThread.name = "FindLogoThread"
+    if FindLogoThread.isAlive():
+        FindLogoThread.cancel()
+        FindLogoThread.join()
+    FindLogoThread.start()
+    xbmc.sleep(10)
+         
+def FindLogo_Thread(chname):
+    log('utils: FindLogo_Thread')
+    url = PTVC_ICON
     Cchname = CleanCHname(chname)
     url = FindLogo_URL(Cchname)
     if not url:
         url = FindLogo_URL(CleanCHnameSeq(Cchname))
-    return url
+    setProperty('PC.CHLOGO_%s' % (chname.lower()),(url or PTVC_ICON))
            
 def FindLogo_URL(chname):
     # thelogodb search
@@ -474,11 +485,10 @@ def getType():
         else:
             return Types[select]
          
-def addDir(name,description,url,previous,mode,thumb=ICON,icon=ICON,fanart=FANART,infoList=False,infoArt=False,content_type='video',showcontext=False):
+def addDir(name,description,url,previous,mode,thumb=PTVC_ICON,ic=PTVC_ICON,fan=PTVC_FANART,infoList=False,infoArt=False,content_type='video',showcontext=False):
     log('utils: addDir')
     liz = xbmcgui.ListItem(name)
-    liz.setIconImage(icon)
-    liz.setProperty("Fanart_Image", fanart)
+    liz.setArt({'thumb': ic, 'fanart': fan})
     liz.setProperty('IsPlayable', 'false')
     
     # if showcontext == True:
@@ -498,12 +508,10 @@ def addDir(name,description,url,previous,mode,thumb=ICON,icon=ICON,fanart=FANART
         
     xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True)
       
-def addLink(name,description,url,previous,mode,thumb=ICON,icon=ICON,fanart=FANART,infoList=False,infoArt=False,content_type='video',showcontext=False,total=0):
+def addLink(name,description,url,previous,mode,thumb=PTVC_ICON,ic=PTVC_ICON,fan=PTVC_FANART,infoList=False,infoArt=False,content_type='video',showcontext=False,total=0):
     log('utils: addLink') 
     liz = xbmcgui.ListItem(name)
-    liz.setIconImage(icon)
-    liz.setThumbnailImage(thumb)
-    liz.setProperty("Fanart_Image", fanart)
+    liz.setArt({'thumb': ic, 'fanart': fan})
     liz.setProperty('IsPlayable', 'true')
     
     # if showcontext == True:
@@ -921,15 +929,15 @@ def chkVersion():
     except:
         pass   
         
-def infoDialog(message, header=ADDON_NAME, show=True, sound=False, time=1000, icon=THUMB):
+def infoDialog(message, header=ADDON_NAME, show=True, sound=False, time=1000, ic=PTVC_ICON):
     setProperty('PTVL.NOTIFY_LOG', message)
     log('utils: infoDialog: ' + message)
     if show == True:
         try: 
-            xbmcgui.Dialog().notification(header, message, icon, time, sound=False)
+            xbmcgui.Dialog().notification(header, message, ic, time, sound=False)
         except Exception,e:
             log("utils: infoDialog Failed! " + str(e))
-            xbmc.executebuiltin("Notification(%s, %s, %d, %s)" % (header, message, time, THUMB))
+            xbmc.executebuiltin("Notification(%s, %s, %d, %s)" % (header, message, time, PTVC_ICON))
             
 def isDon():
     return getProperty("Verified_Donor") == "true"
@@ -1376,8 +1384,8 @@ def getExternalChannels(type, source='', list='Community', Channels='True'):
                 url = line[1]
                 channel_name = line[2]
             if Channels == 'True':
-                PNlogo = (FindLogo(channel_name) or ICON)
-                addDir(channel_name,'',('%s,%s,%s,%s' %(type, source, list, channel_name)),'getExternalChannels',2000, PNlogo, PNlogo)
+                FindLogo(channel_name)
+                addDir(channel_name,'',('%s,%s,%s,%s' %(type, source, list, channel_name)),'getExternalChannels',2000, getProperty('PC.CHLOGO_%s' %channel_name.lower()), getProperty('PC.CHLOGO_%s' %channel_name.lower()))
             else:
                 if channel_name.lower() == Channels.lower():
                     url = url.split(',')

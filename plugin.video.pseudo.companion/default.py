@@ -106,10 +106,10 @@ def getSources():
     else:
         addDir('PseudoTV Live: '+STATUS,'','','getSources','',PTVL_ICON_GRAY,PTVL_ICON_GRAY)
         addDir('Channel Tools','','','',9001)
-    if isDon() == True:
-        addDir('Donor Exclusives','','','',9002)
-    else:
-        addDir('PseudoNetworks','','','',2001)
+        # if isDon() == True:
+        addDir('PseudoNetworks','','','',9002)
+        # else:
+        # addDir('PseudoNetworks','','','',2001)
         
 def getOnline():
     log('getOnline')
@@ -456,7 +456,7 @@ def getNowWatching():
     infoList['Year']          = int(getProperty("OVERLAY.PLAYING.Chnum") or '0')
     infoArt = {}
     infoArt['thumb']        = (getProperty("OVERLAY.PLAYING.poster") or PTVL_ICON)
-    infoArt['fanart']       = (getProperty("OVERLAY.PLAYING.landscape") or getProperty("OVERLAY.PLAYING.fanart") or FANART)
+    infoArt['fanart']       = (getProperty("OVERLAY.PLAYING.landscape") or getProperty("OVERLAY.PLAYING.fanart") or PTVC_FANART)
     addDir('1','','','getOnline',1,infoList=infoList,infoArt=infoArt)
         
 def getChannelGuide():
@@ -465,7 +465,7 @@ def getChannelGuide():
     infoList['Title']         = 'Channel Guide'
     infoArt = {}
     infoArt['thumb']        = PTVL_ICON
-    infoArt['fanart']       = FANART
+    infoArt['fanart']       = PTVC_FANART
     addDir('2','','','getOnline',3,infoList=infoList,infoArt=infoArt)
     
 def getOnNow():
@@ -474,7 +474,7 @@ def getOnNow():
     infoList['Title']         = 'On Now'
     infoArt = {}
     infoArt['thumb']        = PTVL_ICON
-    infoArt['fanart']       = FANART
+    infoArt['fanart']       = PTVC_FANART
     addDir('3','','','getOnline',1,infoList=infoList,infoArt=infoArt)
         
 def getSidebar():
@@ -483,7 +483,7 @@ def getSidebar():
     infoList['Title']         = 'Sidebar'
     infoArt = {}
     infoArt['thumb']        = PTVL_ICON
-    infoArt['fanart']       = FANART
+    infoArt['fanart']       = PTVC_FANART
     addDir('4','','','getOnline',7,infoList=infoList,infoArt=infoArt)
     
 def getMiscs():
@@ -492,7 +492,7 @@ def getMiscs():
     infoList['Title']         = 'Misc.'
     infoArt = {}
     infoArt['thumb']        = PTVL_ICON
-    infoArt['fanart']       = FANART
+    infoArt['fanart']       = PTVC_FANART
     addDir('8','','','getOnline',8,infoList=infoList,infoArt=infoArt)
         
 def getLocalVideo():

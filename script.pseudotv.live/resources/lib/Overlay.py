@@ -526,7 +526,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         self.actionSemaphore.release()
         self.loadReminder()
         self.FEEDtoggle()
-        self.startOnNowTimer(TimeRemainder(ONNOW_REFRESH))
+        self.startOnNowTimer()
         REAL_SETTINGS.setSetting('Normal_Shutdown', "false")
         setProperty("PTVL.VideoWindow","true")
                 
@@ -1044,7 +1044,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         xbmc.sleep(int(round((self.channelDelay/4))))
                    
         # First, check to see if the video stop should be ignored
-        if chtype > 7 or mediapath[-4:].lower() == 'strm':
+        if chtype in [8,9,10,11,13,14,15,16] or mediapath[-4:].lower() == 'strm':
             self.Player.ignoreNextStop = True
             self.log("setChannel, ignoreNextStop")
 
@@ -2203,15 +2203,15 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         if self.isExiting == False:
             chtype = self.getChtype(self.currentChannel)
             # Resume playback for live streams, except pvr backend which has timeshift buffer.
-            if chtype in [8,9] and not getProperty("OVERLAY.Mediapath").startswith('pvr://'):
+            if chtype in [8,9,10,11,13,14,15,16] and not getProperty("OVERLAY.Mediapath").startswith('pvr://'):
                 self.Player.resumePlayback()
             try:
-                if isLowPower() == False:
-                    if self.Player.isActuallyPlaying() == False:
-                        raise Exception()
-                else:
-                    if self.Player.isPlaybackValid() == False:
-                        raise Exception()
+                # if isLowPower() == False:
+                    # if self.Player.isActuallyPlaying() == False:
+                        # raise Exception()
+                # else:
+                if self.Player.isPlaybackValid() == False:
+                    raise Exception()
                         
                 # self.TitleCHK(uni(self.Player.getPlayerTitle()))
                 self.notPlayingCount = 0  
@@ -2223,28 +2223,25 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                 self.notPlayingCount += 1
                 # 3peat lastActionTrigger known vaild channel
                 if self.FailedPlayingCount == 3:     
-                    if self.Player.isPlaybackValid() == False:
-                        self.CloseDialog()
-                        self.startPlayerTimer(self.ActionTimeInt)
-                        self.lastActionTrigger('LastValid')
+                    self.CloseDialog()
+                    self.startPlayerTimer(self.ActionTimeInt)
+                    self.lastActionTrigger('LastValid')
                 
                 elif self.notPlayingCount > int(round((playActionTime/4)*3)):
                     OptNotify("notPlayingCount = " + str(self.notPlayingCount) + "/" + str(playActionTime))
                     # retry same channel
                     if self.notPlayingCount == playActionTime/2:
-                        if self.Player.isPlaybackValid() == False:
-                            self.CloseDialog()
-                            self.startPlayerTimer(self.ActionTimeInt)
-                            self.lastActionTrigger('Current')
+                        self.CloseDialog()
+                        self.startPlayerTimer(self.ActionTimeInt)
+                        self.lastActionTrigger('Current')
                 
                     # channel failed, lastActionTrigger, temp disable failed channel
                     elif self.notPlayingCount == playActionTime: 
-                        if self.Player.isPlaybackValid() == False:
-                            self.FailedPlayingCount += 1
-                            self.setInvalidateChannel()
-                            self.CloseDialog()
-                            self.startPlayerTimer(self.ActionTimeInt)
-                            self.lastActionTrigger() 
+                        self.FailedPlayingCount += 1
+                        self.setInvalidateChannel()
+                        self.CloseDialog()
+                        self.startPlayerTimer(self.ActionTimeInt)
+                        self.lastActionTrigger() 
         
             # disable dialog checks while system is taxed or on low end hardware
             if isLowPower() == False:
