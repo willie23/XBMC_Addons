@@ -18,7 +18,7 @@
 
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 import subprocess, os, sys, re, random, threading
-import datetime, time
+import datetime, time, shutil
 
 from urllib import unquote
 from xml.dom.minidom import parse, parseString
@@ -39,14 +39,14 @@ class SkinManager(xbmcgui.WindowXMLDialog):
             xbmcgui.WindowXMLDialog.__init__(self, *args, **kwargs)      
             self.clearProps() 
             self.local = False
-            self.skinPOS = 0 
             self.skinPOSMAX = 0
             self.screenshotPOS = 1
             self.selSkin = Skin_Select
             self.skinLOC = xbmc.translatePath(PTVL_SKIN_LOC)
             self.skinNames = ['Default']
             self.fillSkins()
-            self.setSkin(self.findSkin())
+            self.skinPOS = self.findSkin()
+            self.setSkin(self.skinPOS)
             setProperty('PTVL.SSLEFTD','FFFFFFFF')
             setProperty('PTVL.SSRIGHTD','FFFFFFFF')
             setProperty('PTVL.SSUPD','FFFFFFFF')
@@ -153,9 +153,24 @@ class SkinManager(xbmcgui.WindowXMLDialog):
             self.log("onAction, ACTION_MOVE_DOWN")
             setProperty('PTVL.SSDOWND','FF0297eb')
             setProperty('PTVL.SSUPD','FFFFFFFF')
-            self.rotateImage('DOWN') 
+            self.rotateImage('DOWN') # Delete button
+        elif act.getButtonCode() == 61575 or action == ACTION_DELETE_ITEM:
+            self.deleteSkin(self.skinNames[self.skinPOS])
                  
 
+    def deleteSkin(self, selSkin):
+        if selSkin == 'Default':
+            return
+        try:
+            if yesnoDialog('%s "%s" Skin' %('Delete', selSkin)) == True:
+                shutil.rmtree(os.path.join(self.skinLOC,selSkin))
+        except:
+            pass
+        self.selSkin = self.skinNames[0]
+        REAL_SETTINGS.setSetting("SkinSelector",self.selSkin)
+        self.closeManager()
+    
+    
     def downloadSkin(self, selSkin):
         self.log("downloadSkin")
         url = ('https://github.com/PseudoTV/PseudoTV_Skins/raw/master/%s/%s.zip' %(selSkin,selSkin))  
@@ -188,7 +203,6 @@ class SkinManager(xbmcgui.WindowXMLDialog):
                         return
                 self.selSkin = self.skinNames[self.skinPOS]
                 REAL_SETTINGS.setSetting("SkinSelector",self.selSkin)
-                self.setSkin(self.skinPOS)
                 self.closeManager()
         
         

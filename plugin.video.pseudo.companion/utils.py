@@ -47,6 +47,12 @@ PTVL_SETTINGS = xbmcaddon.Addon(id=PTVL_ID)
 YT_API_KEY = PTVL_SETTINGS.getSetting('YT_API_KEY')
 LOGODB_API_KEY = PTVL_SETTINGS.getSetting('LOGODB_API_KEY')
 
+LIMIT_VALUES = [25,50,100,250,500,1000,5000,0]#Media Per/Channel, 0 = Unlimited
+try:
+    MEDIA_LIMIT = LIMIT_VALUES[int(PTVL_SETTINGS.getSetting('MEDIA_LIMIT'))]
+except:
+    MEDIA_LIMIT = 25
+
 # Globals
 metaget = metahandlers.MetaData(preparezip=False)
 PTVC_ICON = os.path.join(ADDON_PATH, 'icon.png')
@@ -666,6 +672,7 @@ def getYoutubeUserID(YTid):
         
 def getYoutubeVideos(content_type, previous, YT_Type, YT_ID, YT_NextPG, limit, YTMSG):
     log("getYoutubeVideos, YT_Type = " + str(YT_Type) + ', YT_ID = ' + YT_ID) 
+    cnt = 0
     region = 'US' #todo
     lang = xbmc.getLanguage(xbmc.ISO_639_1)
     Last_YT_NextPG = YT_NextPG      
@@ -714,7 +721,7 @@ def getYoutubeVideos(content_type, previous, YT_Type, YT_ID, YT_NextPG, limit, Y
                 VidID = VidIDS.group(1)
                 YT_Meta = getYoutubeMeta(VidID)
 
-                if YT_Meta and YT_Meta[2] > 0: 
+                if YT_Meta and YT_Meta[2] > 0:          
                     try:
                         Genre = cats[YT_Meta[5]]
                     except:
@@ -736,6 +743,7 @@ def getYoutubeVideos(content_type, previous, YT_Type, YT_ID, YT_NextPG, limit, Y
                     infoArt = {}
                     infoArt['thumb']        = (meta['cover_url']  or YT_Meta[3])
                     infoArt['poster']       = (meta['cover_url']  or YT_Meta[3]) 
+                    cnt += 1
                     addLink(showtitle,YT_Meta[1],youtube_player_ok + VidID,'previous',5001,infoList=infoList,infoArt=infoArt,total=len(detail))
     except Exception,e:
         log('getYoutubeVideos, Failed!, ' + str(e))
@@ -1316,7 +1324,6 @@ def runWriteSettings2():
         
     
 ###################
-
 
 def fillExternalList(type, source='', list='Community'):
     log('fillExternalList')

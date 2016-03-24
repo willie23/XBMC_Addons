@@ -240,6 +240,7 @@
     <string id="36996">Opting out? No personal information is shared,</string>
     <string id="36997">only data relevant to the continuation of this project.</string>
     <string id="30943">Override Optimized Settings ie. Disable "LowPower"</string>
+    <string id="30994">Disable Video Playback on Startup [Experimental]</string>
     <string id="30944">Force LiveTV reset on every startup</string>
     <string id="30912">Personal APIKEY (Optional)</string>
     <string id="30922">TMDB APIKEY</string>

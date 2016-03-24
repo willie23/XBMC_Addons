@@ -319,7 +319,7 @@ def findGithubLogo(chname):
                 log('utils: findGithubLogo, Logo Match: ' + Studio.lower() + ' = ' + (Studiolst[i]).lower())
                 break
     return url
-           
+    
 def hasAPI(key):
     if isPlugin(key) == True:
         set_Kodi_JSON(decodeString(DOX_API_KEY) %key)
@@ -372,8 +372,8 @@ def GA_Request():
         "",
         urllib.urlencode(DATA),
         ""))
-        if REAL_SETTINGS.getSetting('ga_disable') == 'false':
-            urllib2.urlopen(URL).info()
+        # if REAL_SETTINGS.getSetting('ga_disable') == 'false':
+        urllib2.urlopen(URL).info()
         # else:
             # sendShout(str(OPTIONS))
     except Exception,e:  
@@ -748,9 +748,7 @@ def hide_busy_dialog():
         
 def Error(header, line1= '', line2= '', line3= ''):
     setProperty('PTVL.ERROR_LOG', message)
-    dlg = xbmcgui.Dialog()
-    dlg.ok(header, line1, line2, line3)
-    del dlg
+    okDialog( line1, line2, line3, header)
     
 def showText(heading, text):
     log("utils: showText")
@@ -792,8 +790,25 @@ def DebugNotify(message, header=ADDON_NAME, show=DEBUG, sound=False, time=1000, 
 def OptNotify(message, header=ADDON_NAME, show=NOTIFY, sound=False, time=1000, icon=THUMB):
     infoDialog(message, header, show, sound, time, icon)
     
-def okDialog(str1, str2='', header=ADDON_NAME):
-    xbmcgui.Dialog().ok(header, str1, str2)
+def okDialog(str1, str2='', str3='', header=ADDON_NAME):
+    xbmcgui.Dialog().ok(header, str1, str2, str3)
+    
+def textViewer(text, header=ADDON_NAME):
+    xbmcgui.Dialog().textviewer(header, text)
+    
+def browse(type=0, shares='', mask='', useThumbs=True, treatAsFolder=True, default='', enableMultiple=False, heading=ADDON_NAME):
+    xbmcgui.Dialog().browse(type, heading, shares, mask, useThumbs, treatAsFolder, default, enableMultiple)
+    # Types:
+    # - 0 : ShowAndGetDirectory
+    # - 1 : ShowAndGetFile
+    # - 2 : ShowAndGetImage
+    # - 3 : ShowAndGetWriteableDirectory
+
+def browseMultiple(type=0, shares='', mask='', useThumbs=True, treatAsFolder=True, default='', heading=ADDON_NAME):
+    xbmcgui.Dialog().browseMultiple(type, heading, shares, mask, useThumbs, treatAsFolder, default)
+
+def browseSingle(type=0, shares='', mask='', useThumbs=True, treatAsFolder=True, default='', heading=ADDON_NAME):
+    xbmcgui.Dialog().browseSingle(type, heading, shares, mask, useThumbs, treatAsFolder, default)
 
 def selectDialog(list, header=ADDON_NAME, autoclose=0):
     if len(list) > 0:
@@ -812,6 +827,10 @@ def matchMselect(list, select):
             slist.append(list[select[i]]) 
         return slist
 
+def inputDialog(header=ADDON_NAME, type=xbmcgui.INPUT_ALPHANUM):
+    input = xbmcgui.Dialog().input(header, type)     
+    return input
+    
 def yesnoDialog(str1, str2='', header=ADDON_NAME, yes='', no=''):
     answer = xbmcgui.Dialog().yesno(header, str1, str2, '', yes, no)
     return answer
@@ -1219,6 +1238,61 @@ def getGithubZip(url, lib, addonpath, MSG):
     xbmc.executebuiltin("XBMC.UpdateLocalAddons()"); 
     infoDialog(MSG)
     
+def getRepo():
+    log('utils: getRepo')
+    url='https://github.com/Lunatixz/XBMC_Addons/raw/master/zips/repository.lunatixz/repository.lunatixz-1.0.zip'
+    name = 'repository.lunatixz.zip' 
+    MSG = 'Lunatixz Repository Installed'    
+    path = xbmc.translatePath(os.path.join('special://home/addons','packages'))
+    addonpath = xbmc.translatePath(os.path.join('special://','home/addons'))
+    lib = os.path.join(path,name)
+    log('utils: URL = ' + url)
+
+    # Delete old install package
+    try: 
+        FileAccess.delete(lib)
+        log('utils: deleted old package')
+    except: 
+        pass
+        
+    try:
+        download(url, lib, '')
+        log('utils: downloaded new package')
+        all(lib,addonpath,'')
+        log('utils: extracted new package')
+    except: 
+        MSG = 'Failed to install Lunatixz Repository, Try Again Later'
+        pass
+        
+    xbmc.executebuiltin("XBMC.UpdateLocalAddons()"); 
+    xbmc.executebuiltin("Notification( %s, %s, %d, %s)" % ("PseudoTV Live", MSG, 1000, THUMB) )
+    return   
+ 
+def chkVersion():
+    log('utils: chkVersion')
+    curver = xbmc.translatePath(os.path.join(ADDON_PATH,'addon.xml'))    
+    source = open(curver, mode='r')
+    link = source.read()
+    source.close()
+    match = re.compile('" version="(.+?)" name="PseudoTV Live"').findall(link)
+    
+    for vernum in match:
+        log("utils: Current Version = " + str(vernum))
+    try:
+        link = open_url('https://raw.githubusercontent.com/Lunatixz/XBMC_Addons/master/script.pseudotv.live/addon.xml').read() 
+        link = link.replace('\r','').replace('\n','').replace('\t','').replace('&nbsp;','')
+        match = re.compile('" version="(.+?)" name="PseudoTV Live"').findall(link)
+    except:
+        pass   
+        
+    if len(match) > 0:
+        if vernum != str(match[0]):
+            if not isPlugin('repository.lunatixz'):
+                if yesnoDialog('The current available version is '+str(match[0]),'Would you like to install the PseudoTV Live repository and stay updated?','[B]PseudoTV Live Update Available![/B]',"Install","Cancel"):
+                    getRepo()
+            else:
+                get_Kodi_JSON('"method":"Addons.SetAddonEnabled","params":{"addonid":"repository.lunatixz","enabled":true}')
+     
 def isCompanionInstalled():
     companion = isPlugin('plugin.video.pseudo.companion')
     log('utils: isCompanionInstalled = ' + str(companion))
@@ -1286,7 +1360,7 @@ def chkLowPower():
 
 def isLowPower():
     return getProperty("PTVL.LOWPOWER") == "true"
-       
+    
 def chkAPIS(list):
     try:
         list = list.split('|')
@@ -1295,7 +1369,7 @@ def chkAPIS(list):
             hasAPI(key)
     except:
         pass
-
+        
 def ClearPlaylists():
     log('utils: ClearPlaylists')
     for i in range(CHANNEL_LIMIT):
@@ -1382,7 +1456,7 @@ def restoreSettings2():
         if select != -1:
             RESTORE_FILE = backuplist[select]+'.xml'
             RESTORE_FLEPATH = os.path.join(BACKUP_LOC, RESTORE_FILE)
-            if dlg.yesno("PseudoTV Live", 'Restoring will remove current channel configurations, Are you sure?'):
+            if yesnoDialog('Restoring will remove current channel configurations, Are you sure?'):
                 Restore(RESTORE_FLEPATH, SETTINGS_FLE)
                 if getSize(SETTINGS_FLE) == getSize(RESTORE_FLEPATH):
                     REAL_SETTINGS.setSetting('ForceChannelReset', 'true')
@@ -1392,7 +1466,7 @@ def restoreSettings2():
         
 def purgeSettings2():
     log('utils: purgeSettings2')
-    if dlg.yesno("PseudoTV Live", 'Are you sure you want to remove all previous backups?'):       
+    if yesnoDialog('Are you sure you want to remove all previous backups?'):       
         dirs,files = xbmcvfs.listdir(BACKUP_LOC)
         for i in range(len(files)):
             try:
@@ -1433,8 +1507,9 @@ def HandleUpgrade():
 
     # Install PTVL Isengard Context Export, Workaround for addon.xml 'optional' flag not working.
     # set 'optional' as true so users can disable if unwanted.
-    # if getXBMCVersion() > 14 and isContextInstalled() == False:
-        # getContext()
+    if getXBMCVersion() > 14 and isContextInstalled() == False:
+        if yesnoDialog('Would you like to install PseudoTV Live export context menu?'):       
+            getContext()
         
 def isPTVLOutdated():
     log('utils: isPTVLOutdated')
@@ -1458,18 +1533,19 @@ def isPTVLOutdated():
 
 def preStart(): 
     log('utils: preStart')
-    # chkAPIS(RSS_API_KEY)
+    chkVersion()
+    chkAPIS(RSS_API_KEY) 
+    
+    #patch kodi skin
+    patchSeekbar()
     
     # Optimize settings based on sys.platform
     chkLowPower()
     
     # Disable long term debugging
     if isDebug() == True:
-        if yesnoDialog('Its recommended you disable debug logging for standard use','Disable Debugging?') == True:
+        if yesnoDialog('Its recommended you disable debug logging for standard use',header='PseudoTV Live - Disable Debugging?') == True:
             REAL_SETTINGS.setSetting('enable_Debug', "false")
-
-    # Check if autoplay playlist is enabled
-    chkAutoplay(True)
     
     # Chk forcereset, clearcache & playlists
     if REAL_SETTINGS.getSetting("ForceChannelReset") == "true":
@@ -1493,12 +1569,15 @@ def preStart():
     
 def TimeRemainder(val):
     log("utils: TimeRemainder, val = " + str(val))
-    dt = datetime.datetime.now()
-    # how many secs have passed this hour
-    nsecs = dt.minute*60 + dt.second + dt.microsecond*1e-6
-    # number of seconds to next val hour mark
-    delta = (nsecs//val)*val + val - nsecs
-    log("utils: TimeRemainder, delta = " + str(delta))
+    try:
+        dt = datetime.datetime.now()
+        # how many secs have passed this hour
+        nsecs = dt.minute*60 + dt.second + dt.microsecond*1e-6
+        # number of seconds to next val hour mark
+        delta = (nsecs//val)*val + val - nsecs
+        log("utils: TimeRemainder, delta = " + str(delta))
+    except:
+        delta = 1
     return delta
 
 def PlaylistLimit():  
@@ -1612,7 +1691,7 @@ def help(chtype):
     title = type + ' Configuration Help'
     f = open_url(URL)
     text = f.read()
-    showText(title, text)
+    textViewer(text, title)
 
 def getRSSFeed(genre):
     log("utils: getRSSFeed, genre = " + genre)
@@ -1811,7 +1890,6 @@ def datetime_to_epoch(dt):
 @cache_weekly   
 def getJson(url):
     log("utils: getJson") 
-    print url
     response = urllib2.urlopen(url)
     return json.load(response)
     
@@ -1884,3 +1962,25 @@ def getChanPrefix(chantype, channame):
     else:
         newlabel = channame
     return newlabel
+    
+def patchSeekbar():
+    DSPath = xbmc.translatePath(os.path.join(XBMC_SKIN_LOC, 'DialogSeekBar.xml'))
+    log("utils: patchSeekbar, DSPath = " + ascii(DSPath)) 
+    #Patch dialogseekbar to ignore OSD for PTVL.
+    found = False
+    try:
+        f = open(DSPath, "r")
+        lineLST = f.readlines()            
+        f.close()
+
+        for i in range(len(lineLST)):
+            patch = lineLST[i].find('<visible>Window.IsActive(fullscreenvideo) + !Window.IsActive(script.pseudotv.TVOverlay.xml) + !Window.IsActive(script.pseudotv.live.TVOverlay.xml)</visible>')
+            if patch > 0:
+                found = True
+                
+        if found == False:
+            replaceAll(DSPath,'<window>','<window>\n\t<visible>Window.IsActive(fullscreenvideo) + !Window.IsActive(script.pseudotv.TVOverlay.xml) + !Window.IsActive(script.pseudotv.live.TVOverlay.xml)</visible>')
+            xbmc.executebuiltin('XBMC.ReloadSkin()')
+            log('utils: patchSeekbar, Patched dialogseekbar.xml')
+    except Exception,e:
+        log('utils: patchSeekbar, Failed! ' + str(e))

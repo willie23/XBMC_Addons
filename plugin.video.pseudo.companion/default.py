@@ -36,12 +36,8 @@ from utils import *
       
 def getLBchannels(limit=100):
     log("getLBchannels") 
-    try:
-        line = getDonlist('lb.ini')
-        if not line:
-            raise
-            
-        data = getJson(line[0]+PTVL_SETTINGS.getSetting("GBOX_API")+'/' + (line[1] %('all',limit)))
+    try:            
+        data = getJson('https://api-public.guidebox.com/v1.43/US/'+PTVL_SETTINGS.getSetting("GBOX_API")+'/' + ('leanback/%s/0/%d' %('all',limit)))
         rtItems = data["results"]
         for i in range(len(rtItems)):
             Item = rtItems[i]
@@ -50,22 +46,17 @@ def getLBchannels(limit=100):
             chid = str(Item["id"])
             addDir(title,'',chid,'getLBchannels',3010,thumb,thumb)
             
-        if len(line) > 0:
+        getParamount()
+        if isDon() == True:
             addDir('Popcorn Movies','','','getLBchannels',3002,POPCORN_ICON,POPCORN_ICON)
-            getParamount()
         getExternalChannels('YouTube','Networks')
     except:
         return
-    
-    
+      
 def getLBchannelsItems(id, limit=100):
     log("getLBchannelsItems")
-    try:
-        line = getDonlist('lb.ini')
-        if not line:
-            raise
-            
-        data = getJson(line[0]+PTVL_SETTINGS.getSetting("GBOX_API")+'/' + (line[1] % (str(id),limit)))
+    try:        
+        data = getJson('https://api-public.guidebox.com/v1.43/US/'+PTVL_SETTINGS.getSetting("GBOX_API")+'/' + ('leanback/%s/0/%d' % (str(id),limit)))
         rtItems = data["results"]
         channelItem = []
         for i in range(len(rtItems)):
@@ -106,10 +97,10 @@ def getSources():
     else:
         addDir('PseudoTV Live: '+STATUS,'','','getSources','',PTVL_ICON_GRAY,PTVL_ICON_GRAY)
         addDir('Channel Tools','','','',9001)
-        # if isDon() == True:
-        addDir('PseudoNetworks','','','',9002)
-        # else:
+        getOnlineMedia()
         # addDir('PseudoNetworks','','','',2001)
+        if isDon() == True:
+            addDir('Donor Exclusives','','','',9002)
         
 def getOnline():
     log('getOnline')
@@ -120,8 +111,7 @@ def getOnline():
     addDir('Scheduled Reminders','Coming Soon','','',4,PTVL_ICON,PTVL_ICON)
     addDir('Scheduled Recordings','Coming Soon','','',5,PTVL_ICON,PTVL_ICON)
     addDir('Recorded TV','Coming Soon','','',6,PTVL_ICON,PTVL_ICON)
-    
-    
+      
 def getMisc():
     getStatus()
     getNotice()
@@ -201,7 +191,6 @@ def getError():
    
 def getExclusives():
     getMedia()
-    getOnlineMedia()
     # addDir('Update Guidedata','','','getTools',11000)
     
 def getTools():
@@ -530,23 +519,16 @@ def getBCTs():
     comingsoon()
 
 def getParamount():
-    try:
-        line = getDonlist('pv.ini')
-        if not line:
-            raise
-    except:
-        return
-
-    addDir('New Releases','',line[0],'getParamount',3012,NEWR_ICON,NEWR_ICON)
-    addDir('Movies 4 Men','',line[1],'getParamount',3012,MMOVIE_ICON,MMOVIE_ICON)
-    addDir('Action Movies','',line[2],'getParamount',3012,ACTION_ICON,ACTION_ICON)
-    addDir('Classics Movies','',line[3],'getParamount',3012,CLASSIC_ICON,CLASSIC_ICON)
-    addDir('Comedy Movies','',line[4],'getParamount',3012,COMEDY_ICON,COMEDY_ICON)
-    addDir('Drama Movies','',line[5],'getParamount',3012,DRAMA_ICON,DRAMA_ICON)
-    addDir('Horror Movies','',line[6],'getParamount',3012,HORROR_ICON,HORROR_ICON)
-    addDir('Sci-Fi Movies','',line[7],'getParamount',3012,SCIFI_ICON,SCIFI_ICON)
-    addDir('Thriller Movies','',line[8],'getParamount',3012,THRILLER_ICON,THRILLER_ICON)
-    addDir('Western Movies','',line[9],'getParamount',3012,WESTERN_ICON,WESTERN_ICON)
+    addDir('New Releases','','PLd0LhgZxFkVKh_JNXcdHoPYo832Wu9fub','getParamount',3012,NEWR_ICON,NEWR_ICON)
+    addDir('Movies 4 Men','','PLd0LhgZxFkVJbKX_LyERYB6TRk9pbNO5O','getParamount',3012,MMOVIE_ICON,MMOVIE_ICON)
+    addDir('Action Movies','','PLd0LhgZxFkVII3x-u6Ogh90iEepCLjKcW','getParamount',3012,ACTION_ICON,ACTION_ICON)
+    addDir('Classics Movies','','PLd0LhgZxFkVI7ds18u2o-qVluJfREYsIf','getParamount',3012,CLASSIC_ICON,CLASSIC_ICON)
+    addDir('Comedy Movies','','PLd0LhgZxFkVINkUJWrXd3AdGkrPGfpByw','getParamount',3012,COMEDY_ICON,COMEDY_ICON)
+    addDir('Drama Movies','','PLd0LhgZxFkVLtg4IZ-1jgGPmwZyhR-66o','getParamount',3012,DRAMA_ICON,DRAMA_ICON)
+    addDir('Horror Movies','','PLd0LhgZxFkVKnyj6NIMTwGfL-KqBtGyFZ','getParamount',3012,HORROR_ICON,HORROR_ICON)
+    addDir('Sci-Fi Movies','','PLd0LhgZxFkVJFsvRos55jeIKHKBmfN2uA','getParamount',3012,SCIFI_ICON,SCIFI_ICON)
+    addDir('Thriller Movies','','PLd0LhgZxFkVJ4iI_mkUiHjwhW3c98GoLC','getParamount',3012,THRILLER_ICON,THRILLER_ICON)
+    addDir('Western Movies','','PLd0LhgZxFkVLB8Zs8bQP5B-bnLimzY0FC','getParamount',3012,WESTERN_ICON,WESTERN_ICON)
 
 def getParamountItems(url):
     getYoutubeVideos('movie', 'getParamountItems', 2, url, '', 200, '')

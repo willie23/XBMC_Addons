@@ -397,7 +397,21 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         else:#Unknown or COLOR_ltGRAY_TYPE
             return (EPGGENRE_LOC + 'COLOR_ltGRAY.png') 
         
-
+        
+    def getPlayerTime(self):
+        try:
+            return xbmc.Player().getTime()
+        except:
+            return 0
+        
+        
+    def getPlayerFile(self):
+        try:
+            return xbmc.Player().getPlayingFile()
+        except:
+            return ''
+            
+            
     # create the buttons for the specified channel in the given row
     def setButtons(self, starttime, curchannel, row):
         try:
@@ -408,11 +422,6 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             chtype = self.MyOverlayWindow.getChtype(curchannel)      
             chname = self.MyOverlayWindow.getChname(curchannel)
             
-            # if xbmc.Player().isPlaying() == False:
-                # self.log('setButtons, No video is playing, not adding buttons')
-                # self.closeEPG()
-                # return False
-
             # Backup all of the buttons to an array
             self.toRemove.extend(self.channelButtons[row])
             self.toRemove.extend(self.channelTags[row])
@@ -440,7 +449,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                         videotime = time.time() - epochBeginDate
                         reftime = time.time()
                     else:                        
-                        videotime = xbmc.Player().getTime()
+                        videotime = self.getPlayerTime()
                         reftime = time.time()        
                 else:
                     if chtype == 8 and len(self.MyOverlayWindow.channels[curchannel - 1].getItemtimestamp(playlistpos)) > 0:
@@ -1063,7 +1072,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         
         if self.MyOverlayWindow.OnDemand and chnoffset == 0:
             plpos = -999
-            mediapath = xbmc.Player().getPlayingFile()
+            mediapath = self.getPlayerFile()
         else:
             while chnoffset != 0:
                 if chnoffset > 0:
@@ -1105,14 +1114,6 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         self.log('SetMediaInfo')
         self.MyOverlayWindow.clearProp('EPG')  
         mpath = getMpath(mediapath)
-        
-        #setCore props
-        setProperty("EPG.Chtype",str(chtype))
-        setProperty("EPG.Mediapath",mediapath)
-        setProperty("EPG.Chname",chname)
-        setProperty("EPG.Chnum",str(newchan))
-        setProperty("EPG.Mpath",mpath)  
-
         if plpos == -999:
             if len(getProperty("OVERLAY.OnDemand_tmpstr")) > 0:
                 tmpstr = (getProperty("OVERLAY.OnDemand_tmpstr")).split('//')
@@ -1130,18 +1131,14 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             Description = self.MyOverlayWindow.channels[newchan - 1].getItemDescription(plpos)
             genre = self.MyOverlayWindow.channels[newchan - 1].getItemgenre(plpos)
             timestamp = (self.MyOverlayWindow.channels[newchan - 1].getItemtimestamp(plpos))
-            myLiveID = (self.MyOverlayWindow.channels[newchan - 1].getItemLiveID(plpos))        
-            Chlogo = self.MyOverlayWindow.getChlogo(newchan)
-            
+            myLiveID = (self.MyOverlayWindow.channels[newchan - 1].getItemLiveID(plpos))    
+                
+        chlogo = self.MyOverlayWindow.getChlogo(newchan)
         season, episode, swtitle = SEinfo(SEtitle, self.showSeasonEpisode)
         type, id, dbepid, managed, playcount, rating, hd, cc, stars, year = self.chanlist.unpackLiveID(myLiveID)
         dbid, epid = splitDBID(dbepid)
         year, title, showtitle = getTitleYear(label, year)
-                        
-        # SetProperties
-        setProperty("EPG.TimeStamp",timestamp)
-        setProperty("EPG.LOGOART",Chlogo)
-        self.MyOverlayWindow.setProp(label, year, chtype, id, genre, rating, hd, cc, stars, mpath, mediapath, chname, SEtitle, type, dbid, epid, Description, swtitle, playcount, season, episode, 'EPG')
+        self.MyOverlayWindow.setProp(label, year, chlogo, chtype, newchan, id, genre, rating, hd, cc, stars, mpath, mediapath, chname, SEtitle, type, dbid, epid, Description, swtitle, playcount, season, episode, timestamp, 'EPG')
 
    
     # using the currently selected button, play the proper shows
@@ -1250,7 +1247,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                         videotime = time.time() - epochBeginDate
                         reftime = time.time()
                     else:
-                        videotime = xbmc.Player().getTime()
+                        videotime = self.getPlayerTime()
                         reftime = time.time() 
                 else:
                     playlistpos = self.MyOverlayWindow.channels[channel - 1].playlistPosition

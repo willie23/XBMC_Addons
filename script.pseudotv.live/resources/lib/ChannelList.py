@@ -362,9 +362,13 @@ class ChannelList:
                     returnval = True
                     
                     if chtype == 8: 
+                        # If this channel has been watched for longer than it lasts, reset the channel
+                        if self.channels[channel - 1].totalTimePlayed < self.channels[channel - 1].getTotalDuration():
+                            createlist = False 
+                            
                         # Reset livetv after 24hrs                    
-                        if timedif < (60 * 60 * 24) or self.channels[channel - 1].totalTimePlayed < (60 * 60 * 24):
-                            createlist = False         
+                        if timedif >= (60 * 60 * 24) or self.channels[channel - 1].totalTimePlayed >= (60 * 60 * 24):
+                            createlist = True  
                     else: 
                         if self.channelResetSetting == 0:
                             # If this channel has been watched for longer than it lasts, reset the channel
@@ -391,7 +395,6 @@ class ChannelList:
                 self.log('setupChannel ' + str(channel) + ', _time Failed! ' + str(e))
                 
         if createlist or needsreset:
-            self.clearFileListCache(chtype, channel)
             self.channels[channel - 1].isValid = False
             if makenewlist:
                 try:
@@ -401,6 +404,7 @@ class ChannelList:
                 append = False
 
                 if createlist:
+                    self.clearFileListCache(chtype, channel)
                     ADDON_SETTINGS.setSetting('LastResetTime', str(int(time.time())))
 
         if append == False:
@@ -606,12 +610,12 @@ class ChannelList:
     # Based on a smart playlist, create a normal playlist that can actually be used by us
     def makeChannelList(self, channel, chtype, setting1, setting2, setting3, setting4, append = False):
         self.log('makeChannelList, CHANNEL: ' + str(channel))
+        self.getFileListCache(chtype, channel)
         fileListCHK = False
         israndom = False  
         isreverse = False
         bctType = None
         fileList = []
-        self.getFileListCache(chtype, channel)
         
         # Correct Youtube/Media Limit/Sort Values from outdated configurations
         if chtype in [7,10,11,13,15,16]:
@@ -1080,11 +1084,7 @@ class ChannelList:
                 
             LocalFLE = (LocalLST[i])[0]
             duration = self.getDuration(LocalFLE)
-                                            
-            if duration == 0 and LocalFLE[-4:].lower() == 'strm':
-                duration = 3600
-                self.log("createDirectoryPlaylist, no strm duration found defaulting to 3600")
-                    
+                                                                
             if duration > 0:
                 filecount += 1
                 
@@ -2195,8 +2195,8 @@ class ChannelList:
                                 self.updateDialog.update(self.updateDialogProgress, "Updating Channel " + str(self.settingChannel), "adding %s Videos" % str(showcount/60/60))
                 root.clear()
             f.close()                   
-            if showcount < 86400:
-                self.setResetLST(self.settingChannel)
+            # if showcount < 86400:
+                # self.setResetLST(self.settingChannel)
         except Exception,e:
             self.log("fillLiveTV Failed!" + str(e), xbmc.LOGERROR)
         return showList
@@ -2385,8 +2385,8 @@ class ChannelList:
                             
                         if showcount >= limit:
                             break     
-            if showcount < 86400:
-                self.setResetLST(self.settingChannel)
+            # if showcount < 86400:
+                # self.setResetLST(self.settingChannel)
         except Exception,e:
             self.log("fillLiveTVPVR Failed!" + str(e), xbmc.LOGERROR) 
             pass
@@ -3098,14 +3098,16 @@ class ChannelList:
         else:
             result = self.getDuration_NEW(filename)
         if not result:
-            result = []
+            result = 0
         return result  
         
         
     def getDuration_NEW(self, filename):
         self.log("getDuration_NEW")
-        duration = 0
-        duration = self.videoParser.getVideoLength(filename)
+        try:
+            duration = int(self.videoParser.getVideoLength(filename))
+        except:
+            duration = 0
         # if duration == 0:
             # duration = self.getffprobeLength(filename)
         return duration
@@ -4746,7 +4748,10 @@ class ChannelList:
             if self.threadPause() == False:
                 del fileList[:]
                 break
-                    
+                                                                 
+            if self.filecount >= limit:
+                break
+                   
             try:
                 tmpstr = ''
                 dur_accurate = False
@@ -4850,7 +4855,7 @@ class ChannelList:
                                             year = 0
 
                                         if genres != None and len(genres.group(1)) > 0:
-                                            genre = ((genres.group(1).split(',')[0]).replace('"',''))
+                                            genre = ((genres.group(1).split(','))[0])
                                         else:
                                             genre = 'Unknown'
                                             
@@ -5036,15 +5041,12 @@ class ChannelList:
                                     fileList.extend(self.getFileList(self.requestList(file), channel, limit, excludeLST))
                                     self.dircount += 1
                                     self.log('getFileList, dircount = ' + str(self.dircount) +'/'+ str(dirlimit))
-                                    
-                                elif self.filecount >= limit:
-                                    break
                             else:
                                 self.log('getFileList, ' + label.lower() + ' in excludeLST')                                        
             except Exception,e:
                 self.log('getFileList, failed...' + str(e))
                 self.log(traceback.format_exc(), xbmc.LOGERROR)
-                
+
         if self.channels[channel - 1].mode & MODE_ORDERAIRDATE > 0:
             seasoneplist.sort(key=lambda seep: seep[1])
             seasoneplist.sort(key=lambda seep: seep[0])

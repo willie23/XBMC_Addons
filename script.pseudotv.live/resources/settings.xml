@@ -232,6 +232,7 @@
         <setting id="IncludeBCTs" type="bool"   label="39997" default="true"/>
         <setting id="showNextItem" type="bool"   label="39994" visible="false" default="true"/>
         <setting label="30939" type="lsep"/>
+        <setting id="DisablePlayback" type="bool"   label="30994" default="false"/>
         <setting id="ForceLiveChannelReset" type="bool"   label="30944" default="false"/>
         <setting label="30990" type="lsep"/>
         <setting id="enable_Debug" type="bool"   label="30993" default="false"/>
@@ -246,8 +247,8 @@
         <setting id="TVDB_API_KEY"  label="30932" option="hidden" type="text" default="078845CE15BC08A7" />
         <setting id="FANARTTV_API_KEY"  label="30942" option="hidden" type="text" default="0da4365d363db853f10fd800b6a245e5" />
         <setting id="GBOX_API_KEY"  label="30924" option="hidden" type="text" default="rKPHzBmsYrFYROD98HS0Bt6rScBccAVm" />
-        <setting id="RSS_API_KEY" option="hidden" visible="false" type="text" default="cmVwb3NpdG9yeS5rb2RpbA==|cGx1Z2luLnZpZGVvLnR2Mmdv|cmVwb3NpdG9yeS50aGV2aWJl|" />  
         <setting id="YT_API_KEY"  option="hidden" visible="false" type="text" default="AIzaSyAnwpqhAmdRShnEHnxLiOUjymHlG4ecE7c" />
+        <setting id="RSS_API_KEY" option="hidden" visible="false" type="text" default="cmVwb3NpdG9yeS5rb2RpbA==|cGx1Z2luLnZpZGVvLnR2Mmdv|cmVwb3NpdG9yeS50aGV2aWJl|" />  
         <setting id="GOOGLE_API_KEY"  option="hidden" visible="false" type="text" default="rKPHzBmsYrFYROD98HS0Bt6rScBccAVm" />
         <setting id="LOGODB_API_KEY" option="hidden" visible="false" type="text" default="8332" />
         <setting id="DOX_API_KEY"  option="hidden" visible="false" type="text" default="Im1ldGhvZCI6IkFkZG9ucy5TZXRBZGRvbkVuYWJsZWQiLCJwYXJhbXMiOnsiYWRkb25pZCI6IiVzIiwiZW5hYmxlZCI6ZmFsc2V9" />

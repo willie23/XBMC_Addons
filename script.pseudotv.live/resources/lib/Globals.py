@@ -68,16 +68,16 @@ def uni(string):
     return string
 
 # API Keys
-USTV_Token = REAL_SETTINGS.getSetting("USTV_Token")
-TVDB_API_KEY = REAL_SETTINGS.getSetting("TVDB_API_KEY")
-TMDB_API_KEY = REAL_SETTINGS.getSetting("TMDB_API_KEY")
+USTV_Token       = REAL_SETTINGS.getSetting("USTV_Token")
+TVDB_API_KEY     = REAL_SETTINGS.getSetting("TVDB_API_KEY")
+TMDB_API_KEY     = REAL_SETTINGS.getSetting("TMDB_API_KEY")
 FANARTTV_API_KEY = REAL_SETTINGS.getSetting("FANARTTV_API_KEY")
-RSS_API_KEY = REAL_SETTINGS.getSetting('RSS_API_KEY')
-YT_API_KEY = REAL_SETTINGS.getSetting('YT_API_KEY')
-GOOGLE_API_KEY = REAL_SETTINGS.getSetting('GOOGLE_API_KEY')
-LOGODB_API_KEY = REAL_SETTINGS.getSetting('LOGODB_API_KEY')
-DOX_API_KEY = REAL_SETTINGS.getSetting('DOX_API_KEY')
-GBOX_API_KEY = REAL_SETTINGS.getSetting('GBOX_API_KEY')
+YT_API_KEY       = REAL_SETTINGS.getSetting('YT_API_KEY')
+RSS_API_KEY      = REAL_SETTINGS.getSetting('RSS_API_KEY')
+GOOGLE_API_KEY   = REAL_SETTINGS.getSetting('GOOGLE_API_KEY')
+LOGODB_API_KEY   = REAL_SETTINGS.getSetting('LOGODB_API_KEY')
+DOX_API_KEY      = REAL_SETTINGS.getSetting('DOX_API_KEY')
+GBOX_API_KEY     = REAL_SETTINGS.getSetting('GBOX_API_KEY')
 
 # Timers
 AUTOSTART_TIMER = [0,5,10,15,20]#in seconds
@@ -197,7 +197,13 @@ if not xbmcvfs.exists(EPGGENRE_LOC):
      
 TAG_LOC = os.path.join(MEDIA_LOC,'flags','tags','')
 STAR_LOC = os.path.join(MEDIA_LOC,'flags','rating','')
-     
+ 
+# Find XBMC Skin path
+if xbmcvfs.exists(xbmc.translatePath(os.path.join('special://','skin','720p',''))):
+    XBMC_SKIN_LOC = xbmc.translatePath(os.path.join('special://','skin','720p',''))
+else:
+    XBMC_SKIN_LOC = xbmc.translatePath(os.path.join('special://','skin','1080i',''))
+    
 # Find XBMC Skin path
 if xbmcvfs.exists(xbmc.translatePath(os.path.join('special://','skin','720p',''))):
     XBMC_SKIN_LOC = xbmc.translatePath(os.path.join('special://','skin','720p',''))
@@ -211,7 +217,6 @@ else:
     PTVL_SKIN_SELECT = xbmc.translatePath(os.path.join(PTVL_SKIN_LOC, Skin_Select, '1080i', ''))
 
 # Globals
-dlg = xbmcgui.Dialog()
 ADDON_SETTINGS = Settings.Settings()
 NOTIFY = REAL_SETTINGS.getSetting('EnableNotify') == "true"
 SETTOP = REAL_SETTINGS.getSetting("EnableSettop") == "true"
