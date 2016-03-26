@@ -4855,7 +4855,7 @@ class ChannelList:
                                             year = 0
 
                                         if genres != None and len(genres.group(1)) > 0:
-                                            genre = ((genres.group(1).split(','))[0])
+                                            genre = ((genres.group(1).split(',')[0]).replace('"',''))
                                         else:
                                             genre = 'Unknown'
                                             

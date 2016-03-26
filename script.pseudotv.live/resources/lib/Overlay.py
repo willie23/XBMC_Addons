@@ -212,11 +212,11 @@ class MyPlayer(xbmc.Player):
             if self.ignoreNextStop == True:
                 self.ignoreNextStop = False
             
-            if self.overlay.DisablePlayback == False:
-                if self.overlay.sleepTimeValue == 0:
-                    self.overlay.sleepTimeValue = 1
-                    self.overlay.startSleepTimer()
-                self.stopped = True
+            # if self.overlay.DisablePlayback == False:
+                # if self.overlay.sleepTimeValue == 0:
+                    # self.overlay.sleepTimeValue = 1
+                    # self.overlay.startSleepTimer()
+                # self.stopped = True
                 
     
 # overlay window to catch events and change channels
@@ -1801,6 +1801,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         if self.Player.stopped:
             self.log('onAction, Unable player is stopped')
             return
+            
         # Since onAction isnt always called from the same thread (weird),
         # ignore all actions if we're in the middle of processing one
         if self.actionSemaphore.acquire(False) == False:
@@ -2213,30 +2214,38 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                     self.openEPG()
                 else:
                     self.notPlayingCount += 1
+                    if self.notPlayingCount > int(round((playActionTime/8)*6)):
+                        OptNotify("notPlayingCount = " + str(self.notPlayingCount) + "/" + str(playActionTime))
+                        
                     # 3peat lastActionTrigger known vaild channel
                     if self.FailedPlayingCount == 3:     
                         self.CloseDialog()
                         self.startPlayerTimer(self.ActionTimeInt)
                         self.lastActionTrigger('LastValid')
                         return
-                    elif self.notPlayingCount > int(round((playActionTime/4)*3)):
-                        OptNotify("notPlayingCount = " + str(self.notPlayingCount) + "/" + str(playActionTime))
-                        # retry failed channel once @ halfway mark
-                        if self.notPlayingCount == playActionTime/2:
+                        
+                    # retry failed channel at halfway mark
+                    if self.notPlayingCount == playActionTime/2:
+                        self.CloseDialog()
+                        self.startPlayerTimer(self.ActionTimeInt)
+                        self.lastActionTrigger('Current')
+                        return
+                            
+                    # channel failed, lastActionTrigger, temp disable failed channel
+                    elif self.notPlayingCount >= playActionTime:
+                        self.FailedPlayingCount += 1
+                        if self.ignoreNextStop == False:
                             self.CloseDialog()
                             self.startPlayerTimer(self.ActionTimeInt)
-                            self.lastActionTrigger('Current')
+                            self.SkipNext()
                             return
-                        # channel failed, lastActionTrigger, temp disable failed channel
-                        elif self.notPlayingCount == playActionTime: 
-                            self.FailedPlayingCount += 1
+                        else:
                             self.setInvalidateChannel()
                             self.CloseDialog()
                             self.startPlayerTimer(self.ActionTimeInt)
-                            self.lastActionTrigger('Up') 
+                            self.lastActionTrigger() 
                             return
                             
-                    
             # disable dialog checks while system is taxed or on low end hardware
             if isLowPower() == False:
                 if self.CloseDialog(['Dialogue OK']) == True:
@@ -2247,14 +2256,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                   
     def SkipNext(self):
         self.log('SkipNext')
-        try:
-            Autoskip = getProperty("PTVL.Autoplay") == 'true'
-            if Autoskip == True:
-                return
-            else:
-                raise Exception()
-        except Exception,e:
-            xbmc.executebuiltin("PlayerControl(Next)")
+        xbmc.executebuiltin("PlayerControl(Next)")
                     
      
     def Paused(self, action=False):
@@ -2944,10 +2946,10 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
 
     def end(self, action=False):
         self.log('end')
-        # Prevent the player from setting the sleep timer
-        self.Player.stopped = True
-        self.setBackgroundVisible(True)        
+        self.setBackgroundVisible(True)  
+        # Prevent the player from setting the sleep timer      
         self.isExiting = True 
+        self.Player.stopped = True
         self.clearOnNow()
         self.clearProp('EPG')
         self.clearProp('OVERLAY')

@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <window>
+    <onload>SetProperty(PTVL.SSLEFTD,FFFFFFFF,10000)</onload>
+    <onload>SetProperty(PTVL.SSRIGHTD,FFFFFFFF,10000)</onload>
+    <onload>SetProperty(PTVL.SSUPD,FFFFFFFF,10000)</onload>
+    <onload>SetProperty(PTVL.SSDOWND,FFFFFFFF,10000)</onload>
     <allowoverlay>no</allowoverlay>
     <zorder>1</zorder>
     <controls>

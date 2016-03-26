@@ -31,7 +31,6 @@ try:
 except:
     pass
     
-    
 class SkinManager(xbmcgui.WindowXMLDialog):
     def __init__(self, *args, **kwargs):
         self.log("__init__")
@@ -47,10 +46,6 @@ class SkinManager(xbmcgui.WindowXMLDialog):
             self.fillSkins()
             self.skinPOS = self.findSkin()
             self.setSkin(self.skinPOS)
-            setProperty('PTVL.SSLEFTD','FFFFFFFF')
-            setProperty('PTVL.SSRIGHTD','FFFFFFFF')
-            setProperty('PTVL.SSUPD','FFFFFFFF')
-            setProperty('PTVL.SSDOWND','FFFFFFFF')
             self.doModal()
             self.log("__init__ return")
     
@@ -72,7 +67,6 @@ class SkinManager(xbmcgui.WindowXMLDialog):
         for i in range(len(github_skinList)):
             ssList = fillGithubItems('https://github.com/PseudoTV/PseudoTV_Skins/tree/master/%s' % github_skinList[i])
             for n in range(len(ssList)):
-                print ssList[n]
                 if (ssList[n].lower()).startswith('screenshot'):
                     self.skinNames.append(github_skinList[i])
                     break 

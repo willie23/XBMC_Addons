@@ -32,8 +32,7 @@ try:
     buggalo.SUBMIT_URL = 'http://pseudotvlive.com/buggalo-web/submit.php'
 except:
     pass
-    
-    
+     
 class ConfigWindow(xbmcgui.WindowXMLDialog):
     def __init__(self, *args, **kwargs):
         self.log("__init__")
@@ -412,7 +411,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             self.getControl(212).setLabel(listXMLTV())
         
         elif controlId == 213:    # LiveTV Channel Name, input
-            retval = inputDialog(self.getControl(213).getLabel(), type=xbmcgui.INPUT_ALPHANUM)
+            retval = inputDialog(self.getControl(213).getLabel())
             if retval and len(retval) > 0:
                 self.getControl(213).setLabel(retval)
                 self.setChname(retval)
@@ -474,11 +473,11 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                 self.setChname(title)
 
         elif controlId == 222:    # InternetTV Title, input
-            retval = inputDialog(self.getControl(222).getLabel(), type=xbmcgui.INPUT_ALPHANUM)
+            retval = inputDialog(self.getControl(222).getLabel())
             self.getControl(222).setLabel(retval)
         
         elif controlId == 223:    # InternetTV Description, input
-            retval = inputDialog(self.getControl(223).getLabel(), type=xbmcgui.INPUT_ALPHANUM)
+            retval = inputDialog(self.getControl(223).getLabel())
             self.getControl(223).setLabel(retval)
         
         elif controlId == 225:      # InternetTV Source Type, left
@@ -545,7 +544,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                 self.getControl(236).setLabel("Default")
                 self.setChname('Seasonal') 
             else:
-                retval = inputDialog(self.getControl(234).getLabel(), type=xbmcgui.INPUT_ALPHANUM)
+                retval = inputDialog(self.getControl(234).getLabel())
                 if retval and len(retval) > 0:
                     self.getControl(234).setLabel(retval)
                     self.setChname(retval) 
@@ -562,7 +561,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             self.getControl(243).setLabel(Option4)
             self.setChname(Name)  
         elif controlId == 241:    # RSS Feed URL, input
-            retval = inputDialog(self.getControl(241).getLabel(), type=xbmcgui.INPUT_ALPHANUM)
+            retval = inputDialog(self.getControl(241).getLabel())
             if retval and len(retval) > 0:
                 self.getControl(241).setLabel(retval) 
         elif controlId == 242:    # RSS MediaLimit, select 
@@ -659,7 +658,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             if retval and len(retval) > 0:
                 self.getControl(292).setLabel(retval) 
         elif controlId == 291:      # UPNP Name, select 
-            retval = inputDialog(self.getControl(291).getLabel(), type=xbmcgui.INPUT_ALPHANUM)
+            retval = inputDialog(self.getControl(291).getLabel())
             if retval and len(retval) > 0:
                 self.setChname(retval)
                 self.getControl(291).setLabel(retval)
@@ -1254,7 +1253,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         
     def setExclude(self, key):
         # todo add multiselect dialog via jarvis
-        retval = inputDialog(self.getControl(key).getLabel(), type=xbmcgui.INPUT_ALPHANUM)
+        retval = inputDialog(self.getControl(key).getLabel())
         if retval and len(retval) > 0:
             return self.getControl(key).setLabel(retval)
 
@@ -1399,7 +1398,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                   
             elif source == 'Youtube Live':
                 self.log("Youtube Live")
-                input = inputDialog('Enter Youtube Live ID or URL', type=xbmcgui.INPUT_ALPHANUM)
+                input = inputDialog('Enter Youtube Live ID or URL')
                 if len(input) > 0:
                     if not input.startswith('http'):
                         input = 'https://www.youtube.com/watch?v='+input
@@ -1407,7 +1406,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                     
             elif source == 'URL':
                 self.log("URL")
-                input = inputDialog('Enter URL', type=xbmcgui.INPUT_ALPHANUM)
+                input = inputDialog('Enter URL')
                 if len(input) > 0:
                     return input, input
                      
@@ -1560,7 +1559,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                 if len(plname) != 0:   
                     self.listSubmisson("PseudoTVLive Submission: Chtype = " + str(type), 'Custom Playlist|' + setting1, xbmc.translatePath(setting1))
                 else:
-                    # todo retval = inputDialog('Enter Playlist Name', type=xbmcgui.INPUT_ALPHANUM)
+                    # todo retval = inputDialog('Enter Playlist Name')
                     # if retval and len(retval) > 0:
                     infoDialog("Please Edit Playlist Name.")
         else:
@@ -1573,7 +1572,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                 genre = self.GenreLst[select]
                 
                 #todo prompt for missing info
-                #retval = inputDialog('Enter info', type=xbmcgui.INPUT_ALPHANUM)
+                #retval = inputDialog('Enter info')
                 # if retval and len(retval) > 0:
                 if setting1 == '':
                     setting1 = '""'

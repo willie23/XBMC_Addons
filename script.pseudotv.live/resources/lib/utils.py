@@ -827,9 +827,16 @@ def matchMselect(list, select):
             slist.append(list[select[i]]) 
         return slist
 
-def inputDialog(header=ADDON_NAME, type=xbmcgui.INPUT_ALPHANUM):
-    input = xbmcgui.Dialog().input(header, type)     
-    return input
+def inputDialog(str, key=xbmcgui.INPUT_ALPHANUM):
+    # Types:
+    # - xbmcgui.INPUT_ALPHANUM (standard keyboard)
+    # - xbmcgui.INPUT_NUMERIC (format: #)
+    # - xbmcgui.INPUT_DATE (format: DD/MM/YYYY)
+    # - xbmcgui.INPUT_TIME (format: HH:MM)
+    # - xbmcgui.INPUT_IPADDRESS (format: #.#.#.#)
+    # - xbmcgui.INPUT_PASSWORD (return md5 hash of input, input is masked)
+    retval = xbmcgui.Dialog().input(str, type=key)
+    return retval    
     
 def yesnoDialog(str1, str2='', header=ADDON_NAME, yes='', no=''):
     answer = xbmcgui.Dialog().yesno(header, str1, str2, '', yes, no)
