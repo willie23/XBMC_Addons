@@ -46,6 +46,7 @@ class ChannelListThread(threading.Thread):
         self.chanlist.exitThread = False
         self.chanlist.readConfig()
         self.chanlist.sleepTime = 0.1
+        UPdialog = False
         
         if self.myOverlay == None:
             self.log("Overlay not defined. Exiting.")
@@ -98,7 +99,7 @@ class ChannelListThread(threading.Thread):
         self.chanlist.sleepTime = 0.3
         REAL_SETTINGS.setSetting('ForceChannelReset', 'false')
         self.myOverlay.postBackgroundLoading()
-        
+            
         while True:
             DebugNotify("Background Updating...")
             

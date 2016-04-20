@@ -1074,9 +1074,8 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             self.setFocusId(280)
             if len(chansetting1) != 0:
                 # Find and fill Plugin name and path
-                try:
-                    PlugPath = (chansetting1.replace('plugin://','')).split('/')[0]
-                    PlugName = self.pluginNameList[self.findItemLens(self.pluginPathList, PlugPath)]
+                try: 
+                    PlugName = self.pluginNameList[self.findItemLens(self.pluginPathList, chansetting1.split('/')[2])]
                 except:
                     PlugName = 'Click to Browse'
                 self.getControl(280).setLabel('Plugin:', label2=PlugName)
@@ -1272,23 +1271,27 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         self.YTFilter = ['User Subscription','User Favorites','Search Query']
         
         if isSFAV() == True:
-            self.chnlst.pluginPathList = ['plugin.program.super.favourites'] + self.chnlst.pluginPathList
-            self.chnlst.pluginNameList = ['[COLOR=blue][B]Super Favourites[/B][/COLOR]'] + self.chnlst.pluginNameList
+            self.pluginPathList = ['plugin.program.super.favourites']
+            self.pluginNameList = ['[COLOR=blue][B]Super Favourites[/B][/COLOR]']
+            self.pluginIconList = ['']
         
         if isPlayOn() == True:
-            self.chnlst.pluginPathList = ['plugin.video.playonbrowser'] + self.chnlst.pluginPathList
-            self.chnlst.pluginNameList = ['[COLOR=blue][B]Playon[/B][/COLOR]'] + self.chnlst.pluginNameList
+            self.pluginPathList = ['plugin.video.playonbrowser'] + self.pluginPathList
+            self.pluginNameList = ['[COLOR=blue][B]Playon[/B][/COLOR]'] + self.pluginNameList
+            self.pluginIconList = [''] + self.pluginIconList
                 
         if isUSTVnow() == True:
-            self.chnlst.pluginPathList = ['plugin.video.ustvnow/?mode=live'] + self.chnlst.pluginPathList
-            self.chnlst.pluginNameList = ['[COLOR=blue][B]USTVnow[/B][/COLOR]'] + self.chnlst.pluginNameList
+            self.pluginPathList = ['plugin.video.ustvnow/?mode=live'] + self.pluginPathList
+            self.pluginNameList = ['[COLOR=blue][B]USTVnow[/B][/COLOR]'] + self.pluginNameList
+            self.pluginIconList = [''] + self.pluginIconList
         
         if isPlugin('plugin.video.meta') == True:
             self.SourceList.append('Meta')
             
         self.SourceList = sorted_nicely(self.SourceList)
-        self.pluginPathList = self.chnlst.pluginPathList
-        self.pluginNameList = self.chnlst.pluginNameList
+        self.pluginNameList = self.chnlst.pluginList[0]
+        self.pluginPathList = self.chnlst.pluginList[1]
+        self.pluginIconList = self.chnlst.pluginList[2]
             
         for i in range(len(self.chnlst.showList)):
             self.showList.append(self.chnlst.showList[i][0])
@@ -1930,6 +1933,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             
     def updateListing(self, channel = -1):
         self.log("updateListing")
+        show_busy_dialog()
         start = 0
         end = CHANNEL_LIMIT
 
@@ -1938,7 +1942,6 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             end = channel
 
         for i in range(start, end):
-            show_busy_dialog()
             theitem = self.listcontrol.getListItem(i)
             chantype = 9999
             chansetting1 = ''
@@ -1970,7 +1973,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             except:
                 theitem.setProperty('chrules','')
             theitem.setProperty('isfav',self.chkChanFavorite(i + 1))
-            hide_busy_dialog()
+        hide_busy_dialog()
         self.log("updateListing return")
    
 __cwd__ = REAL_SETTINGS.getAddonInfo('path')

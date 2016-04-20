@@ -735,7 +735,6 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             elif action in ACTION_CONTEXT_MENU:
                 if not self.showingContext:
                     self.showContextMenu()
-
         except:
             self.log("Unknown EPG exception", xbmc.LOGERROR)
             self.log(traceback.format_exc(), xbmc.LOGERROR)

@@ -277,9 +277,9 @@
                 </control>    
             </control>  
             <control type="image">
-                <left>980</left>
+                <left>981</left>
                 <top>55</top>
-                <width>250</width>
+                <width>245</width>
                 <height>100</height>
                 <aspectratio>keep</aspectratio>
                 <texture fallback="logo.png">$INFO[Container(102).ListItem.Property(chlogo)]</texture>

@@ -3276,16 +3276,23 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         xbmc.sleep(10)
         # open new window
         if window.upper() == 'EPG':
-            self.myEPG.doModal()
+            xbmc.sleep(10)
+            self.myEPG.show()
         elif window.upper() == 'DVR':
+            xbmc.sleep(10)
+            self.myDVR.show()
+            xbmc.sleep(10)
             Comingsoon()
-            self.myDVR.doModal()
         elif window.upper() == 'ONDEMAND':
+            xbmc.sleep(10)
+            self.myOndemand.show()
+            xbmc.sleep(10)
             Comingsoon()
-            self.myOndemand.doModal()
         elif window.upper() == 'APPS':
+            xbmc.sleep(10)
+            self.myApps.show()
+            xbmc.sleep(10)
             Comingsoon()
-            self.myApps.doModal()
 
           
     def getChtype(self, channel):
@@ -3528,7 +3535,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         self.log("openEPG")
         if getProperty("PTVL.EPG_Opened") != "true":
             # Pause Background channel building while EPG is opened
-            if self.DisablePlayback == False and self.channelThread.isAlive():
+            if self.channelThread.isAlive() and isLowPower() == True and self.DisablePlayback == False:
                 self.channelThread.pause()
 
             # Auto-off reset after EPG activity.
@@ -3541,7 +3548,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             self.windowSwap('EPG')
 
             # Resume Background channel building
-            if self.DisablePlayback == False and self.channelThread.isAlive():
+            if self.channelThread.isAlive() and isLowPower() == True and self.DisablePlayback == False:
                 self.channelThread.unpause()
 
             if self.newChannel != 0:

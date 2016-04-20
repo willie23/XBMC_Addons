@@ -392,6 +392,7 @@ ACTION_SYMBOLS = 119
 ACTION_CURSOR_LEFT  = 120
 ACTION_CURSOR_RIGHT = 121
 
+
 #unused
 ACTION_NEXT_ITEM = 14
 ACTION_PREV_ITEM = 15
@@ -447,7 +448,7 @@ BYPASS_COMINGUP = ['PseudoCinema']
 SF_FILTER = ['isearch', 'iplay - kodi playlist manager','create new super folder','explore kodi favourites']
 EX_FILTER = SF_FILTER + ['video resolver settings','<<','back','previous','home','search','find','clips','seasons','trailers']
 
-GETADDONS_FILTER = ['playon browser','super favourites','hdhomerun','pseudolibrary','pseudocompanion']
+GETADDONS_FILTER = ['hdhomerun','pseudolibrary']
 
 # SFX
 ALERT_SFX = os.path.join(SFX_LOC, 'alert.wav')
