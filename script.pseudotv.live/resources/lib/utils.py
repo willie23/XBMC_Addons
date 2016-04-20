@@ -214,13 +214,13 @@ def FindLogo_URL(chtype, chname, mediapath):
             return url
     # todo google image logo search
 
-def GrabLogo(url, chname):
+def GrabLogo(url, chname, clean=False):
     log("utils: GrabLogo, url = " + url)        
     LogoFile = os.path.join(LOGO_LOC, chname + '.png')
     url = url.replace('.png/','.png').replace('.jpg/','.jpg')
     log("utils: GrabLogo, LogoFile = " + LogoFile)
    
-    if REAL_SETTINGS.getSetting('LogoDB_Override') == "true":
+    if REAL_SETTINGS.getSetting('LogoDB_Override') == "true" or clean == True:
         try:
             xbmcvfs.delete(LogoFile)
             log("utils: GrabLogo, removed old logo")   
@@ -228,7 +228,7 @@ def GrabLogo(url, chname):
             pass
     
     if xbmcvfs.exists(LogoFile) == False:
-        log("utils: GrabLogo, downloading new logo")   
+        log("utils: GrabLogo, grabbing new logo")   
         if url.startswith('image'):
             url = (unquote(url)).replace("image://",'')
             return GrabLogo(url, chname)
@@ -450,7 +450,7 @@ def UpdateRSS_Thread():
             ##Twitter RSS
             try:
                 twitlist = []
-                twitrss = 'http://twitrss.me/twitter_user_to_rss/?user=pseudotv_live'
+                twitrss = 'http://twitrss.me/twitter_user_to_rss/?user=PseudoTV_Live'
                 e = feedparser.parse(twitrss)
                 header = ((e['feed']['title']) + ' - ')
                 twitlist = header.replace('Twitter Search / pseudotv_live','@PseudoTV_Live Twitter Activity')
@@ -746,8 +746,8 @@ def hide_busy_dialog():
     while xbmc.getCondVisibility('Window.IsActive(busydialog)'):
         xbmc.sleep(100)
         
-def Error(header, line1= '', line2= '', line3= ''):
-    setProperty('PTVL.ERROR_LOG', message)
+def Error(line1= '', line2= '', line3= '',header=ADDON_NAME):
+    setProperty('PTVL.ERROR_LOG', ' '.join([line1,line2,line3]))
     okDialog( line1, line2, line3, header)
     
 def showText(heading, text):
@@ -766,7 +766,22 @@ def showText(heading, text):
             return
         except:
             pass
-
+        
+def currentWindow():
+    currentWindow = ''
+    # return current window label via json, xbmcgui.getCurrentWindowId does not return accurate id.
+    json_query = ('{"jsonrpc": "2.0", "method":"GUI.GetProperties","params":{"properties":["currentwindow"]}, "id": 1}')
+    json_detail = sendJSON(json_query)
+    file_detail = re.compile( "{(.*?)}", re.DOTALL ).findall(json_detail)
+    for f in file_detail:
+        id = re.search('"label" *: *"(.*?)"', f)
+        if id and len(id.group(1)) > 0:
+            currentWindow = id.group(1)
+            
+            break
+    log("utils: currentWindow = " + currentWindow)
+    return currentWindow
+         
 # General
 def infoDialog(message, header=ADDON_NAME, show=True, sound=False, time=1000, icon=THUMB):
     setProperty('PTVL.NOTIFY_LOG', message)
@@ -796,8 +811,8 @@ def okDialog(str1, str2='', str3='', header=ADDON_NAME):
 def textViewer(text, header=ADDON_NAME):
     xbmcgui.Dialog().textviewer(header, text)
     
-def browse(type=0, shares='', mask='', useThumbs=True, treatAsFolder=True, default='', enableMultiple=False, heading=ADDON_NAME):
-    xbmcgui.Dialog().browse(type, heading, shares, mask, useThumbs, treatAsFolder, default, enableMultiple)
+def browse(type=0, shares='', mask='', useThumbs=True, treatAsFolder=False, default='', enableMultiple=False, heading=ADDON_NAME):
+    return xbmcgui.Dialog().browse(type, heading, shares, mask, useThumbs, treatAsFolder, default, enableMultiple)
     # Types:
     # - 0 : ShowAndGetDirectory
     # - 1 : ShowAndGetFile
@@ -805,10 +820,10 @@ def browse(type=0, shares='', mask='', useThumbs=True, treatAsFolder=True, defau
     # - 3 : ShowAndGetWriteableDirectory
 
 def browseMultiple(type=0, shares='', mask='', useThumbs=True, treatAsFolder=True, default='', heading=ADDON_NAME):
-    xbmcgui.Dialog().browseMultiple(type, heading, shares, mask, useThumbs, treatAsFolder, default)
+    return xbmcgui.Dialog().browseMultiple(type, heading, shares, mask, useThumbs, treatAsFolder, default)
 
 def browseSingle(type=0, shares='', mask='', useThumbs=True, treatAsFolder=True, default='', heading=ADDON_NAME):
-    xbmcgui.Dialog().browseSingle(type, heading, shares, mask, useThumbs, treatAsFolder, default)
+    return xbmcgui.Dialog().browseSingle(type, heading, shares, mask, useThumbs, treatAsFolder, default)
 
 def selectDialog(list, header=ADDON_NAME, autoclose=0):
     if len(list) > 0:
@@ -820,6 +835,12 @@ def mselectDialog(list, header=ADDON_NAME, autoclose=0):
         select = xbmcgui.Dialog().multiselect(header, list, autoclose)
         return select
 
+def matchSelect(list, name):
+    if name:
+        for i in range(len(list)):
+            if name.lower() == list[i].lower():
+                return i
+        
 def matchMselect(list, select):
     if select:
         slist = []
@@ -827,7 +848,7 @@ def matchMselect(list, select):
             slist.append(list[select[i]]) 
         return slist
 
-def inputDialog(str, key=xbmcgui.INPUT_ALPHANUM):
+def inputDialog(str, default='', key=xbmcgui.INPUT_ALPHANUM):
     # Types:
     # - xbmcgui.INPUT_ALPHANUM (standard keyboard)
     # - xbmcgui.INPUT_NUMERIC (format: #)
@@ -835,7 +856,7 @@ def inputDialog(str, key=xbmcgui.INPUT_ALPHANUM):
     # - xbmcgui.INPUT_TIME (format: HH:MM)
     # - xbmcgui.INPUT_IPADDRESS (format: #.#.#.#)
     # - xbmcgui.INPUT_PASSWORD (return md5 hash of input, input is masked)
-    retval = xbmcgui.Dialog().input(str, type=key)
+    retval = xbmcgui.Dialog().input(str, default, type=key)
     return retval    
     
 def yesnoDialog(str1, str2='', header=ADDON_NAME, yes='', no=''):
@@ -851,13 +872,17 @@ def browse(type, heading, shares, mask='', useThumbs=False, treatAsFolder=False,
 ##################
 
 def getProperty(str):
-    return xbmcgui.Window(10000).getProperty(str)
-
+    try:
+        return xbmcgui.Window(10000).getProperty(str)
+    except Exception,e:
+        log("utils: getProperty, Failed! " + str(e))
+        return ''
+          
 def setProperty(str1, str2):
     try:
         xbmcgui.Window(10000).setProperty(str1, str2)
-    except:
-        pass
+    except Exception,e:
+        log("utils: setProperty, Failed! " + str(e))
         
 def clearProperty(str):
     xbmcgui.Window(10000).clearProperty(str)
@@ -894,6 +919,14 @@ def verifyScript(cmd):
         pass
     return True
 
+def sendJSON(command):
+    data = ''
+    try:
+        data = xbmc.executeJSONRPC(uni(command))
+    except UnicodeEncodeError:
+        data = xbmc.executeJSONRPC(ascii(command))
+    return uni(data)
+     
 def set_Kodi_JSON(params):
     xbmc.executeJSONRPC('{"jsonrpc": "2.0", %s, "id": 1}' % params)
     
@@ -1308,7 +1341,7 @@ def chkVersion():
                 if yesnoDialog('The current available version is '+str(match[0]),'Would you like to install the PseudoTV Live repository and stay updated?','[B]PseudoTV Live Update Available![/B]',"Install","Cancel"):
                     getRepo()
             else:
-                get_Kodi_JSON('"method":"Addons.SetAddonEnabled","params":{"addonid":"repository.lunatixz","enabled":true}')
+                set_Kodi_JSON('"method":"Addons.SetAddonEnabled","params":{"addonid":"repository.lunatixz","enabled":true}')
      
 def isCompanionInstalled():
     companion = isPlugin('plugin.video.pseudo.companion')
@@ -1593,7 +1626,7 @@ def preStart():
     log('utils: preStart')
     chkVersion()
     chkChanges()
-    chkAPIS(RSS_API_KEY) 
+    # chkAPIS(RSS_API_KEY) 
     
     #patch kodi skin
     patchSeekbar()
@@ -1829,12 +1862,15 @@ def setBackgroundLabel(string):
     setProperty("PTVL.STATUS_LOG",string) 
     setProperty("OVERLAY.BACKGROUND_TEXT",string) 
            
+def isSFAV():
+    return isPlugin('plugin.program.super.favourites')
+    
+def isPlayOn():
+    return isPlugin('plugin.video.playonbrowser')
+    
 def isUSTVnow():
-    if len(REAL_SETTINGS.getSetting('ustv_email')) > 1 and len(REAL_SETTINGS.getSetting('ustv_password')) > 1:
-        return True
-    else:
-        return False
-        
+    return isPlugin('plugin.video.ustvnow')
+
 def listXMLTV():
     log("utils: listXMLTV")
     xmltvLst = []   
@@ -1845,7 +1881,7 @@ def listXMLTV():
     dir,file = xbmcvfs.listdir(XMLTV_LOC)
     xmltvcacheLst = [s.replace('.xml','') for s in files if s.endswith('.xml')] + EXxmltvLst
     xmltvLst = sorted_nicely([s.replace('.xml','') for s in file if s.endswith('.xml')] + xmltvcacheLst)
-    select = selectDialog(xmltvLst, 'Select xmltv file', 30000)
+    select = selectDialog(xmltvLst, 'Select Guidedata Type', 30000)
 
     if select != -1:
         if xmltvLst[select] == 'Enter URL':
@@ -1985,7 +2021,7 @@ def getSmartPlaylistName(fle):
 def getChanPrefix(chantype, channame):
     log("utils: getChanPrefix") 
     if chantype == 0:
-        newlabel = getSmartPlaylistName(channame) + " - Playlist"
+        newlabel = channame + " - Playlist"
     elif chantype == 5:
         newlabel = channame + " - Mixed"
     elif chantype in [1,3,6]:
@@ -1993,11 +2029,7 @@ def getChanPrefix(chantype, channame):
     elif chantype in [2,4]:
         newlabel = channame + " - Movies"
     elif chantype == 7:
-        if channame[-1] == '/' or channame[-1] == '\\':
-            newlabel = os.path.split(channame[:-1])[1]
-        else:
-            newlabel = os.path.split(channame)[1]
-        newlabel = newlabel + " - Directory" 
+        newlabel = channame + " - Directory" 
     elif chantype == 8:
         newlabel = channame + " - LiveTV"
     elif chantype == 9:
@@ -2043,3 +2075,18 @@ def patchSeekbar():
             log('utils: patchSeekbar, Patched dialogseekbar.xml')
     except Exception,e:
         log('utils: patchSeekbar, Failed! ' + str(e))
+   
+def egTrigger_Thread(message, sender):
+    log("egTrigger_Thread")
+    json_query = ('{"jsonrpc": "2.0", "method": "JSONRPC.NotifyAll", "params": {"sender":"%s","message":"%s"}, "id": 1}' % (sender, message))
+    sendJSON(json_query)
+    
+    
+def egTrigger(message, sender='PTVL'):
+    log("egTrigger")
+    egTriggerTimer = threading.Timer(0.5, egTrigger_Thread, [message, sender])
+    egTriggerTimer.name = "egTriggerTimer"       
+    if egTriggerTimer.isAlive():
+        egTriggerTimer.cancel()
+        egTriggerTimer.join()
+    egTriggerTimer.start()       

@@ -289,7 +289,7 @@
                     <font>font12</font>
                     <textcolor>FFFFFFFF</textcolor>
                     <shadowcolor>ff000000</shadowcolor>
-                    <texturefocus>pstvlButtonFocus.png.png</texturefocus>
+                    <texturefocus>pstvlButtonFocus.png</texturefocus>
                     <texturenofocus>pstvlButtonNoFocusAlt.png</texturenofocus>
                     <onup>1015</onup>
                     <ondown>1013</ondown>
@@ -305,7 +305,7 @@
                     <font>font12</font>
                     <textcolor>FFFFFFFF</textcolor>
                     <shadowcolor>ff000000</shadowcolor>
-                    <texturefocus>pstvlButtonFocus.png.png</texturefocus>
+                    <texturefocus>pstvlButtonFocus.png</texturefocus>
                     <texturenofocus>pstvlButtonNoFocusAlt.png</texturenofocus>
                     <onup>1012</onup>
                     <ondown>1014</ondown>
@@ -321,7 +321,7 @@
                     <font>font12</font>
                     <textcolor>FFFFFFFF</textcolor>
                     <shadowcolor>ff000000</shadowcolor>
-                    <texturefocus>pstvlButtonFocus.png.png</texturefocus>
+                    <texturefocus>pstvlButtonFocus.png</texturefocus>
                     <texturenofocus>pstvlButtonNoFocusAlt.png</texturenofocus>
                     <onup>1013</onup>
                     <ondown>1015</ondown>
@@ -337,7 +337,7 @@
                     <font>font12</font>
                     <textcolor>FFFFFFFF</textcolor>
                     <shadowcolor>ff000000</shadowcolor>
-                    <texturefocus>pstvlButtonFocus.png.png</texturefocus>
+                    <texturefocus>pstvlButtonFocus.png</texturefocus>
                     <texturenofocus>pstvlButtonNoFocusAlt.png</texturenofocus>
                     <onup>1014</onup>
                     <ondown>1012</ondown>
@@ -583,7 +583,7 @@
                         <align>left</align>
                         <aligny>bottom</aligny>
                         <aspectratio>keep</aspectratio>
-                        <texture fallback="flags/rating/MPAA_NR_Certificate_US.png" colordiffuse="ffffffff">$INFO[Window(10000).Property(OVERLAY.Rating),flags/mpaa/,.png]</texture>
+                        <texture fallback="flags/rating/MPAA_NR_Certificate_US.png" colordiffuse="FFFFFFFF">$INFO[Window(10000).Property(OVERLAY.Rating),flags/mpaa/,.png]</texture>
                     </control>
                     <control type="image">
                         <width>100</width>
@@ -591,7 +591,7 @@
                         <align>left</align>
                         <aligny>bottom</aligny>
                         <aspectratio>keep</aspectratio>
-                        <texture fallback="flags/rating/0.0.png" colordiffuse="ffffffff">$INFO[VideoPlayer.Rating,flags/rating/,.png]</texture>
+                        <texture fallback="flags/rating/0.0.png" colordiffuse="FFFFFFFF">$INFO[VideoPlayer.Rating,flags/rating/,.png]</texture>
                     </control>
                     <control type="image">
                         <description>Sickbeard/Couchpotato image</description>      
@@ -615,7 +615,7 @@
                         <align>left</align>
                         <aligny>bottom</aligny>
                         <aspectratio>keep</aspectratio>
-                        <texture colordiffuse="ffffffff">$INFO[VideoPlayer.VideoCodec,flags/source/,.png]</texture>
+                        <texture colordiffuse="FFFFFFFF">$INFO[VideoPlayer.VideoCodec,flags/source/,.png]</texture>
                     </control>
                     <control type="image">
                         <width>100</width>
@@ -623,7 +623,7 @@
                         <align>left</align>
                         <aligny>bottom</aligny>
                         <aspectratio>keep</aspectratio>
-                        <texture colordiffuse="ffffffff">$INFO[VideoPlayer.VideoResolution,flags/resolution/,.png]</texture>
+                        <texture colordiffuse="FFFFFFFF">$INFO[VideoPlayer.VideoResolution,flags/resolution/,.png]</texture>
                     </control>
                     <control type="image">
                         <width>100</width>
@@ -631,7 +631,7 @@
                         <align>left</align>
                         <aligny>bottom</aligny>
                         <aspectratio>keep</aspectratio>
-                        <texture colordiffuse="ffffffff">$INFO[VideoPlayer.VideoAspect,flags/aspectratio/,.png]</texture>
+                        <texture colordiffuse="FFFFFFFF">$INFO[VideoPlayer.VideoAspect,flags/aspectratio/,.png]</texture>
                     </control>
                     <control type="image">
                         <width>100</width>
@@ -639,7 +639,7 @@
                         <align>left</align>
                         <aligny>bottom</aligny>
                         <aspectratio>keep</aspectratio>
-                        <texture colordiffuse="ffffffff">$INFO[VideoPlayer.AudioCodec,flags/audio/,.png]</texture>
+                        <texture colordiffuse="FFFFFFFF">$INFO[VideoPlayer.AudioCodec,flags/audio/,.png]</texture>
                     </control>
                     <control type="image">
                         <width>100</width>
@@ -647,7 +647,7 @@
                         <align>left</align>
                         <aligny>bottom</aligny>
                         <aspectratio>keep</aspectratio>
-                        <texture colordiffuse="ffffffff">$INFO[VideoPlayer.AudioChannels,flags/channels/,.png]</texture>
+                        <texture colordiffuse="FFFFFFFF">$INFO[VideoPlayer.AudioChannels,flags/channels/,.png]</texture>
                     </control>
                     <control type="image">
                         <width>100</width>
@@ -655,7 +655,7 @@
                         <align>left</align>
                         <aligny>bottom</aligny>
                         <aspectratio>keep</aspectratio>
-                        <texture colordiffuse="ffffffff">$INFO[VideoPlayer.AudioLanguage,flags/language/,.png]</texture>
+                        <texture colordiffuse="FFFFFFFF">$INFO[VideoPlayer.AudioLanguage,flags/language/,.png]</texture>
                     </control>       
                     <control type="image">
                         <width>100</width>
@@ -663,7 +663,7 @@
                         <align>left</align>
                         <aligny>bottom</aligny>
                         <aspectratio>keep</aspectratio>
-                        <texture colordiffuse="ffffffff">$INFO[VideoPlayer.Country,flags/language/,.png]</texture>
+                        <texture colordiffuse="FFFFFFFF">$INFO[VideoPlayer.Country,flags/language/,.png]</texture>
                     </control>
                 </control>
             </control> 
@@ -998,8 +998,85 @@
                 <font>font30</font>
                 <align>center</align>
                 <aligny>center</aligny>
+                <textcolor>FFFFFFFF</textcolor>
+                <shadowcolor>ff000000</shadowcolor>
                 <label>$INFO[Window(10000).Property(OVERLAY.BACKGROUND_TEXT)]</label>
             </control>  
+        </control> 
+        <control type="group" id="7000"> 
+            <posx>0</posx>
+            <posy>0</posy>
+            <control type="image">
+                <description>Background Image</description>
+                <width>1920</width>
+                <height>1080</height>
+                <texture>pstvlBackground.png</texture>
+                <animation effect="fade" start="75" end="75" condition="True">Conditional</animation>
+                <align>center</align>
+                <aligny>center</aligny>
+                <visible>Control.IsVisible(7000)</visible>
+            </control>
+            <control type="group">
+                <description>Sleep/Idle/Reminder Prompt</description>
+                <width>1920</width>
+                <height>1080</height>
+                <orientation>vertical</orientation>
+                <itemgap>40</itemgap> 
+                <visible>Control.IsVisible(7000)</visible>           
+                <control type="label"> 
+                    <posx>0</posx>
+                    <posy>700</posy>
+                    <width>1980</width>
+                    <height min="40" max="80">auto</height>
+                    <font>font30</font>
+                    <aligny>center</aligny>
+                    <align>center</align>
+                    <scroll>True</scroll>
+                    <textcolor>FFFFFFFF</textcolor>
+                    <shadowcolor>ff000000</shadowcolor>
+                    <visible>Control.IsVisible(7000)</visible>
+                    <label>$INFO[Window(10000).Property(PTVL.IDLE_LABEL)]</label>
+                </control>
+                <control type="button" id="7001">
+                    <description>Cancel</description>
+                    <posx>720</posx>
+                    <posy>800</posy>
+                    <width>500</width>
+                    <height>72</height>
+                    <label></label>
+                    <align>center</align>
+                    <aligny>center</aligny>
+                    <font>font12</font>
+                    <textcolor></textcolor>
+                    <textcolor>C0C0C0C0</textcolor>
+                    <focusedcolor>FFFFFFFF</focusedcolor> 
+                    <shadowcolor>ff000000</shadowcolor>
+                    <texturefocus>pstvlButtonFocus.png</texturefocus>
+                    <texturenofocus>pstvlButtonNoFocusAlt.png</texturenofocus>
+                    <onup>7002</onup>
+                    <ondown>7002</ondown>
+                    <visible>Control.IsVisible(7000)</visible>
+                </control>
+                <control type="button" id="7002">
+                    <description>Sleep/Switch</description>
+                    <posx>720</posx>
+                    <posy>912</posy>
+                    <width>500</width>
+                    <height>72</height>
+                    <label></label>
+                    <align>center</align>
+                    <aligny>center</aligny>
+                    <font>font12</font>
+                    <textcolor>C0C0C0C0</textcolor>
+                    <focusedcolor>FFFFFFFF</focusedcolor> 
+                    <shadowcolor>ff000000</shadowcolor>
+                    <texturefocus>pstvlButtonFocus.png</texturefocus>
+                    <texturenofocus>pstvlButtonNoFocusAlt.png</texturenofocus>
+                    <onup>7001</onup>
+                    <ondown>7001</ondown>
+                    <visible>Control.IsVisible(7000)</visible>
+                </control>
+            </control>
         </control>
     </controls>     
 </window>

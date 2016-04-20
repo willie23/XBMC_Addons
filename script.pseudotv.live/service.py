@@ -27,36 +27,32 @@ ADDON_PATH = REAL_SETTINGS.getAddonInfo('path')
 ADDON_VERSION = REAL_SETTINGS.getAddonInfo('version')
 SETTINGS_LOC = REAL_SETTINGS.getAddonInfo('profile')
 THUMB = (xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'images')) + '/' + 'icon.png')
+AUTOSTART_TIMER = [0,5,10,15,20,25,30][int(REAL_SETTINGS.getSetting('Auto_Start'))]
 
-def autostart():
+def handle_wait(time_to_wait): #*Thanks enen92
+    dlg = xbmcgui.DialogProgress()
+    dlg.create("PseudoTV Live", 'AutoStart')
+    secs=0
+    percent=0
+    increment = int(100 / time_to_wait)
+    cancelled = False
+    while secs < time_to_wait:
+        secs += 1
+        percent = increment*secs
+        secs_left = str((time_to_wait - secs))
+        dlg.update(percent,"PseudoTV Live will autoStart in " + str(secs_left) + " seconds, Cancel?")
+        xbmc.sleep(1000)
+        if (dlg.iscanceled()):
+            cancelled = True
+            break
+    if cancelled == True:
+        return False
+    else:
+        dlg.close()
+        return True
+
+if AUTOSTART_TIMER != 0:
     xbmc.log('script.pseudotv.live-Service: autostart')
-    xbmc.executebuiltin("Notification(%s, %s, %d, %s)" % (ADDON_NAME, "AutoStart Enabled", 1000, THUMB))
-    AUTOSTART_TIMER = [0,5,10,15,20]#in seconds
-    xbmc.sleep(AUTOSTART_TIMER[int(REAL_SETTINGS.getSetting('timer_amount'))] * 1000)
-    xbmc.executebuiltin('RunScript("' + ADDON_PATH + '/default.py' + '")')
-
-if REAL_SETTINGS.getSetting("Auto_Start") == "true":
-    autostart()
-    
-# monitor = xbmc.Monitor()
-# hasSomethingChanged = False
-# while not monitor.abortRequested():
-    # # Sleep/wait for abort for 1 seconds
-    # if monitor.waitForAbort(1):
-        # # Abort was requested while waiting. We should exit
-        # break
-        
-    # #settings monitor causes severe performance issues, resorted to while loop
-    # if xbmcgui.Window(10000).getProperty("PseudoTVRunning") != "True":
-        # if xbmc.getCondVisibility('Window.IsActive(addonsettings)') == True:
-            # hasSomethingChanged = True
-        # if hasSomethingChanged == True:
-            # hasSomethingChanged = False
-            # chkChanges()
-    # else:
-        # if xbmcgui.Window(10000).getProperty("PTVL.LOWPOWER") == "true":
-            # # Use kodi bug to force kill library scan which impacts PTVL performance # http://forum.kodi.tv/showthread.php?tid=241729
-            # if monitor.onScanStarted('video'):
-                # xbmc.executebuiltin("UpdateLibrary(video)")
-            # elif monitor.onScanStarted('music'):
-                # xbmc.executebuiltin("UpdateLibrary(music)")
+    xbmc.executebuiltin("Notification(%s, %s, %d, %s)" % (ADDON_NAME, "AutoStart Enabled", (AUTOSTART_TIMER * 1000)/2, THUMB))
+    if handle_wait(AUTOSTART_TIMER) == True:
+        xbmc.executebuiltin('RunScript("' + ADDON_PATH + '/default.py' + '")')

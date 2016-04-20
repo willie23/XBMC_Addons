@@ -46,9 +46,10 @@ def showInfo(addonID=None, type='changelog'):
         textViewer(text, title)
     except:
         pass      
-        
+
 def DeleteSettings2():
     log('utilities: DeleteSettings2')
+    ClearChanFavorites(False)
     if xbmcvfs.exists(SETTINGS_FLE):
         if yesnoDialog("Delete Current Channel Configurations?"):
             try:
@@ -56,26 +57,29 @@ def DeleteSettings2():
                 xbmcvfs.delete(SETTINGS_FLE)
                 infoDialog("Channel Configurations Cleared")
             except:
-                pass
-                
+                pass           
     # Return to PTVL Settings
     REAL_SETTINGS.openSettings()
     
 def addBypass():
-    chnlst = ChannelList()
-    chnlst.fillPluginList()
-    BYPASS_LST = matchMselect(chnlst.pluginPathList, mselectDialog(chnlst.pluginNameList, header='Disable Seeking for specified Plugins'))
-    REAL_SETTINGS.setSetting("BYPASS_LST",str(BYPASS_LST))
-    
+    try:
+        chnlst = ChannelList()
+        chnlst.fillPluginList()
+        BYPASS_LST = matchMselect(chnlst.pluginPathList, mselectDialog(chnlst.pluginNameList, header='Disable Seeking for specified Plugins'))
+        REAL_SETTINGS.setSetting("BYPASS_LST",str(BYPASS_LST))
+    except:
+        Unavailable()
+        
 def ClearTempKey():
     log('utilities: ClearTempKey')
     
-def ClearChanFavorites():
+def ClearChanFavorites(close=True):
     log('utilities: ClearChanFavorites')
     REAL_SETTINGS.setSetting("FavChanLst","0")
     infoDialog("Channel Favourites Cleared")
-    # Return to PTVL Settings
-    REAL_SETTINGS.openSettings()
+    if close == True:
+        # Return to PTVL Settings
+        REAL_SETTINGS.openSettings()
                    
 def showChtype():
     log('utilities: showChtype')
@@ -84,6 +88,12 @@ def showChtype():
     if select != -1:
         help(ChtypeLst[select])
 
+def EGIntro():
+    log('utilities: EGIntro')
+    for e in range(len(EG_ALL)):
+        egTrigger('PseudoTV_Live - ' + EG_ALL[e])
+    infoDialog("Eventghost Broadcast Complete")
+    
 if sys.argv[1] == '-SimpleDownloader':
     xbmcaddon.Addon(id='script.module.simple.downloader').openSettings()  
 elif sys.argv[1] == '-showChangelog':
@@ -110,6 +120,8 @@ elif sys.argv[1] == '-repairSettings2':
     Setfun.repairSettings()
 elif sys.argv[1] == '-ClearTempKey':
     ClearTempKey()
+elif sys.argv[1] == '-EGIntro':
+    EGIntro()
 elif sys.argv[1] == '-ClearChanFavorites':
     ClearChanFavorites()
 elif sys.argv[1] == '-YTDownloader':

@@ -119,6 +119,7 @@ class SkinManager(xbmcgui.WindowXMLDialog):
     def closeManager(self):
         self.log("closeManager") 
         REAL_SETTINGS.setSetting("SkinSelector",self.selSkin)
+        # REAL_SETTINGS.openSettings()
         self.close()
                    
  
@@ -184,7 +185,7 @@ class SkinManager(xbmcgui.WindowXMLDialog):
     def SelectAction(self):
         self.log("SelectAction")
         if self.skinNames[self.skinPOS].lower() != self.selSkin.lower():
-            if self.skinNames[self.skinPOS] in ['[COLOR=red][OUTDATED][/COLOR]']:
+            if ['[COLOR=red][OUTDATED][/COLOR]'] in getProperty('PTVL.SKINNAME'):
                 return
                 
             if self.local == True:

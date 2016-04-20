@@ -101,6 +101,7 @@ class ChannelListThread(threading.Thread):
         
         while True:
             DebugNotify("Background Updating...")
+            
             for i in range(self.myOverlay.maxChannels):
                 modified = True
                 
@@ -163,12 +164,15 @@ class ChannelListThread(threading.Thread):
                             self.log("Unknown Channel Loading Exception", xbmc.LOGERROR)
                             self.log(traceback.format_exc(), xbmc.LOGERROR)
                             return
-
                     self.myOverlay.channels[i] = self.chanlist.channels[i]
-
+                    
                     if self.myOverlay.isMaster:
+                        #Set last Channel
+                        SUPchannel = int(REAL_SETTINGS.getSetting('SUPchannel'))                
+                        if SUPchannel == 0:
+                            REAL_SETTINGS.setSetting('CurrentChannel', str(self.myOverlay.currentChannel))
                         ADDON_SETTINGS.setSetting('Channel_' + str(i + 1) + '_time', str(self.myOverlay.channels[i].totalTimePlayed))
-
+                            
                     if self.myOverlay.channels[i].getTotalDuration() > curtotal and self.myOverlay.isMaster:
                         modified = True
 

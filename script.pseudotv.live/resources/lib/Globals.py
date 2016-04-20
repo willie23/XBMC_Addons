@@ -38,7 +38,7 @@ ADDON_VERSION = REAL_SETTINGS.getAddonInfo('version')
 ICON = os.path.join(ADDON_PATH, 'icon.png')
 FANART = os.path.join(ADDON_PATH, 'fanart.jpg')
 DEBUG = REAL_SETTINGS.getSetting('enable_Debug') == "true"
-PTVL_SKINVER = '0.7.4'
+PTVL_SKINVER = '0.7.5'
 
 def log(msg, level = xbmc.LOGDEBUG):
     if DEBUG != True and level == xbmc.LOGDEBUG:
@@ -80,7 +80,6 @@ DOX_API_KEY      = REAL_SETTINGS.getSetting('DOX_API_KEY')
 GBOX_API_KEY     = REAL_SETTINGS.getSetting('GBOX_API_KEY')
 
 # Timers
-AUTOSTART_TIMER = [0,5,10,15,20]#in seconds
 ART_TIMER = [6,12,24,48,72]
 SHORT_CLIP_ENUM = [15,30,60,90,120,240,360,480]#in seconds
 INFOBAR_TIMER = [3,5,10,15,20,25]#in seconds
@@ -163,6 +162,8 @@ BUTTON_BACKGROUND_CONTEXT = 'pstvlContextBackground.png'
 BUTTON_GAUSS_CONTEXT = 'pstvlBackground_gauss.png'
 BUTTON_FOCUS_ALT = 'pstvlButtonFocusAlt.png'
 BUTTON_NO_FOCUS_ALT = 'pstvlButtonNoFocusAlt.png'
+BACKGROUND_SKIN = 'pstvlBackground.png'
+EPG_BUTTON_IDS = [6000,6001,6002,6003,6004]
 
 #Channel Sharing location
 if REAL_SETTINGS.getSetting('ChannelSharing') == "true":
@@ -230,7 +231,10 @@ RSS_REFRESH = 900 #secs
 ONNOW_REFRESH = 450 #secs
 ONNOW_REFRESH_LOW = 900 #secs
 SETTOP_REFRESH = 3600 #secs
-IDLE_TIMER = 180  #secs
+IDLE_TIMER = 180  #secs (3min)
+IDLE_DELAY = 30 #secs
+LIVETV_MAXPARSE = 259200 #secs (72hrs)
+INTERNETTV_MAXPARSE = 86400 #secs (24hrs)
 
 # Settings2 filepaths
 SETTINGS_FLE = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.xml'))
@@ -241,7 +245,7 @@ SETTINGS_FLE_LASTRUN = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.
 SETTINGS_FLE_PRETUNE = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.pretune.xml'))
 
 # commoncache globals
-guide = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "guide",4)
+guide = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "guide",2)
 daily = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "daily",24)
 weekly = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "weekly",24 * 7)
 monthly = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "monthly",((24 * 7) * 4))
@@ -260,8 +264,12 @@ cache_daily = FSCache(REQUESTS_LOC, days=1, hours=0, minutes=0)
 cache_weekly = FSCache(REQUESTS_LOC, days=7, hours=0, minutes=0)
 cache_monthly = FSCache(REQUESTS_LOC, days=28, hours=0, minutes=0)
 
+IMAGE_TYPES = ['.jpg', '.jpeg', '.png', '.tif', '.tiff', '.gif', '.pcx', '.bmp', '.tga', '.ico', '.nef']
 MUSIC_TYPES = ['.mp3','.flac','.mp4']
 MEDIA_TYPES = ['.avi', '.mp4', '.m4v', '.3gp', '.3g2', '.f4v', '.mov', '.mkv', '.flv', '.ts', '.m2ts', '.mts', '.strm']
+
+EG_ALL = ['Starting','Loading: CHANNELNAME','Sleeping','Exiting']
+MAX_MEDIA_LIMIT = 10000
 try:
     MEDIA_LIMIT = LIMIT_VALUES[int(REAL_SETTINGS.getSetting('MEDIA_LIMIT'))]
 except:
@@ -318,10 +326,10 @@ COLOR_ltGRAY_TYPE = ['0', '7', 'NR', 'Consumer', 'Game Show', 'Other', 'Unknown'
 COLOR_CHANNUM = ['0xFF0297eb', '0xC0C0C0C0', '0xff00ff00', '0xff888888', '0xffcccccc', '0xffffffff']
 CHANBUG_COLOR = COLOR_CHANNUM[int(REAL_SETTINGS.getSetting('COLOR_CHANNUM'))]
 
-#https://github.com/xbmc/xbmc/blob/master/xbmc/input/Key.h
+# https://github.com/xbmc/xbmc/blob/master/xbmc/input/Key.h
 # https://github.com/xbmc/xbmc/blob/master/xbmc/input/ButtonTranslator.cpp
 
-# touch actions
+# touch
 ACTION_TOUCH_TAP = 401
 ACTION_TOUCH_TAP_TEN = 410
 ACTION_TOUCH_LONGPRESS = 411
@@ -339,16 +347,22 @@ ACTION_GESTURE_SWIPE_UP = 531
 ACTION_GESTURE_SWIPE_UP_TEN = 540
 ACTION_GESTURE_SWIPE_DOWN = 541
 ACTION_GESTURE_SWIPE_DOWN_TEN = 550
-
+# mouse
+ACTION_MOUSE_LEFT_CLICK = 100
+ACTION_MOUSE_RIGHT_CLICK = 101
+ACTION_MOUSE_DOUBLE_CLICK = 103
+ACTION_MOUSE_WHEEL_UP = 104
+ACTION_MOUSE_WHEEL_DOWN = 105
+ACTION_MOUSE_MOVE = 107
 # actions
-ACTION_SHOW_EPG = [ACTION_GESTURE_SWIPE_RIGHT]
-ACTION_SHOW_INFO = [11,ACTION_GESTURE_SWIPE_LEFT]
+ACTION_SHOW_EPG = [ACTION_GESTURE_SWIPE_RIGHT,ACTION_MOUSE_DOUBLE_CLICK]
+ACTION_SHOW_INFO = [11,ACTION_GESTURE_SWIPE_LEFT,ACTION_MOUSE_LEFT_CLICK]
 ACTION_MOVE_LEFT = [1,ACTION_GESTURE_SWIPE_LEFT]
 ACTION_MOVE_RIGHT = [2,ACTION_GESTURE_SWIPE_RIGHT]
 ACTION_MOVE_UP = [3,ACTION_GESTURE_SWIPE_UP]
 ACTION_MOVE_DOWN = [4,ACTION_GESTURE_SWIPE_DOWN]
-ACTION_PAGEUP = [5,ACTION_GESTURE_SWIPE_UP_TEN]
-ACTION_PAGEDOWN = [6,ACTION_GESTURE_SWIPE_DOWN_TEN]
+ACTION_PAGEUP = [5,ACTION_GESTURE_SWIPE_UP_TEN,ACTION_MOUSE_WHEEL_UP]
+ACTION_PAGEDOWN = [6,ACTION_GESTURE_SWIPE_DOWN_TEN,ACTION_MOUSE_WHEEL_DOWN]
 ACTION_SELECT_ITEM = [7]
 ACTION_PREVIOUS_MENU = [9, 10, 92, 247, 257, 275, 61467, 61448]
 ACTION_DELETE_ITEM = 80

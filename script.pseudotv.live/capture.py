@@ -177,8 +177,8 @@ class Main:
                             self.fixChannel(self.channel)
                     elif filetype == 'file':
                         if self.chantype == 8:
-                            self.setting1 = file
-                            self.setting2 = name
+                            self.setting1 = name
+                            self.setting2 = file
                             self.setting3 = 'pvr'
                             self.setting4 = ''
                             self.channame = name
@@ -219,16 +219,10 @@ class Main:
             else:
                 self.chantype = 9
                 self.buildChannel()
-                
-            if self.Path.startswith('plugin://plugin.video.ustvnow'):
-                self.Label = self.Label.split(' - ')[0]
-                dname = "USTVnow - "+self.Label
-            else:
-                dname = self.Label
-                
+            
             if xmltvFle:
-                self.channame, self.setting1 = self.chnlst.findZap2itID(dname, xbmc.translatePath(xmltvFle))
-                self.channame = self.Label+" USTV"
+                self.channame, self.setting1 = self.chnlst.findZap2itID(self.chnlst.cleanLabels(self.Label), xbmc.translatePath(xmltvFle))
+                self.channame = self.Label
                 self.setting2 = self.Path
                 self.setting3 = XMLTV
                 
@@ -316,16 +310,11 @@ class Main:
                     chansetting2 = ADDON_SETTINGS.getSetting("Channel_" + str(i + 1) + "_2")
                     chansetting3 = ADDON_SETTINGS.getSetting("Channel_" + str(i + 1) + "_3")
                     chansetting4 = ADDON_SETTINGS.getSetting("Channel_" + str(i + 1) + "_4")
-                    channame = ADDON_SETTINGS.getSetting("Channel_" + str(i + 1) + "_rule_1_opt_1")
                 except:
                     pass
 
-                if chantype <= 7:
-                    option = chansetting1
-                else:
-                    option = channame
-                newlabel = getChanPrefix(chantype, option)
-                
+                name = self.chnlst.getChannelName(chantype, i+1, chansetting1, False)
+                newlabel = getChanPrefix(chantype, name)
                 if newlabel:
                     newlabel = '[COLOR=dimgrey][B]'+ theitem +'[/B] - '+ newlabel+'[/COLOR]'
                 else:
@@ -352,7 +341,6 @@ class Main:
         ADDON_SETTINGS.setSetting(setting1, self.setting1)
         ADDON_SETTINGS.setSetting(setting2, self.setting2)
         ADDON_SETTINGS.setSetting(setting3, self.setting3)
-        ADDON_SETTINGS.setSetting(setting4, self.setting4)
         ADDON_SETTINGS.setSetting(setting4, self.setting4)
         if chantype > 6:
             ADDON_SETTINGS.setSetting("Channel_" + chan + "_rulecount", "1")

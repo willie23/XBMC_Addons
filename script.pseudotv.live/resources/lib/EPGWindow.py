@@ -126,7 +126,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         self.textureButtonFocusAlt = MEDIA_LOC + BUTTON_FOCUS_ALT
         self.textureButtonNoFocusAlt = MEDIA_LOC + BUTTON_NO_FOCUS_ALT
         
-        self.currentTime = xbmcgui.ControlButton(timetx, timety, timetw, timeth, timeex, font='font12', noFocusTexture=self.timeButtonNoFocus)
+        self.currentTime = xbmcgui.ControlButton(timetx, timety, timetw, timeth, timeex, font='font12', focusTexture=self.textureButtonFocusAlt, noFocusTexture=self.timeButtonNoFocus)
         self.currentTimeBar = xbmcgui.ControlImage(timex, timey, timew, timeh, self.timeButtonBar) 
         self.addControl(self.currentTime)
         self.addControl(self.currentTimeBar)
@@ -157,6 +157,10 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             basex, basey = self.getControl(113).getPosition()
             baseh = self.getControl(113).getHeight()
             basew = self.getControl(113).getWidth()
+            
+            # Update Channel Focus Highlight
+            chx, chy = self.getControl(5009).getPosition()
+            self.getControl(5009).setPosition(chx, basey)
 
             # set the button that corresponds to the currently playing show
             for i in range(len(self.channelButtons[2])):
@@ -201,7 +205,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                 self.channelLabel[i].setVisible(False)
             except:
                 pass
-        self.channelLabelTimer = threading.Timer(5.0, self.hideChannelLabel)       
+                
         self.FEEDtoggle()  
         self.log('onInit return')
 
@@ -213,18 +217,23 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         except:
             self.getControl(505).setVisible(False)
 
-        
+
     # setup all channel buttons for a given time
     def setChannelButtons(self, starttime, curchannel, singlerow = -1):
         self.log('setChannelButtons ' + str(starttime) + ', ' + str(curchannel))
         self.centerChannel = self.MyOverlayWindow.fixChannel(curchannel)
+  
+        # # todo filter epg, controlid 6000
+        # EPG_CHTYPE_FILTER = [8]
+        # while self.MyOverlayWindow.getChtype(curchannel) in EPG_CHTYPE_FILTER:
+            # curchannel = self.MyOverlayWindow.fixChannel(curchannel + 1, False)
         
         # This is done twice to guarantee we go back 2 channels.  If the previous 2 channels
         # aren't valid, then doing a fix on curchannel - 2 may result in going back only
         # a single valid channel.
         curchannel = self.MyOverlayWindow.fixChannel(curchannel - 1, False)
         curchannel = self.MyOverlayWindow.fixChannel(curchannel - 1, False)
-        
+
         starttime = self.roundToHalfHour(int(starttime))
         self.setTimeLabels(starttime)
         self.shownTime = starttime
@@ -232,7 +241,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         basex, basey = self.getControl(111).getPosition()
         basew = self.getControl(111).getWidth()
         tmpx, tmpy =  self.getControl(110 + self.rowCount).getPosition()
-        
+
         timetx, timety = self.getControl(5006).getPosition()
         timetw = self.getControl(5006).getWidth()
         timeth = self.getControl(5006).getHeight()
@@ -240,26 +249,28 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         timew = self.getControl(5007).getWidth()
         timeh = self.getControl(5007).getHeight()
         self.log('setChannelButtons, settime')
-        
-        basecur = curchannel
+            
+        basecur = curchannel            
         self.toRemove.append(self.currentTime)
         self.toRemove.append(self.currentTimeBar)
         myadds = []
-                    
+        
         for i in range(self.rowCount):
             if singlerow == -1 or singlerow == i:
-                self.setButtons(starttime, basecur, i)
+                self.setButtons(starttime, basecur, i)                  
                 myadds.extend(self.channelButtons[i])
                 myadds.extend(self.channelTags[i])
             basecur = self.MyOverlayWindow.fixChannel(basecur + 1)
-        basecur = curchannel
-        self.log('setChannelButtons, row init')
+
+        basecur = curchannel     
+        self.log('setChannelButtons, row init')  
 
         for i in range(self.rowCount):
             self.getControl(301 + i).setLabel(self.MyOverlayWindow.getChname(basecur))
             basecur = self.MyOverlayWindow.fixChannel(basecur + 1)
-
-        for i in range(self.rowCount): 
+            
+        self.getControl(5010).setVisible(False)
+        for i in range(self.rowCount):
             self.getControl(311 + i).setLabel(str(curchannel))
             if REAL_SETTINGS.getSetting("EPGTextEnable") == "0":   
                 chlogo = self.MyOverlayWindow.getChlogo(curchannel, False)
@@ -273,6 +284,15 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                         FindLogo(chtype, self.MyOverlayWindow.getChname(curchannel), mediapath)
             else:
                 self.getControl(321 + i).setImage('NA.png')
+                
+            if int(self.getControl(311 + i).getLabel()) == self.MyOverlayWindow.currentChannel:
+                self.log('setChannelButtons, current playing channel row')  
+                self.getControl(5010).setVisible(True)                                
+                # Update Channel Playing Highlight
+                chpx, chpy = self.getControl(5010).getPosition()
+                chx, chy = self.getControl(111 + i).getPosition()
+                self.getControl(5010).setPosition(chpx, chy)
+      
             curchannel = self.MyOverlayWindow.fixChannel(curchannel + 1)
 
         if time.time() >= starttime and time.time() < starttime + 5400:
@@ -297,7 +317,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         else:
             timeex = now.strftime("%H:%M")
         self.currentTime.setLabel(timeex)
- 
+
         # Set backtime focus width
         TimeBX, TimeBY = self.currentTimeBar.getPosition()
         PFadeX, PFadeY = self.getControl(5004).getPosition()
@@ -410,7 +430,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             return xbmc.Player().getPlayingFile()
         except:
             return ''
-            
+
             
     # create the buttons for the specified channel in the given row
     def setButtons(self, starttime, curchannel, row):
@@ -420,14 +440,19 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             baseh = self.getControl(111 + row).getHeight()
             basew = self.getControl(111 + row).getWidth()
             chtype = self.MyOverlayWindow.getChtype(curchannel)      
-            chname = self.MyOverlayWindow.getChname(curchannel)
-            
+            chname = self.MyOverlayWindow.getChname(curchannel)  
+        
             # Backup all of the buttons to an array
             self.toRemove.extend(self.channelButtons[row])
             self.toRemove.extend(self.channelTags[row])
             del self.channelButtons[row][:]
             del self.channelTags[row][:]
-
+            
+            # # todo filter epg
+            # if chtype != 8:             
+                # self.channelButtons[row].append(xbmcgui.ControlButton(basex, basey, basew, baseh, '', focusTexture=self.textureButtonFocus, noFocusTexture=self.textureButtonNoFocus, alignment=4, shadowColor=self.shadowColor, font=self.textfont, textColor=self.textcolor, focusedColor=self.focusedcolor))
+                # return
+            
             playlistpos = int(xbmc.PlayList(xbmc.PLAYLIST_MUSIC).getposition())
             #playlistpos = self.MyOverlayWindow.channels[curchannel - 1].playlistPosition
             self.log('setButtons, playlistpos = ' + str(playlistpos))
@@ -435,11 +460,12 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             # if the channel is paused, then only 1 button needed
             if self.MyOverlayWindow.channels[curchannel - 1].isPaused:
                 self.channelButtons[row].append(xbmcgui.ControlButton(basex, basey, basew, baseh, self.MyOverlayWindow.channels[curchannel - 1].getCurrentTitle() + " (paused)", focusTexture=self.textureButtonFocus, noFocusTexture=self.textureButtonNoFocus, alignment=4, shadowColor=self.shadowColor, textColor=self.textcolor, focusedColor=self.focusedcolor))
-            
+            elif chtype == 12:
+                self.channelButtons[row].append(xbmcgui.ControlButton(basex, basey, basew, baseh, self.MyOverlayWindow.getChname(curchannel), focusTexture=self.textureButtonFocus, noFocusTexture=self.textureButtonNoFocus, alignment=4, shadowColor=self.shadowColor, textColor=self.textcolor, focusedColor=self.focusedcolor))   
             # if hideShortItems and chtype >=10 stack videos shorter than BYPASS_EPG_SECONDS. 
             # if the channel is stacked, then only 1 button needed
-            elif self.MyOverlayWindow.hideShortItems and (chtype >= 10 and self.MyOverlayWindow.channels[curchannel - 1].getItemDuration(playlistpos) < BYPASS_EPG_SECONDS and chname not in BYPASS_EPG_STACK) or chname in FORCE_EPG_STACK: #Under 15mins "Stacked"
-                self.channelButtons[row].append(xbmcgui.ControlButton(basex, basey, basew, baseh, self.MyOverlayWindow.getChname(curchannel), focusTexture=self.textureButtonFocus, noFocusTexture=self.textureButtonNoFocus, alignment=4, shadowColor=self.shadowColor, textColor=self.textcolor, focusedColor=self.focusedcolor))   
+            # elif self.MyOverlayWindow.hideShortItems and (chtype >= 10 and self.MyOverlayWindow.channels[curchannel - 1].getItemDuration(playlistpos) < BYPASS_EPG_SECONDS and chname not in BYPASS_EPG_STACK) or chname in FORCE_EPG_STACK: #Under 15mins "Stacked"
+                # self.channelButtons[row].append(xbmcgui.ControlButton(basex, basey, basew, baseh, self.MyOverlayWindow.getChname(curchannel), focusTexture=self.textureButtonFocus, noFocusTexture=self.textureButtonNoFocus, alignment=4, shadowColor=self.shadowColor, textColor=self.textcolor, focusedColor=self.focusedcolor))   
             
             else:            
                 # Find the show that was running at the given time for the current channel.
@@ -593,9 +619,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             # return
             
         action = act.getId()
-        
-        # if REAL_SETTINGS.getSetting("SFX_Enabled") == "true":
-            # self.MyOverlayWindow.playSFX(action)
+        self.MyOverlayWindow.playSFX(action)
             
         try:
             if action in ACTION_PREVIOUS_MENU:
@@ -608,7 +632,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                     self.infoOffset = 0
                     self.infoOffsetV = 0
             
-            elif action in ACTION_MOVE_DOWN: 
+            elif action in ACTION_MOVE_DOWN:
                 if not self.showingContext:
                     self.GoDown()    
                 if self.showingInfo:  
@@ -774,67 +798,65 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                 if self.actionSemaphore.acquire(False) == False:
                     self.log('Unable to get semaphore')
                     return
+                elif controlid in [6001,6002,6003,6004]:
+                    if controlid == 6001:
+                        self.log('ACTION_TELETEXT_RED')
+                        self.MyOverlayWindow.windowSwap('EPG')
+                    elif controlid == 6002:
+                        self.log('ACTION_TELETEXT_GREEN')
+                        self.MyOverlayWindow.windowSwap('DVR')
+                    elif controlid == 6003:
+                        self.log('ACTION_TELETEXT_YELLOW')
+                        self.MyOverlayWindow.windowSwap('ONDEMAND')
+                    elif controlid == 6004:
+                        self.log('ACTION_TELETEXT_BLUE') 
+                        self.MyOverlayWindow.windowSwap('APPS')
+                else:
+                    lastaction = time.time() - self.lastActionTime
+                    if lastaction >= 2:
+                        try:
+                            selectedbutton = self.getControl(controlid)
+                        except:
+                            self.actionSemaphore.release()
+                            self.log('onClick unknown controlid ' + str(controlid))
+                            return
 
-                lastaction = time.time() - self.lastActionTime
+                        for i in range(self.rowCount):
+                            for x in range(len(self.channelButtons[i])):
+                                mycontrol = 0
+                                mycontrol = self.channelButtons[i][x]
 
-                if lastaction >= 2:
-                    try:
-                        selectedbutton = self.getControl(controlid)
-                    except:
-                        self.actionSemaphore.release()
-                        self.log('onClick unknown controlid ' + str(controlid))
-                        return
+                                if selectedbutton == mycontrol:
+                                    self.focusRow = i
+                                    self.focusIndex = x
+                                    self.selectShow()
+                                    self.closeEPG()
+                                    self.lastActionTime = time.time()
+                                    self.actionSemaphore.release()
+                                    self.log('onClick found button return')
+                                    return
 
-                    for i in range(self.rowCount):
-                        for x in range(len(self.channelButtons[i])):
-                            mycontrol = 0
-                            mycontrol = self.channelButtons[i][x]
-
-                            if selectedbutton == mycontrol:
-                                self.focusRow = i
-                                self.focusIndex = x
-                                self.selectShow()
-                                self.closeEPG()
-                                self.lastActionTime = time.time()
-                                self.actionSemaphore.release()
-                                self.log('onClick found button return')
-                                return
-
-                    self.lastActionTime = time.time()
-                    self.closeEPG()
+                        self.lastActionTime = time.time()
+                        self.closeEPG()
 
                 self.actionSemaphore.release()
                 self.log('onClick return')
             except:
                 pass
     
+    def startChannelLabelTimer(self, timer=2.0):
+        self.log('startChannelLabelTimer')
+        self.channelLabelTimer = threading.Timer(timer, self.hideChannelLabel)
+        self.channelLabelTimer.name = "ChannelLabel"
+        if self.channelLabelTimer.isAlive():
+            self.channelLabelTimer.cancel()
+        self.channelLabelTimer.start()
     
-    # Called from the timer to hide the channel label.
-    def hideChannelLabel(self):
-        self.log('hideChannelLabel')
-        self.channelLabelTimer = threading.Timer(5.0, self.hideChannelLabel)
-        for i in range(3):
-            self.channelLabel[i].setVisible(False)
-
-        inputChannel = self.inputChannel
-        self.GotoChannelTimer = threading.Timer(5.1, self.GotoChannel, [inputChannel])
-        self.GotoChannelTimer.name = "GotoChannel"
-        if self.GotoChannelTimer.isAlive():
-            self.GotoChannelTimer.cancel() 
-        self.GotoChannelTimer.start()
-        self.inputChannel = -1  
-        self.log('hideChannelLabel return')
-     
-          
+    
     # Display the current channel based on self.currentChannel.
     # Start the timer to hide it.
     def showChannelLabel(self, channel):
-        self.log('showChannelLabel ' + str(channel))
-        self.channelLabelTimer = threading.Timer(5.0, self.hideChannelLabel)
-        self.channelLabelTimer.name = "ChannelLabel"
-        if self.channelLabelTimer.isAlive():
-            self.channelLabelTimer.cancel()         
-            
+        self.log('showChannelLabel ' + str(channel))            
         tmp = self.inputChannel
         self.hideChannelLabel()
         self.inputChannel = tmp
@@ -852,14 +874,29 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             self.channelLabel[curlabel].setVisible(True)
             curlabel += 1
         
-        if FileAccess.exists(IMAGES_LOC):
-            self.channelLabel[curlabel].setImage(IMAGES_LOC + 'label_' + str(channel % 10) + '.png')
+        self.channelLabel[curlabel].setImage(IMAGES_LOC + 'label_' + str(channel % 10) + '.png')
         self.channelLabel[curlabel].setVisible(True)
-
-        self.channelLabelTimer.start()
+        
+        self.startChannelLabelTimer()
         self.log('showChannelLabel return')
         
-            
+        
+      # Called from the timer to hide the channel label.
+    def hideChannelLabel(self):
+        self.log('hideChannelLabel')
+        for i in range(3):
+            self.channelLabel[i].setVisible(False)
+
+        inputChannel = self.inputChannel
+        self.GotoChannelTimer = threading.Timer(5.1, self.GotoChannel, [inputChannel])
+        self.GotoChannelTimer.name = "GotoChannel"
+        if self.GotoChannelTimer.isAlive():
+            self.GotoChannelTimer.cancel() 
+        self.GotoChannelTimer.start()
+        self.inputChannel = -1  
+        self.log('hideChannelLabel return')
+     
+          
     def GotoChannel(self, inchannel):
         self.log('GotoChannel, inchannel = ' + str(inchannel))
         self.log('GotoChannel, centerChannel = ' + str(self.centerChannel))
@@ -906,28 +943,41 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
 
     def GoDown(self):
         self.log('goDown')
+        # if self.getFocus() in [EPG_BUTTON_IDS]:
+            # self.setProperButton(0)
+        # else:
+        
         # change controls to display the proper junks
         if self.focusRow == self.rowCount - 1:
             self.setChannelButtons(self.shownTime, self.MyOverlayWindow.fixChannel(self.centerChannel + 1))
             self.focusRow = self.rowCount - 2
+
         self.setProperButton(self.focusRow + 1)
         self.log('goDown return')
 
         
     def GoUp(self):
         self.log('goUp')
-        # same as godown
+        # if self.centerChannel == 1 and self.getFocus() not in [EPG_BUTTON_IDS]:
+            # # self.setFocus(EPG_BUTTON_IDS[0])
+            # xbmc.executebuiltin('Control.SetFocus(%s,1)' % (EPG_BUTTON_IDS[0]))
+            # return
+        # elif self.getFocus() in [EPG_BUTTON_IDS]:
+            # self.setProperButton(0)
+
         # change controls to display the proper junks
         if self.focusRow == 0:
             self.setChannelButtons(self.shownTime, self.MyOverlayWindow.fixChannel(self.centerChannel - 1, False))
             self.focusRow = 1
+
         self.setProperButton(self.focusRow - 1)
         self.log('goUp return')
-
 
     
     def GoLeft(self):
         self.log('goLeft')
+        if self.getFocus() in [EPG_BUTTON_IDS]:
+            return
         basex, basey = self.getControl(111 + self.focusRow).getPosition()
         basew = self.getControl(111 + self.focusRow).getWidth()
 
@@ -961,6 +1011,8 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
     
     def GoRight(self):
         self.log('goRight')
+        if self.getFocus() in [EPG_BUTTON_IDS]:
+            return
         basex, basey = self.getControl(111 + self.focusRow).getPosition()
         basew = self.getControl(111 + self.focusRow).getWidth()
 
@@ -1008,8 +1060,8 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             if selectedtime >= starttime and selectedtime <= endtime:
                 return i
         return -1
-
-
+        
+        
     # based on the current focus row and index, find the appropriate button in
     # the new row to set focus to
     def setProperButton(self, newrow, resetfocustime = False):
@@ -1018,6 +1070,10 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         basex, basey = self.getControl(111 + newrow).getPosition()
         baseh = self.getControl(111 + newrow).getHeight()
         basew = self.getControl(111 + newrow).getWidth()
+        
+        # Update Channel Focus Highlight
+        chx, chy = self.getControl(5009).getPosition()
+        self.getControl(5009).setPosition(chx, basey)
 
         for i in range(len(self.channelButtons[newrow])):
             left, top = self.channelButtons[newrow][i].getPosition()
@@ -1284,62 +1340,74 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         
     def addButtonTags(self, row, xpos, basey, width, baseh, mylabel, EPGtags):      
         self.log('addButtonTags')
-        cc     = (EPGtags['CC']      or False)
-        hd     = (EPGtags['HD']      or False)
-        rec    = (EPGtags['REC']     or False)
-        sch    = (EPGtags['SCH']     or False)
-        rating = (EPGtags['RATING']  or 'NR')
-        stars  = (EPGtags['STARS']   or '0.0')
-        
-        button_width = xpos + width
-        label_width = xpos + len(mylabel) * 15
-        
-        xtag_left = button_width - 30
-        ytag_pos_upper = basey + baseh/4  
-        
-        xtag_right = label_width + 30
-        ytag_pos_lower = basey + baseh/2
-        hd_xtag = xtag_left - 30
-        cc_xtag = xtag_right + 30
-        rat_xtag = cc_xtag + 45
-        
-        # upper tags (rec or reminder)         
-        wtag = 30
-        htag = 15
-        if button_width > xtag_left and label_width < xtag_left and xtag_left < button_width:
-            if rec == True:
-                self.channelTags[row].append(xbmcgui.ControlImage(xtag_left, ytag_pos_upper, wtag, htag, os.path.join(TAG_LOC,'REC.png'),2,''))
-            elif sch == True:
-                self.channelTags[row].append(xbmcgui.ControlImage(xtag_left, ytag_pos_upper, wtag, htag, os.path.join(TAG_LOC,'SCH.png'),2,''))
-                    
-        # lower tags (cc,ratings,hd)
-        if REAL_SETTINGS.getSetting("EPG.xInfo") == "true":     
+        try:
+            cc     = (EPGtags['CC']      or False)
+            hd     = (EPGtags['HD']      or False)
+            rec    = (EPGtags['REC']     or False)
+            sch    = (EPGtags['SCH']     or False)
+            rating = (EPGtags['RATING']  or 'NR')
+            stars  = (EPGtags['STARS']   or '0.0')
+            
+            button_width = xpos + width
+            label_width = xpos + len(mylabel) * 15
+            
+            xtag_left = button_width - 30
+            ytag_pos_upper = basey + baseh/4  
+            
+            xtag_right = label_width + 30
+            ytag_pos_lower = basey + baseh/2
+            hd_xtag = xtag_left - 30
+            cc_xtag = xtag_right + 30
+            rat_xtag = cc_xtag + 45
+            
+            # upper tags (rec or reminder)         
             wtag = 30
-            htag = 30
-            # pos end of button
-            if hd == True:       
-                if button_width > hd_xtag and label_width + 30 < hd_xtag and hd_xtag < button_width:
-                    self.channelTags[row].append(xbmcgui.ControlImage(hd_xtag, ytag_pos_lower, wtag, htag, os.path.join(TAG_LOC,'HD.png'),2,''))   
+            htag = 15
+            if button_width > xtag_left and label_width < xtag_left and xtag_left < button_width:
+                if rec == True:
+                    self.channelTags[row].append(xbmcgui.ControlImage(xtag_left, ytag_pos_upper, wtag, htag, os.path.join(TAG_LOC,'REC.png'),2,''))
+                elif sch == True:
+                    self.channelTags[row].append(xbmcgui.ControlImage(xtag_left, ytag_pos_upper, wtag, htag, os.path.join(TAG_LOC,'SCH.png'),2,''))
+                        
+            # lower tags (cc,ratings,hd)
+            if REAL_SETTINGS.getSetting("EPG.xInfo") == "true":     
+                wtag = 30
+                htag = 30
+                # pos end of button
+                if hd == True:       
+                    if button_width > hd_xtag and label_width + 30 < hd_xtag and hd_xtag < button_width:
+                        self.channelTags[row].append(xbmcgui.ControlImage(hd_xtag, ytag_pos_lower, wtag, htag, os.path.join(TAG_LOC,'HD.png'),2,''))   
+                
+                # pos end of mylabel
+                if cc == True:
+                    wtag = 60
+                    htag = 15
+                    if button_width > cc_xtag and label_width +30 < cc_xtag and cc_xtag < button_width and cc_xtag + wtag < hd_xtag and cc_xtag < rat_xtag:
+                        self.channelTags[row].append(xbmcgui.ControlImage(cc_xtag, ytag_pos_lower, wtag, htag, os.path.join(TAG_LOC,'CC.png'),2,''))
+                        
+                if not rating in ['NR','NA','']:
+                    wtag = 60       
+                    htag = 15
+                    if button_width > rat_xtag and label_width + 30 < rat_xtag and rat_xtag < button_width and rat_xtag + wtag < hd_xtag:
+                        self.channelTags[row].append(xbmcgui.ControlImage(rat_xtag, ytag_pos_lower, wtag, htag, (os.path.join(TAG_LOC,'%s.png') % rating),2,''))
+                
+                elif not stars in ['0.0','']:
+                    wtag = 90       
+                    htag = 15
+                    if button_width > rat_xtag and label_width + 30 < rat_xtag and rat_xtag < button_width and rat_xtag + wtag < hd_xtag:
+                        self.channelTags[row].append(xbmcgui.ControlImage(rat_xtag, ytag_pos_lower, wtag, htag, (os.path.join(STAR_LOC,'%s.png') % stars),2,''))
+        except:
+            self.log("exception in addButtonTags", xbmc.LOGERROR)
+            self.log(traceback.format_exc(), xbmc.LOGERROR)
+        self.log('addButtonTags return')
             
-            # pos end of mylabel
-            if cc == True:
-                wtag = 60
-                htag = 15
-                if button_width > cc_xtag and label_width +30 < cc_xtag and cc_xtag < button_width and cc_xtag + wtag < hd_xtag and cc_xtag < rat_xtag:
-                    self.channelTags[row].append(xbmcgui.ControlImage(cc_xtag, ytag_pos_lower, wtag, htag, os.path.join(TAG_LOC,'CC.png'),2,''))
                     
-            if not rating in ['NR','NA','']:
-                wtag = 60       
-                htag = 15
-                if button_width > rat_xtag and label_width + 30 < rat_xtag and rat_xtag < button_width and rat_xtag + wtag < hd_xtag:
-                    self.channelTags[row].append(xbmcgui.ControlImage(rat_xtag, ytag_pos_lower, wtag, htag, (os.path.join(TAG_LOC,'%s.png') % rating),2,''))
-            
-            elif not stars in ['0.0','']:
-                wtag = 90       
-                htag = 15
-                if button_width > rat_xtag and label_width + 30 < rat_xtag and rat_xtag < button_width and rat_xtag + wtag < hd_xtag:
-                    self.channelTags[row].append(xbmcgui.ControlImage(rat_xtag, ytag_pos_lower, wtag, htag, (os.path.join(STAR_LOC,'%s.png') % stars),2,''))
-
+    def getFocus(self):
+        win = xbmcgui.Window (xbmcgui.getCurrentWindowId())
+        id = win.getFocusId()
+        self.log('getFocus, id = ' + str(id))
+        return id
+        
             
     def showContextMenu(self):
         self.log('showContextMenu')
