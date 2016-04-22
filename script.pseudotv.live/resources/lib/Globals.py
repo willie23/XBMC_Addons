@@ -41,12 +41,12 @@ DEBUG = REAL_SETTINGS.getSetting('enable_Debug') == "true"
 PTVL_SKINVER = '0.7.5'
 
 def log(msg, level = xbmc.LOGDEBUG):
-    if DEBUG != True and level == xbmc.LOGDEBUG:
-        return
     if level == xbmc.LOGDEBUG:
         xbmcgui.Window(10000).setProperty('PTVL.DEBUG_LOG', uni(msg))
     else:
         xbmcgui.Window(10000).setProperty('PTVL.ERROR_LOG', uni(msg))
+    if DEBUG != True and level == xbmc.LOGDEBUG:
+        return
     xbmc.log(ADDON_ID + '-' + ADDON_VERSION + '-' + uni(msg), level)
 
 def utf(string, encoding = 'utf-8'):
@@ -233,6 +233,7 @@ ONNOW_REFRESH_LOW = 900 #secs
 SETTOP_REFRESH = 3600 #secs
 IDLE_TIMER = 180  #secs (3min)
 IDLE_DELAY = 30 #secs
+REMINDER_DELAY = 60 #secs
 LIVETV_MAXPARSE = 259200 #secs (72hrs)
 INTERNETTV_MAXPARSE = 86400 #secs (24hrs)
 

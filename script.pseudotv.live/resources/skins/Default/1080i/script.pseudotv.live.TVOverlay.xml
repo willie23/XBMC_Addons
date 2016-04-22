@@ -979,7 +979,7 @@
                 <align>center</align>
                 <aligny>center</aligny>
             </control>
-            <control type="grouplist" id="101">   
+            <control type="grouplist">   
                 <posx>300</posx>
                 <posy>300</posy>
                 <width>1280</width>
