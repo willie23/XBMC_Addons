@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="context.pseudotv.live.export" name="PseudoTV Live Export" version="1.0.9" provider-name="Lunatixz">
+<addon id="context.pseudotv.live.export" name="PseudoTV Live Export" version="1.1.0" provider-name="Lunatixz">
     <requires>
         <import addon="xbmc.python" version="2.14.0"/>
-        <import addon="script.pseudotv.live" version="0.6.5"/>
+        <import addon="script.pseudotv.live" version="0.6.5" optional="true"/>
     </requires>
     <extension point="kodi.context.item" library="settings.py">
         <item>
@@ -17,12 +17,12 @@
         </item>
     </extension>
     <extension point="xbmc.addon.metadata">
-        <description lang="en_US">>Export sources to PseudoTV Live for easy channel creation.</description>
+        <description>Export sources to PseudoTV Live for easy channel creation.</description>
         <platform>all</platform>
         <license>GNU GENERAL PUBLIC LICENSE. Version 3, June 2007</license>
         <source>https://github.com/Lunatixz/XBMC_Addons/tree/master/context.pseudotv.live.export</source>
         <email>pseudotvlive@gmail.com</email>
         <website>www.pseudotvlive.com</website>
-        <forum>http://forum.kodi.tv/showthread.php?tid=233143</forum>
+        <forum>http://pseudotvlive.com/index.php/forum</forum>
     </extension>
 </addon>

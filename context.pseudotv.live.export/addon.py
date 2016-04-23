@@ -19,7 +19,6 @@
 import xbmc, xbmcaddon
 
 if __name__ == '__main__':
-
     # PseudoTV Live Globals
     ADDON_ID = 'script.pseudotv.live'
     REAL_SETTINGS = xbmcaddon.Addon(id=ADDON_ID)
