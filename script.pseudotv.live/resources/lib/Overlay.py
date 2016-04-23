@@ -2051,6 +2051,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         self.IdleTimerCountdown(IDLE_DELAY)
         self.getControl(7000).setVisible(True)    
         self.setFocusId(7001)
+        self.playSFX('ACTION_ALERT')
 
         
     def sleepAction(self):
@@ -2096,6 +2097,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         self.IdleTimerCountdown(IDLE_DELAY)
         self.getControl(7000).setVisible(True)  
         self.setFocusId(7001)
+        self.playSFX('ACTION_ALERT')
         
         
     def ReminderAction(self):
@@ -2724,6 +2726,8 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             xbmc.playSFX(CONTEXT_SFX)
         elif action in [ACTION_PREVIOUS_MENU]:
             xbmc.playSFX(BACK_SFX)
+        elif action in ['ACTION_ALERT']:
+            xbmc.playSFX(ALERT_SFX)
             
      
     def setProp(self, title, year, chlogo, chtype, chnum, id, genre, rating, hd, cc, stars, mpath, mediapath, chname, SEtitle, type, dbid, epid, Description, subtitle, playcount, season, episode, timestamp, pType='OVERLAY'):
