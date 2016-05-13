@@ -55,8 +55,6 @@ def PseudoTV():
                 except: 
                     pass
                 log("Joined " + curthread.name)               
-                
-        setProperty("PseudoTVRunning", "False")
         del MyOverlayWindow
     except Exception,e:
         log('default: PseudoTV Overlay Failed! ' + str(e))

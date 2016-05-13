@@ -225,6 +225,7 @@ class ChannelList:
     # playlists until we don't find one
     def findMaxChannels(self):
         self.log('findMaxChannels')
+        chkValid = ''
         localCount = 0
         quickFlip = REAL_SETTINGS.getSetting('Enable_quickflip') == "true"
         self.maxChannels = 0
@@ -247,36 +248,35 @@ class ChannelList:
                 chsetting4 = ADDON_SETTINGS.getSetting('Channel_' + str(i + 1) + '_4')
             except Exception,e:
                 pass
-
-            if chtype <= 7 and quickFlip == True:
-                localCount += 1
-                
-            if chtype in [8,9]:
-                chk = chsetting2
-            elif chtype in [11,15,16]:
-                chk = chsetting1
-            else:
-                chk = ''
-                
-            if self.Valid_ok(chk) == True:
-                if chtype == 0:
-                    if FileAccess.exists(xbmc.translatePath(chsetting1)):
-                        self.maxChannels = i + 1
-                        self.enteredChannelCount += 1
-                elif chtype <= 20:
-                    if len(chsetting1) > 0:
-                        self.maxChannels = i + 1
-                        self.enteredChannelCount += 1
-       
-                if self.forceReset:
-                    ADDON_SETTINGS.setSetting('Channel_' + str(i + 1) + '_changed', "True")
+            
+            if chtype != 9999:
+                if chtype <= 7 and quickFlip == True:
+                    localCount += 1
                     
-                # find missing channel logos
-                if FIND_LOGOS == True:
-                    if chtype not in [6,7,9999]:
-                        chname = self.getChannelName(chtype, i + 1, chsetting1)
-                        FindLogo(chtype, chname)
+                if chtype in [8,9]:
+                    chkValid = chsetting2
+                elif chtype in [11,15,16]:
+                    chkValid = chsetting1
+                 
+                if self.Valid_ok(chkValid) == True:
+                    if chtype == 0:
+                        if FileAccess.exists(xbmc.translatePath(chsetting1)):
+                            self.maxChannels = i + 1
+                            self.enteredChannelCount += 1
+                    elif chtype <= 20:
+                        if len(chsetting1) > 0:
+                            self.maxChannels = i + 1
+                            self.enteredChannelCount += 1
+           
+                    if self.forceReset:
+                        ADDON_SETTINGS.setSetting('Channel_' + str(i + 1) + '_changed', "True")
                         
+                    # find missing channel logos
+                    if FIND_LOGOS == True:
+                        if chtype not in [6,7]:
+                            chname = self.getChannelName(chtype, i + 1, chsetting1)
+                            FindLogo(chtype, chname)
+                            
         if quickFlip == True and localCount > (self.enteredChannelCount/4):
             self.quickflipEnabled = True
         setBackgroundLabel('Initializing: Channels') 
@@ -1224,17 +1224,17 @@ class ChannelList:
             #Ratings
             fleList = self.getRatingList(14, 'PseudoCinema', channel, PrefileList)
             #Intro
-            IntroStr = self.makeTMPSTR((self.getYoutubeMeta(Intro))[2], 'PseudoCinema', 0, 'Intro', 'Welcome to the PseudoCinema Experience', GenreLiveID, self.youtube_player + Intro)
+            IntroStr = self.makeTMPSTR(self.getYoutubeDuration(Intro), 'PseudoCinema', 0, 'Intro', 'Welcome to the PseudoCinema Experience', GenreLiveID, self.youtube_player + Intro)
             #Cellphone
-            CellphoneStr = self.makeTMPSTR((self.getYoutubeMeta(Cellphone))[2], 'PseudoCinema', 0, 'Cellphone', 'Welcome to the PseudoCinema Experience', GenreLiveID, self.youtube_player + Cellphone)
+            CellphoneStr = self.makeTMPSTR(self.getYoutubeDuration(Cellphone), 'PseudoCinema', 0, 'Cellphone', 'Welcome to the PseudoCinema Experience', GenreLiveID, self.youtube_player + Cellphone)
             #Comingsoon
-            ComingSoonStr = self.makeTMPSTR((self.getYoutubeMeta(ComingSoon))[2], 'PseudoCinema', 0, 'Coming Soon', 'Welcome to the PseudoCinema Experience', GenreLiveID, self.youtube_player + ComingSoon)
+            ComingSoonStr = self.makeTMPSTR(self.getYoutubeDuration(ComingSoon), 'PseudoCinema', 0, 'Coming Soon', 'Welcome to the PseudoCinema Experience', GenreLiveID, self.youtube_player + ComingSoon)
             #PreMovie
-            PreMovieStr = self.makeTMPSTR((self.getYoutubeMeta(PreMovie))[2], 'PseudoCinema', 0, 'PreMovie', 'Welcome to the PseudoCinema Experience', GenreLiveID, self.youtube_player + PreMovie)
+            PreMovieStr = self.makeTMPSTR(self.getYoutubeDuration(PreMovie), 'PseudoCinema', 0, 'PreMovie', 'Welcome to the PseudoCinema Experience', GenreLiveID, self.youtube_player + PreMovie)
             #FeaturePresentation
-            FeaturePresStr = self.makeTMPSTR((self.getYoutubeMeta(FeaturePres))[2], 'PseudoCinema', 0, 'Feature Presentation', 'Welcome to the PseudoCinema Experience', GenreLiveID, self.youtube_player + FeaturePres)
+            FeaturePresStr = self.makeTMPSTR(self.getYoutubeDuration(FeaturePres), 'PseudoCinema', 0, 'Feature Presentation', 'Welcome to the PseudoCinema Experience', GenreLiveID, self.youtube_player + FeaturePres)
             #Intermission
-            IntermissionStr = self.makeTMPSTR((self.getYoutubeMeta(Intermission))[2], 'PseudoCinema', 0, 'Intermission', 'Welcome to the PseudoCinema Experience: Next Movie will begin in 10 Minutes//Intermission', GenreLiveID, self.youtube_player + Intermission)
+            IntermissionStr = self.makeTMPSTR(self.getYoutubeDuration(Intermission), 'PseudoCinema', 0, 'Intermission', 'Welcome to the PseudoCinema Experience: Next Movie will begin in 10 Minutes//Intermission', GenreLiveID, self.youtube_player + Intermission)
 
             for n in range(len(fleList)):
                 line = fleList[n]
@@ -1300,7 +1300,7 @@ class ChannelList:
         return LiveID
     
     
-    def makeTMPSTR(self, duration, Stitle, year, SEtitle, description, GenreLiveID, file, timestamp=None, meta=False):
+    def makeTMPSTR(self, duration, Stitle, year, SEtitle, description, GenreLiveID, file, timestamp=None, meta=True):
         self.log("makeTMPSTR")
         genre, LiveID = self.packGenreLiveID(GenreLiveID)
         type, id, dbepid, managed, playcount, rating, hd, cc, stars, year = self.unpackLiveID(LiveID)
@@ -1308,27 +1308,36 @@ class ChannelList:
         SEtitle = self.cleanLabels(SEtitle)
         year, title, showtitle = getTitleYear(Stitle, year)
         
+        # use youtube vdid for dbid
+        if file.startswith(self.youtube_player):
+            dbepid = file.split(self.youtube_player)[1]
+            # if no id, default to youtube type.
+            if str(id) == '0':
+                type = 'youtube'
+
         if type in ['tvshow','episode']:
-            Stitle = title
-            if meta == True and ENHANCED_DATA == True and duration >= self.myOverlay.shortItemLength:
-                stars, year, duration, description, title, subtitle, id, genre, rating, playcount = self.getTVmeta(stars, year, duration, description, title, SEtitle, id, genre, rating, playcount)
+            if meta == True and ENHANCED_DATA == True and duration >= MINFILE_DURATION:
+                stars, year, duration, description, Stitle, SEtitle, id, genre, rating, playcount = self.getTVmeta(stars, year, duration, description, title, SEtitle, id, genre, rating, playcount)
         elif type == 'movie':
+            if meta == True and ENHANCED_DATA == True and duration >= MINFILE_DURATION:
+                stars, year, duration, description, Stitle, subtitle, id, genre, rating, playcount = self.getMovieMeta(stars, year, duration, description, title, SEtitle, id, genre, rating, playcount)
+        elif type == 'youtube' and duration >= MINFILE_DURATION:
+            stars, year, duration, description, Stitle, SEtitle, dbepid, genre, rating, playcount, hd, cc = self.getYoutubeMeta(stars, year, duration, description, title, SEtitle, dbepid, genre, rating, playcount, hd, cc)
+        
+        Stitle = self.cleanLabels(Stitle)
+        SEtitle = self.cleanLabels(SEtitle)
+        year, title, showtitle = getTitleYear(Stitle, year)           
+        
+        if type == 'movie':
             Stitle = showtitle
-            if meta == True and ENHANCED_DATA == True and duration >= self.myOverlay.shortItemLength:
-                stars, year, duration, description, title, subtitle, id, genre, rating, playcount = self.getMovieMeta(stars, year, duration, description, title, SEtitle, id, genre, rating, playcount)
-                               
+        else:
+            Stitle = title
+                 
         description = self.cleanLabels(description)
         genre = self.cleanLabels(genre)
         rating = self.cleanRating(rating)
         file = self.cleanPlayableFile(file)
         
-        # use youtube vdid for dbid
-        if file.startswith(self.youtube_player):
-            dbepid = file.split(self.youtube_player)[1]
-            # if no id, default to youtube type.
-            if id == '0':
-                type = 'youtube'
-
         GenreLiveID = [genre,type,id,dbepid,managed,playcount,rating,hd,cc,stars,year]
         genre, LiveID = self.packGenreLiveID(GenreLiveID)
 
@@ -2183,7 +2192,7 @@ class ChannelList:
                                     else:
                                         year = 0
                                                          
-                                    # if type == 'tvshow' and ENHANCED_DATA == True and dur >= self.myOverlay.shortItemLength:
+                                    # if type == 'tvshow' and ENHANCED_DATA == True and dur >= MINFILE_DURATION:
                                         # #Decipher the TVDB ID by using the Zap2it ID in dd_progid
                                         # episodeNumList = elem.findall("episode-num") 
                                         # for epNum in episodeNumList:
@@ -2574,11 +2583,39 @@ class ChannelList:
         return showList[:limit]
     
     
+    def getYoutubeDetails(self, YTID):
+        YT_URL_Video = ('https://www.googleapis.com/youtube/v3/videos?key=%s&id=%s&part=id,snippet,contentDetails,statistics' % (YT_API_KEY, YTID))
+        return re.compile("},(.*?)}", re.DOTALL ).findall(read_url_cached(YT_URL_Video))
+
+        
+    def getYoutubeChname(self, YTID):
+        self.log('getYoutubeChname')
+        detail = self.getYoutubeDetails(YTID)
+        chname = ''
+        for f in detail:
+            try:
+                channelTitles = re.search('"channelTitle" *: *"(.*?)",', f)
+                if channelTitles:
+                    chname = channelTitles.group(1)
+            except:
+                pass
+        return chname
+    
+    
     def getYoutubeDuration(self, YTID):
         self.log('getYoutubeDuration')
-        return(self.getYoutubeMeta(YTID))[2]
-    
-    
+        detail = self.getYoutubeDetails(YTID)
+        duration = 0
+        for f in detail:
+            try:
+                durations = re.search('"duration" *: *"(.*?)",', f)
+                if durations:
+                    duration = self.parseYoutubeDuration(durations.group(1))
+            except:
+                pass
+        return duration
+        
+        
     def parseYoutubeDuration(self, duration):
         try:
             dur = 0
@@ -2599,102 +2636,6 @@ class ChannelList:
         return dur
     
     
-    def getVimeoMeta(self, VMID):
-        self.log('getVimeoMeta')
-        api = 'http://vimeo.com/api/v2/video/%s.xml' % VMID
-        title = ''
-        description = ''
-        duration = 0
-        thumburl = 0
-        try:
-            dom = parseString(read_url_cached(api))
-            xmltitle = dom.getElementsByTagName('title')[0].toxml()
-            title = xmltitle.replace('<title>','').replace('</title>','')
-            xmldescription = dom.getElementsByTagName('description')[0].toxml()
-            description = xmldescription.replace('<description>','').replace('</description>','')
-            xmlduration = dom.getElementsByTagName('duration')[0].toxml()
-            duration = int(xmlduration.replace('<duration>','').replace('</duration>',''))
-            thumbnail_large = dom.getElementsByTagName('thumbnail_large')[0].toxml()
-            thumburl = thumbnail_large.replace('<thumbnail_large>','').replace('</thumbnail_large>','')
-        except:
-            pass
-        return title, description, duration, thumburl
-
-        
-    def getYoutubeMeta(self, YTID):
-        self.log('getYoutubeMeta ' + YTID)
-        try:
-            YT_URL_Video = ('https://www.googleapis.com/youtube/v3/videos?key=%s&id=%s&part=snippet,id,statistics,contentDetails' % (YT_API_KEY, YTID))
-            detail = re.compile("},(.*?)}", re.DOTALL ).findall(read_url_cached(YT_URL_Video))
-            title = ''
-            description = ''
-            thumbnail = ''
-            duration = 0
-            Chname = ''
-            Chcat = '31'
-            for f in detail:
-                items = re.search('"items" *:', f)
-                titles = re.search('"title" *: *"(.*?)",', f)
-                descriptions = re.search('"description" *: *"(.*?)",', f)
-                durations = re.search('"duration" *: *"(.*?)",', f)
-                thumbnails = re.search('"url" *: *"(.*?)",', f)
-                Chnames = re.search('"channelTitle" *: *"(.*?)",', f)
-                Chcats = re.search('"categoryId" *: *"(.*?)",', f)
-
-                if durations:
-                    duration = durations.group(1)
-                    duration = self.parseYoutubeDuration(duration)
-                if Chnames:
-                    Chname = Chnames.group(1)
-                if Chcats:
-                    Chcat = Chcats.group(1)
-                    
-                if items:
-                    if titles:
-                        title = titles.group(1)
-                    if descriptions:
-                        description = descriptions.group(1)
-                    if thumbnails:
-                        thumbnail = thumbnails.group(1)
-            if title:
-                if not description:
-                    description = title
-                    
-            if Chcat and len(Chcat) > 0:                        
-                cats = {0 : '',
-                    1 : 'Action & Adventure',
-                    2 : 'Animation & Cartoons',
-                    3 : 'Classic TV',
-                    4 : 'Comedy',
-                    5: 'Drama',
-                    6 : 'Home & Garden',
-                    7 : 'News',
-                    8 : 'Reality & Game Shows',
-                    9 : 'Science & Tech',
-                    10 : 'Science Fiction',
-                    11 : 'Soaps',
-                    13 : 'Sports',
-                    14 : 'Travel',
-                    16 : 'Entertainment',
-                    17 : 'Documentary',
-                    20 : 'Nature',
-                    21 : 'Beauty & Fashion',
-                    23 : 'Food',
-                    24 : 'Gaming',
-                    25 : 'Health & Fitness',
-                    26 : 'Learning & Education',
-                    27 : 'Foreign Language',}
-                try:
-                    Genre = cats[int(Chcat)]
-                except:
-                    Genre = 'Unknown'
-                    
-                self.log("getYoutubeMeta, return")
-                return [title, description, duration, thumbnail, Chname, Genre]
-        except Exception,e:
-            self.log('getYoutubeMeta, Failed! ' + str(e), xbmc.LOGERROR)
-
-            
     def getYoutubeUserID(self, YTid):
         self.log("getYoutubeUserID, IN = " + YTid)
         YT_ID = 'UC'
@@ -2769,23 +2710,15 @@ class ChannelList:
                         
                     if VidIDS:
                         VidID = VidIDS.group(1)
-                        YT_Meta = self.getYoutubeMeta(VidID)
-
-                        if YT_Meta and YT_Meta[2] > 0: 
-                            try:
-                                Genre = cats[YT_Meta[5]]
-                            except:
-                                Genre = 'Unknown' 
-                                
-                            GenreLiveID = [Genre,'youtube',0,VidID,False,1,'NR',False, False, 0.0, 0]
-                            tmpstr = self.makeTMPSTR(YT_Meta[2], YT_Meta[0], 0, "Youtube - " + YT_Meta[4], YT_Meta[1], GenreLiveID, self.youtube_player + VidID)   
-                            self.log("createYoutubeFilelist, CHANNEL: " + str(self.settingChannel) + ", " + YT_Meta[0] + "  DUR: " + str(YT_Meta[2]))
-                            self.YT_showList.append(tmpstr)
-                            self.YT_VideoCount += 1
-                            
-                            if self.background == False:
-                                self.updateDialog.update(self.updateDialogProgress, "Updating Channel " + str(self.settingChannel), "adding %s Videos" % str(self.YT_VideoCount))
-                                setProperty('loading.progress',str(self.updateDialogProgress))
+                   
+                        GenreLiveID = ['Unknown','youtube',0,VidID,False,1,'NR',False, False, 0.0, 0]
+                        tmpstr = self.makeTMPSTR(0, '', 0, 'Youtube', '', GenreLiveID, self.youtube_player + VidID)   
+                        self.YT_showList.append(tmpstr)
+                        self.YT_VideoCount += 1
+                        
+                        if self.background == False:
+                            self.updateDialog.update(self.updateDialogProgress, "Updating Channel " + str(self.settingChannel), "adding %s Videos" % str(self.YT_VideoCount))
+                            setProperty('loading.progress',str(self.updateDialogProgress))
 
                         if self.YT_VideoCount >= limit:
                             return self.YT_showList
@@ -3432,7 +3365,7 @@ class ChannelList:
                         elif BumperSource == 'youtube':
                             if self.youtube_player != False:
                                 url = self.youtube_player + BumperID
-                                duration = (self.getYoutubeMeta(BumperID))[2]
+                                duration = self.getYoutubeDuration(BumperID)
                         
                         if duration > 0:
                             BumperCNT += 1
@@ -3474,7 +3407,7 @@ class ChannelList:
                     if mpaa == rating[0]:
                         ID = rating[1]
                 URL = self.youtube_player + ID
-                dur = (self.getYoutubeMeta(ID))[2]   
+                dur = self.getYoutubeDuration(ID)  
                 GenreLiveID = ['Unknown', 'movie', 0, 0, False, 1, mpaa,False, False, 0.0, 0]
                 tmpstr = self.makeTMPSTR(dur, chname, 0, 'Rating', 'Rating', GenreLiveID, URL)
                 newFileList.append(tmpstr)
@@ -3825,7 +3758,7 @@ class ChannelList:
                             playable_url = playable_url.replace('plugin://plugin.video.youtube/?action=play_video&videoid=', self.youtube_player)
                             try:
                                 tubeID = playable_url.split('videoid=')[1]
-                                duration = (self.getYoutubeMeta(tubeID))[2]
+                                duration = self.getYoutubeDuration(tubeID)
                             except:
                                 duration = 120
                             InternetTrailers = (str(duration) + ',' + str(playable_url))
@@ -4483,7 +4416,123 @@ class ChannelList:
             self.log("getTVDBIDbyZap2it, Failed! " + str(e))
         return tvdbid
         
-    # todo getYoutubeMeta()
+
+    def getVimeoMeta(self, VMID):
+        self.log('getVimeoMeta')
+        api = 'http://vimeo.com/api/v2/video/%s.xml' % VMID
+        title = ''
+        description = ''
+        duration = 0
+        thumburl = 0
+        try:
+            dom = parseString(read_url_cached(api))
+            xmltitle = dom.getElementsByTagName('title')[0].toxml()
+            title = xmltitle.replace('<title>','').replace('</title>','')
+            xmldescription = dom.getElementsByTagName('description')[0].toxml()
+            description = xmldescription.replace('<description>','').replace('</description>','')
+            xmlduration = dom.getElementsByTagName('duration')[0].toxml()
+            duration = int(xmlduration.replace('<duration>','').replace('</duration>',''))
+            thumbnail_large = dom.getElementsByTagName('thumbnail_large')[0].toxml()
+            thumburl = thumbnail_large.replace('<thumbnail_large>','').replace('</thumbnail_large>','')
+        except:
+            pass
+        return title, description, duration, thumburl
+
+            
+    def getYoutubeMeta(self, stars, year, duration, description, title, SEtitle, id, genre, rating, playcount, hd, cc):
+        self.log('getYoutubeMeta ' + id)
+        detail = self.getYoutubeDetails(id)
+        for f in detail:
+            cats = {0 : 'NR',
+                    1 : 'Film & Animation',
+                    2 : 'Autos & Vehicles',
+                    10 : 'Music',
+                    15 : 'Pets & Animals',
+                    17 : 'Sports',
+                    18 : 'Short Movies',
+                    19 : 'Travel & Events',
+                    20 : 'Gaming',
+                    21 : 'Videoblogging',
+                    22 : 'People & Blogs',
+                    23 : 'Comedy',
+                    24 : 'Entertainment',
+                    25 : 'News & Politics',
+                    26 : 'Howto & Style',
+                    27 : 'Education',
+                    28 : 'Science & Technology',
+                    29 : 'Nonprofits & Activism',
+                    30 : 'Movies',
+                    31 : 'Anime/Animation',
+                    32 : 'Action/Adventure',
+                    33 : 'Classics',
+                    34 : 'Comedy',
+                    35 : 'Documentary',
+                    36 : 'Drama',
+                    37 : 'Family',
+                    38 : 'Foreign',
+                    39 : 'Horror',
+                    40 : 'Sci-Fi/Fantasy',
+                    41 : 'Thriller',
+                    42 : 'Shorts',
+                    43 : 'Shows',
+                    44 : 'Trailers'}
+            try:
+                contentDetail = re.search('"contentDetails" *:', f)
+                if contentDetail:
+                    durations = re.search('"duration" *: *"(.*?)",', f)
+                    definitions = re.search('"definition" *: *"(.*?)",', f)
+                    captions = re.search('"caption" *: *"(.*?)",', f)
+                    duration = self.parseYoutubeDuration((durations.group(1) or duration))
+                    hd = (definitions.group(1) or '') == 'hd'
+                    cc = (captions.group(1) or '') == 'true'
+
+                categoryIds = re.search('"categoryId" *: *"(.*?)",', f)
+                if categoryIds:
+                    try:
+                        genre = cats[int(categoryIds.group(1) or genre)]
+                    except:
+                        genre = 'Unknown'
+
+                channelTitles = re.search('"channelTitle" *: *"(.*?)",', f)
+                if channelTitles:
+                    chname = (channelTitles.group(1) or '')
+
+                items = re.search('"items" *:', f)
+                if items:
+                    titles = re.search('"title" *: *"(.*?)",', f)
+                    descriptions = re.search('"description" *: *"(.*?)",', f)
+                    publisheds = re.search('"publishedAt" *: *"(.*?)",', f)
+
+                    title = (titles.group(1) or title)
+                    description = ((descriptions.group(1) or description).split('http')[0]).replace('\\n',' ')
+                    published = (publisheds.group(1) or '')
+
+                    if year == 0:
+                        year = int(published[0:4])
+
+                    if not description:
+                        description = title
+
+                statistics = re.search('"statistics" *:', f)
+                if statistics:
+                    if stars == 0.0:
+                        try:
+                            viewCounts = re.search('"viewCount" *: *"(.*?)",', f)
+                            likeCounts = re.search('"likeCount" *: *"(.*?)",', f)
+                            dislikeCounts = re.search('"dislikeCount" *: *"(.*?)",', f)
+                            likeCount = int(likeCounts.group(1) or '0')
+                            dislikeCount = int(dislikeCounts.group(1) or '0')
+                            V = likeCount + dislikeCount
+                            R = likeCount - dislikeCount
+                            stars = float((((V * R)) / (V))/100)/5
+                        except:
+                            stars = 0.0
+            except Exception,e:
+                self.log('getYoutubeMeta, Failed! ' + str(e))
+
+        self.log("getYoutubeMeta, return")
+        return stars, year, duration, description, title, 'Youtube - ' + chname, id, genre, rating, playcount, hd, cc
+        
         
     def getMovieMeta(self, stars, year, duration, plot, title, tagline, imdb_id, genre, rating, playcount):
         self.log("getMovieMeta")

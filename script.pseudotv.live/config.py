@@ -491,12 +491,12 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                 
         elif controlId == 190:      # TV Show channel
             try:
-                select = mselectDialog(self.showList, 'Select one or multiple TV Shows')
+                select = mselectDialog(self.showList, 'Select one or multiple TV Shows')#, preselect=matchMselect(self.showList,((self.getControl(190).getLabel2()).split('|'))))
                 if select != -1:
                     self.setChname((matchMselect(self.showList,select))[0])
                     self.getControl(190).setLabel('Shows:',label2='|'.join(matchMselect(self.showList,select)))
             except:
-                select = selectDialog(self.showList, 'Select one TV Show')
+                select = selectDialog(self.showList, 'Select one TV Show')#, preselect=matchMselect(self.showList,(self.getControl(190).getLabel2())))
                 if select != -1:
                     self.setChname(self.showList[select])
                     self.getControl(190).setLabel('Show:',label2=self.showList[select])
@@ -1348,7 +1348,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         self.dlg.update(90)
         self.dlg.update(95)
         self.updateListing()
-        self.dlg.update(100, "Preparing Configuration", "Finished")
+        self.dlg.update(100)
         self.getControl(105).setVisible(True)
         self.getControl(106).setVisible(False)
         self.setFocusId(102)
@@ -1805,6 +1805,8 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             if yesnoDialog("Are you sure you want to clear channel %s?" %str(curchan)):
                 self.madeChanges = 1
                 ADDON_SETTINGS.setSetting("Channel_" + str(curchan) + "_type", "9999")  
+                ADDON_SETTINGS.setSetting("Channel_" + str(curchan) + "_1", "")  
+                ADDON_SETTINGS.setSetting("Channel_" + str(curchan) + "_2", "") 
                 ADDON_SETTINGS.setSetting('Channel_' + str(curchan) + '_rulecount','0')
                 theitem = self.listcontrol.getListItem(curchan-1)
                 theitem.setLabel2('')
@@ -1852,6 +1854,8 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         
         # delete old channel
         ADDON_SETTINGS.setSetting("Channel_" + str(old) + "_type", "9999") 
+        ADDON_SETTINGS.setSetting("Channel_" + str(old) + "_1", "")  
+        ADDON_SETTINGS.setSetting("Channel_" + str(old) + "_2", "") 
         ADDON_SETTINGS.setSetting('Channel_' + str(old) + '_rulecount','0')
         theitem = self.listcontrol.getListItem(old-1)
         theitem.setLabel2('')

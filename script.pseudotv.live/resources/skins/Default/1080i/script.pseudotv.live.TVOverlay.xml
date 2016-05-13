@@ -1025,6 +1025,7 @@
         <control type="group" id="7000"> 
             <posx>0</posx>
             <posy>0</posy>
+            <visible>false</visible>
             <control type="image">
                 <description>Background Image</description>
                 <width>1920</width>
