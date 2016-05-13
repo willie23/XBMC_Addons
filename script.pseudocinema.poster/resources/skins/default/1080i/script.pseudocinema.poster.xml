@@ -4,10 +4,10 @@
     <zorder>1</zorder>
     <controls>
         <control type="image">
-            <posx>420</posx>
-            <posy>-420</posy>
-            <width>1080</width>
-            <height>1920</height>
+            <posx>0</posx>
+            <posy>-480</posy>
+            <width>2000</width>
+            <height>2000</height>
             <align>center</align>
             <aligny>center</aligny>
             <aspectratio>keep</aspectratio>
@@ -114,6 +114,6 @@
                 <aspectratio>keep</aspectratio>
                 <texture fallback="Logos/Language/us.png" colordiffuse="FFFFFFFF">$INFO[Window(10000).Property(MOVIEPOSTER.Audio.Language),Logos/Language/,.png]</texture>
             </control>
-        </control>                      
+        </control>                    
     </controls>     
 </window>

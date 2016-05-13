@@ -153,7 +153,7 @@
     </extension>
 </addon>
 
-<addon id="script.pseudocinema.poster" version="0.0.1" name="PseudoCinema Poster" provider-name="Lunatixz">
+<addon id="script.pseudocinema.poster" version="0.0.2" name="PseudoCinema Poster" provider-name="Lunatixz">
     <requires>
         <import addon="xbmc.python" version="2.14.0"/>
         <import addon="script.module.pil" version="0.0.1"/>
