@@ -53,7 +53,7 @@ def getLBchannels(limit=100):
     except:
         return
       
-def getLBchannelsItems(id, limit=100):
+def getLBchannelsItems(id, limit=MEDIA_LIMIT):
     log("getLBchannelsItems")
     try:        
         data = getJson('https://api-public.guidebox.com/v1.43/US/'+PTVL_SETTINGS.getSetting("GBOX_API")+'/' + ('leanback/%s/0/%d' % (str(id),limit)))

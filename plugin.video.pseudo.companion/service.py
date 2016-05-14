@@ -21,7 +21,11 @@
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 import os
 
-from utils import *
+def getProperty(str):
+    return xbmcgui.Window(10000).getProperty(str)
+
+def setProperty(str1, str2):
+    xbmcgui.Window(10000).setProperty(str1, str2)
 
 monitor = xbmc.Monitor()
 while not monitor.abortRequested():

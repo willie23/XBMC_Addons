@@ -712,6 +712,8 @@ def getYoutubeVideos(content_type, previous, YT_Type, YT_ID, YT_NextPG, limit, Y
         detail = re.compile( "{(.*?)}", re.DOTALL ).findall(read_url_cached(YT_URL_Search))
 
         for f in detail:
+            if cnt >= MEDIA_LIMIT:
+                break
             VidIDS = re.search('"videoId" *: *"(.*?)"', f)
             YT_NextPGS = re.search('"nextPageToken" *: *"(.*?)"', f)
             if YT_NextPGS:
@@ -728,7 +730,6 @@ def getYoutubeVideos(content_type, previous, YT_Type, YT_ID, YT_NextPG, limit, Y
                         Genre = 'Unknown' 
                     
                     year, title, showtitle = getTitleYear(YT_Meta[0])
-                    meta = metaget.get_meta(content_type, title, str(year)) 
             
                     # setup infoList
                     infoList = {}
@@ -736,13 +737,31 @@ def getYoutubeVideos(content_type, previous, YT_Type, YT_ID, YT_NextPG, limit, Y
                     infoList['Duration']      = int(YT_Meta[2])
                     infoList['Title']         = uni(showtitle)
                     infoList['Year']          = int(year or '0')
-                    infoList['Genre']         = uni(meta['genre'])
+                    infoList['Genre']         = uni(YT_Meta[5])
                     infoList['Plot']          = uni(YT_Meta[1])
+                    infoList['Studio']        = uni(YT_Meta[4])
                     
                     # setup infoArt
                     infoArt = {}
-                    infoArt['thumb']        = (meta['cover_url']  or YT_Meta[3])
-                    infoArt['poster']       = (meta['cover_url']  or YT_Meta[3]) 
+                    infoArt['thumb']        = (YT_Meta[3])
+                    infoArt['poster']       = (YT_Meta[3]) 
+
+                    # setup infoList
+                    infoList = {}
+                    infoList['mediatype']     = content_type
+                    infoList['Duration']      = int(YT_Meta[2])
+                    infoList['Title']         = uni(showtitle)
+                    infoList['Year']          = int(year or '0')
+                    infoList['Plot']          = uni(YT_Meta[1])
+
+                    if content_type in ['movie']:
+                        print content_type
+                        meta = metaget.get_meta(content_type, title, str(year)) 
+                        infoList['Plot']        = uni(meta['plot'] or YT_Meta[1])
+                        infoList['Genre']       = uni(meta['genre'] or YT_Meta[5])
+                        infoArt['thumb']        = (meta['cover_url']  or YT_Meta[3])
+                        infoArt['poster']       = (meta['cover_url']  or YT_Meta[3]) 
+
                     cnt += 1
                     addLink(showtitle,YT_Meta[1],youtube_player_ok + VidID,'previous',5001,infoList=infoList,infoArt=infoArt,total=len(detail))
     except Exception,e:
@@ -900,26 +919,7 @@ def remove_duplicates(values):
         return output
     except:
         return values
-
-def isRepoInstalled():
-    repo = isPlugin('repository.lunatixz')
-    log('utils: isRepoInstalled = ' + str(repo))
-    return repo
-      
-def getRepo():
-    log('utils: getRepo')
-    if isRepoInstalled() == False:
-        if xbmcgui.Dialog().yesno("PseudoTV Live", 'Install the Lunatixz Repository?'):   
-            url='https://github.com/Lunatixz/XBMC_Addons/raw/master/zips/repository.lunatixz/repository.lunatixz-1.0.zip'
-            name = 'repository.lunatixz.zip' 
-            MSG = 'Lunatixz Repository Installed'    
-            path = xbmc.translatePath(os.path.join('special://home/addons','packages'))
-            addonpath = xbmc.translatePath(os.path.join('special://','home/addons'))
-            lib = os.path.join(path,name)
-            getGithubZip(url, lib, addonpath, MSG)
-    else:
-        infoDialog('utils: Lunatixz Repository Already Installed')
-                
+  
 def chkVersion():
     log('utils: chkVersion')
     curver = xbmc.translatePath(os.path.join(ADDON_PATH,'addon.xml'))    
@@ -1401,4 +1401,4 @@ def getExternalChannels(type, source='', list='Community', Channels='True'):
                             YT_Type = 2
                         else:
                             YT_Type = 1
-                        getYoutubeVideos('movie', 'getExternalChannels', YT_Type, url[n], '', 200, '')
+                        getYoutubeVideos('tvshow', 'getExternalChannels', YT_Type, url[n], '', 200, '')

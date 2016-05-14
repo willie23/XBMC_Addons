@@ -104,7 +104,7 @@
                 <itemgap>10</itemgap>
                 <orientation>vertical</orientation>
                 <animation effect="fade" start="95" end="95" condition="True">Conditional</animation>
-                <visible>!IsEmpty(Window(Home).Property(NextAired.4.Label))</visible>
+                <visible>!IsEmpty($INFO[Window(Home).Property(NextAired.4.Label)])</visible>
                 <control type="label">
                     <width>360</width>       
                     <height>24</height>
@@ -125,7 +125,7 @@
                     <aligny>center</aligny>
                     <aspectratio>keep</aspectratio>
                     <texture background="true">$INFO[Window(Home).Property(NextAired.4.Art(fanart)]</texture>
-                    <visible>IsEmpty(Window(Home).Property(NextAired.4.Art(landscape))</visible>
+                    <visible>!IsEmpty($INFO[Window(Home).Property(NextAired.4.Art(landscape)])</visible>
                     <fadetime>2000</fadetime>
                 </control>
                 <control type="image">
@@ -143,7 +143,7 @@
                 <itemgap>10</itemgap>
                 <orientation>vertical</orientation>
                 <animation effect="fade" start="95" end="95" condition="True">Conditional</animation>
-                <visible>!IsEmpty(Window(Home).Property(NextAired.3.Label))</visible>
+                <visible>!IsEmpty($INFO[Window(Home).Property(NextAired.3.Label])</visible>
                 <control type="label">
                     <width>360</width>       
                     <height>24</height>
