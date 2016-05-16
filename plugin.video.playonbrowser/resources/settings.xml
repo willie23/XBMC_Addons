@@ -8,4 +8,6 @@
         <setting label="42006" type="folder" source="video" id="playonid" default="upnp://"/>
         <setting label="42007" type="bool"  id="debug" default="false"/>
     </category>
+    <category label="43001">
+    </category>
 </settings>

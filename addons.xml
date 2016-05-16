@@ -27,7 +27,7 @@
     </extension>
 </addon>
 
-<addon id="plugin.video.playonbrowser" name="Playon Browser" version="1.0.6" provider-name="Sytone, Lunatixz">
+<addon id="plugin.video.playonbrowser" name="Playon Browser" version="1.0.8" provider-name="Lunatixz, Sytone">
   <requires>
     <import addon="xbmc.python" version="2.14.0"/>
     <import addon="script.module.parsedom" version="2.5.2"/>

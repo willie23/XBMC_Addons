@@ -1,3 +1,7 @@
+v1.0.8
+- Removed file caching, No longer needed.
+- Added folder artwork
+
 v1.0.4
 - Support for Playon v.4.0, Check Playonbrowsers settings for changes.
 

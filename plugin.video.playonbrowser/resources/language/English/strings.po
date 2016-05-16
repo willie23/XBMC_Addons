@@ -16,6 +16,10 @@ msgstr ""
 "Language: en\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+msgctxt "#43001"
+msgid "Library Integration"
+msgstr ""
+
 msgctxt "#42001"
 msgid "General"
 msgstr ""
