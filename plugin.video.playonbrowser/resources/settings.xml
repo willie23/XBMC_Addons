@@ -7,7 +7,8 @@
         <setting label="42005" type="lsep"/>
         <setting label="42006" type="folder" source="video" id="playonid" default="upnp://"/>
         <setting label="42007" type="bool"  id="debug" default="false"/>
+        <setting label="42008" type="bool"  id="cache" default="true"/>
     </category>
-    <category label="43001">
-    </category>
+    <!-- <category label="43001"> -->
+    <!-- </category> -->
 </settings>

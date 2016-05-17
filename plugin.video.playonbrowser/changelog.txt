@@ -1,3 +1,6 @@
+v1.0.9
+- Optional cache setting added.
+
 v1.0.8
 - Improved Playback, Parsing performance
 - Removed file caching, No longer needed.

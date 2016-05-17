@@ -16,7 +16,11 @@ msgstr ""
 "Language: en\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgctxt "#43001"
+msgctxt "#42008"
+msgid "Enable Cache"
+msgstr ""
+
+msgctxt "#42008"
 msgid "Library Integration"
 msgstr ""
 
