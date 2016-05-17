@@ -188,7 +188,7 @@
     </extension>
 </addon>
 
-<addon id="script.pseudotv.live" version="0.7.6d" name="PseudoTV Live" provider-name="Lunatixz">
+<addon id="script.pseudotv.live" version="0.7.6e" name="PseudoTV Live" provider-name="Lunatixz">
     <requires>
         <import addon="xbmc.python" version="2.14.0"/>
         <import addon="context.pseudotv.live.export" version="1.0.8"/>
@@ -225,11 +225,11 @@
         <website>www.pseudotvlive.com</website>
         <forum>http://pseudotvlive.com/index.php/forum</forum>
     </extension>
-    <extension point="xbmc.service" library="service.py" start="startup"/>
     <extension point="xbmc.python.script" library="default.py">
         <provides>Programs</provides>
         <res width="1920" height="1080" aspect="16:9" default="true" folder="1080i" />
     </extension>
+    <extension point="xbmc.service" library="service.py" start="startup"/>
 </addon>
 
 <addon id="webinterface.ptvlmanager" name="PTVL Manager" version="0.1.0a" provider-name="Peppy, Lunatixz">
