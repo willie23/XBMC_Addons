@@ -26,9 +26,9 @@
         <import addon="plugin.program.super.favourites" version="1.0.35" optional="true"/>
     </requires>
     <extension point="xbmc.addon.metadata">
-        <summary lang="en">Channel surfing for your local and online content.</summary>
-        <description lang="en">PseudoTV Live acts similar to a normal broadcast or cable TV, complete with multiple preset and user-defined channels.</description> 
-        <disclaimer>This software is a BETA release, bugs maybe common until final release.</disclaimer>
+        <summary lang="en_gb">Channel surfing for your local and online content.</summary>
+        <description lang="en_gb">PseudoTV Live acts similar to a normal broadcast or cable TV. Complete with multiple preset and user-defined channels.</description>
+        <disclaimer lang="en_gb">This software is a BETA release, bugs maybe common until final release.</disclaimer>  
         <platform>all</platform>
         <license>GNU GENERAL PUBLIC LICENSE. Version 3, June 2007</license>
         <source>https://github.com/Lunatixz/XBMC_Addons/tree/master/script.pseudotv.live</source>
