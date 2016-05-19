@@ -46,6 +46,7 @@ PTVL_ID = 'script.pseudotv.live'
 PTVL_SETTINGS = xbmcaddon.Addon(id=PTVL_ID)
 YT_API_KEY = PTVL_SETTINGS.getSetting('YT_API_KEY')
 LOGODB_API_KEY = PTVL_SETTINGS.getSetting('LOGODB_API_KEY')
+GBOX_API_KEY = PTVL_SETTINGS.getSetting("GBOX_API_KEY")
 
 LIMIT_VALUES = [25,50,100,250,500,1000,5000,0]#Media Per/Channel, 0 = Unlimited
 try:
@@ -73,6 +74,7 @@ REQUESTS_LOC = xbmc.translatePath(os.path.join(ADDON_SETTINGS, 'requests',''))
 SETTINGS_LOC = PTVL_SETTINGS.getAddonInfo('profile').decode('utf-8')
 LOCK_LOC = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'cache',''))
 XMLTV_CACHE_LOC = xbmc.translatePath(os.path.join(LOCK_LOC, 'xmltv',''))
+
 PTVLURL = 'http://pseudotvlive.com/ptvl/'
 PTVLXMLURL = PTVLURL + 'ptvlguide.zip'
 PTVLXML = os.path.join(XMLTV_CACHE_LOC, 'ptvlguide.xml')
@@ -429,7 +431,7 @@ def cleanReminderTime(tmpDate):
     
 @cache_monthly
 def getJson(url):
-    log("getJson") 
+    log("getJson, url = " + url) 
     response = urllib2.urlopen(url)
     return json.load(response)
  
@@ -811,8 +813,8 @@ def fillPluginItems(url, media_type='video', file_type=False, strm=False, strm_p
             else:
                 description = cleanLabels(descriptions.group(1))
                 
-            thumbnail = removeNonAscii(thumbnails.group(1))
-            fan = removeNonAscii(fanarts.group(1))
+            thumbnail = (removeNonAscii(thumbnails.group(1)) or PTVC_ICON)
+            fanart = (removeNonAscii(fanarts.group(1)) or PTVC_FANART)
                         
             if strm_type.lower() in ['tv','tvshows','tvshow']:
                 if filetype == 'directory':
@@ -833,12 +835,12 @@ def fillPluginItems(url, media_type='video', file_type=False, strm=False, strm_p
                 if strm:
                     writeSTRM(cleanStrms(path), cleanStrms(filename) ,filetype, file)
                 else:
-                    addLink(label,description,file,'',5001,thumb=thumbnail,fanart=fan,total=len(detail))
+                    addLink(label,description,file,'',5001,thumb=thumbnail,ic=thumbnail,fan=fanart,total=len(detail))
             else:
                 if strm:
                     fillPluginItems(file, media_type, file_type, strm, path, label, strm_type)
                 else:
-                    addDir(label,description,file,'',6002,thumb=thumbnail,fanart=fan)
+                    addDir(label,description,file,'',6002,thumb=thumbnail,ic=thumbnail,fan=fanart)
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
         
 def fillPlugins(type='video'):
@@ -862,9 +864,9 @@ def fillPlugins(type='video'):
             name = cleanLabels(names.group(1))
             path = paths.group(1)
             if type == 'video' and path.startswith('plugin.video') and not path.startswith('plugin.video.pseudo.companion'):
-                thumbnail = removeNonAscii(thumbnails.group(1))
-                fan = removeNonAscii(fanarts.group(1))
-                addDir(name,description,'plugin://'+path,'',6002,thumb=thumbnail,fanart=fan)
+                thumbnail = (removeNonAscii(thumbnails.group(1)) or PTVC_ICON)
+                fanart = (removeNonAscii(fanarts.group(1)) or PTVC_FANART)
+                addDir(name,description,'plugin://'+path,'',6002,thumb=thumbnail,ic=thumbnail,fan=fanart)
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
     
 def getChanTypeLabel(chantype):

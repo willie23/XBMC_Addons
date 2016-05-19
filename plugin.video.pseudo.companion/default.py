@@ -34,10 +34,17 @@ from datetime import timedelta
 from metahandler import metahandlers
 from utils import *
       
+def fillPseudoNetworks():            
+    getParamount()
+    if isDon() == True:
+        addDir('Popcorn Movies','','','getLBchannels',3002,POPCORN_ICON,POPCORN_ICON)
+    getLBchannels()
+    getExternalChannels('YouTube','Networks')
+      
 def getLBchannels(limit=100):
     log("getLBchannels") 
-    try:            
-        data = getJson('https://api-public.guidebox.com/v1.43/US/'+PTVL_SETTINGS.getSetting("GBOX_API")+'/' + ('leanback/%s/0/%d' %('all',limit)))
+    try:
+        data = getJson('https://api-public.guidebox.com/v1.43/US/'+GBOX_API_KEY+'/' + ('leanback/%s/0/%d' %('all',limit)))
         rtItems = data["results"]
         for i in range(len(rtItems)):
             Item = rtItems[i]
@@ -45,18 +52,13 @@ def getLBchannels(limit=100):
             thumb = Item["artwork_448x252"]
             chid = str(Item["id"])
             addDir(title,'',chid,'getLBchannels',3010,thumb,thumb)
-            
-        getParamount()
-        if isDon() == True:
-            addDir('Popcorn Movies','','','getLBchannels',3002,POPCORN_ICON,POPCORN_ICON)
-        getExternalChannels('YouTube','Networks')
     except:
         return
       
 def getLBchannelsItems(id, limit=MEDIA_LIMIT):
     log("getLBchannelsItems")
     try:        
-        data = getJson('https://api-public.guidebox.com/v1.43/US/'+PTVL_SETTINGS.getSetting("GBOX_API")+'/' + ('leanback/%s/0/%d' % (str(id),limit)))
+        data = getJson('https://api-public.guidebox.com/v1.43/US/'+GBOX_API_KEY+'/' + ('leanback/%s/0/%d' % (str(id),limit)))
         rtItems = data["results"]
         channelItem = []
         for i in range(len(rtItems)):
@@ -98,9 +100,8 @@ def getSources():
         addDir('PseudoTV Live: '+STATUS,'','','getSources','',PTVL_ICON_GRAY,PTVL_ICON_GRAY)
         addDir('Channel Tools','','','',9001)
         getOnlineMedia()
-        # addDir('PseudoNetworks','','','',2001)
-        if isDon() == True:
-            addDir('Donor Exclusives','','','',9002)
+        addDir('PseudoLibrary','','','',9003)
+        addDir('Donor Exclusives','','','',9002)
         
 def getOnline():
     log('getOnline')
@@ -193,9 +194,11 @@ def getExclusives():
     getMedia()
     # addDir('Update Guidedata','','','getTools',11000)
     
+def getLibrary():
+    addDir('Browse Local Media','','','getMedia',7003)
+    
 def getTools():
     addDir('Channel Manager','','','getTools',8001)
-    addDir('Browse Local Media','','','getMedia',7003)
     
 def getGuideData():
     SyncXMLTV_NEW()
@@ -826,7 +829,7 @@ elif mode == 2000: getExternalChannel(url)
 elif mode == 2001: getExternalChannels('YouTube','Networks')
 
 #getOnlineMedia
-elif mode == 3000: getLBchannels()
+elif mode == 3000: fillPseudoNetworks()
 elif mode == 3010: getLBchannelsItems(int(url))
 elif mode == 3001: getPopcorn()
 elif mode == 3002: getPopcorn1(name)
@@ -864,6 +867,7 @@ elif mode == 8001: getPTVLManager()
 elif mode == 9000: getOnline()
 elif mode == 9001: getTools()
 elif mode == 9002: getDonExclusive()
+elif mode == 9003: getLibrary()
 
 elif mode == 9998: sendClick(int(url),previous)
 elif mode == 9999: sendJSON(url,previous)

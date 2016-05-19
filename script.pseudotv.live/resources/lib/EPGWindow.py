@@ -186,7 +186,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             except:
                 pass
                 
-        self.FEEDtoggle()  
+        self.FEEDtoggle()
         self.log('onInit return')
           
 
@@ -617,7 +617,6 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         action = act.getId()
         self.log('onAction ' + str(action))
         self.MyOverlayWindow.playSFX(action)
-        self.MyOverlayWindow.idleReset() 
         
         # temp disabled causes issues with overlay.windowswap
         # if self.actionSemaphore.acquire(False) == False:
@@ -782,7 +781,6 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
     # Run when a show is selected, so close the epg and run the show
     def onClick(self, controlid):
         self.log('onClick')
-        self.MyOverlayWindow.idleReset()
         if not self.showingContext:
             try:
                 if self.actionSemaphore.acquire(False) == False:
