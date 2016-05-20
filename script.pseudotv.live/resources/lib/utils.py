@@ -392,17 +392,9 @@ def POP_MSG():
         pass
     return poplist
                  
+
 def UpdateRSS():
     log('utils: UpdateRSS')
-    UpdateRSSthread = threading.Timer(0.5, UpdateRSS_Thread)
-    if UpdateRSSthread.isAlive():
-        UpdateRSSthread.cancel() 
-    UpdateRSSthread = threading.Timer(0.5, UpdateRSS_Thread)
-    UpdateRSSthread.name = "UpdateRSSthread"
-    UpdateRSSthread.start()
-          
-def UpdateRSS_Thread():
-    log('utils: UpdateRSS_Thread')
     try:
         now  = datetime.datetime.today()
         try:
@@ -2091,19 +2083,10 @@ def patchSeekbar():
     except Exception,e:
         log('utils: patchSeekbar, Failed! ' + str(e))
    
-def egTrigger_Thread(message, sender):
-    log("egTrigger_Thread")
-    json_query = ('{"jsonrpc": "2.0", "method": "JSONRPC.NotifyAll", "params": {"sender":"%s","message":"%s"}, "id": 1}' % (sender, message))
-    sendJSON(json_query)
-       
 def egTrigger(message, sender='PTVL'):
     log("egTrigger")
-    egTriggerTimer = threading.Timer(0.5, egTrigger_Thread, [message, sender])      
-    if egTriggerTimer.isAlive():
-        egTriggerTimer.cancel()
-    egTriggerTimer = threading.Timer(0.5, egTrigger_Thread, [message, sender])
-    egTriggerTimer.name = "egTriggerTimer"   
-    egTriggerTimer.start()       
+    json_query = ('{"jsonrpc": "2.0", "method": "JSONRPC.NotifyAll", "params": {"sender":"%s","message":"%s"}, "id": 1}' % (sender, message))
+    sendJSON(json_query) 
         
 def setInterval(interval):
     def decorator(function):

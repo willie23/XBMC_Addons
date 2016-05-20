@@ -1228,17 +1228,17 @@ class ChannelList:
             #Ratings
             fleList = self.getRatingList(14, 'PseudoCinema', channel, PrefileList)
             #Intro
-            IntroStr = self.makeTMPSTR(self.getYoutubeDuration(Intro), 'PseudoCinema', 0, 'Intro', 'Welcome to the PseudoCinema Experience', GenreLiveID, self.youtube_player + Intro)
+            IntroStr = self.makeTMPSTR(self.getYoutubeDuration(Intro), 'PseudoCinema', 0, 'Intro', 'Welcome to the PseudoCinema Experience', GenreLiveID, self.youtube_player + Intro, includeMeta=False)
             #Cellphone
-            CellphoneStr = self.makeTMPSTR(self.getYoutubeDuration(Cellphone), 'PseudoCinema', 0, 'Cellphone', 'Welcome to the PseudoCinema Experience', GenreLiveID, self.youtube_player + Cellphone)
+            CellphoneStr = self.makeTMPSTR(self.getYoutubeDuration(Cellphone), 'PseudoCinema', 0, 'Cellphone', 'Welcome to the PseudoCinema Experience', GenreLiveID, self.youtube_player + Cellphone, includeMeta=False)
             #Comingsoon
-            ComingSoonStr = self.makeTMPSTR(self.getYoutubeDuration(ComingSoon), 'PseudoCinema', 0, 'Coming Soon', 'Welcome to the PseudoCinema Experience', GenreLiveID, self.youtube_player + ComingSoon)
+            ComingSoonStr = self.makeTMPSTR(self.getYoutubeDuration(ComingSoon), 'PseudoCinema', 0, 'Coming Soon', 'Welcome to the PseudoCinema Experience', GenreLiveID, self.youtube_player + ComingSoon, includeMeta=False)
             #PreMovie
-            PreMovieStr = self.makeTMPSTR(self.getYoutubeDuration(PreMovie), 'PseudoCinema', 0, 'PreMovie', 'Welcome to the PseudoCinema Experience', GenreLiveID, self.youtube_player + PreMovie)
+            PreMovieStr = self.makeTMPSTR(self.getYoutubeDuration(PreMovie), 'PseudoCinema', 0, 'PreMovie', 'Welcome to the PseudoCinema Experience', GenreLiveID, self.youtube_player + PreMovie, includeMeta=False)
             #FeaturePresentation
-            FeaturePresStr = self.makeTMPSTR(self.getYoutubeDuration(FeaturePres), 'PseudoCinema', 0, 'Feature Presentation', 'Welcome to the PseudoCinema Experience', GenreLiveID, self.youtube_player + FeaturePres)
+            FeaturePresStr = self.makeTMPSTR(self.getYoutubeDuration(FeaturePres), 'PseudoCinema', 0, 'Feature Presentation', 'Welcome to the PseudoCinema Experience', GenreLiveID, self.youtube_player + FeaturePres, includeMeta=False)
             #Intermission
-            IntermissionStr = self.makeTMPSTR(self.getYoutubeDuration(Intermission), 'PseudoCinema', 0, 'Intermission', 'Welcome to the PseudoCinema Experience: Next Movie will begin in 10 Minutes//Intermission', GenreLiveID, self.youtube_player + Intermission)
+            IntermissionStr = self.makeTMPSTR(self.getYoutubeDuration(Intermission), 'PseudoCinema', 0, 'Intermission', 'Welcome to the PseudoCinema Experience: Next Movie will begin in 10 Minutes//Intermission', GenreLiveID, self.youtube_player + Intermission, includeMeta=False)
 
             for n in range(len(fleList)):
                 line = fleList[n]
@@ -1255,7 +1255,7 @@ class ChannelList:
                 dur = aTrailer.split(',')[0]
                 file = aTrailer.split(',')[1]
                 file = file.replace('plugin://plugin.video.youtube/?action=play_video&videoid=', self.youtube_player)
-                TrailersStrLST.append(self.makeTMPSTR(str(dur), 'PseudoCinema', 0, 'Trailer', 'Welcome to the PseudoCinema Experience', GenreLiveID, file))
+                TrailersStrLST.append(self.makeTMPSTR(str(dur), 'PseudoCinema', 0, 'Trailer', 'Welcome to the PseudoCinema Experience', GenreLiveID, file, includeMeta=False))
                 TrailerCount += 1
                 
                 # Only add two trailers
@@ -1326,7 +1326,8 @@ class ChannelList:
             if includeMeta == True and ENHANCED_DATA == True:
                 stars, year, duration, description, Stitle, subtitle, id, genre, rating, playcount = self.getMovieMeta(stars, year, duration, description, title, SEtitle, id, genre, rating, playcount)
         elif type == 'youtube':
-            stars, year, duration, description, Stitle, SEtitle, dbepid, genre, rating, playcount, hd, cc = self.getYoutubeMeta(stars, year, duration, description, title, SEtitle, dbepid, genre, rating, playcount, hd, cc)
+            if includeMeta == True:
+                stars, year, duration, description, Stitle, SEtitle, dbepid, genre, rating, playcount, hd, cc = self.getYoutubeMeta(stars, year, duration, description, title, SEtitle, dbepid, genre, rating, playcount, hd, cc)
         
         Stitle = self.cleanLabels(Stitle)
         SEtitle = self.cleanLabels(SEtitle)
@@ -3315,7 +3316,7 @@ class ChannelList:
                     BumperDur, BumperMedia = Bumper.split(',')
                     BumperDur = int(BumperDur)
                     bctDur += BumperDur
-                    tmpstr = self.makeTMPSTR(BumperDur, chname, 0, 'Bumper', 'Bumper', GenreLiveID, BumperMedia)
+                    tmpstr = self.makeTMPSTR(BumperDur, chname, 0, 'Bumper', 'Bumper', GenreLiveID, BumperMedia, includeMeta=False)
                     newFileList.append(tmpstr)
 
             if len(CommercialLST) > 0:
@@ -3328,7 +3329,7 @@ class ChannelList:
                     CommercialDur, CommercialMedia = Commercial.split(',')
                     CommercialDur = int(CommercialDur)
                     bctDur += CommercialDur
-                    tmpstr = self.makeTMPSTR(CommercialDur, chname, 0, 'Commercial', 'Commercial', GenreLiveID, CommercialMedia)
+                    tmpstr = self.makeTMPSTR(CommercialDur, chname, 0, 'Commercial', 'Commercial', GenreLiveID, CommercialMedia, includeMeta=False)
                     newFileList.append(tmpstr)
 
             if len(TrailerLST) > 0:
@@ -3341,7 +3342,7 @@ class ChannelList:
                     trailerDur, trailerMedia = trailer.split(',') #duration of trailer
                     trailerDur = int(trailerDur)
                     bctDur += trailerDur
-                    tmpstr = self.makeTMPSTR(trailerDur, chname, 0, 'Trailer', 'Trailer', GenreLiveID, trailerMedia)
+                    tmpstr = self.makeTMPSTR(trailerDur, chname, 0, 'Trailer', 'Trailer', GenreLiveID, trailerMedia, includeMeta=False)
                     newFileList.append(tmpstr)
         # cleanup   
         del fileList[:]
@@ -3449,7 +3450,7 @@ class ChannelList:
                 URL = self.youtube_player + ID
                 dur = self.getYoutubeDuration(ID)  
                 GenreLiveID = ['Unknown', 'movie', 0, 0, False, 1, mpaa,False, False, 0.0, 0]
-                tmpstr = self.makeTMPSTR(dur, chname, 0, 'Rating', 'Rating', GenreLiveID, URL)
+                tmpstr = self.makeTMPSTR(dur, chname, 0, 'Rating', 'Rating', GenreLiveID, URL, includeMeta=False)
                 newFileList.append(tmpstr)
             # cleanup   
             del fileList[:]

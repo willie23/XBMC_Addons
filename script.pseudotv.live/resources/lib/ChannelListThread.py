@@ -70,8 +70,8 @@ class ChannelListThread(threading.Thread):
                         if self.myOverlay.isExiting:
                             self.log("Closing thread")
                             return
+                        time.sleep(1)
                         
-                        time.sleep(2)
                         if self.paused == False:
                             break
 
@@ -83,8 +83,8 @@ class ChannelListThread(threading.Thread):
                                 if self.myOverlay.isExiting:
                                     self.log("IsExiting")
                                     return
+                                time.sleep(1)
                                 
-                                time.sleep(2)
                             self.myOverlay.channels[i] = self.chanlist.channels[i]
                             if self.myOverlay.channels[i].isValid == True:
                                 OptNotify("Channel " + str(i + 1) + " Added", icon=self.myOverlay.getChlogo(i + 1))  

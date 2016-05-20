@@ -202,11 +202,11 @@
                 <scrollsuffix> - </scrollsuffix>
                 <label>[COLOR=C0C0C0C0]$INFO[Window(10000).Property(OVERLAY.DYNAMIC_LABEL)] : [/COLOR]$INFO[Window(10000).Property(OVERLAY.Title)][COLOR=C0C0C0C0][B] • [/B][/COLOR][COLOR=FFFFFFFF]$INFO[Window(10000).Property(OVERLAY.SEtitle)][/COLOR]</label>
             </control>
-            <control type="button" id="5006">
+            <control type="label" id="5006">
                 <description>Timebar Progressbar Time Button</description>
-                <posx>0</posx>
-                <posy>0</posy>
-                <width min="100" max="200">auto</width>
+                <posx>430</posx><!-- #should match 5007 -->
+                <posy>235r</posy>
+                <width>130</width>
                 <height>20</height>
                 <fadetime>250</fadetime>
                 <textcolor>FFFFFFFF</textcolor>
@@ -1000,6 +1000,7 @@
             <control type="image">
                 <width>1920</width>
                 <height>1080</height>
+                <visible>Control.IsVisible(7000)</visible>
                 <animation effect="fade" start="25" end="25" condition="True">Conditional</animation>
                 <texture colordiffuse="dd0c2134">overlays/base_color.png</texture>
             </control>

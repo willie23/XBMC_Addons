@@ -143,7 +143,7 @@ class MyPlayer(xbmc.Player):
             self.overlay.showInfo()
         else:
             self.overlay.setShowInfo()  
-        self.overlay.currentTime.setVisible(True)
+        self.overlay.currentPlayTime.setVisible(True)
         
         # playback starts paused, resume automatically.
         self.resumePlayback()
@@ -190,7 +190,7 @@ class MyPlayer(xbmc.Player):
             # set static videowindow
             setProperty("PTVL.VideoWindow","false")
             self.overlay.clearProp('OVERLAY.PLAYING')
-            self.overlay.currentTime.setVisible(False)
+            self.overlay.currentPlayTime.setVisible(False)
             self.overlay.setBackgroundVisible(True)
             
             # resume playlist after ondemand
@@ -239,7 +239,6 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         self.GotoChannelTimer = threading.Timer(0.5, self.setChannel)
         self.UPNPcontrolTimer = threading.Timer(2.0, self.UPNPcontrol_thread)
         self.getTMPSTRTimer = threading.Timer(0.1, self.getTMPSTR_Thread)
-        self.FEEDtoggleTimer = threading.Timer(2.0, self.FEEDtoggle)
         self.ReminderTimer = threading.Timer(2.0, self.showReminder)      
         self.ChangeWatchedTimer = threading.Timer(5.0, self.setWatchedStatus_Thread)
         self.sleepTimer = threading.Timer(2.0, self.sleepPrompt)
@@ -367,8 +366,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         setProperty("OVERLAY.LOGOART",THUMB)
         setProperty("PTVL.INIT_CHANNELSET","false")
         self.setBackgroundVisible(True)
-            
-            
+                  
         #xbmc.executeJSONRPC('{"jsonrpc":"2.0", "id":1, "method":"Settings.SetSettingValue","params":{"setting":"%s","value":%s}}' %('lookandfeel.enablerssfeeds','true'))()
         try:
             Normal_Shutdown = REAL_SETTINGS.getSetting('Normal_Shutdown') == "true"
@@ -441,9 +439,9 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             
         self.textureButtonFocusAlt = MEDIA_LOC + BUTTON_FOCUS_ALT
         self.timeButtonNoFocus = MEDIA_LOC + TIME_BUTTON
-        self.currentTime = xbmcgui.ControlButton(-1000, -1000, self.getControl(5006).getWidth(), self.getControl(5006).getHeight(), '', font='font12', focusTexture=self.textureButtonFocusAlt, noFocusTexture=self.timeButtonNoFocus)
-        self.addControl(self.currentTime)
-        self.currentTime.setVisible(False)
+        self.currentPlayTime = xbmcgui.ControlButton(-1000, -1000, self.getControl(5006).getWidth(), self.getControl(5006).getHeight(), '', font='font12', focusTexture=self.textureButtonFocusAlt, noFocusTexture=self.timeButtonNoFocus)
+        self.addControl(self.currentPlayTime)
+        self.currentPlayTime.setVisible(False)
         
         self.myEPG = EPGWindow("script.pseudotv.live.EPG.xml", ADDON_PATH, Skin_Select)
         self.myDVR = DVR("script.pseudotv.live.DVR.xml", ADDON_PATH, Skin_Select)
@@ -539,9 +537,9 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             self.postBackgroundLoading()
         
         if REAL_SETTINGS.getSetting('INTRO_PLAYED') != 'true':    
-            self.setBackgroundVisible(False)   
+            self.setBackgroundVisible(False)
             self.Player.play(INTRO)
-            xbmc.sleep(17000)
+            time.sleep(17)
             self.setBackgroundVisible(True)
             REAL_SETTINGS.setSetting("INTRO_PLAYED","true")    
         self.resetChannelTimes()
@@ -966,7 +964,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             self.log('setChannel, channel not valid ' + str(channel), xbmc.LOGERROR)
             return  
         
-        self.currentTime.setVisible(False)
+        self.currentPlayTime.setVisible(False)
         chname = self.getChname(channel)
         chtype = self.getChtype(channel)
 
@@ -1258,18 +1256,22 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
 
         if self.OnDemand == True:
             self.toggleShowStartover(False)  
-            self.getControl(5007).setVisible(False)   
+            self.getControl(5007).setVisible(False)  
+            self.currentPlayTime.setVisible(False)            
             setProperty("OVERLAY.DYNAMIC_LABEL",'OnDemand')
         elif self.infoOffset > 0:
             self.toggleShowStartover(False)  
             self.getControl(5007).setVisible(False)   
+            self.currentPlayTime.setVisible(False)  
             setProperty("OVERLAY.DYNAMIC_LABEL",'COMING UP')
         elif self.infoOffset < 0:
             self.toggleShowStartover(False)  
-            self.getControl(5007).setVisible(False)   
+            self.getControl(5007).setVisible(False) 
+            self.currentPlayTime.setVisible(False)    
             setProperty("OVERLAY.DYNAMIC_LABEL",'ALREADY SEEN') 
         elif self.infoOffset == 0: 
             self.getControl(5007).setVisible(True)
+            self.currentPlayTime.setVisible(True)  
             setProperty("OVERLAY.DYNAMIC_LABEL",'NOW WATCHING')
             # setProperty('PTVL.TitleCHK',uni(self.Player.getPlayerTitle()))
         
@@ -1323,6 +1325,8 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         if self.infoOffset == 0:
             self.setProp(label, year, chlogo, chtype, chnum, id, genre, rating, hd, cc, stars, mpath, mediapath, chname, SEtitle, type, dbid, epid, Description, swtitle, playcount, season, episode, timestamp, "OVERLAY.PLAYING")
             if self.channels[self.currentChannel - 1].getItemDuration(position) < self.shortItemLength:
+                self.hideShortInfo = True
+            elif SEtitle in BCT_TYPES:
                 self.hideShortInfo = True
         self.setProp(label, year, chlogo, chtype, chnum, id, genre, rating, hd, cc, stars, mpath, mediapath, chname, SEtitle, type, dbid, epid, Description, swtitle, playcount, season, episode, timestamp, "OVERLAY")
            
@@ -1488,7 +1492,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                 
     def hideInfo(self):
         self.log('hideInfo')
-        self.currentTime.setVisible(False)
+        self.currentPlayTime.setVisible(False)
         self.toggleShowStartover(False)
         self.showingInfo = False 
         self.getControl(102).setVisible(False)
@@ -1512,7 +1516,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         self.hidePOP()
         self.getControl(222).setVisible(False)
         self.getControl(102).setVisible(True)
-        self.currentTime.setVisible(True)
+        self.currentPlayTime.setVisible(True)
         self.showingInfo = True
         self.infoTimer = threading.Timer(self.InfTimer, self.hideInfo)
         self.infoTimer.name = "InfoTimer"
@@ -2217,6 +2221,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
     def playerTimerAction(self):
         while not self.monitor.abortRequested():
             self.log("playerTimerAction")
+
             # Sleep/wait for abort for ActionTimeInt
             if self.monitor.waitForAbort(int(self.ActionTimeInt)):
                 # Abort was requested while waiting. We should exit
@@ -2237,10 +2242,11 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                 if self.DisablePlayback == True:
                     if self.notPlayingCount == 3:
                         self.openEPG()
+
                 else:
                     if self.notPlayingCount > int(round((playActionTime/8)*6)):
                         OptNotify("notPlayingCount = " + str(self.notPlayingCount) + "/" + str(playActionTime))
-                        
+
                     # 3peat lastActionTrigger set known vaild channel
                     if self.FailedPlayingCount == 3:     
                         self.CloseDialog()
@@ -2277,7 +2283,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
     def Paused(self, action=False):
         self.log('Paused')
         self.setBackgroundVisible(True)
-        self.currentTime.setVisible(False)
+        self.currentPlayTime.setVisible(False)
         setBackgroundLabel('Paused')   
         if action and self.Player.isPlaying():
             json_query = ('{"jsonrpc":"2.0","method":"Player.PlayPause","params":{"playerid":1}, "id": 1}')
@@ -2639,43 +2645,35 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         if self.Player.isPlaybackValid():
             if self.Player.getPlayerFile().startswith(('http','pvr','rtmp','rtsp','hdhomerun','upnp')) and self.Player.getTime() <= 0:
                 seekButton_xpos = -1000
-                seekBar_ypos = -1000
+                seekButton_ypos = -1000
             elif self.Player.getTime() < self.Player.getTotalTime()/30 or self.Player.getTime() > (self.Player.getTotalTime()/30)*29:
                 seekButton_xpos = -1000
-                seekBar_ypos = -1000
+                seekButton_ypos = -1000
             else:        
                 try:
-                    seekButton_width = int(round(self.getControl(5006).getWidth() / 2))
+                    seekButton_width = int(round(self.getControl(5006).getWidth() / 2)) #find width of button and place in the middle.
                     seekBar_width = self.getControl(5007).getWidth()
-                    seekBar_xpos, seekBar_ypos = self.getControl(5007).getPosition()
+                    temp_xpos, seekButton_ypos = self.getControl(5006).getPosition()
+                    seekBar_xpos, temp_ypos = self.getControl(5007).getPosition()
                     perPlayed = 100 - (((self.Player.getTotalTime() - self.Player.getTime()) / self.Player.getTotalTime()) * 100)
-                    seekButton_xpos = (seekBar_xpos + int(round((perPlayed * seekBar_width)/100))) - seekButton_width
+                    seekButton_xpos = (temp_xpos + int(round((perPlayed * seekBar_width)/100))) - seekButton_width
                 except:
                     perPlayed = 0
                     seekButton_xpos = -1000
-
-            seekButton_height = int(round(self.getControl(5006).getHeight()/2))
-            self.currentTime.setPosition(seekButton_xpos, seekBar_ypos - seekButton_height)
-            self.currentTime.setLabel(str(xbmc.getInfoLabel('Player.Time')))
+                    seekButton_ypos = -1000
+            self.currentPlayTime.setPosition(seekButton_xpos, seekButton_ypos)
+            self.currentPlayTime.setLabel(str(xbmc.getInfoLabel('Player.Time')).replace('00:',''))
           
           
     def FEEDtoggle(self):
         self.log("FEEDtoggle")
-        if self.FEEDtoggleTimer.isAlive():
-            self.FEEDtoggleTimer.cancel()
-            
         UpdateRSS() 
         if getProperty("PTVL.FEEDtoggle") == "true":
             setProperty("PTVL.FEEDtoggle","false")
         else:
             setProperty("PTVL.FEEDtoggle","true")
+
             
-        self.FEEDtoggleTimer = threading.Timer(float(RSS_REFRESH), self.FEEDtoggle)
-        self.FEEDtoggleTimer.name = "FEEDtoggleTimer"      
-        if self.Player.stopped == False and self.isExiting == False:
-            self.FEEDtoggleTimer.start()
-         
-         
     def playSFX(self, action):
         self.log("playSFX")
         if REAL_SETTINGS.getSetting("SFX_Enabled") != "true":
@@ -3163,18 +3161,20 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             if self.monitor.waitForAbort(1):
                 # Abort was requested while waiting. We should exit
                 break
+                
             if self.Player.stopped == True or self.isExiting == True:
                 break
-                
-            self.setSeekBarTime()
-
+            if self.showingInfo:
+                self.setSeekBarTime()
+                        
             
     def cronJob_Minutes(self):
         while not self.monitor.abortRequested():
             # Sleep/wait for abort for 1 second
-            if self.monitor.waitForAbort(1):
+            if self.monitor.waitForAbort(60):
                 # Abort was requested while waiting. We should exit
                 break
+                
             if self.Player.stopped == True or self.isExiting == True:
                 break
             self.cron_uptime += 1 # life 
@@ -3197,19 +3197,19 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
             self.fiveMin_Job += 1
             if self.fiveMin_Job == 5:
                 self.fiveMin_Job = 0
+                self.setOnNow()
                 
             # 10min job
-            self.fiveMin_Job += 1
-            if self.fiveMin_Job == 10:
-                self.fiveMin_Job = 0
+            self.tenMin_Job += 1
+            if self.tenMin_Job == 10:
+                self.tenMin_Job = 0
                 
             # 15min job
             self.fifteenMin_Job += 1
             if self.fifteenMin_Job == 15:
                 self.fifteenMin_Job = 0
-                self.setOnNow()
+                self.FEEDtoggle()
                 purgeGarbage() 
-            xbmc.sleep(60000)
      
      
     def toggleMute(self):
@@ -3352,11 +3352,6 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         del self.myIdle
         del self.myOndemand
             
-        # active threads are a pain to monitor, encapsulate in tries to avoid calling inactive threads.
-        if self.playerTimer.isAlive():
-            self.playerTimer.cancel()
-            self.playerTimer.join()
-
         if self.Player.isPlaying():
             self.lastPlayTime = self.Player.getTime()
             self.lastPlaylistPosition = xbmc.PlayList(xbmc.PLAYLIST_MUSIC).getposition()
@@ -3410,16 +3405,12 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
 
         if self.playerTimer.isAlive():
             self.playerTimer.cancel()
-
+            
         if self.MenuControlTimer.isAlive():
             self.MenuControlTimer.cancel()
             
         if self.getTMPSTRTimer.isAlive():
             self.getTMPSTRTimer.cancel()
-
-        if self.FEEDtoggleTimer.isAlive():
-            self.FEEDtoggleTimer.cancel()
-            
         if self.ReminderTimer.isAlive():
             self.ReminderTimer.cancel()
             self.ReminderTimer.join()
@@ -3443,15 +3434,9 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
                 FindLogoThread.cancel()
                 FindLogoThread.join()
                 
-            if UpdateRSSthread.isAlive():
-                UpdateRSSthread.cancel()
-                
             if download_silentThread.isAlive():
                 download_silentThread.cancel()
                 download_silentThread.join()
-
-            if egTriggerTimer.isAlive():
-                egTriggerTimer.cancel()
         except:
             pass
             
