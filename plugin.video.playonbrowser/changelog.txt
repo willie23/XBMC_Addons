@@ -1,4 +1,7 @@
 v1.0.11
+- Playback adjustments
+
+v1.0.11
 - HD Posters
 - UPNP ID auto discovery.
 - Playback Options

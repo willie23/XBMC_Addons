@@ -57,7 +57,7 @@ msgid "Playon Server and port"
 msgstr ""
 
 msgctxt "#42005"
-msgid "Browse UPNP and select folder 'Playon:'"
+msgid "Browse UPNP and select 'Playon:' folder"
 msgstr ""
 
 msgctxt "#42006"

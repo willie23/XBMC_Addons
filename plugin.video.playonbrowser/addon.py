@@ -606,47 +606,40 @@ def closeFailed():
         return True
     log_message("closeFailed dialog = False", True)
     return False
-   
-def playList(src, name): 
-    log_message("playList")      
-    listitem=xbmcgui.ListItem(name)
-    vplaylist = xbmc.PlayList( xbmc.PLAYLIST_VIDEO )
-    vplaylist.clear()
-    vplaylist.add(mediaPath + 'DummyEntry.mp4')
-    vplaylist.add(playonExternalUrl + '/' + src.split('.')[0].split('/')[0] + '/',listitem) 
-    xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, listitem)     
-    xbmc.Player().play(vplaylist,listitem)
-          
-def playURL(src,name,art):
-    playURLTimer = threading.Timer(2.0, playURL_thread,[src,name,art])
-    playURLTimer.name = "playURLTimer"
-    if playURLTimer.isAlive():
-        playURLTimer.cancel()
-    playURLTimer.start()
-           
-def playURL_thread(src,name, art):
-    log_message("playURL", True)
-    if closeFailed() == True:
-        playURL(src,name,art)
-        
-    cnt = 0
-    # while xbmc.Player().isPlaying() == False and cnt < timeout:
-    cnt += 1
-    log_message("playThread: Playcount = " + str(cnt) + "/" + str(timeout), True)
+
+def play_resolved_url(src, name, art):
+    log_message("play_resolved_url")
     if useUPNP == False:
         url = playonInternalUrl + '/' + src
     else:
         url = playonExternalUrl + '/' + src.split('.')[0].split('/')[0] + '/'
-    log_message("url = " + url)
-    listitem=xbmcgui.ListItem(name, iconImage=art, thumbnailImage=art)
-    listitem.addStreamInfo('video', { 'Codec': 'h264', 'width': 1280, 'height': 720 })
-    xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, listitem)
-    xbmc.Player().play(url ,listitem)
+    listitem = xbmcgui.ListItem(name, iconImage=art, thumbnailImage=art)
+    listitem = xbmcgui.ListItem(path=url)
+    listitem.setProperty('IsPlayable', 'true')
+    return xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, listitem)
 
-    
-    # xbmc.sleep(1000)
+def direct_play(src, name, art):
+    log_message("direct_play")
+    if useUPNP == False:
+        url = playonInternalUrl + '/' + src
+    else:
+        url = playonExternalUrl + '/' + src.split('.')[0].split('/')[0] + '/'
 
-#
+    xlistitem = xbmcgui.ListItem(name, iconImage=art, thumbnailImage=art, path=url)
+    xlistitem.setInfo( "video", { "Title": name } )
+    playlist = xbmc.PlayList( xbmc.PLAYLIST_VIDEO )
+    playlist.clear()
+    playlist.add(mediaPath + 'DummyEntry.mp4')
+    playlist.add( url, xlistitem )
+    player_type = xbmc.PLAYER_CORE_AUTO
+    xbmcPlayer = xbmc.Player( player_type )
+    xbmcPlayer.play(playlist)
+
+def playURL(src, name, art):
+    log_message("playURL", True)
+    # play_resolved_url(src, name, art)
+    direct_play(src, name, art)
+
 #    Main Loop
 log_message("Base URL:" + baseUrl, True)
 log_message("Addon Handle:" + str(addonHandle), True)
