@@ -16,11 +16,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Playon Browser.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys, string, os, re, sys
-import urlparse, urllib, urllib2, htmllib, threading
-import platform, calendar, random, CommonFunctions
+import sys, os, re, sys, random
+import urlparse, urllib, urllib2, htmllib, threading, socket
 import xbmc, xbmcplugin, xbmcaddon, xbmcgui, xbmcvfs
 import xml.etree.ElementTree as ElementTree 
+socket.setdefaulttimeout(30)
 
 # Plugin Info
 addonId = 'plugin.video.playonbrowser'
@@ -36,6 +36,30 @@ mediaPath = addonPath + '/resources/media/'
 playonDataPath = '/data/data.xml'
 mediaIcon = '/images/play_720.png'
 
+#
+#   Pull the arguments in. 
+baseUrl = sys.argv[0]
+addonHandle = int(sys.argv[1])
+args = urlparse.parse_qs(sys.argv[2][1:])
+
+#
+#   Pull the settings in. 
+settings = xbmcaddon.Addon(id=addonId)
+
+#
+#   Set-up some KODI defaults. 
+cachePeriod = 1 #hours
+timeout = 15
+
+KodiLibrary = False #todo strm contextMenu
+debug            = settings.getSetting("debug") == "true"
+Meta_Enabled     = settings.getSetting("Meta_Enabled") == "true"
+useUPNP          = settings.getSetting("useUPNP") == "true"
+playDirect       = settings.getSetting("playDirect") == "true"
+TVDB_API_KEY     = settings.getSetting("TVDB_API_KEY")
+TMDB_API_KEY     = settings.getSetting("TMDB_API_KEY")
+FANARTTV_API_KEY = settings.getSetting("FANARTTV_API_KEY")
+
 try:
     import StorageServer
     Cache_Enabled = settings.getSetting("cache") == "true"
@@ -45,11 +69,11 @@ except Exception,e:
     
 try:
     from metahandler import metahandlers
-    metaget = metahandlers.MetaData(preparezip=False)
-    Meta_Enabled = True
+    Meta_Enabled = settings.getSetting("Meta_Enabled") == "true"
+    metaget = metahandlers.MetaData(preparezip=False, tmdb_api_key=TMDB_API_KEY)
 except Exception,e:
     Meta_Enabled = False
-    
+
 displayCategories = {'MoviesAndTV': 3,
                     'Comedy': 128,
                     'News': 4,
@@ -91,35 +115,41 @@ displayImages = {'MoviesAndTV': '/images/categories/movies.png',
                 'LiveTV': '/images/categories/livetv.png'}
 
 #
-#   Pull the arguments in. 
-baseUrl = sys.argv[0]
-addonHandle = int(sys.argv[1])
-args = urlparse.parse_qs(sys.argv[2][1:])
-
-#
-#   Pull the settings in. 
-settings = xbmcaddon.Addon(id=addonId)
-playonInternalUrl = settings.getSetting("playonserver").rstrip('/')
-playonExternalUrl = settings.getSetting("playonid").rstrip('/')
-debug = settings.getSetting("debug")
-cachePeriod = 1 #hours
-timeout = 15
-KodiLibrary = False #todo strm contextMenu
-#
-#   Set-up some KODI defaults. 
-common = CommonFunctions
-common.plugin = addonId + '-' + addonVersion
-
-#
 #   Internal Functions 
-#
+#       
+def log_message(msg, information=False):
+    """ Simple logging helper. """
+    if (information or debug) and isinstance(msg, str):
+        print addonId + "::" + addonVersion + ": " + msg
+    elif (information or debug):
+        print addonId + "::" + addonVersion + ":  ... \/ ..."
+        print msg
+        
+def getUPNP():
+    upnpID = settings.getSetting("playonUPNPid").rstrip('/')
+    if len(upnpID) > 0:
+        return upnpID
+    else:
+        json_query = ('{"jsonrpc":"2.0","method":"Files.GetDirectory","params":{"directory":"upnp://"},"id":1}')      
+        data = xbmc.executeJSONRPC(json_query)
+        detail = re.compile("{(.*?)}", re.DOTALL ).findall(data)
+        for f in detail:
+            labels = re.search('"label" *: *"(.*?)"', f)
+            if labels and len(labels.group(1)) > 0 and labels.group(1).startswith('PlayOn:'):
+                files = re.search('"file" *: *"(.*?)"', f)
+                upnpID = files.group(1)  
+                if len(upnpID) > 0:
+                    settings.setSetting("playonUPNPid",files.group(1))
+                    return upnpID
+        settings.openSettings()
+   
 def folderIcon(val):
     return random.choice(['/images/folders/folder_%s_0.png' %val,'/images/folders/folder_%s_1.png' %val])
 
 def addDir(name,description,u,thumb=addonIcon,ic=addonIcon,fan=addonFanart,infoList=False,infoArt=False,content_type='movies'):
     liz = xbmcgui.ListItem(name)
     liz.setProperty('IsPlayable', 'false')
-    
+
     if KodiLibrary == True:
         contextMenu = []
         contextMenu.append(('Create Strms','XBMC.RunPlugin(%s)'%(build_url({'mode': 'strmDir', 'url':u}))))
@@ -140,7 +170,7 @@ def addDir(name,description,u,thumb=addonIcon,ic=addonIcon,fan=addonFanart,infoL
 def addLink(name,description,u,thumb=addonIcon,ic=addonIcon,fan=addonFanart,infoList=False,infoArt=False,content_type='movies',total=0):
     liz = xbmcgui.ListItem(name)
     liz.setProperty('IsPlayable', 'true')
-
+    
     if KodiLibrary == True:
         contextMenu = []
         contextMenu.append(('Create Strm','XBMC.RunPlugin(%s)'%(build_url({'mode': 'strmFile', 'url':u}))))
@@ -158,14 +188,6 @@ def addLink(name,description,u,thumb=addonIcon,ic=addonIcon,fan=addonFanart,info
     xbmcplugin.setContent(addonHandle, content_type)
     xbmcplugin.addDirectoryItem(handle=addonHandle,url=u,listitem=liz,totalItems=total)
 
-def log_message(msg, information=False):
-    """ Simple logging helper. """
-    if (information or debug) and isinstance(msg, str):
-        print addonId + "::" + addonVersion + ": " + msg
-    elif (information or debug):
-        print addonId + "::" + addonVersion + ":  ... \/ ..."
-        print msg
-        
 def build_url(query):
     """ This will build and encode the URL for the addon. """
     log_message(query)
@@ -199,7 +221,7 @@ def get_xml(url):
     else:
         result = get_xml_request(url)
     if len(result) == 0:
-        result = False
+        result = []
     xbmc.executebuiltin('Dialog.Close(busydialog)')
     return result  
         
@@ -263,7 +285,7 @@ def build_menu_for_mode_category(category):
             if group.attrib.get('art') == None:
                 image = playonInternalUrl + folderIcon(ranNum)
             else:
-                image = playonInternalUrl + group.attrib.get('art')
+                image = (playonInternalUrl + group.attrib.get('art')).replace('&size=tiny','&size=large')
                 
             # if we & them and it is not zero add it to this category. otherwise ignore as it is another category.                        
             if int(nodeCat) & int(category) != 0:
@@ -276,6 +298,7 @@ def build_menu_for_mode_category(category):
         xbmcplugin.endOfDirectory(addonHandle)
     except:
         pass
+        
 def build_menu_for_search(xml):
     ranNum = random.randrange(9)
     """ 
@@ -321,19 +344,22 @@ def build_menu_for_search(xml):
                     if group.attrib.get('art') == None:
                         image = playonInternalUrl + folderIcon(ranNum)
                     else:
-                        image = playonInternalUrl + group.attrib.get('art')
-                    
-                    addDir(name,name,url,image,image)            
+                        image = (playonInternalUrl + group.attrib.get('art')).replace('&size=tiny','&size=large')
+                        
                 elif group.attrib.get('type') == 'video':
                     if group.attrib.get('art') == None:
-                        image = playonInternalUrl + mediaIcon
+                        image = (playonInternalUrl + mediaIcon)
                     else:
-                        image = playonInternalUrl + group.attrib.get('art')
-                    
-                    playonUrl = build_playon_url(group.attrib.get('href'))
-                    mediaXml = get_xml(playonUrl)
+                        image = (playonInternalUrl + group.attrib.get('art')).replace('&size=tiny','&size=large')
+                    # playonUrl = build_playon_url(group.attrib.get('href'))
+                    # mediaXml = get_xml(playonUrl)
                     # mediaNode = mediaXml.find('media')
-                    addLink(name,group.attrib.get('description'),url,image,image)  
+                    
+                List, Art = getMeta(nametree, name, group.attrib.get('description'), image)
+                if group.attrib.get('type') == 'folder':
+                    addDir(name,name,url,image,image,infoList=List, infoArt=Art)  
+                elif group.attrib.get('type') == 'video':
+                    addLink(name,group.attrib.get('description'),url,image,image,infoList=List, infoArt=Art) 
     except:
         pass
     xbmcplugin.endOfDirectory(addonHandle)
@@ -386,45 +412,23 @@ def build_menu_for_mode_folder(href, foldername, nametree):
                     if group.attrib.get('art') == None:
                         image = playonInternalUrl + folderIcon(ranNum)
                     else:
-                        image = playonInternalUrl + group.attrib.get('art')
-                    
-                    """
-                    try:
-                        
-                        metaget = metahandlers.MetaData()
-                        meta = metaget.get_meta('tvshow', name)
-                    
-                        li = xbmcgui.ListItem(name, iconImage=meta['cover_url'], thumbnailImage=meta['cover_url'])
-                        li.setInfo(type="Video", infoLabels=meta)
-                        li.setProperty('fanart_image', meta['backdrop_url'])
-                        xbmcplugin.addDirectoryItem(handle=addonHandle, url=url, listitem=li, isFolder=True)
-                    except Exception,e:
-                    """
-                    #log_message(str(e))
-                    addDir(name,name,url,image,image)            
+                        image = (playonInternalUrl + group.attrib.get('art')).replace('&size=tiny','&size=large')        
+                
                 elif group.attrib.get('type') == 'video':
                     if group.attrib.get('art') == None:
                         image = playonInternalUrl + mediaIcon
                     else:
-                        image = playonInternalUrl + group.attrib.get('art')
-                    
-                    playonUrl = build_playon_url(group.attrib.get('href'))
-                    mediaXml = get_xml(playonUrl)
+                        image = (playonInternalUrl + group.attrib.get('art')).replace('&size=tiny','&size=large') 
+                    # playonUrl = build_playon_url(group.attrib.get('href'))
+                    # mediaXml = get_xml(playonUrl)
                     # mediaNode = mediaXml.find('media')
-                    """
-                    try:
-                        
-                        metaget = metahandlers.MetaData()
-                        meta = metaget.get_meta('movie', name)
+
+                List, Art = getMeta(nametree, name, group.attrib.get('description'), image)
+                if group.attrib.get('type') == 'folder':
+                    addDir(name,name,url,image,image,infoList=List, infoArt=Art)  
+                elif group.attrib.get('type') == 'video':
+                    addLink(name,group.attrib.get('description'),url,image,image,infoList=List, infoArt=Art) 
                     
-                        li = xbmcgui.ListItem(name, iconImage=meta['cover_url'], thumbnailImage=meta['cover_url'])
-                        li.setInfo(type="Video", infoLabels=meta)
-                        li.setProperty('fanart_image', meta['backdrop_url'])
-                        xbmcplugin.addDirectoryItem(handle=addonHandle, url=url, listitem=li)
-                    except Exception,e:
-                        log_message(str(e))
-                        """
-                    addLink(name,group.attrib.get('description'),url,image,image)
         xbmcplugin.endOfDirectory(addonHandle)
     except:
         pass
@@ -444,36 +448,138 @@ def generate_list_items(xml, href, foldername, nametree):
                                 'href': group.attrib.get('href'), 
                                 'parenthref': href, 
                                 'nametree': nametree + '/' + name})
-            
+
             if group.attrib.get('type') == 'folder':
                 if group.attrib.get('art') == None:
                     image = playonInternalUrl + folderIcon(ranNum)
                 else:
-                    image = playonInternalUrl + group.attrib.get('art')
-                
-                addDir(name,name,url,image,image)  
+                    image = (playonInternalUrl + group.attrib.get('art')).replace('&size=tiny','&size=large')
+                    
             elif group.attrib.get('type') == 'video':
                 if group.attrib.get('art') == None:
                     image = playonInternalUrl + mediaIcon
                 else:
-                    image = playonInternalUrl + group.attrib.get('art')
+                    image = ((playonInternalUrl + group.attrib.get('art')).replace('&size=tiny','&size=large')).replace('&size=tiny','&size=large')
                 
-                playonUrl = build_playon_url(group.attrib.get('href'))
-                mediaXml = get_xml(playonUrl)
+                # playonUrl = build_playon_url(group.attrib.get('href'))
+                # mediaXml = get_xml(playonUrl)
                 # mediaNode = mediaXml.find('media')
-                addLink(name,group.attrib.get('description'),url,image,image)      
+            
+            List, Art = getMeta(nametree, name, group.attrib.get('description'), image)
+            if group.attrib.get('type') == 'folder':
+                addDir(name,name,url,image,image,infoList=List, infoArt=Art)  
+            elif group.attrib.get('type') == 'video':
+                addLink(name,group.attrib.get('description'),url,image,image,infoList=List, infoArt=Art)      
     except:
         pass
     xbmcplugin.endOfDirectory(addonHandle)
        
-def parseURLThread(nametree):
-    parseURLTimer = threading.Timer(0.1, parseURL,[nametree])
-    parseURLTimer.name = "parseURLTimer"
-    if parseURLTimer.isAlive():
-        parseURLTimer.cancel()
-    parseURLTimer.start()
-           
+def getTitleYear(showtitle, showyear=0):  
+    # extract year from showtitle, merge then return
+    try:
+        showyear = int(showyear)
+    except:
+        showyear = showyear
+    try:
+        labelshowtitle = re.compile('(.+?) [(](\d{4})[)]$').findall(showtitle)
+        title = labelshowtitle[0][0]
+        year = int(labelshowtitle[0][1])
+    except Exception,e:
+        try:
+            year = int(((showtitle.split(' ('))[1]).replace(')',''))
+            title = ((showtitle.split('('))[0])
+        except Exception,e:
+            if showyear != 0:
+                showtitle = showtitle + ' ('+str(showyear)+')'
+                year, title, showtitle = getTitleYear(showtitle, showyear)
+            else:
+                title = showtitle
+                year = 0
+    if year == 0 and int(showyear) !=0:
+        year = int(showyear)
+    if year != 0 and '(' not in title:
+        showtitle = title + ' ('+str(year)+')' 
+    log_message("getTitleYear, return " + str(year) +', '+ title +', '+ showtitle) 
+    return year, title, showtitle
+         
+def getMeta(nametree, name, plot, poster):
+    log_message("getMeta")
+    if len(nametree) > 0:
+        print nametree
+        if 'movie' in nametree.lower():
+            return getMovieMeta(name, plot, poster)
+    return False, False
+    
+def getMovieMeta(name, plot, poster):
+    log_message("getMovieMeta")
+    try:
+        year, title, showtitle = getTitleYear(name)
+        if Meta_Enabled == False:
+            log_message("Meta_Enabled = False")
+            raise Exception()
+            
+        if year == 0 and Meta_Bypass == False:
+            log_message("Meta_Bypass = False")
+            raise Exception()
+            
+        meta = metaget.get_meta('movie', title, str(year))
+        infoList = {}
+        infoList['mediatype'] = 'movie'
+        infoList['year']      = int(year                              or (meta['year']               or '0'))
+        infoList['duration']  = int((meta['duration']                 or '0'))
+        infoList['plot']      = (plot                                 or (meta['plot']               or ''))
+        infoList['title']     = (title                                or (meta['title']              or ''))
+        infoList['tagline']   = ((meta['tagline']                     or ''))
+        infoList['code']      = (meta['imdb_id']                      or '0')
+        infoList['playcount'] = int((meta['playcount']                or '1'))
+        infoList['rating']    = float(meta['rating']                  or '0.0')
+        infoList['genre']     = (meta['genre'].split(',')[0]          or 'Unknown')
+        infoList['mpaa']      = (meta['mpaa']                         or 'NR')
+        
+        infoArt = {}
+        infoList['icon']      = poster
+        infoArt['thumb']      = poster
+        infoArt['poster']     = (poster                               or meta['cover_url'])
+        infoArt['fanart']     = (meta['backdrop_url']                 or '')
+        infoArt['landscape']  = (meta['backdrop_url']                 or '')
+        infoArt['banner']     = (meta['banner_url']                   or '')
+        return infoList, infoArt
+    except Exception, e:
+        log_message(e)
+        return False, False
+    
+def getTVmeta(name, plot, poster):
+    log_message("getTVmeta")
+    try:
+        year, title, showtitle = getTitleYear(name)
+        if Meta_Enabled == False:
+            log_message("Meta_Enabled = False")
+            raise Exception()
+            
+        if year == 0 and Meta_Bypass == False:
+            log_message("Meta_Bypass = False")
+            raise Exception()
+            
+        meta = metaget.get_meta('tvshow', title, str(year))
+        year     = int(year                              or (meta['year']               or '0'))
+        duration = int((meta['duration']                 or '0'))
+        plot     = (plot                                 or (meta['plot']               or ''))
+        title    = (title                                or (meta['title']              or ''))
+        tvdb_id  = (meta['tvdb_id']                      or '0')
+        playcount= int((meta['playcount']                or '1'))
+        stars    = float(meta['rating']                  or '0.0')
+        genre    = (meta['genre'].split(',')[0]          or 'Unknown')
+        rating   = (meta['mpaa']                         or 'NR')
+        poster   = (poster                               or meta['cover_url'])
+        fanart   = (meta['backdrop_url']                 or '')
+        banner   = (meta['banner_url']                   or '')
+        return infoList, infoArt
+    except Exception, e:
+        log_message(e)
+        return False, False
+  
 def parseURL(nametree):
+    log_message("parseURL", True)
     # Run though the name tree! No restart issues but slower.
     nametreelist = nametree.split('/')
     roothref = None
@@ -492,8 +598,7 @@ def parseURL(nametree):
                         type = group.attrib.get('type')
                         if type == 'video':
                             mediaNode = get_xml(build_playon_url(group.attrib.get('href'))).find('media')
-                            return mediaNode.attrib.get('src'), group.attrib.get('name').encode('ascii', 'ignore')
-   
+                            return mediaNode.attrib.get('src'), group.attrib.get('name').encode('ascii', 'ignore'), mediaNode.attrib.get('art')
 def closeFailed():
     if xbmc.getCondVisibility('Window.IsActive(okdialog)') == 1:
         xbmc.executebuiltin('Dialog.Close(okdialog)')
@@ -502,7 +607,8 @@ def closeFailed():
     log_message("closeFailed dialog = False", True)
     return False
    
-def playList(src, name):       
+def playList(src, name): 
+    log_message("playList")      
     listitem=xbmcgui.ListItem(name)
     vplaylist = xbmc.PlayList( xbmc.PLAYLIST_VIDEO )
     vplaylist.clear()
@@ -510,16 +616,36 @@ def playList(src, name):
     vplaylist.add(playonExternalUrl + '/' + src.split('.')[0].split('/')[0] + '/',listitem) 
     xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, listitem)     
     xbmc.Player().play(vplaylist,listitem)
-            
-def playURL(src,name):
+          
+def playURL(src,name,art):
+    playURLTimer = threading.Timer(2.0, playURL_thread,[src,name,art])
+    playURLTimer.name = "playURLTimer"
+    if playURLTimer.isAlive():
+        playURLTimer.cancel()
+    playURLTimer.start()
+           
+def playURL_thread(src,name, art):
+    log_message("playURL", True)
+    if closeFailed() == True:
+        playURL(src,name,art)
+        
     cnt = 0
     # while xbmc.Player().isPlaying() == False and cnt < timeout:
     cnt += 1
     log_message("playThread: Playcount = " + str(cnt) + "/" + str(timeout), True)
-    listitem=xbmcgui.ListItem(name)
+    if useUPNP == False:
+        url = playonInternalUrl + '/' + src
+    else:
+        url = playonExternalUrl + '/' + src.split('.')[0].split('/')[0] + '/'
+    log_message("url = " + url)
+    listitem=xbmcgui.ListItem(name, iconImage=art, thumbnailImage=art)
+    listitem.addStreamInfo('video', { 'Codec': 'h264', 'width': 1280, 'height': 720 })
     xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, listitem)
-    xbmc.Player().play(playonExternalUrl + '/' + src.split('.')[0].split('/')[0] + '/',listitem)
+    xbmc.Player().play(url ,listitem)
+
+    
     # xbmc.sleep(1000)
+
 #
 #    Main Loop
 log_message("Base URL:" + baseUrl, True)
@@ -535,6 +661,11 @@ href = get_argument_value('href')
 searchable = get_argument_value('searchable')
 category = get_argument_value('category')
 id = get_argument_value('id')
+
+playonInternalUrl = settings.getSetting("playonserver").rstrip('/')
+playonExternalUrl = getUPNP().rstrip('/')
+log_message('playonInternalUrl = ' + playonInternalUrl)
+log_message('playonExternalUrl = ' + playonExternalUrl)
 
 if mode is None: #building the main menu... Replicate the XML structure. 
     build_menu_for_mode_none()
@@ -558,13 +689,16 @@ elif mode == 'video' : # Video link from Addon or STRM. Parse and play.
     """ We are doing a manual play to handle the id change during playon restarts. """
     log_message("In a video:" + foldername + "::" + href )   
     try:
-        src, name = parseURL(nametree)
-        playURL(src, name)
-    except:
+        if playDirect == True:
+            raise Exception()
+        src, name, art = parseURL(nametree)
+        playURL(src, name, art)
+    except Exception:
         # Play the href directly. 
         playonUrl = build_playon_url(href)
         name = foldername.encode('ascii', 'ignore')
         mediaXml = get_xml(playonUrl)
         mediaNode = mediaXml.find('media')
         src = mediaNode.attrib.get('src')
-        playURL(src, name)
+        art = mediaNode.attrib.get('art')
+        playURL(src, name, art)

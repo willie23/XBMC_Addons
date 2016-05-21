@@ -16,6 +16,26 @@ msgstr ""
 "Language: en\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+msgctxt "#45001"
+msgid "Debugging"
+msgstr ""
+
+msgctxt "#44001"
+msgid "Playback"
+msgstr ""
+
+msgctxt "#44002"
+msgid "Play Using UPNP"
+msgstr ""
+
+msgctxt "#44003"
+msgid "Play Direct Link [Tokens Expire]"
+msgstr ""
+
+msgctxt "#42009"
+msgid "Enable Meta"
+msgstr ""
+
 msgctxt "#42008"
 msgid "Enable Cache"
 msgstr ""
@@ -36,16 +56,12 @@ msgctxt "#42003"
 msgid "Playon Server and port"
 msgstr ""
 
-msgctxt "#42004"
-msgid "Navigate to Kodi's Videos/Files, Click 'add videos..."
-msgstr ""
-
 msgctxt "#42005"
-msgid "Enter [B]UPNP://[/B] as path, select 'none' type & 'ok'."
+msgid "Browse UPNP and select folder 'Playon:'"
 msgstr ""
 
 msgctxt "#42006"
-msgid "Browse UPNP sources, Select 'Playon:' & 'ok'"
+msgid "PlayOn UPNP ID"
 msgstr ""
 
 msgctxt "#42007"
