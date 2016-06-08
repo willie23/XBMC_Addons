@@ -41,27 +41,24 @@ ADDON_PATH = REAL_SETTINGS.getAddonInfo('path')
 ADDON_SETTINGS = REAL_SETTINGS.getAddonInfo('profile')
 ADDON_VERSION = REAL_SETTINGS.getAddonInfo('version')
 
-# PTVL Info
+# PTVL Settings Info
 PTVL_ID = 'script.pseudotv.live'
 PTVL_SETTINGS = xbmcaddon.Addon(id=PTVL_ID)
 YT_API_KEY = PTVL_SETTINGS.getSetting('YT_API_KEY')
 LOGODB_API_KEY = PTVL_SETTINGS.getSetting('LOGODB_API_KEY')
 GBOX_API_KEY = PTVL_SETTINGS.getSetting("GBOX_API_KEY")
-
+SETTINGS_LOC = PTVL_SETTINGS.getAddonInfo('profile').decode('utf-8')
+CHANNELS_LOC = os.path.join(SETTINGS_LOC, 'cache','') #LOCKED
+REQUESTS_LOC = xbmc.translatePath(os.path.join(CHANNELS_LOC, 'requests','')) #LOCKED
+LOCK_LOC = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'cache',''))
+XMLTV_CACHE_LOC = xbmc.translatePath(os.path.join(LOCK_LOC, 'xmltv',''))
 LIMIT_VALUES = [25,50,100,250,500,1000,5000,0]#Media Per/Channel, 0 = Unlimited
 try:
     MEDIA_LIMIT = LIMIT_VALUES[int(PTVL_SETTINGS.getSetting('MEDIA_LIMIT'))]
 except:
     MEDIA_LIMIT = 25
 
-# Globals
-metaget = metahandlers.MetaData(preparezip=False)
-PTVC_ICON = os.path.join(ADDON_PATH, 'icon.png')
-PTVC_FANART = os.path.join(ADDON_PATH, 'fanart.jpg')
-PTVL_ICON = os.path.join(ADDON_PATH,'resources','images','icon.png')
-PTVL_ICON_GRAY = os.path.join(ADDON_PATH,'resources','images','icon_gray.png')
-PC_ICON = os.path.join(ADDON_PATH,'resources','images','pseudocinema.jpg')
-
+# PC Settings Info
 SETTINGS2_LOC = xbmc.translatePath(os.path.join(ADDON_SETTINGS,'settings2.xml'))
 STRM_LOC = REAL_SETTINGS.getSetting('STRM_LOC')
 Path_Type = REAL_SETTINGS.getSetting('Path_Type')
@@ -70,13 +67,13 @@ Automatic_Update = REAL_SETTINGS.getSetting('Automatic_Update')
 Automatic_Update_Delay = REAL_SETTINGS.getSetting('Automatic_Update_Delay')
 Automatic_Update_Run = REAL_SETTINGS.getSetting('Automatic_Update_Run')
 
-REQUESTS_LOC = xbmc.translatePath(os.path.join(ADDON_SETTINGS, 'requests',''))
-SETTINGS_LOC = PTVL_SETTINGS.getAddonInfo('profile').decode('utf-8')
-LOCK_LOC = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'cache',''))
-XMLTV_CACHE_LOC = xbmc.translatePath(os.path.join(LOCK_LOC, 'xmltv',''))
-
-PTVLURL = 'http://pseudotvlive.com/ptvl/'
-PTVLXMLURL = PTVLURL + 'ptvlguide.zip'
+# Globals
+metaget = metahandlers.MetaData(preparezip=False)
+PTVC_ICON = os.path.join(ADDON_PATH, 'icon.png')
+PTVC_FANART = os.path.join(ADDON_PATH, 'fanart.jpg')
+PTVL_ICON = os.path.join(ADDON_PATH,'resources','images','icon.png')
+PTVL_ICON_GRAY = os.path.join(ADDON_PATH,'resources','images','icon_gray.png')
+PC_ICON = os.path.join(ADDON_PATH,'resources','images','pseudocinema.jpg')
 PTVLXML = os.path.join(XMLTV_CACHE_LOC, 'ptvlguide.xml')
 PTVLXMLZIP = os.path.join(LOCK_LOC, 'ptvlguide.zip')
 DEBUG = REAL_SETTINGS.getSetting('Enable_Debugging') == "true"
@@ -86,14 +83,16 @@ try:
     UPASS = REAL_SETTINGS.getSetting('Donor_UPASS')
 except:
     UPASS = "Username:Password"
-    
+PTVLURL = 'http://pseudotvlive.com/ptvl/'
 PTVLURLUP = 'http://%s@pseudotvlive.com/ptvl/' %UPASS
-
+PTVLXMLURL = PTVLURL + 'ptvlguide.zip'
+    
 # pyfscache globals
 cache_daily = FSCache(REQUESTS_LOC, days=1, hours=0, minutes=0)
 cache_weekly = FSCache(REQUESTS_LOC, days=7, hours=0, minutes=0)
 cache_monthly = FSCache(REQUESTS_LOC, days=28, hours=0, minutes=0)
 
+# Thumbs
 POPCORN_ICON = 'http://www.brocode.com/wp-content/uploads/2012/01/popcorn-movie-tickets.jpg'
 NEWR_ICON = 'http://static1.squarespace.com/static/52d95e01e4b04d4af95761e6/t/53838eb2e4b0476310fdcd8c/1401130675361/newreleases.png'
 MMOVIE_ICON = 'http://static.timefor.tv/imgs/epg/logos/movies4men1_big.png'
@@ -201,8 +200,28 @@ def uncleanString(string):
     newstr = newstr.replace('&gt;', '>')
     newstr = newstr.replace('&lt;', '<')
     return uni(newstr)
-    
+
+def cleanRating(rating):
+    log("cleanRating")
+    rating = uni(rating)
+    rating = cleanLabels(rating,'upper')
+    rating = rating.replace('RATED ','')
+    rating = rating.replace('US:','')
+    rating = rating.replace('UK:','')
+    rating = rating.replace('UNRATED','NR')
+    rating = rating.replace('NOTRATED','NR')
+    rating = rating.replace('UNKNOWN','NR')
+    rating = rating.replace('N/A','NR')
+    rating = rating.replace('NA','NR')
+    rating = rating.replace('APPROVED','NR')
+    rating = rating.replace('NOT RATED','NR')
+    rating = rating.replace('PASSE','NR')
+    rating = rating.replace('NRD','NR')
+    rating = rating.split(' ')[0]
+    return uni(rating[0:5])
+
 def cleanLabels(text, format=''):
+    text = uni(text)
     text = uni(text)
     text = re.sub('\[COLOR (.+?)\]', '', text)
     text = re.sub('\[/COLOR\]', '', text)
@@ -242,9 +261,10 @@ def cleanLabels(text, format=''):
     text = text.replace("/",'')
     text = text.replace("\ ",'')
     text = text.replace("/ ",'')
-    text = text.replace("/",'')
     text = text.replace("\\",'/')
     text = text.replace("//",'/')
+    text = text.replace('/"','')
+    text = text.replace('*NEW*','')
     text = text.replace('plugin.video.','')
     text = text.replace('plugin.audio.','')
 
@@ -256,7 +276,6 @@ def cleanLabels(text, format=''):
         text = text.lower()
     else:
         text = text
-        
     text = uncleanString(text.strip())
     return text  
 
@@ -539,25 +558,6 @@ def addLink(name,description,url,previous,mode,thumb=PTVC_ICON,ic=PTVC_ICON,fan=
         
     xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,totalItems=total)
 
-def parseYoutubeDuration(duration):
-    # try:
-    dur = 0
-    """ Parse and prettify duration from youtube duration format """
-    DURATION_REGEX = r'P(?P<days>[0-9]+D)?T(?P<hours>[0-9]+H)?(?P<minutes>[0-9]+M)?(?P<seconds>[0-9]+S)?'
-    NON_DECIMAL = re.compile(r'[^\d]+')
-    duration_dict = re.search(DURATION_REGEX, duration).groupdict()
-    converted_dict = {}
-    # convert all values to ints, remove nones
-    for a, x in duration_dict.iteritems():
-        if x is not None:
-            converted_dict[a] = int(NON_DECIMAL.sub('', x))
-    x = time.strptime(str(datetime.timedelta(**converted_dict)).split(',')[0],'%H:%M:%S')
-    dur = int(__total_seconds__(datetime.timedelta(hours=x.tm_hour,minutes=x.tm_min,seconds=x.tm_sec)))
-    log('parseYoutubeDuration, dur = ' + str(dur))
-    # except Exception,e:
-        # pass
-    return dur
-
 def getVimeoMeta(VMID):
     log('getVimeoMeta')
     api = 'http://vimeo.com/api/v2/video/%s.xml' % VMID
@@ -578,82 +578,143 @@ def getVimeoMeta(VMID):
     except:
         pass
     return title, description, duration, thumburl
-
-def getYoutubeMeta(YTID):
-    log('getYoutubeMeta ' + YTID)
-    # try:
-    YT_API_KEY = PTVL_SETTINGS.getSetting('YT_API_KEY')
-    YT_URL_Video = ('https://www.googleapis.com/youtube/v3/videos?key=%s&id=%s&part=snippet,id,statistics,contentDetails' % (YT_API_KEY, YTID))
+        
+def getYoutubeChname(YTID):
+    log('getYoutubeChname')
+    if YTID.startswith('UC'):
+        YT_URL_Video = ('https://www.googleapis.com/youtube/v3/channels?part=snippet%2CcontentDetails%2Cstatistics&id='+YTID+'&key='+YT_API_KEY)
+    else:
+        YT_URL_Video = ('https://www.googleapis.com/youtube/v3/search?part=snippet&q='+YTID+'&type=channel&key='+YT_API_KEY)
     detail = re.compile("},(.*?)}", re.DOTALL ).findall(read_url_cached(YT_URL_Video))
-    title = ''
-    description = ''
-    thumbnail = ''
-    duration = 0
-    Chname = ''
-    Chcat = '31'
     for f in detail:
-        items = re.search('"items" *:', f)
-        titles = re.search('"title" *: *"(.*?)",', f)
-        descriptions = re.search('"description" *: *"(.*?)",', f)
-        durations = re.search('"duration" *: *"(.*?)",', f)
-        thumbnails = re.search('"url" *: *"(.*?)",', f)
-        Chnames = re.search('"channelTitle" *: *"(.*?)",', f)
-        Chcats = re.search('"categoryId" *: *"(.*?)",', f)
-
-        if durations:
-            duration = durations.group(1)
-            duration = parseYoutubeDuration(duration)
-        if Chnames:
-            Chname = Chnames.group(1)
-        if Chcats:
-            Chcat = Chcats.group(1)
-            
-        if items:
-            if titles:
-                title = titles.group(1)
-            if descriptions:
-                description = descriptions.group(1)
-            if thumbnails:
-                thumbnail = thumbnails.group(1)
-    if title:
-        if not description:
-            description = title
-            
-    if Chcat and len(Chcat) > 0:                        
-        cats = {0 : '',
-            1 : 'Action & Adventure',
-            2 : 'Animation & Cartoons',
-            3 : 'Classic TV',
-            4 : 'Comedy',
-            5: 'Drama',
-            6 : 'Home & Garden',
-            7 : 'News',
-            8 : 'Reality & Game Shows',
-            9 : 'Science & Tech',
-            10 : 'Science Fiction',
-            11 : 'Soaps',
-            13 : 'Sports',
-            14 : 'Travel',
-            16 : 'Entertainment',
-            17 : 'Documentary',
-            20 : 'Nature',
-            21 : 'Beauty & Fashion',
-            23 : 'Food',
-            24 : 'Gaming',
-            25 : 'Health & Fitness',
-            26 : 'Learning & Education',
-            27 : 'Foreign Language',}
         try:
-            Genre = cats[int(Chcat)]
+            Titles = re.search('"title" *: *"(.*?)",', f)
+            channelTitles = re.search('"channelTitle" *: *"(.*?)",', f)
+            if Titles:
+                return Titles.group(1)
+            if channelTitles:
+                return channelTitles.group(1)
         except:
-            Genre = 'Unknown'
-            
-        log("getYoutubeMeta, return")
-        return [title, description, duration, thumbnail, Chname, Genre]
-    # except Exception,e:
-        # pass
+            pass
+    return YTID
 
-def getYoutubeUserID(YTid):
+def getYoutubeDetails(YTID):
+    log('getYoutubeDetails')
+    YT_URL_Video = ('https://www.googleapis.com/youtube/v3/videos?key=%s&id=%s&part=id,snippet,contentDetails,statistics' % (YT_API_KEY, YTID))
+    return re.compile("},(.*?)}", re.DOTALL ).findall(read_url_cached(YT_URL_Video))
+
+def getYoutubeMeta(id):
+    log('getYoutubeMeta ' + id)
+    detail = getYoutubeDetails(id)
+    for f in detail:
+        cats = {0 : 'NR',
+                1 : 'Film & Animation',
+                2 : 'Autos & Vehicles',
+                10 : 'Music',
+                15 : 'Pets & Animals',
+                17 : 'Sports',
+                18 : 'Short Movies',
+                19 : 'Travel & Events',
+                20 : 'Gaming',
+                21 : 'Videoblogging',
+                22 : 'People & Blogs',
+                23 : 'Comedy',
+                24 : 'Entertainment',
+                25 : 'News & Politics',
+                26 : 'Howto & Style',
+                27 : 'Education',
+                28 : 'Science & Technology',
+                29 : 'Nonprofits & Activism',
+                30 : 'Movies',
+                31 : 'Anime/Animation',
+                32 : 'Action/Adventure',
+                33 : 'Classics',
+                34 : 'Comedy',
+                35 : 'Documentary',
+                36 : 'Drama',
+                37 : 'Family',
+                38 : 'Foreign',
+                39 : 'Horror',
+                40 : 'Sci-Fi/Fantasy',
+                41 : 'Thriller',
+                42 : 'Shorts',
+                43 : 'Shows',
+                44 : 'Trailers'}
+        try:
+            contentDetail = re.search('"contentDetails" *:', f)
+            if contentDetail:
+                durations = re.search('"duration" *: *"(.*?)",', f)
+                definitions = re.search('"definition" *: *"(.*?)",', f)
+                captions = re.search('"caption" *: *"(.*?)",', f)
+                duration = parseYoutubeDuration((durations.group(1) or 0))
+                
+                if definitions and len(definitions.group(1)) > 0:
+                    hd = (definitions.group(1)) == 'hd'
+                    
+                if captions and len(captions.group(1)) > 0:
+                    cc = (captions.group(1)) == 'true'
+
+            categoryIds = re.search('"categoryId" *: *"(.*?)",', f)
+            if categoryIds and len(categoryIds.group(1)) > 0:
+                genre = cats[int(categoryIds.group(1))]
+                    
+            chname = ''
+            channelTitles = re.search('"channelTitle" *: *"(.*?)",', f)
+            if channelTitles and len(channelTitles.group(1)) > 0:
+                chname = channelTitles.group(1)
+
+            items = re.search('"items" *:', f)
+            if items:
+                titles = re.search('"title" *: *"(.*?)",', f)
+                descriptions = re.search('"description" *: *"(.*?)",', f)
+                publisheds = re.search('"publishedAt" *: *"(.*?)",', f)
+
+                if titles and len(titles.group(1)) > 0:
+                    title = (titles.group(1))
+                description = ''
+                if descriptions and len(descriptions.group(1)) > 0:
+                    description = ((descriptions.group(1)).split('http')[0]).replace('\\n',' ')
+                if publisheds and len(publisheds.group(1)) > 0:
+                    published = (publisheds.group(1))
+                    year = int(published[0:4])
+
+                if not description:
+                    description = title
+        except Exception,e:
+            log('getYoutubeMeta, failed! ' + str(e))
+
+    log("getYoutubeMeta, return")
+    return year, duration, description, title, chname, id, genre, hd, cc
+    
+def getYoutubeDuration(YTID):
+    log('getYoutubeDuration')
+    detail = getYoutubeDetails(YTID)
+    for f in detail:
+        durations = re.search('"duration" *: *"(.*?)",', f)
+        if durations:
+            return parseYoutubeDuration(durations.group(1))
+    return 0
+
+def parseYoutubeDuration(duration):
+    try:
+        dur = 0
+        """ Parse and prettify duration from youtube duration format """
+        DURATION_REGEX = r'P(?P<days>[0-9]+D)?T(?P<hours>[0-9]+H)?(?P<minutes>[0-9]+M)?(?P<seconds>[0-9]+S)?'
+        NON_DECIMAL = re.compile(r'[^\d]+')
+        duration_dict = re.search(DURATION_REGEX, duration).groupdict()
+        converted_dict = {}
+        # convert all values to ints, remove nones
+        for a, x in duration_dict.iteritems():
+            if x is not None:
+                converted_dict[a] = int(NON_DECIMAL.sub('', x))
+        x = time.strptime(str(datetime.timedelta(**converted_dict)).split(',')[0],'%H:%M:%S')
+        dur = int(__total_seconds__(datetime.timedelta(hours=x.tm_hour,minutes=x.tm_min,seconds=x.tm_sec)))
+        log('parseYoutubeDuration, dur = ' + str(dur))
+    except Exception,e:
+        pass
+    return dur
+
+def getYoutubeUserID( YTid):
     log("getYoutubeUserID, IN = " + YTid)
     YT_ID = 'UC'
     try:
@@ -668,10 +729,9 @@ def getYoutubeUserID(YTid):
             YT_ID = YT_IDS.group(1)
         log("getYoutubeUserID, OUT = " + YT_ID)
     except Exception,e:
-        log('getYoutubeUserID, Failed! ' + str(e), xbmc.LOGERROR)
+        log('getYoutubeUserID, failed! ' + str(e), xbmc.LOGERROR)
     return YT_ID
-        
-        
+
 def getYoutubeVideos(content_type, previous, YT_Type, YT_ID, YT_NextPG, limit, YTMSG):
     log("getYoutubeVideos, YT_Type = " + str(YT_Type) + ', YT_ID = ' + YT_ID) 
     cnt = 0
@@ -723,49 +783,44 @@ def getYoutubeVideos(content_type, previous, YT_Type, YT_ID, YT_NextPG, limit, Y
                 
             if VidIDS:
                 VidID = VidIDS.group(1)
-                YT_Meta = getYoutubeMeta(VidID)
+                year, duration, description, title, chname, id, genre, hd, cc = getYoutubeMeta(VidID)
 
-                if YT_Meta and YT_Meta[2] > 0:          
-                    try:
-                        Genre = cats[YT_Meta[5]]
-                    except:
-                        Genre = 'Unknown' 
-                    
-                    year, title, showtitle = getTitleYear(YT_Meta[0])
-            
-                    # setup infoList
-                    infoList = {}
-                    infoList['mediatype']     = content_type
-                    infoList['Duration']      = int(YT_Meta[2])
-                    infoList['Title']         = uni(showtitle)
-                    infoList['Year']          = int(year or '0')
-                    infoList['Genre']         = uni(YT_Meta[5])
-                    infoList['Plot']          = uni(YT_Meta[1])
-                    infoList['Studio']        = uni(YT_Meta[4])
-                    
-                    # setup infoArt
-                    infoArt = {}
-                    infoArt['thumb']        = (YT_Meta[3])
-                    infoArt['poster']       = (YT_Meta[3]) 
+                Stitle = cleanLabels(title)
+                year, title, showtitle = getTitleYear(Stitle, year)           
+                
+                if type == 'movie':
+                    Stitle = showtitle
+                else:
+                    Stitle = title
+                         
+                desc = cleanLabels(description)
+                genre = cleanLabels(genre)
+                
+                # setup infoList
+                infoList = {}
+                infoList['mediatype']     = content_type
+                infoList['Duration']      = int(duration)
+                infoList['Title']         = uni(Stitle)
+                infoList['Year']          = int(year or '0')
+                infoList['Genre']         = uni(genre)
+                infoList['Plot']          = uni(desc)
+                infoList['Studio']        = uni(chname)
+                
+                # setup infoArt
+                infoArt = {}
+                infoArt['thumb']          = ("http://i.ytimg.com/vi/"+VidID+"/mqdefault.jpg")
+                infoArt['poster']         = ("http://i.ytimg.com/vi/"+VidID+"/mqdefault.jpg")
 
-                    # setup infoList
-                    infoList = {}
-                    infoList['mediatype']     = content_type
-                    infoList['Duration']      = int(YT_Meta[2])
-                    infoList['Title']         = uni(showtitle)
-                    infoList['Year']          = int(year or '0')
-                    infoList['Plot']          = uni(YT_Meta[1])
+                if content_type in ['movie']:
+                    meta = metaget.get_meta(content_type, title, str(year)) 
+                    desc = uni(meta['plot']    or description)
+                    infoList['Plot']      = desc
+                    infoList['Genre']     = uni(meta['genre']   or genre)
+                    infoArt['thumb']      = (meta['cover_url']  or "http://i.ytimg.com/vi/"+VidID+"/mqdefault.jpg")
+                    infoArt['poster']     = (meta['cover_url']  or "http://i.ytimg.com/vi/"+VidID+"/mqdefault.jpg") 
 
-                    if content_type in ['movie']:
-                        print content_type
-                        meta = metaget.get_meta(content_type, title, str(year)) 
-                        infoList['Plot']        = uni(meta['plot'] or YT_Meta[1])
-                        infoList['Genre']       = uni(meta['genre'] or YT_Meta[5])
-                        infoArt['thumb']        = (meta['cover_url']  or YT_Meta[3])
-                        infoArt['poster']       = (meta['cover_url']  or YT_Meta[3]) 
-
-                    cnt += 1
-                    addLink(showtitle,YT_Meta[1],youtube_player_ok + VidID,'previous',5001,infoList=infoList,infoArt=infoArt,total=len(detail))
+                cnt += 1
+                addLink(showtitle,desc,youtube_player_ok + VidID,'previous',5001,infoList=infoList,infoArt=infoArt,total=len(detail))
     except Exception,e:
         log('getYoutubeVideos, Failed!, ' + str(e))
                     
@@ -1329,8 +1384,6 @@ def runWriteSettings2():
 
 def fillExternalList(type, source='', list='Community'):
     log('fillExternalList')
-    print list
-    print source
     responce = []
     TMPExternalList = []
     ExternalNameList = []

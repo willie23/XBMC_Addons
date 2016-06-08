@@ -587,26 +587,26 @@ def getPopcornItems(url):
         
     feed = feedparser.parse(line[0] + url)
     for i in range(0,len(feed['entries'])):
+        # try:
+        title = feed['entries'][i].title
+        link = str(feed['entries'][i].links[0])
+        link = str(link.split("{'href': u'")[1])
+        link = str(link.split("', ")[0])
+        description = uni(feed['entries'][i].description)
+
+        #Parse Movie info for watch link
         try:
-            title = feed['entries'][i].title
-            link = str(feed['entries'][i].links[0])
-            link = str(link.split("{'href': u'")[1])
-            link = str(link.split("', ")[0])
-            description = str(feed['entries'][i].description)
+            link = read_url_cached(link)
+            imdbid = str(re.compile('<a href="http://www.imdb.com/title/(.+?)"').findall(link)) 
+            imdbid = imdbid.replace("['", "").replace("']", "")
+            watch = str(re.compile('<a href="/watch/(.+?)"').findall(link))
+            watch = watch.replace("['", "").replace("']", "")
+            watch = line[0] + '/watch/' + watch
+        except Exception,e:
+            pass
 
-            #Parse Movie info for watch link
-            try:
-                link = read_url_cached(link)
-                imdbid = str(re.compile('<a href="http://www.imdb.com/title/(.+?)"').findall(link)) 
-                imdbid = imdbid.replace("['", "").replace("']", "")
-                watch = str(re.compile('<a href="/watch/(.+?)"').findall(link))
-                watch = watch.replace("['", "").replace("']", "")
-                watch = line[0] + '/watch/' + watch
-            except Exception,e:
-                pass
-
-            #Parse watch link for youtube link
-            # try:
+        #Parse watch link for youtube link
+        try:
             link = read_url_cached(watch)
             tubelink = str(re.compile('location = "(.+?)"').findall(link)[0])
             xbmclink = tubelink.replace("https://", "").replace("http://", "").replace("www.youtube.com/watch?v=", youtube_player_ok).replace("http://www.youtube.com/watch?hd=1&v=", youtube_player_ok)
@@ -618,8 +618,8 @@ def getPopcornItems(url):
             tubeID = tubelink.replace("https://", "").replace("http://", "").replace("www.youtube.com/watch?v=", "").replace("http://www.youtube.com/watch?hd=1&v=", "")
             tubeAPI = 'http://gdata.youtube.com/feeds/api/videos?max-results=1&q=' + tubeID
             tubefeed = feedparser.parse(tubeAPI)
-            showtitle, showdescription, showduration, showthumbnail, showChname, showGenre = getYoutubeMeta(tubeID)
-            
+            year, showduration, showdescription, showtitle, showChname, id, showGenre, hd, cc = getYoutubeMeta(tubeID)
+            showthumbnail = "http://i.ytimg.com/vi/"+tubeID+"/mqdefault.jpg"
             if tubefeed: 
                 log("popcorn, tubeAPI = " + tubeAPI)   
                 # parse missing info from youtube
