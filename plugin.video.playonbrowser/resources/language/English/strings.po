@@ -25,22 +25,26 @@ msgid "Playback"
 msgstr ""
 
 msgctxt "#44002"
-msgid "Play Using UPNP"
+msgid "Play using UPNP"
+msgstr ""
+
+msgctxt "#42004"
+msgid "Options:"
 msgstr ""
 
 msgctxt "#44003"
-msgid "Play Direct Link [Tokens Expire]"
+msgid "Play Direct Link [Fast playback/Tokens expire]"
 msgstr ""
 
 msgctxt "#42009"
-msgid "Enable Meta"
+msgid "Enable Metadata [incl. Trakt scrobbling]"
 msgstr ""
 
 msgctxt "#42008"
-msgid "Enable Cache"
+msgid "Enable Cache [Fast navigation]"
 msgstr ""
 
-msgctxt "#42008"
+msgctxt "#42097"
 msgid "Library Integration"
 msgstr ""
 
@@ -65,5 +69,5 @@ msgid "PlayOn UPNP ID"
 msgstr ""
 
 msgctxt "#42007"
-msgid "Enable Debugging"
+msgid "Enable Debugging [Log errors]"
 msgstr ""

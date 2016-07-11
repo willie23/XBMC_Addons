@@ -1,5 +1,10 @@
-v1.0.11
-- Playback adjustments
+v1.0.13
+- Auto detect upnp id change.
+- Enhanced Metadata & Artwork w/trakt scrobbling support (When available).
+- Improved PseudoTV Live support, auto-disable "Play Direct Link", PTVL avoids using expiring tokens.
+
+v1.0.12
+- Playback adjustments.
 
 v1.0.11
 - HD Posters
