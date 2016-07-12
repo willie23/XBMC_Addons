@@ -80,7 +80,7 @@
         <string id="30227">Show info when show starts</string>
         <string id="30222">Info window duration (seconds)</string>   
         <string id="30224">Always show channel bug</string>
-        <string id="30228">Use Unaltered Channel bug</string>
+        <string id="30228">Use color channel bug</string>
         <string id="30226">Show Coming Up Next box</string>
         <string id="30229">Use Classic Coming Up Next box</string>
         <string id="30329">Enable Subtitles when Available</string>
@@ -93,8 +93,9 @@
     <string id="30709">Enter IP:Port</string>
     <string id="30710">Enter API KEY</string>
     <string id="30711">Enable CouchPotato</string>
-    <string id="30719">Configure Simple Downloader</string>
-    <string id="30720">Configure Youtube Downloader</string>
+    <string id="30719">Configure: Simple Downloader</string>
+    <string id="30720">Configure: Youtube Downloader</string>
+    <string id="30723">Configure: Metahandler</string>
     <string id="31110">USTVnow:</string>
     <string id="31111">Stream Quality</string>
     <string id="31112">Stream Type</string>

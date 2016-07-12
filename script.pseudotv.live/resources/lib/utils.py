@@ -156,14 +156,17 @@ def CleanCHnameSeq(text):
 def FindLogo(chtype, chname, mediapath=None):
     log('utils: FindLogo')
     if FIND_LOGOS == True and isLowPower() != True:
-        FindLogoThread = threading.Timer(0.5, FindLogo_Thread, [chtype, chname, mediapath])
-        if FindLogoThread.isAlive():
-            FindLogoThread.cancel()
-            FindLogoThread.join()
-        FindLogoThread = threading.Timer(0.5, FindLogo_Thread, [chtype, chname, mediapath])
-        FindLogoThread.name = "FindLogoThread"
-        FindLogoThread.start()
-
+        try:
+            FindLogoThread = threading.Timer(0.5, FindLogo_Thread, [chtype, chname, mediapath])
+            if FindLogoThread.isAlive():
+                FindLogoThread.cancel()
+                FindLogoThread.join()
+            FindLogoThread = threading.Timer(0.5, FindLogo_Thread, [chtype, chname, mediapath])
+            FindLogoThread.name = "FindLogoThread"
+            FindLogoThread.start()
+        except Exception,e:
+            log('utils: FindLogo, failed! ' + str(e))
+            
 def FindLogo_Thread(chtype, chname, mediapath):
     url = False
     LogoName = chname + '.png'
@@ -395,12 +398,15 @@ def POP_MSG():
                  
 def UpdateRSS():
     log('utils: UpdateRSS')
-    UpdateRSSthread = threading.Timer(0.5, UpdateRSS_Thread)
-    if UpdateRSSthread.isAlive():
-        UpdateRSSthread.cancel() 
-    UpdateRSSthread = threading.Timer(0.5, UpdateRSS_Thread)
-    UpdateRSSthread.name = "UpdateRSSthread"
-    UpdateRSSthread.start()
+    try:
+        UpdateRSSthread = threading.Timer(0.5, UpdateRSS_Thread)
+        if UpdateRSSthread.isAlive():
+            UpdateRSSthread.cancel() 
+        UpdateRSSthread = threading.Timer(0.5, UpdateRSS_Thread)
+        UpdateRSSthread.name = "UpdateRSSthread"
+        UpdateRSSthread.start()
+    except Exception,e:
+        log('utils: UpdateRSS, failed! ' + str(e))
          
 def UpdateRSS_Thread():
     log('utils: UpdateRSS_Thread')
@@ -587,13 +593,15 @@ def download_silent_thread(url, dest):
 
 def download_silent(url, dest):
     log('download_silent')
-    download_silentThread = threading.Timer(0.5, download_silent_thread, [url, dest])
-    if download_silentThread.isAlive():
-        download_silentThread.cancel()
-        download_silentThread.join()
-    download_silentThread = threading.Timer(0.5, download_silent_thread, [url, dest])
-    download_silentThread.name = "download_silentThread"
-    download_silentThread.start()
+    try:
+        download_silentThread = threading.Timer(0.5, download_silent_thread, [url, dest])
+        if download_silentThread.isAlive():
+            download_silentThread.join()
+        download_silentThread = threading.Timer(0.5, download_silent_thread, [url, dest])
+        download_silentThread.name = "download_silentThread"
+        download_silentThread.start()
+    except Exception,e:
+        log('utils: download_silent, failed! ' + str(e))
 
 @cache_daily
 def getRequest(url, udata=None, headers=httpHeaders, dopost = False):
@@ -955,15 +963,17 @@ def get_Kodi_JSON(params):
     return json.loads(json_query)
     
 def isPlugin(plugin):
+    status = False
     if plugin[0:9] == 'plugin://':
         plugin = plugin.replace("plugin://","")
         addon = splitall(plugin)[0]
-        log("utils: plugin id = " + addon)
     else:
         addon = plugin
-    if addon in chkPSS(PSS_API_KEY):
-        return False
-    return xbmc.getCondVisibility('System.HasAddon(%s)' % addon) == 1
+        
+    if addon not in chkPSS(PSS_API_KEY):
+        status = xbmc.getCondVisibility('System.HasAddon(%s)' % addon) == 1
+    log("utils: plugin id = " + addon + ', Installed = ' + str(status))
+    return status
 
 def videoIsPlaying():
     return xbmc.getCondVisibility('Player.HasVideo')
@@ -1121,7 +1131,6 @@ def modification_date(filename):
     return datetime.datetime.fromtimestamp(t)
     
 def getSize(file):
-    log('utils: getSize')
     if xbmcvfs.exists(file):
         try:
             f = xbmcvfs.File(file)
@@ -1129,6 +1138,7 @@ def getSize(file):
             f.close()
         except:
             size = 0
+        log('utils: getSize = ' + str(size))
         return size
         
 def replaceAll(file,searchExp,replaceExp):
@@ -1413,14 +1423,12 @@ def chkLowPower():
         if platform in ['ATV','iOS','XBOX','rPi','Android']:
             setProperty("PTVL.LOWPOWER","true")
             REAL_SETTINGS.setSetting('AT_LIMIT', "0")
-            REAL_SETTINGS.setSetting('MEDIA_LIMIT', "1")
+            REAL_SETTINGS.setSetting('MEDIA_LIMIT', "2")
             REAL_SETTINGS.setSetting('SFX_Enabled', "false")
             REAL_SETTINGS.setSetting('EPG.xInfo', "false")
-            REAL_SETTINGS.setSetting('UNAlter_ChanBug', "true")
+            REAL_SETTINGS.setSetting('ColorChannelBug', "true")
             REAL_SETTINGS.setSetting('Disable_Watched', "false")
             REAL_SETTINGS.setSetting('Idle_Screensaver', "false")
-            REAL_SETTINGS.setSetting('EnhancedGuideData', "false")
-            REAL_SETTINGS.setSetting('accurate_duration', "false")
             REAL_SETTINGS.setSetting('sickbeard.enabled', "false")
             REAL_SETTINGS.setSetting('couchpotato.enabled', "false")
             infoDialog("Settings Optimized for Performance")
@@ -1465,7 +1473,6 @@ def ClearCache(type='Files'):
         try:    
             shutil.rmtree(ART_LOC)
             log('utils: Removed ART_LOC')  
-            REAL_SETTINGS.setSetting('ClearLiveArtCache', "true") 
             infoDialog("Artwork Folder Cleared")
         except:
             pass
@@ -1581,6 +1588,7 @@ def HandleUpgrade():
     # Call showChangeLog like this to workaround bug in openElec, *Thanks spoyser
     xbmc.executebuiltin("RunScript(" + ADDON_PATH + "/utilities.py,-showChangelog)")
           
+    REAL_SETTINGS.setSetting('ClearLiveArt', "true")
     # Force Channel rebuild
     # REAL_SETTINGS.setSetting('ForceChannelReset', 'true')
     # okDialog("Forced Channel Reset Required","Please Be Patient while rebuilding channels...",header="PseudoTV Live - Notification") 
@@ -1907,13 +1915,18 @@ def isPlayOn():
     return isPlugin('plugin.video.playonbrowser')
     
 def isUSTVnow():
-    return isPlugin('plugin.video.ustvnow')
+    if isPlugin('plugin.video.ustvnow'):
+        return 'plugin.video.ustvnow'
+    elif isPlugin('plugin.video.ustvnow.tva'):
+        return 'plugin.video.ustvnow.tva'
+    else:
+        return False
 
 def listXMLTV():
     log("utils: listXMLTV")
     xmltvLst = []   
     EXxmltvLst = ['pvr','Enter URL','scheduledirect (Coming Soon)']
-    if isUSTVnow() == True:
+    if isUSTVnow() != False:
         EXxmltvLst.append('ustvnow')
     dirs,files = xbmcvfs.listdir(XMLTV_CACHE_LOC)
     dir,file = xbmcvfs.listdir(XMLTV_LOC)
@@ -2121,9 +2134,12 @@ def egTrigger_Thread(message, sender):
        
 def egTrigger(message, sender='PTVL'):
     log("egTrigger")
-    egTriggerTimer = threading.Timer(0.5, egTrigger_Thread, [message, sender])      
-    if egTriggerTimer.isAlive():
-        egTriggerTimer.cancel()
-    egTriggerTimer = threading.Timer(0.5, egTrigger_Thread, [message, sender])
-    egTriggerTimer.name = "egTriggerTimer"   
-    egTriggerTimer.start()   
+    try:
+        egTriggerTimer = threading.Timer(0.5, egTrigger_Thread, [message, sender])      
+        if egTriggerTimer.isAlive():
+            egTriggerTimer.cancel()
+        egTriggerTimer = threading.Timer(0.5, egTrigger_Thread, [message, sender])
+        egTriggerTimer.name = "egTriggerTimer"   
+        egTriggerTimer.start() 
+    except Exception,e:
+        log('utils: egTrigger, failed! ' + str(e))  

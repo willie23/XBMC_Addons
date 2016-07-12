@@ -111,8 +111,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         self.currentTimeBar = xbmcgui.ControlImage(timex, timey, timew, timeh, self.timeButtonBar) 
         self.addControl(self.currentTime)
         self.addControl(self.currentTimeBar)
-
-        setProperty("PTVL.VideoWindow","true")
+        
         textcolor = int(getProperty("EPG.textColor"), 16)            
         if textcolor > 0:
             self.textcolor = hex(textcolor)[2:]
@@ -126,7 +125,8 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             self.shadowColor = hex(shadowcolor)[2:]
         
         self.textfont = getProperty("EPG.textFont")
-
+        self.toggleVideoWindow(getProperty('PTVL.VideoWindow') == "true")
+        
         try:
             if self.setChannelButtons(time.time(), self.MyOverlayWindow.currentChannel) == False:
                 self.log('Unable to add channel buttons')
@@ -169,7 +169,8 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                 self.focusTime = int(starttime + 30)
                 self.focusEndTime = endtime
             self.focusRow = 2
-            self.setShowInfo()
+            self.setShowInfo()                
+            self.FEEDtoggle()
         except Exception,e:
             self.log("Unknown EPG Initialization exception " + str(e), xbmc.LOGERROR)
             self.log(traceback.format_exc(), xbmc.LOGERROR)          
@@ -183,8 +184,6 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                 self.channelLabel[i].setVisible(False)
             except:
                 pass
-                
-        self.FEEDtoggle()
         self.log('onInit return')
           
 
@@ -196,6 +195,11 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
         pass
 
 
+    def toggleVideoWindow(self, state):
+        self.log('toggleVideoWindow = ' + str(state))
+        self.getControl(9000).setVisible(state)
+        
+        
     # set the time labels
     def setTimeLabels(self, thetime):
         now = datetime.datetime.fromtimestamp(thetime)
@@ -453,9 +457,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
             # if chtype != 8:             
                 # self.channelButtons[row].append(xbmcgui.ControlButton(basex, basey, basew, baseh, '', focusTexture=self.textureButtonFocus, noFocusTexture=self.textureButtonNoFocus, alignment=4, shadowColor=self.shadowColor, font=self.textfont, textColor=self.textcolor, focusedColor=self.focusedcolor))
                 # return
-            
-            # playlistpos = int(xbmc.PlayList(xbmc.PLAYLIST_MUSIC).getposition())
-            playlistpos = self.MyOverlayWindow.channels[curchannel - 1].playlistPosition
+            playlistpos = int(xbmc.PlayList(xbmc.PLAYLIST_VIDEO).getposition())
             self.log('setButtons, playlistpos = ' + str(playlistpos))
             
             # if the channel is paused, then only 1 button needed
@@ -535,7 +537,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                         # elif chtype >= 10 and self.MyOverlayWindow.channels[curchannel - 1].getItemDuration(playlistpos) < BYPASS_EPG_SECONDS:
                             # shouldskip = True
                             # tmpdur = 0
-                        elif chtype not in [8,9]:
+                        elif chtype not in IGNORE_SEEKTIME_CHTYPE:
                             nextlen = self.MyOverlayWindow.channels[curchannel - 1].getItemDuration(playlistpos + 1)
                             prevlen = self.MyOverlayWindow.channels[curchannel - 1].getItemDuration(playlistpos - 1)
 
@@ -1278,7 +1280,7 @@ class EPGWindow(xbmcgui.WindowXMLDialog):
                 # The only way this isn't true is if the current channel is curchannel since
                 # it could have been fast forwarded or rewinded (rewound)?
                 if channel == self.MyOverlayWindow.currentChannel: #currentchannel epg
-                    playlistpos = xbmc.PlayList(xbmc.PLAYLIST_MUSIC).getposition()   
+                    playlistpos = xbmc.PlayList(xbmc.PLAYLIST_MUSIC).getposition()
                     #Live TV pull date from the playlist entry
                     if chtype == 8 and len(self.MyOverlayWindow.channels[channel - 1].getItemtimestamp(playlistpos)) > 0:
                         tmpDate = self.MyOverlayWindow.channels[channel - 1].getItemtimestamp(playlistpos)

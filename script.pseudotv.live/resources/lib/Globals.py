@@ -38,7 +38,7 @@ ADDON_VERSION = REAL_SETTINGS.getAddonInfo('version')
 ICON = os.path.join(ADDON_PATH, 'icon.png')
 FANART = os.path.join(ADDON_PATH, 'fanart.jpg')
 DEBUG = REAL_SETTINGS.getSetting('enable_Debug') == "true"
-PTVL_SKINVER = '0.7.7'
+PTVL_SKINVER = '0.7.8'
 
 def log(msg, level = xbmc.LOGDEBUG):
     if level == xbmc.LOGDEBUG:
@@ -97,7 +97,7 @@ NOTIFICATION_DISPLAY_TIME = 6 #in seconds
 REMINDER_COUNTDOWN = 15 #secs
 ONNOW_REFRESH = 450 #secs
 ONNOW_REFRESH_LOW = 900 #secs
-SETTOP_REFRESH = 10800 #secs
+SETTOP_REFRESH = 4500 #secs, has to be >= 4500
 IDLE_TIMER = 180  #secs (3min)
 IDLE_DELAY = 30 #secs
 REMINDER_DELAY = 60 #secs
@@ -229,11 +229,10 @@ else:
 ADDON_SETTINGS = Settings.Settings()
 NOTIFY = REAL_SETTINGS.getSetting('EnableNotify') == "true"
 SETTOP = REAL_SETTINGS.getSetting("EnableSettop") == "true"
-ENHANCED_DATA = REAL_SETTINGS.getSetting('EnhancedGuideData') == 'true'
-FIND_LOGOS = REAL_SETTINGS.getSetting('Enable_FindLogo') == "true" 
-ACU_DUR = REAL_SETTINGS.getSetting('accurate_duration') == 'true'
+FIND_LOGOS = REAL_SETTINGS.getSetting('Enable_FindLogo') == "true"
 CACHE_ENABLED = REAL_SETTINGS.getSetting('Cache_Enabled') == 'true'
-
+ENHANCED_DATA = xbmcgui.Window(10000).getProperty('PTVL.LOWPOWER') == "false"
+    
 # Settings2 filepaths
 SETTINGS_FLE = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.xml'))
 SETTINGS_FLE_DEFAULT_SIZE = 100 #bytes
@@ -247,14 +246,15 @@ guide = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "guide",2
 daily = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "daily",24)
 weekly = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "weekly",24 * 7)
 monthly = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "monthly",((24 * 7) * 4))
+durationCache = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "duration",((24 * 7) * 4))
 
 # pyfscache globals
 cache_daily = FSCache(REQUESTS_LOC, days=1, hours=0, minutes=0)
 cache_weekly = FSCache(REQUESTS_LOC, days=7, hours=0, minutes=0)
 cache_monthly = FSCache(REQUESTS_LOC, days=28, hours=0, minutes=0)
 
-IMAGE_TYPES = ['.jpg', '.jpeg', '.png', '.tif', '.tiff', '.gif', '.pcx', '.bmp', '.tga', '.ico', '.nef']
 MUSIC_TYPES = ['.mp3','.flac','.mp4']
+IMAGE_TYPES = ['.jpg', '.jpeg', '.png', '.tif', '.tiff', '.gif', '.pcx', '.bmp', '.tga', '.ico', '.nef']
 MEDIA_TYPES = ['.avi', '.mp4', '.m4v', '.3gp', '.3g2', '.f4v', '.mov', '.mkv', '.flv', '.ts', '.m2ts', '.mts', '.strm']
 BCT_TYPES = ['Bumper', 'Commercial', 'Trailer', 'Rating', 'PseudoCinema', 'Intro', 'Cellphone', 'Coming Soon', 'PreMovie', 'Feature Presentation', 'Intermission']
 
@@ -355,6 +355,11 @@ ACTION_MOUSE_DOUBLE_CLICK = 103
 ACTION_MOUSE_WHEEL_UP = 104
 ACTION_MOUSE_WHEEL_DOWN = 105
 ACTION_MOUSE_MOVE = 107
+# player
+ACTION_MUTE = 91
+ACTION_STOP = 13
+ACTION_PAUSE = 12
+ACTION_PLAYER_PLAYPAUSE = 249 #Play/pause. If playing it pauses, if paused it plays.
 # actions
 ACTION_SHOW_EPG = [ACTION_GESTURE_SWIPE_RIGHT,ACTION_MOUSE_DOUBLE_CLICK]
 ACTION_SHOW_INFO = [11,ACTION_GESTURE_SWIPE_LEFT,ACTION_MOUSE_LEFT_CLICK]
@@ -367,9 +372,6 @@ ACTION_PAGEDOWN = [6,ACTION_GESTURE_SWIPE_DOWN_TEN,ACTION_MOUSE_WHEEL_DOWN]
 ACTION_SELECT_ITEM = [7]
 ACTION_PREVIOUS_MENU = [9, 10, 92, 247, 257, 275, 61467, 61448]
 ACTION_DELETE_ITEM = 80
-ACTION_PAUSE = 12
-ACTION_PLAYER_PLAYPAUSE = 249 #Play/pause. If playing it pauses, if paused it plays.
-ACTION_STOP = 13
 ACTION_OSD = 124
 ACTION_NUMBER_0 = 58
 ACTION_NUMBER_1 = 59
@@ -392,8 +394,8 @@ ACTION_SHIFT = 118
 ACTION_SYMBOLS = 119
 ACTION_CURSOR_LEFT  = 120
 ACTION_CURSOR_RIGHT = 121
+ACTION_NEXT_ITEM = [14]
 #unused
-ACTION_NEXT_ITEM = 14
 ACTION_PREV_ITEM = 15
 ACTION_STEP_FOWARD = 17
 ACTION_STEP_BACK = 18
@@ -411,7 +413,6 @@ ACTION_TELETEXT_RED = 215
 ACTION_TELETEXT_GREEN = 216
 ACTION_TELETEXT_YELLOW = 217
 ACTION_TELETEXT_BLUE = 218
-#define ACTION_MUTE                   91
 #define ACTION_CHANNEL_SWITCH         183 #last channel?
 #define ACTION_TOGGLE_WATCHED         200 // Toggle watched status (videos)
 #define ACTION_TOGGLE_DIGITAL_ANALOG  202 // switch digital <-> analog
@@ -425,8 +426,9 @@ UTC_XMLTV = []
 # Force settop update to rebuild playlists and not to append content.
 FORCE_MAKENEW = [8,16]
 
-# Ignore seeking for live feeds and other chtypes that don't support it.
-IGNORE_SEEKTIME = [8,9]
+# Ignore seeking for live feeds and other chtypes/plugins that don't support it.
+IGNORE_SEEKTIME_CHTYPE = [8,9]
+IGNORE_SEEKTIME_PLUGIN = []
 
 # Duration in seconds "stacked" for chtypes >= 10
 BYPASS_EPG_SECONDS = 900
