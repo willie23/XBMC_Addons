@@ -1,4 +1,4 @@
-#   Copyright (C) 2015 Kevin S. Graer
+#   Copyright (C) 2016 Kevin S. Graer
 #
 #
 # This file is part of PseudoTV Live.
@@ -19,8 +19,6 @@
 import sys, os
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 
-from urllib import unquote
-from xml.dom.minidom import parse, parseString
 from resources.lib.utils import *
 from resources.lib.Globals import *
 from resources.lib.ChannelList import ChannelList
@@ -219,18 +217,19 @@ class Main:
             
         elif self.chantype == 8:
             XMLTV = listXMLTV()
+            xmltvFle = False
             if XMLTV:
                 xmltvFle = xmltvflePath(XMLTV)
+                if xmltvFle:
+                    self.channame, self.setting1 = self.chnlst.findZap2itID(self.chnlst.cleanLabels(self.Label), xbmc.translatePath(xmltvFle))
+                    self.channame = self.Label
+                    self.setting2 = self.Path
+                    self.setting3 = XMLTV
             else:
-                self.chantype = 9
-                self.buildChannel()
+                return
+                # self.chantype = 9
+                # self.buildChannel()
             
-            if xmltvFle:
-                self.channame, self.setting1 = self.chnlst.findZap2itID(self.chnlst.cleanLabels(self.Label), xbmc.translatePath(xmltvFle))
-                self.channame = self.Label
-                self.setting2 = self.Path
-                self.setting3 = XMLTV
-                
         elif self.chantype == 9:
             self.setting1 = '5400'
             self.setting2 = self.Path

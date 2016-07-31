@@ -1,4 +1,4 @@
-#   Copyright (C) 2015 Kevin S. Graer
+#   Copyright (C) 2016 Kevin S. Graer
 #
 #
 # This file is part of PseudoTV Live.
@@ -17,10 +17,8 @@
 # along with PseudoTV Live.  If not, see <http://www.gnu.org/licenses/>.
 
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs
-import subprocess, os, sys, re, random
-import datetime, time
+import datetime, time, subprocess, os, sys, re, random
 
-from urllib import unquote, quote
 from xml.dom.minidom import parse, parseString
 from resources.lib.utils import *
 from resources.lib.Globals import *
@@ -32,7 +30,7 @@ try:
     buggalo.SUBMIT_URL = 'http://pseudotvlive.com/buggalo-web/submit.php'
 except:
     pass
-     
+
 class ConfigWindow(xbmcgui.WindowXMLDialog):
     def __init__(self, *args, **kwargs):
         self.log("__init__")
@@ -41,6 +39,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
             setProperty("PseudoTVConfigRunning", "True")
             self.madeChanges = 0
             self.showingList = True
+            setProperty("PTVL.showingList","True")
             self.channel = 0
             self.channel_type = 9999
             self.setting1 = ''
@@ -298,6 +297,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         self.setFocusId(102)
         self.getControl(105).setVisible(True)
         self.showingList = True
+        setProperty("PTVL.showingList","True")
         self.updateListing(self.channel)
         self.listcontrol.selectItem(self.channel - 1)
 
@@ -344,9 +344,6 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
     def setChlogo(self, channel):
         self.log("setChlogo") 
         chname = self.getChname(channel)
-        # if chname:
-            # xbmc.executebuiltin("RunScript(script.tvlogo.downloader,/context/%s)" % (urllib.quote(chname)) )
-        # else:
         # todo icon selectDialog from tvlogodb
         if chname:
             retval = browse(1, "Select %s's replacement logo" %(chname), "files", ".png")
@@ -378,11 +375,13 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         self.channel = self.listcontrol.getSelectedPosition() + 1     
         
         if controlId == 102:        # Channel list entry selected
+            setProperty("PTVL.Window","ChannelEntry")
             self.getControl(105).setVisible(False)
             self.getControl(106).setVisible(True)
             self.changeChanType(self.channel)
             self.setFocusId(110)
             self.showingList = False
+            setProperty("PTVL.showingList","False")
             
         if controlId == 9:
             self.setChlogo(self.listcontrol.getSelectedPosition() + 1)
@@ -427,7 +426,8 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                 self.hideChanDetails()
                 ADDON_SETTINGS.writeSettings()  
                 self.listSubmit(self.channel)
-                
+        elif controlId == 116:      # Preview button
+            self.previewChannel(self.listcontrol.getSelectedPosition() + 1)
         # Custom Playlist
         elif controlId == 330:      # Playlist-type channel, playlist button
             retval = browse(1, "Channel " + str(self.channel) + " Playlist", "files", ".xsp", False, False, "special://videoplaylists/")
@@ -464,28 +464,33 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         elif controlId == 140:      # TV Network channel
             select = selectDialog(self.networkList, 'Select TV Network')
             if select != -1:
+                self.setChname(self.networkList[select])
                 self.getControl(140).setLabel('Network:', label2=self.networkList[select])
                 self.setFocusId(141)
                 
         elif controlId == 150:      # Movie Studio channel
             select = selectDialog(self.studioList, 'Select Movie Studio')
             if select != -1:
+                self.setChname(self.studioList[select])
                 self.getControl(150).setLabel('Studio:', label2=self.studioList[select])
                 
         elif controlId == 160:      # TV Genre channel
             select = selectDialog(self.showGenreList, 'Select TV Genre')
             if select != -1:
+                self.setChname(self.showGenreList[select])
                 self.getControl(160).setLabel('Genre:', label2=self.showGenreList[select])
                 self.setFocusId(161)
                 
         elif controlId == 170:      # Movie Genre channel
             select = selectDialog(self.movieGenreList, 'Select Movie Genre')
             if select != -1:
+                self.setChname(self.movieGenreList[select])
                 self.getControl(170).setLabel('Genre:', label2=self.movieGenreList[select])
         
         elif controlId == 180:      # Mixed Genre channel
             select = selectDialog(self.mixedGenreList, 'Select Mixed Genre')
             if select != -1:
+                self.setChname(self.mixedGenreList[select])
                 self.getControl(180).setLabel('Genre:', label2=self.mixedGenreList[select])
                 self.setFocusId(181)
                 
@@ -592,7 +597,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
                 self.setFocusId(221)
                 xbmc.executebuiltin('SendClick(221)')
       
-        elif controlId == 221:    # InternetTV Browse Folders
+        elif controlId == 221:    # InternetTV Channel Name
             if len(self.getControl(225).getLabel()) > 1:
                 title, path = self.fillSources('InternetTV', self.getControl(220).getLabel2(), self.getControl(225).getLabel())
             else:
@@ -791,6 +796,17 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         self.log("onClick return")
 
 
+    def previewChannel(self, channel):
+        self.log("previewChannel")
+        self.saveSettings()   
+        chtype = int(ADDON_SETTINGS.getSetting("Channel_" + str(channel) + "_type"))        
+        setting1 = ADDON_SETTINGS.getSetting("Channel_" + str(channel) + "_1")
+        setting2 = ADDON_SETTINGS.getSetting("Channel_" + str(channel) + "_2")
+        setting3 = ADDON_SETTINGS.getSetting("Channel_" + str(channel) + "_3")
+        setting4 = ADDON_SETTINGS.getSetting("Channel_" + str(channel) + "_4")
+        print self.chnlst.makeChannelList(channel, chtype, setting1, setting2, setting3, setting4, False, True)
+        
+        
     def changeListData(self, thelist, controlid, val):
         self.log("changeListData " + str(controlid) + ", " + str(val))
         curval = self.getControl(controlid).getLabel()
@@ -1038,7 +1054,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
         elif chantype == 9:
             self.setFocusId(220)
             if len(chansetting2) != 0:
-                self.getControl(221).setLabel('Channel Name:', label2=channame)
+                self.getControl(221).setLabel('Channel Name:', label2='Click to Browse') 
                 self.getControl(225).setLabel(chansetting2)
                 self.getControl(222).setLabel('Show Title:', label2=chansetting3)
                 self.getControl(223).setLabel('Show Description:', label2=chansetting4)
@@ -1501,6 +1517,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
 
         
     def setChname(self, name, channel=None):
+        name = name.strip(' ').rstrip(' ')
         if not channel:
             channel = self.channel
         self.log("setChname, channel = " + str(channel))

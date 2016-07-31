@@ -29,6 +29,7 @@ except Exception,e:
     import storageserverdummy as StorageServer
 
 # Plugin Info
+PTVL_SKINVER = '0.7.9'
 ADDON_ID = 'script.pseudotv.live'
 REAL_SETTINGS = xbmcaddon.Addon(id=ADDON_ID)
 ADDON_ID = REAL_SETTINGS.getAddonInfo('id')
@@ -38,7 +39,6 @@ ADDON_VERSION = REAL_SETTINGS.getAddonInfo('version')
 ICON = os.path.join(ADDON_PATH, 'icon.png')
 FANART = os.path.join(ADDON_PATH, 'fanart.jpg')
 DEBUG = REAL_SETTINGS.getSetting('enable_Debug') == "true"
-PTVL_SKINVER = '0.7.8'
 
 def log(msg, level = xbmc.LOGDEBUG):
     if level == xbmc.LOGDEBUG:
@@ -91,7 +91,7 @@ TIMEOUT = 15 * 1000
 TOTAL_FILL_CHANNELS = 20
 PREP_CHANNEL_TIME = 60 * 60 * 24 * 5
 ALLOW_CHANNEL_HISTORY_TIME = 60 * 60 * 24 * 1
-NOTIFICATION_CHECK_TIME = 120 #in seconds
+NOTIFICATION_CHECK_TIME = 60 #in seconds
 NOTIFICATION_TIME_BEFORE_END = 240 #in seconds
 NOTIFICATION_DISPLAY_TIME = 6 #in seconds
 REMINDER_COUNTDOWN = 15 #secs
@@ -193,8 +193,9 @@ if xbmcvfs.exists(os.path.join(PTVL_SKIN_LOC,REAL_SETTINGS.getSetting("SkinSelec
 
 # SKIN SELECT
 Skin_Select = REAL_SETTINGS.getSetting("SkinSelector")
-MEDIA_LOC = xbmc.translatePath(os.path.join(PTVL_SKIN_LOC, Skin_Select, 'media',''))   
-EPGGENRE_LOC = xbmc.translatePath(os.path.join(PTVL_SKIN_LOC, Skin_Select, 'media', 'epg-genres','')) 
+PTVL_SELECT_SKIN_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'skins' , Skin_Select))
+MEDIA_LOC = xbmc.translatePath(os.path.join(PTVL_SELECT_SKIN_LOC, 'media',''))   
+EPGGENRE_LOC = xbmc.translatePath(os.path.join(PTVL_SELECT_SKIN_LOC, 'media', 'epg-genres','')) 
 
 #Double check core image folders
 if not xbmcvfs.exists(MEDIA_LOC):
@@ -212,27 +213,22 @@ if xbmcvfs.exists(xbmc.translatePath(os.path.join('special://','skin','720p','')
     XBMC_SKIN_LOC = xbmc.translatePath(os.path.join('special://','skin','720p',''))
 else:
     XBMC_SKIN_LOC = xbmc.translatePath(os.path.join('special://','skin','1080i',''))
-    
-# Find XBMC Skin path
-if xbmcvfs.exists(xbmc.translatePath(os.path.join('special://','skin','720p',''))):
-    XBMC_SKIN_LOC = xbmc.translatePath(os.path.join('special://','skin','720p',''))
-else:
-    XBMC_SKIN_LOC = xbmc.translatePath(os.path.join('special://','skin','1080i',''))
-    
+
 # Find PTVL selected skin folder 720 or 1080i ?
-if xbmcvfs.exists(os.path.join(PTVL_SKIN_LOC, Skin_Select, '720p','')):
-    PTVL_SKIN_SELECT = xbmc.translatePath(os.path.join(PTVL_SKIN_LOC, Skin_Select, '720p', ''))
+if xbmcvfs.exists(os.path.join(PTVL_SELECT_SKIN_LOC, '720p','')):
+    PTVL_SKIN_SELECT = xbmc.translatePath(os.path.join(PTVL_SELECT_SKIN_LOC, '720p', ''))
 else:
-    PTVL_SKIN_SELECT = xbmc.translatePath(os.path.join(PTVL_SKIN_LOC, Skin_Select, '1080i', ''))
+    PTVL_SKIN_SELECT = xbmc.translatePath(os.path.join(PTVL_SELECT_SKIN_LOC, '1080i', ''))
 
 # Globals
 ADDON_SETTINGS = Settings.Settings()
 NOTIFY = REAL_SETTINGS.getSetting('EnableNotify') == "true"
 SETTOP = REAL_SETTINGS.getSetting("EnableSettop") == "true"
 FIND_LOGOS = REAL_SETTINGS.getSetting('Enable_FindLogo') == "true"
+ANIM_LOGOS = REAL_SETTINGS.getSetting('Enable_AnimLogo') == "true" 
 CACHE_ENABLED = REAL_SETTINGS.getSetting('Cache_Enabled') == 'true'
-ENHANCED_DATA = xbmcgui.Window(10000).getProperty('PTVL.LOWPOWER') == "false"
-    
+KODI_MONITOR = xbmc.Monitor()
+
 # Settings2 filepaths
 SETTINGS_FLE = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'settings2.xml'))
 SETTINGS_FLE_DEFAULT_SIZE = 100 #bytes
