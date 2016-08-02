@@ -1,11 +1,11 @@
 PseudoTV Live has audited its settings and adjusted them for optimal use.
 The changes made are based on your unique system charterstics, they include but are not limited:
-
+[COLOR=yellow]
 - Reduced Media Limit
 - Limited Channel size
 - Limited Metadata Parsing
 - Limited Artwork & Logo support
 - Disabled Features, ex. "OnNow" Menu, external server integration.
-
+[/COLOR]
 It is [B]highly recommend[/B] you keep the optimized settings. 
-A override option is available under the "Debugging" tab *Use with caution*.
+A override option is available under the "Debugging" tab [COLOR=red]*Use with caution*[/COLOR].
