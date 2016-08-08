@@ -63,7 +63,7 @@ except Exception,e:
 try:
     from metahandler import metahandlers
     metaget = metahandlers.MetaData(preparezip=False, tmdb_api_key=TMDB_API_KEY)
-    ENHANCED_DATA = True
+    ENHANCED_DATA = True                
 except Exception,e:  
     ENHANCED_DATA = False
     xbmc.log("script.pseudotv.live-ChannelList: metahandler Import failed! " + str(e))    
@@ -119,7 +119,7 @@ class ChannelList:
         self.log("IceLibrary is " + str(self.incIceLibrary))
         self.incBCTs = REAL_SETTINGS.getSetting('IncludeBCTs') == "true"
         self.log("IncludeBCTs is " + str(self.incBCTs)) 
-        self.includeMeta = ENHANCED_DATA
+        self.includeMeta = REAL_SETTINGS.getSetting('IncludeMeta') == "true"
         self.log("IncludeMeta is " + str(self.includeMeta)) 
         self.sbAPI = sickbeard.SickBeard(REAL_SETTINGS.getSetting('sickbeard.baseurl'),REAL_SETTINGS.getSetting('sickbeard.apikey'))
         self.cpAPI = couchpotato.CouchPotato(REAL_SETTINGS.getSetting('couchpotato.baseurl'),REAL_SETTINGS.getSetting('couchpotato.apikey'))
@@ -273,30 +273,17 @@ class ChannelList:
                 pass
 
             if chtype == 0:
-                if FileAccess.exists(xbmc.translatePath(chsetting1)) == True:
+                if FileAccess.exists(xbmc.translatePath(chsetting1)):
                     localCount += 1
                     self.maxChannels = i + 1
                     self.enteredChannelCount += 1
-            elif chtype <= 6 or chtype in [12,14]:
+            elif chtype <= 7:
                 if len(chsetting1) > 0:
                     localCount += 1
                     self.maxChannels = i + 1
                     self.enteredChannelCount += 1
-            elif chtype == 7:
-                if FileAccess.exists(chsetting1) == True:
-                    localCount += 1
-                    self.maxChannels = i + 1
-                    self.enteredChannelCount += 1
-            elif chtype in [8,9]:
-                if self.Valid_ok(chsetting2) == True:
-                    self.maxChannels = i + 1
-                    self.enteredChannelCount += 1
-            elif chtype == 10:
-                if self.youtube_player != 'False':
-                    self.maxChannels = i + 1
-                    self.enteredChannelCount += 1
-            elif chtype in [11,15,16]:
-                if self.Valid_ok(chsetting1) == True:
+            elif chtype != 9999:
+                if len(chsetting1) > 0:
                     self.maxChannels = i + 1
                     self.enteredChannelCount += 1
 
@@ -330,6 +317,7 @@ class ChannelList:
         chsetting3 = ''
         chsetting4 = ''
         needsreset = False
+        valid = False 
         self.background = background
         self.settingChannel = channel
                                
@@ -345,14 +333,34 @@ class ChannelList:
         while len(self.channels) < channel:
             self.channels.append(Channel())
 
-        if chtype == 9999:
+        #Check channel configuration.
+        if chtype == 0:
+            if FileAccess.exists(xbmc.translatePath(chsetting1)) == True:
+                valid = True
+        elif chtype == 7:
+            if FileAccess.exists(chsetting1) == True:
+                valid = True
+        elif chtype in [8,9]:
+            if self.Valid_ok(chsetting2) == True:
+                valid = True
+        elif chtype == 10:
+            if self.youtube_player != 'False':
+                valid = True
+        elif chtype in [11,15,16]:
+            if self.Valid_ok(chsetting1) == True:
+                valid = True
+        elif chtype != 9999:
+            if len(chsetting1) > 0:
+                valid = True
+
+        self.log('setupChannel ' + str(channel) + ', valid = ' + str(valid))
+        if valid == False:
             self.channels[channel - 1].isValid = False
             return False
-            
+
         # find missing channel logos
-        if FIND_LOGOS == True:
-            if chtype not in [6,7]:
-                FindLogo(chtype, self.getChannelName(chtype, channel, chsetting1))
+        if chtype not in [6,7]:
+            FindLogo(chtype, self.getChannelName(chtype, channel, chsetting1))
             
         self.channels[channel - 1].type = chtype
         self.channels[channel - 1].isSetup = True
@@ -398,8 +406,7 @@ class ChannelList:
                         # If this channel has been watched for longer than it lasts, reset the channel
                         if self.channels[channel - 1].totalTimePlayed < self.channels[channel - 1].getTotalDuration():
                             createlist = False 
-                            
-                        # Reset livetv after LIVETV_MAXPARSE         
+       
                         if timedif >= (LIVETV_REFRESH) or self.channels[channel - 1].totalTimePlayed >= (LIVETV_REFRESH):
                             createlist = True
                     else: 
@@ -668,14 +675,14 @@ class ChannelList:
     def makeChannelList(self, channel, chtype, setting1, setting2, setting3, setting4, append = False):
         self.log('makeChannelList, CHANNEL: ' + str(channel))
         self.getFileListCache(chtype, channel)
-        msg = 'default'   
+        msg = 'default' 
         fileListCHK = False
         israndom = False  
         isreverse = False
         bctType = None
         fileList = []
         limit = MEDIA_LIMIT #Global
-                
+
         # Correct Youtube/Media Limit/Sort Values from outdated configurations
         if chtype in [7,10,11,13,15,16]:
             if chtype == 10:
@@ -953,13 +960,6 @@ class ChannelList:
         flename = xbmc.makeLegalFilename(GEN_CHAN_LOC + 'network_' + '_' + network + '.xsp')
 
         try:
-
-
-
-
-
-
-
             fle = FileAccess.open(flename, "w")
         except:
             self.Error('Unable to open the cache file ' + flename, xbmc.LOGERROR)
@@ -977,13 +977,6 @@ class ChannelList:
     def createShowPlaylist(self, show, setting2):
         show = show.split('|')
         chname = ' & '.join(show)
-
-
-
-
-
-
-
         flename = xbmc.makeLegalFilename(GEN_CHAN_LOC + 'Show_' + chname + '.xsp')
         
         try:
@@ -1030,14 +1023,6 @@ class ChannelList:
 
         
     def createGenreMixedPlaylist(self, genre, setting2):
-
-
-
-
-
-
-
-
         flename = xbmc.makeLegalFilename(GEN_CHAN_LOC + 'mixed_' + genre + '.xsp')
         
         try:
@@ -1056,14 +1041,6 @@ class ChannelList:
 
 
     def createGenrePlaylist(self, pltype, chtype, genre, setting2=None):  
-
-
-
-
-
-
-
-
         flename = xbmc.makeLegalFilename(GEN_CHAN_LOC + pltype + '_' + genre + '.xsp')
         try:
             fle = FileAccess.open(flename, "w")
@@ -2030,7 +2007,7 @@ class ChannelList:
             else:   
                 showList = self.fillLiveTVXMLTV(setting1, setting2, setting3, setting4, chname, limit)
         
-        if len(showList) == 0:
+        if showList and len(showList) == 0:
             self.setChannelChanged(self.settingChannel)
             desc = 'Guidedata from ' + str(setting3) + ' is currently unavailable, please verify channel configuration.'
             showList = self.buildInternetTVFileList('5400', setting2, self.getChannelName(9, self.settingChannel, setting1), desc, 24)
@@ -2108,7 +2085,7 @@ class ChannelList:
                     
                     #Enable Enhanced Parsing for current and future shows only
                     includeMeta = self.includeMeta
-                    if (showtitle.lower() == 'paid programing' or description.lower() == 'paid programing'):
+                    if (showtitle.lower() == 'paid programing' or subtitle.lower() == 'paid programing' or description.lower() == 'paid programing'):
                         includeMeta = False  
                     
                     GenreLiveID = ['Unknown',type,0,0,False,1,rating, False, False, 0.0, year]
@@ -2171,6 +2148,7 @@ class ChannelList:
                 type = ''
                 LiveID = 'tvshow|0|0|False|1|NR|'
                 thumburl = '0'
+                includeMeta = self.includeMeta
                 
                 if event == "end":
                     if elem.tag == "programme":
@@ -2311,11 +2289,6 @@ class ChannelList:
                             else:
                                 playcount = 1                        
 
-                            #Enable Enhanced Parsing for current and future shows only
-                            includeMeta = self.includeMeta
-                            if (showtitle.lower() == 'paid programing' or description.lower() == 'paid programing'):
-                                includeMeta = False  
-                                    
                             year = 0
                             if type == 'movie':
                                 try:
@@ -2385,6 +2358,10 @@ class ChannelList:
                                     episodetitle = episodetitle.split("- ", 1)[-1]
                                 subtitle = episodetitle
 
+                            #Enable Enhanced Parsing for current and future shows only
+                            if (showtitle.lower() == 'paid programing' or subtitle.lower() == 'paid programing' or description.lower() == 'paid programing'):
+                                includeMeta = False  
+                                    
                             managed =  False # todo check sickbeard/sonar/couchpotato
                             GenreLiveID = [genre,type,id,thumburl,managed,playcount,rating, HD, CC, stars, year]
                             tmpstr = self.makeTMPSTR(dur, showtitle, year, subtitle, description, GenreLiveID, setting2, startDate, includeMeta)
@@ -2422,6 +2399,7 @@ class ChannelList:
                     del showList[:]
                     return
                     
+                includeMeta = self.includeMeta
                 titles = re.search('"title" *: *"(.*?)"', f)
                 if titles and len(titles.group(1)) > 0:
                     showtitle = titles.group(1)
@@ -2524,12 +2502,7 @@ class ChannelList:
                             
                         episodetitle = 'LiveTV'
                         subtitle = 'LiveTV'
-                        
-                        #Enable Enhanced Parsing
-                        includeMeta = self.includeMeta 
-                        if (showtitle.lower() == 'paid programing' or description.lower() == 'paid programing'):
-                            includeMeta = False  
-                                
+
                         # if type == 'tvshow':
                             # episodenames = re.search('"episodename" *: *"(.*?)"', f)
                             # if episodenames and len(episodenames) > 0:
@@ -2562,7 +2535,11 @@ class ChannelList:
                             if str(episodetitle[0:5]) == '00x00':
                                 episodetitle = episodetitle.split("- ", 1)[-1]
                             subtitle = episodetitle
-                         
+                                                 
+                        #Enable Enhanced Parsing for current and future shows only
+                        if (showtitle.lower() == 'paid programing' or subtitle.lower() == 'paid programing' or description.lower() == 'paid programing'):
+                            includeMeta = False     
+                            
                         managed =  False     
                         GenreLiveID = [genre,type,id,thumburl,managed,playcount,rating,hd,cc,stars, year]
                         tmpstr = self.makeTMPSTR(dur, showtitle, year, subtitle, description, GenreLiveID, setting2, startDate, includeMeta)
@@ -3219,8 +3196,9 @@ class ChannelList:
         
 
     def plugin_ok(self, plugin):
-        self.log("plugin_ok, plugin = " + plugin)
-        return isPlugin(plugin)
+        status = isPlugin(plugin)
+        self.log("plugin_ok, plugin = " + plugin + ' ,installed = ' + str(status))
+        return status
         
         
     def youtube_ok(self, YTtype, YTid):
@@ -4685,39 +4663,41 @@ class ChannelList:
         
     def getMovieMeta(self, stars, year, duration, plot, title, tagline, imdb_id, genre, rating, playcount):
         self.log("getMovieMeta")
-        try:
-            meta = metaget.get_meta('movie', title, str(year))
-            year     = int(year                                 or (meta['year']               or '0'))
-            duration = int(duration                             or (meta['duration']           or ''))
-            plot     = uni(plot                                 or (meta['plot']               or ''))
-            title    = uni(title                                or (meta['title']              or ''))
-            tagline  = uni(tagline                              or (meta['tagline']            or ''))
-            imdb_id  = uni(meta['imdb_id']                      or imdb_id                     or '0')
-            playcount= int(playcount                            or (meta['playcount']          or '1'))
-            stars    = float(meta['rating']                     or stars                       or '0.0')
-            genre    = uni(meta['genre'].split(',')[0]          or genre                       or 'Unknown')
-            rating   = uni(meta['mpaa']                         or rating                      or 'NR')
-        except:
-            pass
+        if ENHANCED_DATA == True: 
+            try:
+                meta = metaget.get_meta('movie', title, str(year))
+                year     = int(year                                 or (meta['year']               or '0'))
+                duration = int(duration                             or (meta['duration']           or ''))
+                plot     = uni(plot                                 or (meta['plot']               or ''))
+                title    = uni(title                                or (meta['title']              or ''))
+                tagline  = uni(tagline                              or (meta['tagline']            or ''))
+                imdb_id  = uni(meta['imdb_id']                      or imdb_id                     or '0')
+                playcount= int(playcount                            or (meta['playcount']          or '1'))
+                stars    = float(meta['rating']                     or stars                       or '0.0')
+                genre    = uni(meta['genre'].split(',')[0]          or genre                       or 'Unknown')
+                rating   = uni(meta['mpaa']                         or rating                      or 'NR')
+            except:
+                pass
         self.log("getMovieMeta, return = " + str(stars) +','+ str(year) +','+ str(duration) +','+ plot +','+ title +','+ tagline +','+ imdb_id +','+ genre +','+ rating +','+ str(playcount))
         return stars, year, duration, plot, title, tagline, imdb_id, genre, rating, playcount
         
         
     def getTVmeta(self, stars, year, duration, plot, title, tagline, tvdb_id, genre, rating, playcount):
         self.log("getTVmeta")
-        try:
-            meta = metaget.get_meta('tvshow', title, str(year))
-            year     = int(year                                 or (meta['year']               or '0'))
-            duration = int(duration                             or (meta['duration']           or ''))
-            plot     = uni(plot                                 or (meta['plot']               or ''))
-            title    = uni(title                                or (meta['title']              or ''))
-            tvdb_id  = uni(meta['tvdb_id']                      or tvdb_id                     or '0')
-            playcount= int(playcount                            or (meta['playcount']          or '1'))
-            stars    = float(meta['rating']                     or stars                       or '0.0')
-            genre    = uni(meta['genre'].split(',')[0]          or genre                       or 'Unknown')
-            rating   = uni(meta['mpaa']                         or rating                      or 'NR')
-        except:
-            pass
+        if ENHANCED_DATA == True: 
+            try:
+                meta = metaget.get_meta('tvshow', title, str(year))
+                year     = int(year                                 or (meta['year']               or '0'))
+                duration = int(duration                             or (meta['duration']           or ''))
+                plot     = uni(plot                                 or (meta['plot']               or ''))
+                title    = uni(title                                or (meta['title']              or ''))
+                tvdb_id  = uni(meta['tvdb_id']                      or tvdb_id                     or '0')
+                playcount= int(playcount                            or (meta['playcount']          or '1'))
+                stars    = float(meta['rating']                     or stars                       or '0.0')
+                genre    = uni(meta['genre'].split(',')[0]          or genre                       or 'Unknown')
+                rating   = uni(meta['mpaa']                         or rating                      or 'NR')
+            except:
+                pass
         self.log("getTVmeta, return = " + str(stars) +','+ str(year) +','+ str(duration) +','+ plot +','+ title +','+ tagline +','+ tvdb_id +','+ genre +','+ rating +','+ str(playcount))
         return stars, year, duration, plot, title, tagline, tvdb_id, genre, rating, playcount
 

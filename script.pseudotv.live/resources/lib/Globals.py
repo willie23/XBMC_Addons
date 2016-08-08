@@ -73,7 +73,6 @@ TVDB_API_KEY     = REAL_SETTINGS.getSetting("TVDB_API_KEY")
 TMDB_API_KEY     = REAL_SETTINGS.getSetting("TMDB_API_KEY")
 FANARTTV_API_KEY = REAL_SETTINGS.getSetting("FANARTTV_API_KEY")
 YT_API_KEY       = REAL_SETTINGS.getSetting('YT_API_KEY')
-RSS_API_KEY      = REAL_SETTINGS.getSetting('RSS_API_KEY')
 PSS_API_KEY      = REAL_SETTINGS.getSetting('PSS_API_KEY')
 GOOGLE_API_KEY   = REAL_SETTINGS.getSetting('GOOGLE_API_KEY')
 LOGODB_API_KEY   = REAL_SETTINGS.getSetting('LOGODB_API_KEY')
@@ -160,6 +159,8 @@ DEFAULT_EPGGENRE_LOC = xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 
 THUMB = IMAGES_LOC + 'icon.png'
 INTRO = IMAGES_LOC + 'intro.mp4'
 INTRO_TUBE = 'Y8WlAhpHzkM'
+FAILED_TUBE = '6XjXAWlSwN8'
+INVALID_TUBE = '6XjXAWlSwN8'
 
 # EPG
 TIME_BAR = 'pstvlTimeBar.png'
@@ -226,6 +227,7 @@ NOTIFY = REAL_SETTINGS.getSetting('EnableNotify') == "true"
 SETTOP = REAL_SETTINGS.getSetting("EnableSettop") == "true"
 FIND_LOGOS = REAL_SETTINGS.getSetting('Enable_FindLogo') == "true"
 ANIM_LOGOS = REAL_SETTINGS.getSetting('Enable_AnimLogo') == "true" 
+OVER_LOGOS = REAL_SETTINGS.getSetting('LogoDB_Override') == "true" 
 CACHE_ENABLED = REAL_SETTINGS.getSetting('Cache_Enabled') == 'true'
 KODI_MONITOR = xbmc.Monitor()
 
@@ -245,6 +247,7 @@ monthly = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "monthl
 durationCache = StorageServer.StorageServer("plugin://script.pseudotv.live/" + "duration",((24 * 7) * 4))
 
 # pyfscache globals
+cache_hourly = FSCache(REQUESTS_LOC, days=0, hours=1, minutes=0)
 cache_daily = FSCache(REQUESTS_LOC, days=1, hours=0, minutes=0)
 cache_weekly = FSCache(REQUESTS_LOC, days=7, hours=0, minutes=0)
 cache_monthly = FSCache(REQUESTS_LOC, days=28, hours=0, minutes=0)
@@ -252,6 +255,7 @@ cache_monthly = FSCache(REQUESTS_LOC, days=28, hours=0, minutes=0)
 MUSIC_TYPES = ['.mp3','.flac','.mp4']
 IMAGE_TYPES = ['.jpg', '.jpeg', '.png', '.tif', '.tiff', '.gif', '.pcx', '.bmp', '.tga', '.ico', '.nef']
 MEDIA_TYPES = ['.avi', '.mp4', '.m4v', '.3gp', '.3g2', '.f4v', '.mov', '.mkv', '.flv', '.ts', '.m2ts', '.mts', '.strm']
+STREAM_TYPES = ('http','https','rtsp','rtmp','udp','PlayMedia')
 BCT_TYPES = ['bumper', 'commercial', 'trailer', 'rating', 'pseudocinema', 'intro', 'cellphone', 'coming soon', 'premovie', 'feature presentation', 'intermission']
 
 # Eventghost broadcasts

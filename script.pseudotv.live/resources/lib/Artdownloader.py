@@ -22,7 +22,7 @@ import time, datetime, random
 import threading
 import sys, re
 import random, traceback
-import urllib, urllib2, urlparse
+import urllib, urllib2, urlparse, requests
 import socket
 
 from apis.fanarttv import *
@@ -36,6 +36,7 @@ from apis import tmdb
 from urllib import unquote, quote
 from utils import *
 from HTMLParser import HTMLParser
+from BeautifulSoup import BeautifulSoup
 
 try:
     from metahandler import metahandlers
@@ -57,7 +58,7 @@ except:
     if int(REAL_SETTINGS.getSetting('Enable_ChannelBug')) == 2:
         REAL_SETTINGS.setSetting("Enable_ChannelBug","1")
         
-socket.setdefaulttimeout(30)
+socket.setdefaulttimeout(5)
 
 class Artdownloader:
 
@@ -85,133 +86,148 @@ class Artdownloader:
         return arttype
 
         
-    def dbidArt(self, type, chname, mpath, dbid, arttypeEXT):
+    def FolderArt(self, type, chname, mpath, arttypeEXT):
+        self.log("FolderArt, arttypeEXT = " + arttypeEXT)
+        file_detail = []
+        try:
+            json_query = ('{"jsonrpc":"2.0","method":"Files.GetDirectory","params":{"directory":"%s","media":"pictures","properties":[]},"id":1}' % (mpath))
+            json_folder_detail = self.chanlist.sendJSON(json_query)
+            file_detail = re.compile("{(.*?)}", re.DOTALL ).findall(json_folder_detail)
+            
+            for f in file_detail:
+                files = re.search('"file" *: *"(.*?)",', f)
+                if files:
+                    labels = re.search('"label" *: *"(.*?)",', f)
+                    if len(labels.group(1)) > 0:
+                        if (labels.group(1)).lower() == arttypeEXT.lower():
+                            return (files.group(1).replace("\\\\", "\\"))
+            return 'NA.png'
+        except Exception,e:  
+            self.log("FolderArt, Failed" + str(e), xbmc.LOGERROR)
+            self.log(traceback.format_exc(), xbmc.LOGERROR)
+            return 'NA.png'
+            
+                
+    def searchDetails(self, json_folder_detail, arttypeEXT):
+        print json_folder_detail, arttypeEXT
+        arttype = (arttypeEXT.split(".")[0])
+        file_detail = re.compile("{(.*?)}", re.DOTALL ).findall(json_folder_detail)
+        for f in file_detail:
+            arttypes = re.search(('"%s" *: *"(.*?)"' % arttype), f)
+            arttypes_fallback = re.search(('"%s" *: *"(.*?)"' % self.getFallback_Arttype(arttype)), f)
+            if arttypes != None and len(arttypes.group(1)) > 0:
+                return (unquote(xbmc.translatePath((arttypes.group(1).split(','))[0]))).replace('image://','').replace('.jpg/','.jpg').replace('.png/','.png') 
+            elif arttypes_fallback != None and len(arttypes_fallback.group(1)) > 0:
+                if (arttypes_fallback.group(1)).lower() ==  (self.getFallback_Arttype(arttype)).lower():
+                    return (unquote(xbmc.translatePath((arttypes_fallback.group(1).split(','))[0]))).replace('image://','').replace('.jpg/','.jpg').replace('.png/','.png')
+        return 'NA.png'
+
+            
+    def dbidArt(self, type, chname, dbid, arttypeEXT):
+        if dbid == '0':
+            return 'NA.png'
         self.log("dbidArt")
         file_detail = []
         try:
-            if type == 'tvshow':
-                json_query = ('{"jsonrpc":"2.0","method":"VideoLibrary.GetTVShowDetails","params":{"tvshowid":%s,"properties":["art","thumbnail","fanart"]},"id":1}' % dbid)
+            if type in ['tvshow','episode']:
+                json_query = ('{"jsonrpc":"2.0","method":"VideoLibrary.GetTVShowDetails","params":{"tvshowid":%s,"properties":["art"]},"id":1}' % dbid)
             elif type == 'movie':
-                json_query = ('{"jsonrpc":"2.0","method":"VideoLibrary.GetMovieDetails","params":{"movieid":%s,"properties":["art","thumbnail","fanart"]},"id":1}' % dbid)
+                json_query = ('{"jsonrpc":"2.0","method":"VideoLibrary.GetMovieDetails","params":{"movieid":%s,"properties":["art"]},"id":1}' % dbid)
             else:
+                #todo music support
                 return 'NA.png'
             arttype = (arttypeEXT.split(".")[0])
             json_folder_detail = self.chanlist.sendJSON(json_query)
-            file_detail = re.compile( "{(.*?)}", re.DOTALL ).findall(json_folder_detail)
-            return self.searchDetails(file_detail, arttype)
+            return self.searchDetails(json_folder_detail, arttypeEXT)
         except Exception,e:  
             self.log("dbidArt, Failed" + str(e), xbmc.LOGERROR)
             self.log(traceback.format_exc(), xbmc.LOGERROR)
+            return 'NA.png'
         
-        
-    def JsonArt(self, type, chname, mpath, arttypeEXT):
-        self.log("JsonArt")
+            
+    def TitleArt(self, type, chname, title, arttypeEXT):
+        self.log("TitleArt")
         file_detail = []
+        title = urllib.quote_plus(title)
         try:
-            json_query = ('{"jsonrpc":"2.0","method":"Files.GetDirectory","params":{"directory":"%s","media":"video","properties":["art","fanart","thumbnail"]}, "id": 1}' % (mpath))
+            if type in ['tvshow','episode']:
+                json_query = ('{"jsonrpc":"2.0","method":"VideoLibrary.GetTvShows","params":{"filter":{"field":"title","operator":"is","value":"%s"},"properties":["art"]},"id":1}' % title)
+            elif type == 'movie':
+                json_query = ('{"jsonrpc":"2.0","method":"VideoLibrary.GetMovies","params":{"filter":{"field":"title","operator":"is","value":"%s"},"properties":["art"]},"id":1}' % title)
+            else:
+                json_query = ('{"jsonrpc":"2.0","method":"VideoLibrary","filter": {"operator":"is", "field":"title", "value":"%s"},"properties":["art"]},"id":1}' % title)
             arttype = (arttypeEXT.split(".")[0])
             json_folder_detail = self.chanlist.sendJSON(json_query)
-            file_detail = re.compile( "{(.*?)}", re.DOTALL ).findall(json_folder_detail)
-            return self.searchDetails(file_detail, arttype)
+            return self.searchDetails(json_folder_detail, arttypeEXT)
         except Exception,e:  
-            self.log("JsonArt, Failed" + str(e), xbmc.LOGERROR)
+            self.log("TitleArt, Failed" + str(e), xbmc.LOGERROR)
             self.log(traceback.format_exc(), xbmc.LOGERROR)
+            return 'NA.png'
 
 
-    def searchDetails(self, file_detail, arttype):
-        self.log("searchDetails")
-        for f in file_detail:
-            try:
-                arttypes = re.search(('"%s" *: *"(.*?)"' % arttype), f)
-                arttypes_fallback = re.search(('"%s" *: *"(.*?)"' % self.getFallback_Arttype(arttype)), f)
-                if arttypes != None and len(arttypes.group(1)) > 0:
-                    return (unquote(xbmc.translatePath((arttypes.group(1).split(','))[0]))).replace('image://','').replace('.jpg/','.jpg').replace('.png/','.png') 
-                elif arttypes_fallback != None and len(arttypes_fallback.group(1)) > 0:
-                    if (arttypes_fallback.group(1)).lower() ==  (self.getFallback_Arttype(arttype)).lower():
-                        return (unquote(xbmc.translatePath((arttypes_fallback.group(1).split(','))[0]))).replace('image://','').replace('.jpg/','.jpg').replace('.png/','.png')
-            except Exception,e:  
-                self.log("searchDetails, Failed" + str(e), xbmc.LOGERROR)
-        return 'NA.png'
-                
-    
-    def FindArtwork(self, type, title, year, chtype, chname, id, dbid, mpath, arttypeEXT):
+    def FindArtwork(self, type, title, year, chtype, chname, id, dbid, mpath, arttypeEXT, fallback=False):
         self.log('FindArtwork, chtype = ' + str(chtype) + ', id = ' + str(id) +  ', dbid = ' + str(dbid) + ', arttypeEXT = ' + arttypeEXT)
         try:
-            CacheArt = False
-            DefaultArt = False
-            arttypeEXT = EXTtype(arttypeEXT)
-            arttype = arttypeEXT.split(".")[0]
-            fle = id + '-' + arttypeEXT
-            ext = arttypeEXT.split('.')[1]
             setImage = 'NA.png'
-
+            SetDefault = self.SetDefaultArt(chname, mpath, arttypeEXT)
+            
             # local media
             if chtype <= 7 or chtype == 12:
-                self.log('FindArtwork, chtype <= 7 - Local Artwork')
-                smpath = mpath.rsplit('/',2)[0]
-                artSeries = xbmc.translatePath(os.path.join(smpath, arttypeEXT))
-                artSeason = xbmc.translatePath(os.path.join(mpath, arttypeEXT))
-                artSeries_fallback = xbmc.translatePath(os.path.join(smpath, self.getFallback_Arttype(arttypeEXT)))
-                artSeason_fallback = xbmc.translatePath(os.path.join(mpath, self.getFallback_Arttype(arttypeEXT)))
-
-                # lookup artwork via local folder
                 if type in ['tvshow','episode']:
-                    if xbmcvfs.exists(artSeries):
-                        return artSeries
-                    elif xbmcvfs.exists(artSeason):
-                        return artSeason
-                    elif xbmcvfs.exists(artSeries_fallback): 
-                        return artSeries_fallback
-                    elif xbmcvfs.exists(artSeason_fallback):
-                        return artSeason_fallback    
-                elif type in ['movie','music']:
-                    if xbmcvfs.exists(artSeason):
-                        return artSeason
-                    elif xbmcvfs.exists(artSeason_fallback):
-                        return artSeason_fallback
-                        
-                # query json for artwork
-                setImage = self.JsonArt(type, chname, mpath, arttypeEXT)
-                if xbmcvfs.exists(setImage):
-                    return setImage
-                elif dbid != '0':
-                    setImage = self.dbidArt(type, chname, mpath, dbid, arttypeEXT)
-                    if xbmcvfs.exists(setImage):
-                        return setImage
-                        
-                # lookup tvdb/tmdb artwork & download missing artwork
-                setImage = self.DownloadMissingArt(type, title, year, id, arttype, chname, mpath, arttypeEXT)
-                if xbmcvfs.exists(setImage):
-                    return setImage
-                    
-            # online media
-            else:
-                # no tvdb/tmdb id
-                if id == '0':
-                    # return youtube artwork via dbid
-                    if (type == 'youtube' or mpath.startswith(self.chanlist.youtube_player)) and dbid != '0':
-                        self.log('FindArtwork, YOUTUBE')
-                        return "http://i.ytimg.com/vi/"+dbid+"/mqdefault.jpg"
-                    elif type == 'rss' and dbid != '0':
-                        self.log('FindArtwork, RSS')
-                        return decodeString(dbid)
-                    elif chtype in [8] and dbid != '0':
-                        self.log('FindArtwork, decode dbid')
-                        return decodeString(dbid)
-                else:
-                    # lookup tvdb/tmdb artwork & download missing artwork
-                    setImage = self.DownloadMissingArt(type, title, year, id, arttype, chname, mpath, arttypeEXT)
+                    self.log('FindArtwork, Local TVShow Folder')
+                    smpath = mpath.rsplit('/',2)[0]
+                    setImage = self.FolderArt(type, chname, smpath, arttypeEXT)
                     if xbmcvfs.exists(setImage):
                         return setImage
                     
-            self.log('FindArtwork, SetDefaultArt')
-            return self.SetDefaultArt(chname, mpath, arttypeEXT)
+                self.log('FindArtwork, Local Season Folder')
+                setImage = self.FolderArt(type, chname, mpath, arttypeEXT)
+                if xbmcvfs.exists(setImage):
+                    return setImage
+                                    
+                self.log('FindArtwork, Local DBID Lookup')
+                setImage = self.dbidArt(type, chname, dbid, arttypeEXT)
+                if xbmcvfs.exists(setImage):
+                    return setImage
+                        
+            self.log('FindArtwork, Local Title Lookup')
+            setImage = self.TitleArt(type, chname, title, arttypeEXT)
+            if xbmcvfs.exists(setImage):
+                return setImage
+                  
+            self.log('FindArtwork, Online Lookup')
+            setImage = self.LookupMissingArtwork(type, title, year, id, (arttypeEXT.split(".")[0]), chname, mpath, arttypeEXT)
+            if setImage.startswith('http'):
+                return setImage
+                
+            if fallback == False:
+                fallback = True
+                self.log('FindArtwork, Checking Fallback')
+                setImage = self.FindArtwork(type, title, year, chtype, chname, id, dbid, mpath, self.getFallback_Arttype(arttypeEXT), fallback)
+                if xbmcvfs.exists(setImage):
+                    return setImage
+
+            if (type == 'youtube' or mpath.startswith(self.chanlist.youtube_player)) and dbid != '0':
+                self.log('FindArtwork, Youtube Lookup')
+                return "http://i.ytimg.com/vi/"+dbid+"/mqdefault.jpg"
+            
+            if chtype in [8,11] and dbid != '0':
+                self.log('FindArtwork, Decode thumb')
+                return dbidDecode(dbid)      
+   
+            if chtype == 8 and dbid == '0':
+                setImage = self.findMissingArtLive(title)
+                if setImage.startswith('http'):
+                    return setImage
+                    
+            self.log('FindArtwork, Using Default Art')
+            return SetDefault
         except Exception,e:  
             self.log("script.pseudotv.live-Artdownloader: FindArtwork Failed! " + str(e), xbmc.LOGERROR)
             self.log(traceback.format_exc(), xbmc.LOGERROR) 
             return THUMB
                 
-              
+
     def dbidDecode(self, dbid):
         self.log('dbidDecode')
         return decodeString(dbid)
@@ -251,27 +267,35 @@ class Artdownloader:
             self.log("script.pseudotv.live-Artdownloader: SetDefaultArt Failed" + str(e), xbmc.LOGERROR)
             return THUMB
 
+            
+    def LookupMissingArtwork(self, type, title, year, id, arttype, chname, mpath, arttypeEXT):
+        self.log('LookupMissingArtwork')
+        url = '' 
+        if id != '0' and isLowPower() == False:  
+            url = self.findMissingArt(type, id, arttype, chname, mpath, arttypeEXT)                
+            if url.startswith('http'):
+                return url
+        return 'NA.png'
+          
 
-    def DownloadMissingArt(self, type, title, year, id, arttype, chname, mpath, arttypeEXT):
-        self.log('DownloadMissingArt')
-        url = ''               
-        if isLowPower() == True:
-            return self.SetDefaultArt(chname, mpath, arttypeEXT)
-        
-        if ENHANCED_DATA == True and id != '0':  
-            url = self.findMissingArt(type, id, arttype, chname, mpath, arttypeEXT)
-            if not url.startswith('http'):
-                # search fallback artwork
-                url = self.findMissingArt(type, id, self.getFallback_Arttype(arttype), chname, mpath, self.getFallback_Arttype(arttype))
-        
-        if not url.startswith('http'):
-            # search metahanlder artwork
-            url = self.findMissingArtMeta(type, title, year, arttype)
-        
-        if url.startswith('http'):
-            return url
-        return self.SetDefaultArt(chname, mpath, arttypeEXT)
-           
+    def findMissingArtLive(self, title):
+        self.log('findMissingArtLive, title = ' + title)
+        if isLowPower() == False:  
+            request = self.getGoogleImages('"%s"+site:zap2it.com' %title)
+            for image in request:
+                image = image.split('?')[0]
+                image = image.split('.jpg%')[0]+'.jpg'
+                if image.endswith(('png','jpg')):
+                    if 'tribzap2it' and 'l_h12_aa' in image:
+                        return image
+                    elif 'images.zap2it.com' and 'b_h12_ab' in image:
+                        return image
+                    elif 'images.zap2it.com' and 'l_h6_aa' in image:
+                        return image
+                    elif 'images.zap2it.com' and 'b_h6_ab' in image:
+                        return image
+        return 'NA.png'
+          
            
     def findMissingArtMeta(self, type, title, year, arttype):
         self.log('findMissingArtMeta')
@@ -293,36 +317,29 @@ class Artdownloader:
            
     def findMissingArt(self, type, id, arttype, chname, mpath, arttypeEXT):
         url = ''     
-        if type == 'tvshow':
+        if type in ['tvshow','episode']:
             self.log('findMissingArt, tvshow')
-            tvdb_Types = ['banner', 'fanart', 'folder', 'poster']
-                
-            if arttype in tvdb_Types:
-                # correct database naming schema
+            if arttype in ['banner', 'fanart', 'folder', 'poster']:
                 arttype = arttype.replace('banner', 'graphical').replace('folder', 'poster')
                 url = self.findTVDBArt(type, id, arttype, arttypeEXT)
-            if url and not url.startswith('http'):
-                # correct database naming schema
-                arttype = arttype.replace('graphical', 'banner').replace('folder', 'poster')
-                url = self.findFANTVArt(type, id, arttype, arttypeEXT)
+                if url.startswith('http'):
+                    return url
+            arttype = arttype.replace('graphical', 'banner').replace('folder', 'poster')
+            url = self.findFANTVArt(type, id, arttype, arttypeEXT)
+            if url.startswith('http'):
+                return url
 
         elif type == 'movie':
             self.log('findMissingArt, movie')
-            tmdb_Types = ['banner', 'fanart', 'folder', 'poster']
-
-            if arttype in tmdb_Types:
-                # correct database naming schema
+            if arttype in ['banner', 'fanart', 'folder', 'poster']:
                 arttype = arttype.replace('folder', 'poster')
                 url = self.findTMDBArt(type, id, arttype, arttypeEXT)
-            if url and not url.startswith('http'):
-                # correct database naming schema
-                arttype = arttype.replace('folder', 'poster')
-                url = self.findFANTVArt(type, id, arttype, arttypeEXT)
-
-        # todo music artwork support
-        # todo google image search, obdb, metahandler search
-        if url and not url.startswith('http'):
-            return url
+                if url.startswith('http'):
+                    return url
+            arttype = arttype.replace('folder', 'poster')
+            url = self.findFANTVArt(type, id, arttype, arttypeEXT)
+            if url.startswith('http'):
+                return url
         return 'NA.png'
  
  
@@ -333,10 +350,12 @@ class Artdownloader:
         tvdbPath = tvdb.split(', ')[0].replace("[('", "").replace("'", "") 
         if tvdbPath.startswith('http'):
             return tvdbPath
-
+        return url
+        
         
     def findTMDBArt(self, type, id, arttype, arttypeEXT):
         self.log('findTMDBArt')
+        url = ''
         tmdb = self.tmdbAPI.get_image_list(id)
         # todo replace lazy code with regex parsing
         data = str(tmdb).replace("[", "").replace("]", "").replace("'", "")
@@ -347,6 +366,7 @@ class Artdownloader:
             tmdbPath = match.group().replace(",", "").replace("url: u", "").replace("url: ", "")
             if tmdbPath.startswith('http'):
                 return tmdbPath
+        return url
 
                 
     def findFANTVArt(self, type, id, arttype, arttypeEXT):
@@ -379,7 +399,33 @@ class Artdownloader:
                 pass  
         return url
         
+    # Adapted from https://github.com/marcelveldt/script.skin.helper.service/blob/master/resources/lib/ArtworkUtils.py#L712
+    def getGoogleImages(self, terms, **kwargs):
+        start = ''
+        page = 1
+        args = ['q={0}'.format(urllib.quote_plus(uni(terms)))]
+        for k in kwargs.keys():
+            if kwargs[k]: args.append('{0}={1}'.format(k,kwargs[k]))
+        query = '&'.join(args)
+        start = ''
+        baseURL = 'http://www.google.com/search?site=imghp&tbm=isch&tbs=isz:m{start}{query}'
+        url = baseURL.format(start=start,query='&' + query)
+        self.log("getGoogleImages, url = " + url)
+        html = requests.get(url, headers={'User-agent': 'Mozilla/4.0 (compatible; MSIE 7.0; Windows Phone OS 7.0; Trident/3.1; IEMobile/7.0; LG; GW910)'}, timeout=5).text
+        soup = BeautifulSoup(html)
+        results = []
+        for div in soup.findAll('div'):
+            if div.get("id") == "images":
+                for a in div.findAll("a"):
+                    page = a.get("href")
+                    try:
+                        img = page.split("imgurl=")[-1]
+                        img = img.split("&imgrefurl=")[0]
+                        results.append(img)
+                    except: pass
+        return results
 
+        
     def AlphaLogo(self, org, mod):
         self.log("AlphaLogo")
         try:
@@ -445,11 +491,11 @@ class Artdownloader:
                 if FindBug_Type == 3:
                     if xbmcvfs.exists(OEMBugFLE_ANI) == True:
                         return OEMBugFLE_ANI
-                if FindBug_Type == 2:    
-                    if xbmcvfs.exists(NEWBugFLE) == False and xbmcvfs.exists(OEMBugFLE) == True:
-                        return self.ConvertBug(OEMBugFLE, NEWBugFLE)
+                if FindBug_Type == 2:
                     if xbmcvfs.exists(NEWBugFLE) == True:
                         return NEWBugFLE
+                    if xbmcvfs.exists(NEWBugFLE) == False and xbmcvfs.exists(OEMBugFLE) == True:
+                        return self.ConvertBug(OEMBugFLE, NEWBugFLE)
                     return NEWDefaultBugFLE
                 if xbmcvfs.exists(OEMBugFLE) == True:
                     return OEMBugFLE

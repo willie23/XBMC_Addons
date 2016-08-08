@@ -30,7 +30,7 @@ from Playlist import PlaylistItem
 
 class RulesList:
     def __init__(self):
-        self.ruleList = [BaseRule(), RenameRule(), NoShowRule(), ScheduleChannelRule(), OnlyWatchedRule(), DontAddChannel(), InterleaveChannel(), ForceRealTime(), AlwaysPause(), ForceResume(), ForceRandom(), OnlyUnWatchedRule(), PlayShowInOrder(), SetResetTime(), HandleIceLibrary(), HandleChannelLogo(), EvenShowsRule(), HandleBCT(), HandlePOP(), Handle3D(), HandleDurFilter(), HandleSeek()]
+        self.ruleList = [BaseRule(), RenameRule(), NoShowRule(), ScheduleChannelRule(), OnlyWatchedRule(), DontAddChannel(), InterleaveChannel(), ForceRealTime(), AlwaysPause(), ForceResume(), ForceRandom(), OnlyUnWatchedRule(), PlayShowInOrder(), SetResetTime(), HandleIceLibrary(), HandleChannelLogo(), EvenShowsRule(), HandleBCT(), HandlePOP(), Handle3D(), HandleDurFilter(), HandleSeek(), PinLock(), HandleMeta()]
         
 
     def getRuleCount(self):
@@ -1235,7 +1235,6 @@ class PlayShowInOrder(BaseRule):
         return ''
 
 
-
 class SetResetTime(BaseRule):
     def __init__(self):
         self.name = "Reset Every x Hours"
@@ -1243,7 +1242,7 @@ class SetResetTime(BaseRule):
         self.optionValues = ['24']
         self.myId = 13
         self.actions = RULES_ACTION_START
-
+        
 
     def copy(self):
         return SetResetTime()
@@ -1270,9 +1269,9 @@ class SetResetTime(BaseRule):
 
     def runAction(self, actionid, channelList, channeldata):
         if actionid == RULES_ACTION_START:
-            curchan = channeldata.channelNumber
             numhours = 0
-
+            curchan = channeldata.channelNumber
+            
             try:
                 numhours = int(self.optionValues[0])
             except:
@@ -1293,7 +1292,7 @@ class SetResetTime(BaseRule):
             if rightnow >= nextreset:
                 channeldata.isValid = False
                 ADDON_SETTINGS.setSetting('Channel_' + str(curchan) + '_changed', 'True')
-                nextreset = rightnow + ((60 * 60 * numhours) - 900) #45min hour.
+                nextreset = rightnow + ((60 * 60 * numhours))
                 ADDON_SETTINGS.setSetting('Channel_' + str(curchan) + '_SetResetTime', str(nextreset))
 
         return channeldata
@@ -1379,6 +1378,48 @@ class HandleIceLibrary(BaseRule):
             channelList.incIceLibrary = self.storedIceLibValue
         
         return channeldata
+                                  
+                                  
+class HandleMeta(BaseRule):
+    def __init__(self):
+        self.name = "Include Metadata"
+        self.optionLabels = ['Include Metadata']
+        self.optionValues = ['Yes']
+        self.myId = 23
+        self.actions = RULES_ACTION_START | RULES_ACTION_FINAL_MADE | RULES_ACTION_FINAL_LOADED
+        self.selectBoxOptions = [["Yes", "No"]]
+
+        
+    def copy(self):
+        return HandleMeta()
+
+
+    def getTitle(self):
+        if self.optionValues[0] == 'Yes':
+            return 'Include Metadata'
+        else:
+            return 'Exclude Metadata'
+
+
+    def onAction(self, act, optionindex):
+        self.onActionSelectBox(act, optionindex)
+        return self.optionValues[optionindex]
+
+
+    def runAction(self, actionid, channelList, channeldata):
+        if actionid == RULES_ACTION_START:
+            self.storedMetaValue = channelList.includeMeta
+            self.log("Option for HandleMeta is " + self.optionValues[0])
+
+            if self.optionValues[0] == 'Yes':
+                channelList.includeMeta = True
+            else:
+                channelList.includeMeta = False
+        elif actionid == RULES_ACTION_FINAL_MADE or actionid == RULES_ACTION_FINAL_LOADED:
+            channelList.includeMeta = self.storedMetaValue
+        
+        return channeldata
+      
       
 class HandleDurFilter(BaseRule):
     def __init__(self):
@@ -1501,6 +1542,58 @@ class HandlePOP(BaseRule):
         elif actionid == RULES_ACTION_OVERLAY_SET_CHANNEL_END:
             overlay.showNextItem = self.storedPopValue
             self.log("set Coming Up Next to " + str(overlay.showNextItem))
+
+        return channeldata
+       
+                    
+class PinLock(BaseRule):
+    def __init__(self):
+        self.name = 'Channel PIN Lock '
+        self.optionLabels = ['PIN Lock Channel', 'Set PIN']
+        self.optionValues = ['No', '0000']
+        self.myId = 22
+        self.actions = RULES_ACTION_OVERLAY_SET_CHANNEL | RULES_ACTION_OVERLAY_SET_CHANNEL_END
+        self.selectBoxOptions = [["Yes", "No"]]
+
+
+    def copy(self):
+        return PinLock()
+
+
+    def getTitle(self):
+        if self.optionValues[0] == 'Yes':
+            return 'Channel locked'
+        else:
+            return 'Channel Unlocked'
+
+
+    def onAction(self, act, optionindex):      
+        if optionindex == 0:
+            self.onActionSelectBox(act, optionindex)   
+        if optionindex == 1:
+            self.onActionDigitBox(act, optionindex)
+
+        self.validate()
+        return self.optionValues[optionindex]
+        
+        
+    def validate(self):
+        self.validateDigitBox(1, 4, 4, 0000)
+
+
+    def runAction(self, actionid, overlay, channeldata):
+        if actionid == RULES_ACTION_OVERLAY_SET_CHANNEL:
+            if self.optionValues[0] == 'Yes':
+                overlay.PinLocked = True
+                overlay.PinNumber = self.optionValues[1]
+                self.log("setting PIN lock to true")
+            else:
+                overlay.PinLocked = False
+                overlay.PinNumber = '0000'
+        elif actionid == RULES_ACTION_OVERLAY_SET_CHANNEL_END:
+            overlay.PinLocked = False
+            overlay.PinNumber = '0000'
+            self.log("set PIN lock to " + str(overlay.PinLocked))
 
         return channeldata
        
