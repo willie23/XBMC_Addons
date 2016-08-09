@@ -295,6 +295,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         self.timeStarted = 0  
         self.currentChannel = 1
         self.infoOffset = 0
+        self.idleTimeValue = 0
         self.invalidatedChannelCount = 0  
         self.sleepTimeValue = 0
         self.notificationLastChannel = 0 
