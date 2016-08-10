@@ -135,6 +135,23 @@
     </extension>
 </addon>
 
+<addon id="script.kitchen.service" version="0.0.1" name="Kitchen Service" provider-name="Lunatixz">
+    <requires>
+        <import addon="xbmc.python" version="2.14.0"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="main.py">
+        <provides>executable</provides>
+    </extension>
+    <extension point="xbmc.service" library="service.py" start="startup"/>
+    <extension point="xbmc.addon.metadata">
+        <summary lang="en">Custom Script - For My Needs!</summary>
+        <description lang="en">Toggle Kitchen Kodi Mute by ping state of adjacent TV. Set Kitchen Kodi TV Volume by Day/Night</description>
+        <disclaimer lang="en" >This software is a BETA release, bugs maybe common until final release.</disclaimer>
+        <platform>all</platform>
+        <license>GNU GENERAL PUBLIC LICENSE. Version 3, June 2007</license>
+    </extension>
+</addon>
+
 <addon id="script.module.pyfscache" version="0.9.14" name="File Cache" provider-name="Lunatixz">
     <requires>
         <import addon="xbmc.python" version="2.14.0" />
@@ -149,6 +166,23 @@
         <license>BSD</license>
         <platform>all</platform>
         <source>https://github.com/jcstroud/pyfscache</source>
+    </extension>
+</addon>
+
+<addon id="script.module.pylast" version="0.0.1" name="pylast" provider-name="Lunatixz">
+    <requires>
+        <import addon="xbmc.python" version="2.14.0" />
+        <import addon="script.module.six" version="0.0.1" />
+    </requires>
+    <extension library="lib" point="xbmc.python.module" />
+    <extension point="xbmc.addon.metadata">
+        <summary lang="en_US"></summary>
+        <description lang="en_US">A Python interface to Last.fm and Libre.fm</description>
+        <forum></forum>
+        <website>https://pypi.python.org/pypi/pylast</website>
+        <license>BSD</license>
+        <platform>all</platform>
+        <source>https://github.com/pylast/pylast</source>
     </extension>
 </addon>
 
