@@ -29,6 +29,7 @@ ADDON_VERSION = REAL_SETTINGS.getAddonInfo('version')
 SETTINGS_LOC = REAL_SETTINGS.getAddonInfo('profile')
 THUMB = (xbmc.translatePath(os.path.join(ADDON_PATH, 'resources', 'images')) + '/' + 'icon.png')
 NIGHTTIME = False
+MUTE = False
 
 def log(msg, level = xbmc.LOGDEBUG):
     xbmc.log(ADDON_ID + '-' + ADDON_VERSION + '-' + uni(msg), level)
@@ -73,11 +74,7 @@ def setVolume(val):
    
 def pingHost():   
     hostname = REAL_SETTINGS.getSetting("IP")
-    response = os.system("ping -c 1 " + hostname)
-    #and then check the response...
-    hostname_alive = False
-    if response == 0:
-      hostname_alive = True
+    hostname_alive = os.system("ping -c 1 " + hostname) == 0
     log("pingHost, hostname_alive = " + str(hostname_alive))
     return hostname_alive
             
@@ -103,9 +100,9 @@ while not monitor.abortRequested():
         setVolume(int(REAL_SETTINGS.getSetting("Day_VOL")))
         
     if REAL_SETTINGS.getSetting("Toggle_MUTE") == 'true':
-        if pingHost() == False:
+        if pingHost() == False and MUTE == True:
+            MUTE = False
             setMute(False)
-        else:
+        elif MUTE == False:
+            MUTE = True
             setMute(True)
-        
-    

@@ -135,7 +135,7 @@
     </extension>
 </addon>
 
-<addon id="script.kitchen.service" version="0.0.1" name="Kitchen Service" provider-name="Lunatixz">
+<addon id="script.kitchen.service" version="0.0.2" name="Kitchen Service" provider-name="Lunatixz">
     <requires>
         <import addon="xbmc.python" version="2.14.0"/>
     </requires>
