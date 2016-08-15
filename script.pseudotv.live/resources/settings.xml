@@ -62,7 +62,7 @@
             <setting id="ClockMode" type="enum"   label="30211" default="0" values="12 Hour|24 Hour"/>
             <setting id="EPGcolor_enabled"   label="30212" type="enum" values="Disabled|Genre|Chtype|Rating" default="1" />
             <setting id="EPGcolor_MovieGenre" subsetting="true" type="bool"   label="30213" default="false" visible="eq(-1,1)" />
-            <setting id="EPGTextEnable" type="enum"   label="30214" values="Logo|Text" default="0"/>
+            <setting id="EPGTextEnable" type="enum"   label="30214" values="Logo|Text|Logo + Text" default="0"/>
             <setting id="EPG.xInfo" type="bool"   label="30229" default="false" />
         <!-- Overlay -->
         <setting label="30220" type="lsep"/>

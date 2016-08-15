@@ -1,20 +1,20 @@
 #   Copyright (C) 2016 Lunatixz
 #
 #
-# This file is part of PseudoTV Live.
+# This file is part of Kitchen Service.
 #
-# PseudoTV Live is free software: you can redistribute it and/or modify
+# Kitchen Service is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# PseudoTV Live is distributed in the hope that it will be useful,
+# Kitchen Service is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with PseudoTV Live.  If not, see <http://www.gnu.org/licenses/>.
+# along with Kitchen Service.  If not, see <http://www.gnu.org/licenses/>.
 
 import os, xbmc, xbmcgui, xbmcaddon, xbmcvfs, string, re
 from datetime import datetime, time
@@ -72,16 +72,18 @@ def setVolume(val):
     json_query = '{"jsonrpc":"2.0","method":"Application.SetVolume","params":{"volume":%s},"id":1}' %str(val)
     sendJSON(json_query)
    
-def pingHost():   
-    hostname = REAL_SETTINGS.getSetting("IP")
+def pingHost(hostname):   
     hostname_alive = os.system("ping -c 1 " + hostname) == 0
     log("pingHost, hostname_alive = " + str(hostname_alive))
     return hostname_alive
             
+def pingKodi(hostname):
+    log("pingKodi")
+            
 def isNight():
     now = datetime.now()
     now_time = now.time()
-    if now_time >= time(23,00) or now_time <= time(9,00):
+    if now_time >= time(22,00) or now_time <= time(9,00):
         return True
     return False
     
@@ -95,14 +97,12 @@ while not monitor.abortRequested():
     if isNight() == True and NIGHTTIME == False:
         NIGHTTIME = True
         setVolume(int(REAL_SETTINGS.getSetting("Night_VOL")))
-    elif NIGHTTIME == True:
+    elif isNight() == False and NIGHTTIME == True:
         NIGHTTIME = False
         setVolume(int(REAL_SETTINGS.getSetting("Day_VOL")))
         
     if REAL_SETTINGS.getSetting("Toggle_MUTE") == 'true':
-        if pingHost() == False and MUTE == True:
-            MUTE = False
+        if pingHost(REAL_SETTINGS.getSetting("IP")) == False:
             setMute(False)
-        elif MUTE == False:
-            MUTE = True
+        else:
             setMute(True)
