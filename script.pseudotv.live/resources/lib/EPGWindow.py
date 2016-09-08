@@ -69,7 +69,6 @@ try:
             self.textureButtonNoFocus = MEDIA_LOC + BUTTON_NO_FOCUS
             self.textureButtonFocusAlt = MEDIA_LOC + BUTTON_FOCUS_ALT
             self.textureButtonNoFocusAlt = MEDIA_LOC + BUTTON_NO_FOCUS_ALT
-            
             self.showSeasonEpisode = REAL_SETTINGS.getSetting("ShowSeEp") == "true"
             
             try:
@@ -477,7 +476,7 @@ try:
                 del self.channelTags[row][:]
                 
                 # # todo filter epg
-                playlistpos = int(xbmc.PlayList(xbmc.PLAYLIST_VIDEO).getposition())
+                playlistpos = int(xbmc.PlayList(xbmc.PLAYLIST_MUSIC).getposition())
                 self.log('setButtons, playlistpos = ' + str(playlistpos))
 
                 # if the channel is paused, then only 1 button needed
@@ -737,7 +736,6 @@ try:
                     else:
                         if self.inputChannel < 100:
                             self.inputChannel = self.inputChannel * 10 + action - ACTION_NUMBER_0
-                    
                     self.showChannelLabel(self.inputChannel)
 
                 elif action == ACTION_SYMBOLS: #Toggle thru favourite channels
@@ -775,6 +773,7 @@ try:
         def closeEPG(self):
             self.log('closeEPG')
             self.closeContext()   
+            self.hideChannelLabel()
             
             if self.channelLabelTimer.isAlive():
                 self.channelLabelTimer.cancel()
