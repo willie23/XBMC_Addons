@@ -902,8 +902,7 @@
                 <texture>background.gif</texture>
                 <align>center</align>
                 <aligny>center</aligny>
-                <!-- <visible>StringCompare($INFO[Window(10000).Property(PTVL.LOWPOWER)],true)</visible> -->
-            </control> 
+            </control>
             <control type="image">
                 <description>Loading Background Image</description>
                 <width>1920</width>

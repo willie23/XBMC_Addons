@@ -158,6 +158,9 @@ class MyPlayer(xbmc.Player):
     
     
     def onPlaybackAction(self):
+        if self.overlay.isChannelSet == False:
+            return
+    
         #Kryptons new video player broke videowindow control for dialog domodals..
         if getXBMCVersion() >= 17:
             setProperty("PTVL.VideoWindow","false")
@@ -200,19 +203,20 @@ class MyPlayer(xbmc.Player):
         # fix for fullscreen video bug when playback is started while epg is opened.
         if self.overlay.isWindowOpen() != False:
             self.overlay.windowSwap(self.overlay.isWindowOpen(),True)
+        self.Player.onPlaybackAction()
  
  
     def isOndemand(self, title, file):
         self.overlay.OnDemand = False
-        if len(getProperty('OVERLAY.Mediapath')) > 0 and len(file) > 0:
-            if getProperty('OVERLAY.Mediapath').startswith(('plugin','PlayMedia')) or getProperty('OVERLAY.Mediapath')[-4:].lower() == 'strm':  
-                if getProperty('OVERLAY.Title').lower() != title.lower():
-                    self.overlay.OnDemand = True
-            else:
-                if getProperty('OVERLAY.Mediapath') != file:
-                    self.overlay.OnDemand = True
-            setProperty('PTVL.PLAYER_LOG',file)
-        self.log('isOndemand = ' + str(self.overlay.OnDemand))
+        # if len(getProperty('OVERLAY.Mediapath')) > 0 and len(file) > 0:
+            # if getProperty('OVERLAY.Mediapath').startswith(('plugin','PlayMedia')) or getProperty('OVERLAY.Mediapath')[-4:].lower() == 'strm':  
+                # if getProperty('OVERLAY.Title').lower() != title.lower():
+                    # self.overlay.OnDemand = True
+            # else:
+                # if getProperty('OVERLAY.Mediapath') != file:
+                    # self.overlay.OnDemand = True
+            # setProperty('PTVL.PLAYER_LOG',file)
+        # self.log('isOndemand = ' + str(self.overlay.OnDemand))
         return self.overlay.OnDemand
 
         
@@ -291,7 +295,8 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         self.OnNextLst = [] 
         self.ChannelGuideLst = [] 
         self.ReminderLst = []
-        self.infoOnChange = True  
+        self.infoOnChange = True 
+        self.isChannelSet = False 
         self.infoOnStart = False
         self.settingReminder = False
         self.showingPop = False
@@ -1083,6 +1088,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         if self.channelThread.isAlive():
             self.channelThread.pause()
             
+        self.isChannelSet = False
         setBackgroundLabel(('Loading: %s') % chname,' ',' ')
         setProperty("OVERLAY.LOGOART",self.getChlogo(channel))
         self.setBackgroundVisible(True)
@@ -1216,6 +1222,7 @@ class TVOverlay(xbmcgui.WindowXMLDialog):
         if self.channelThread.isAlive():
             self.channelThread.unpause()
 
+        self.isChannelSet = True
         self.Player.onPlaybackAction()
         self.log('setChannel, setChannel return')
         

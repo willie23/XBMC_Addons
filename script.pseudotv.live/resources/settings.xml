@@ -115,13 +115,13 @@
         <setting label="39504" id="bumperratings" subsetting="true" type="bool" visible="!eq(-2,0)" enabled="System.HasAddon(plugin.video.youtube)" default="false" />
         <setting label="30503" id="numbumpers" subsetting="true" type="enum" visible="!eq(-3,0)" values="1|2|3|4|5" default="0"/>
     <setting label="30510" type="lsep"/>
-        <setting label="30511" id="commercials" type="enum" values="Disabled" default="0"/><!-- |Local|Youtube|Plugin" --> 
+        <setting label="30511" id="commercials" type="enum" values="Disabled|Local|Youtube|Plugin" default="0"/>
         <setting label="30512" id="commercialsfolder" subsetting="true" type="folder" source="auto" visible="eq(-1,1)" default=""/>
         <setting label="30517" id="commercialschannel" subsetting="true" type="text" visible="eq(-2,2)" enabled="System.HasAddon(plugin.video.youtube)" default="PLlwhS0wsCzbRNwJ4Epac4rHJJ_6m1JaBm"/>
         <setting label="30514" id="Advertlog" subsetting="true" visible="eq(-3,3)" type="bool" enabled="System.HasAddon(plugin.video.advertlog)" default="false" />
         <setting label="30515" id="TellyAds" subsetting="true" visible="eq(-4,3)" type="bool" enabled="System.HasAddon(plugin.video.tellyads)" default="false" />
         <setting label="30516" id="iSpot" subsetting="true" visible="eq(-5,3)" type="bool" enabled="System.HasAddon(plugin.video.ispot)" default="false" />
-        <setting label="30519" id="AsSeenOn" subsetting="true" visible="eq(-6,3)" type="bool" enabled="System.HasAddon(plugin.video.youtube)" default="false" />
+        <setting label="30519" id="AsSeenOn" subsetting="true" visible="eq(-6,2)" type="bool" enabled="System.HasAddon(plugin.video.youtube)" default="false" />
         <setting label="30518" id="numcommercials" type="enum" subsetting="true" visible="!eq(-7,0)" values="1|2|3|4|5" default="0"/>
     
     

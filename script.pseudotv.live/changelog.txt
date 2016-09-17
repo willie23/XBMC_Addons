@@ -17,7 +17,7 @@
     PTVL will use (if availabe) the backend or playlist's given channel number. Channel numbers that exceed max allowable value will roll over 
     to lowest 10th degree. ex. A default max of 999; channel 1000 becomes Channel 100. [COLOR=red]Caution[/COLOR] creating a large segmented channel lineup can greatly increase channel building times.
 [*] Fixed "Offline" & missing HDHomeRun device issues.
-[*] Removed "Directory" Autotuning & Disabled Directory Channels for LowPower devices. Directory channels still availabe via in-app channel manager.
+[*] Removed "Directory" Autotuning. Directory channels still availabe via in-app channel manager.
 [*] Added groundwork for HDHomerun API support, Currently includes EPG listings. DVR Coming Soon!
 [*] Simplified options for Autotuning PVR and HDHomerun. 
 [*] Removed HDHomerun "Dual" device support in favor of supporting HDhomerun API devices ie. "Prime", "Connect", "Extend".

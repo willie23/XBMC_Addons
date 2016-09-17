@@ -1254,10 +1254,7 @@ class ConfigWindow(xbmcgui.WindowXMLDialog):
     def fillChanTypeLabel(self):
         show_busy_dialog()
         for i in range(NUMBER_CHANNEL_TYPES + 1):
-            if i in [7] and isLowPower() == True:
-                self.ChanTypeList.append('[COLOR=dimgrey]'+getChanTypeLabel(i)+'[/COLOR]')
-            else:
-                self.ChanTypeList.append('[COLOR=white]'+getChanTypeLabel(i)+'[/COLOR]')
+            self.ChanTypeList.append('[COLOR=white]'+getChanTypeLabel(i)+'[/COLOR]')
         hide_busy_dialog()
             
             

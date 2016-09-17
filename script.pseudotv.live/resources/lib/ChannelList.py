@@ -293,7 +293,7 @@ class ChannelList:
             if FileAccess.exists(xbmc.translatePath(chsetting1)) == True:
                 valid = True
         elif chtype == 7:
-            if FileAccess.exists(chsetting1) == True and isLowPower() == False:
+            if FileAccess.exists(chsetting1) == True:
                 valid = True
         elif chtype in [8,9]:
             if self.Valid_ok(chsetting2) == True:
@@ -3302,32 +3302,21 @@ class ChannelList:
                     random.shuffle(BumperLST)              
                     for n in range(int(REAL_SETTINGS.getSetting("numbumpers")) + 1):
                         self.setBackgroundStatus("Initializing: Loading Channel " + str(self.settingChannel),string2="adding Bumpers")
-                        if self.threadPause() == False:
-                            del newFileList[:]
-                            break
-                            
                         newFileList.append(random.choice(BumperLST))#random fill
 
                 if len(CommercialLST) > 0:
                     random.shuffle(CommercialLST)                
                     for n in range(int(REAL_SETTINGS.getSetting("numcommercials")) + 1):
                         self.setBackgroundStatus("Initializing: Loading Channel " + str(self.settingChannel),string2="adding Commercials")
-                        if self.threadPause() == False:
-                            del newFileList[:]
-                            break
-
                         newFileList.append(random.choice(CommercialLST))#random fill
                         
                 if len(TrailerLST) > 0:
                     random.shuffle(TrailerLST)                
                     for n in range(int(REAL_SETTINGS.getSetting("numtrailers")) + 1):
                         self.setBackgroundStatus("Initializing: Loading Channel " + str(self.settingChannel),string2="adding Trailers")
-                        if self.threadPause() == False:
-                            del newFileList[:]
-                            break
-
                         newFileList.append(random.choice(TrailerLST))#random fill
-                        
+                random.shuffle(newFileList)
+                
             # cleanup   
             del fileList[:]
             del BumperLST[:]
@@ -3357,11 +3346,7 @@ class ChannelList:
             Bumper_List = 'http://raw.github.com/PseudoTV/PseudoTV_Lists/master/bumpers.ini'
             linesLST = read_url_cached(Bumper_List, return_type='readlines')
             for i in range(len(Bumper_List)): 
-                self.setBackgroundStatus("Initializing: Loading Channel " + str(self.settingChannel),string2="querying %i Internet Bumpers"%i)
-                if self.threadPause() == False:
-                    del BumperLST[:]
-                    break  
-                    
+                self.setBackgroundStatus("Initializing: Loading Channel " + str(self.settingChannel),string2="querying %i Internet Bumpers"%i)                    
                 try:                 
                     ChannelName,BumperNumber,BumperSourceID = (str(linesLST[i]).replace('\n','').replace('\r','').replace('\t','')).split('|')
                     BumperSource,BumperID = BumperSourceID.split('_')
@@ -3381,7 +3366,7 @@ class ChannelList:
             BumperLST.extend(BumperTMPstrLST)      
         # cleanup   
         del BumperTMPstrLST[:]
-        return BumperLST   
+        return random.shuffle(BumperLST)    
         
         
     def getRatingList(self, chtype, chname, channel, fileList, ddd=False):
@@ -3419,229 +3404,156 @@ class ChannelList:
             return fileList
         
     
-    def getCommercialList(self, CommercialsType):  
+    def getCommercialList(self, CommercialsType, chname):  
         self.log("getCommercialList") 
-        duration = 0
-        CommercialLST = []
-        AsSeenOnCommercialLST = []    
-        LocalCommercialLST = []
-        YoutubeCommercialLST = []
-        channel = self.settingChannel
+        CommercialLST = []       
 
-        #Youtube - As Seen On TV
-        if REAL_SETTINGS.getSetting('AsSeenOn') == 'true' and CommercialsType != '0':
-            self.log("getCommercialList, AsSeenOn")
-            try:      
-                YoutubeLST = self.createYoutubeFilelist('PL_ikfJ-FJg77ioZ9nPuhJxuMe9GKu7plT|PL_ikfJ-FJg774gky7eu8DroAqCR_COS79|PL_ikfJ-FJg75N3Gn6DjL0ZArAcfcGigLY|PL_ikfJ-FJg765O5ppOPGTpQht1LwXmck4|PL_ikfJ-FJg75wIMSXOTdq0oMKm63ucQ_H|PL_ikfJ-FJg77yht1Z6Xembod33QKUtI2Y|PL_ikfJ-FJg77PW8AJ3yk5HboSwWatCg5Z|PL_ikfJ-FJg75v4dTW6P0m4cwEE4-Oae-3|PL_ikfJ-FJg76zae4z0TX2K4i_l5Gg-Flp|PL_ikfJ-FJg74_gFvBqCfDk2E0YN8SsGS8|PL_ikfJ-FJg758W7GVeTVZ4aBAcCBda63J', '7', '100', '1', YOUTUBERSS_MAXPARSE)
-                for i in range(len(YoutubeLST)):    
-                    self.setBackgroundStatus("Initializing: Loading Channel " + str(self.settingChannel),string2="adding AsSeenOnTV Commercials")
-                    Youtube = YoutubeLST[i]
-                    duration = Youtube.split(',')[0]
-                    Commercial = Youtube.split('\n', 1)[-1]
-                    
-                    if Commercial != '' or Commercial != None:
-                        AsSeenOnCommercial = (str(duration) + ',' + Commercial)
-                        AsSeenOnCommercialLST.append(AsSeenOnCommercial)
-                CommercialLST.extend(AsSeenOnCommercialLST)
-            except Exception,e:
-                self.log("getCommercialList failed! " + str(e), xbmc.LOGERROR)
-        
         #Local
         if CommercialsType == '1':
-            self.log("getCommercialList, Local") 
-            PATH = REAL_SETTINGS.getSetting('commercialsfolder')
-            PATH = xbmc.translatePath(os.path.join(PATH,''))
+            self.log("getCommercialList, Local - " + chname)
+            PATH = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('commercialsfolder'),chname,''))
             self.log("getCommercialList, Local - PATH = " + PATH)
-            
-            if FileAccess.exists(PATH): 
-                try:
-                    LocalFLE = ''
-                    LocalCommercial = ''
-                    LocalLST = self.walk(PATH)
-                    
-                    for i in range(len(LocalLST)):    
-                        self.setBackgroundStatus("Initializing: Loading Channel " + str(self.settingChannel),string2="adding Local Commercials")
-                        filename = xbmc.translatePath(os.path.join(PATH,LocalLST[i]))
-                        duration = self.getDuration(filename)
-                        
-                        if duration == 0:
-                            duration = 30
-                        
-                        if duration > 0:
-                            LocalCommercial = (str(duration) + ',' + filename)
-                            LocalCommercialLST.append(LocalCommercial)
-                    
-                    CommercialLST.extend(LocalCommercialLST)      
-                except Exception,e:
-                    self.log("getCommercialList failed! " + str(e), xbmc.LOGERROR)
+            CommercialLST.extend(self.createDirectoryPlaylist(PATH, 100, 1, 100)) 
                     
         #Youtube
-        elif CommercialsType == '2':
+        elif CommercialsType == '2':   
+            #Youtube - As Seen On TV
+            if REAL_SETTINGS.getSetting('AsSeenOn') == 'true':
+                self.log("getCommercialList, AsSeenOn") 
+                CommercialLST.extend(self.createYoutubeFilelist('PL_ikfJ-FJg77ioZ9nPuhJxuMe9GKu7plT|PL_ikfJ-FJg774gky7eu8DroAqCR_COS79|PL_ikfJ-FJg75N3Gn6DjL0ZArAcfcGigLY|PL_ikfJ-FJg765O5ppOPGTpQht1LwXmck4|PL_ikfJ-FJg75wIMSXOTdq0oMKm63ucQ_H|PL_ikfJ-FJg77yht1Z6Xembod33QKUtI2Y|PL_ikfJ-FJg77PW8AJ3yk5HboSwWatCg5Z|PL_ikfJ-FJg75v4dTW6P0m4cwEE4-Oae-3|PL_ikfJ-FJg76zae4z0TX2K4i_l5Gg-Flp|PL_ikfJ-FJg74_gFvBqCfDk2E0YN8SsGS8|PL_ikfJ-FJg758W7GVeTVZ4aBAcCBda63J', '7', '200', '1', '200'))
             self.log("getCommercialList, Youtube") 
-            try:
-                YoutubeLST = self.createYoutubeFilelist(REAL_SETTINGS.getSetting('commercialschannel'), '2', '200', '2', '200')
-                
-                for i in range(len(YoutubeLST)):    
-                    self.setBackgroundStatus("Initializing: Loading Channel " + str(self.settingChannel),string2="adding Youtube Commercials")
-                    Youtube = YoutubeLST[i]
-                    duration = Youtube.split(',')[0]
-                    Commercial = Youtube.split('\n', 1)[-1]
-                    
-                    if Commercial != '' or Commercial != None:
-                        YoutubeCommercial = (str(duration) + ',' + Commercial)
-                        YoutubeCommercialLST.append(YoutubeCommercial)
-                
-                CommercialLST.extend(YoutubeCommercialLST)
-            except Exception,e:
-                self.log("getCommercialList failed! " + str(e), xbmc.LOGERROR)
-                
+            CommercialLST.extend(self.createYoutubeFilelist(REAL_SETTINGS.getSetting('commercialschannel'), '2', '200', '2', '200'))
+        
         #Internet
         elif CommercialsType == '3':
             self.log("getCommercialList, Internet") 
             CommercialLST.extend(self.InternetCommercial())
-        
-        # cleanup   
-        del AsSeenOnCommercialLST[:]
-        del LocalCommercialLST[:]
-        del YoutubeCommercialLST[:]
-        return CommercialLST 
+        return random.shuffle(CommercialLST) 
    
         
     def InternetCommercial(self):
         self.log("InternetCommercial")
         self.setBackgroundStatus("Initializing: Loading Channel " + str(self.settingChannel),string2="adding Internet Commercials")     
-        CommercialLST = splitStringItem(getProperty("PTVL.ADVERTS")) 
-        
+        CommercialLST = []
+        #todo add plugin parsing...
         if len(CommercialLST) > 0:
             random.shuffle(CommercialLST)
         return CommercialLST       
 
     
-    def getTrailerList(self, chtype, chname, TrailersType, trailersgenre, trailersHDnetType, trailerschannel):
+    def getTrailerList(self, chtype, chname):
         self.log("getTrailerList")
-        duration = 0
-        TrailerLST = []
-        LocalTrailerLST = []
-        JsonTrailerLST = []
-        YoutubeTrailerLST = []
-        genre = ''
-        channel = self.settingChannel
-        
+        TrailerLST = [] 
+        TrailerTMPstrLST = []
+        GenreChtype = False
         if chtype == '3' or chtype == '4' or chtype == '5':
             GenreChtype = True
-        else:
-            GenreChtype = False
 
         #Local
         if TrailersType == '1': 
-            PATH = REAL_SETTINGS.getSetting('trailersfolder')
-            PATH = xbmc.translatePath(os.path.join(PATH,''))
+            PATH = xbmc.translatePath(os.path.join(REAL_SETTINGS.getSetting('trailersfolder'),''))
             self.log("getTrailerList, Local - PATH = " + PATH)
             
             if FileAccess.exists(PATH):
-                try:
-                    LocalFLE = ''
-                    LocalTrailer = ''
-                    LocalLST = self.walk(PATH)
-                    
-                    for i in range(len(LocalLST)):    
+                LocalFLE = ''
+                LocalTrailer = ''
+                LocalLST = self.walk(PATH)        
+                for i in range(len(LocalLST)): 
+                    try:   
                         self.setBackgroundStatus("Initializing: Loading Channel " + str(self.settingChannel),string2="adding Local Trailers")
                         LocalFLE = LocalLST[i]
-                        
                         if '-trailer' in LocalFLE:
                             duration = self.getDuration(LocalFLE)
-                            
-                            if duration == 0:
-                                duration = 120
-                        
                             if duration > 0:
-                                LocalTrailer = (str(duration) + ',' + LocalFLE)
-                                LocalTrailerLST.append(LocalTrailer)
-                                
-                    TrailerLST.extend(LocalTrailerLST)                
-                except Exception,e:
-                    self.log("getTrailerList failed! " + str(e), xbmc.LOGERROR)
-                    
-        #XBMC Library - Local Json
-        if TrailersType == '2':
-            self.log("getTrailerList, Local Json")
-            json_query = ('{"jsonrpc":"2.0","method":"VideoLibrary.GetMovies","params":{"properties":["genre","trailer","runtime"]}, "id": 1}')
-            genre = chname
-            if self.youtube_player != 'False':
-                try:
-                    json_detail = self.sendJSON(json_query)
-                    self.log('getTrailerList, json_detail using cache')
-
-                    if REAL_SETTINGS.getSetting('trailersgenre') == 'true' and GenreChtype == True:
-                        JsonLST = ascii(json_detail.split("},{"))
-                        match = [s for s in JsonLST if genre in s]
+                                GenreLiveID = ['Trailer', 'bct', 0, 0, False, 1, 'NR', False, False, 0.0, 0]
+                                TrailerTMPstrLST.append(self.makeTMPSTR(duration, chname, 0, 'Trailer', 'Trailer', GenreLiveID, LocalFLE, includeMeta=False))   
+                        TrailerLST.extend(TrailerTMPstrLST)                                
+                    except Exception,e:
+                        self.log("getTrailerList failed! " + str(e), xbmc.LOGERROR)
                         
-                        for i in range(len(match)):    
-                            self.setBackgroundStatus("Initializing: Loading Channel " + str(self.settingChannel),string2="adding Library Genre Trailers")
-                            duration = 120
-                            json = (match[i])
-                            trailer = json.split(',"trailer":"',1)[-1]
-                            if ')"' in trailer:
-                                trailer = trailer.split(')"')[0]
-                            else:
-                                trailer = trailer[:-1]
-                            
-                            if trailer != '' or trailer != None or trailer != '"}]}':
-                                if 'http://www.youtube.com/watch?hd=1&v=' in trailer:
-                                    trailer = trailer.replace("http://www.youtube.com/watch?hd=1&v=", self.youtube_player).replace("http://www.youtube.com/watch?v=", self.youtube_player)
-                                JsonTrailer = (str(duration) + ',' + trailer)
-                                if JsonTrailer != '120,':
-                                    JsonTrailerLST.append(JsonTrailer)
-                        TrailerLST.extend(JsonTrailerLST)
-                    else:
-                        JsonLST = (json_detail.split("},{"))
-                        match = [s for s in JsonLST if 'trailer' in s]
-                        for i in range(len(match)):                  
-                            self.setBackgroundStatus("Initializing: Loading Channel " + str(self.settingChannel),string2="adding Library Trailers")
-                            duration = 120
-                            json = (match[i])
-                            trailer = json.split(',"trailer":"',1)[-1]
-                            if ')"' in trailer:
-                                trailer = trailer.split(')"')[0]
-                            else:
-                                trailer = trailer[:-1]
-                            if trailer != '' or trailer != None or trailer != '"}]}':
-                                if 'http://www.youtube.com/watch?hd=1&v=' in trailer:
-                                    trailer = trailer.replace("http://www.youtube.com/watch?hd=1&v=", self.youtube_player).replace("http://www.youtube.com/watch?v=", self.youtube_player)
-                                JsonTrailer = (str(duration) + ',' + trailer)
-                                if JsonTrailer != '120,':
-                                    JsonTrailerLST.append(JsonTrailer)
-                        TrailerLST.extend(JsonTrailerLST)     
-                except Exception,e:
-                    self.log("getTrailerList failed! " + str(e), xbmc.LOGERROR)
-                    
-        #Youtube
-        if TrailersType == '3':
-            self.log("getTrailerList, Youtube")
-            try:
-                YoutubeLST = self.createYoutubeFilelist(REAL_SETTINGS.getSetting('trailerschannel'), '2', '200', '2', '200')
+        #Kodi Library
+        # if TrailersType == '2':
+            # self.log("getTrailerList, Kodi Library")
+            # json_query = ('{"jsonrpc":"2.0","method":"VideoLibrary.GetMovies","params":{"properties":["genre","trailer","runtime"]}, "id": 1}')
+            # json_detail = self.sendJSON(json_query)
+            
+            # if REAL_SETTINGS.getSetting('trailersgenre') == 'true' and GenreChtype == True:
+                # JsonLST = ascii(json_detail.split("},{"))
+                # match = [s for s in JsonLST if chname in s]
                 
-                for i in range(len(YoutubeLST)):    
-                    self.setBackgroundStatus("Initializing: Loading Channel " + str(self.settingChannel),string2="adding Youtube Trailers")
-                    Youtube = YoutubeLST[i]
-                    duration = Youtube.split(',')[0]
-                    trailer = Youtube.split('\n', 1)[-1]
+                # for i in range(len(match)):    
+                    # self.setBackgroundStatus("Initializing: Loading Channel " + str(self.settingChannel),string2="adding Library Genre Trailers")
+                    # duration = 120
+                    # json = (match[i])
+                    # trailer = json.split(',"trailer":"',1)[-1]
+                    # if ')"' in trailer:
+                        # trailer = trailer.split(')"')[0]
+                    # else:
+                        # trailer = trailer[:-1]
                     
-                    if trailer != '' or trailer != None:
-                        YoutubeTrailer = (str(duration) + ',' + trailer)
-                        YoutubeTrailerLST.append(YoutubeTrailer)
-                TrailerLST.extend(YoutubeTrailerLST)
-            except Exception,e:
-                self.log("getTrailerList failed! " + str(e), xbmc.LOGERROR)
+                    # if trailer != '' or trailer != None or trailer != '"}]}':
+                        # if 'http://www.youtube.com/watch?hd=1&v=' in trailer:
+                            # trailer = trailer.replace("http://www.youtube.com/watch?hd=1&v=", self.youtube_player).replace("http://www.youtube.com/watch?v=", self.youtube_player)
+                        # JsonTrailer = (str(duration) + ',' + trailer)
+                        # if JsonTrailer != '120,':
+                            # JsonTrailerLST.append(JsonTrailer)
+                # TrailerLST.extend(JsonTrailerLST)
+            
+            # if self.youtube_player != 'False':
+
+                # try:
+                    # self.log('getTrailerList, json_detail using cache')
+
+
+                    # else:
+                        # JsonLST = (json_detail.split("},{"))
+                        # match = [s for s in JsonLST if 'trailer' in s]
+                        # for i in range(len(match)):                  
+                            # self.setBackgroundStatus("Initializing: Loading Channel " + str(self.settingChannel),string2="adding Library Trailers")
+                            # duration = 120
+                            # json = (match[i])
+                            # trailer = json.split(',"trailer":"',1)[-1]
+                            # if ')"' in trailer:
+                                # trailer = trailer.split(')"')[0]
+                            # else:
+                                # trailer = trailer[:-1]
+                            # if trailer != '' or trailer != None or trailer != '"}]}':
+                                # if 'http://www.youtube.com/watch?hd=1&v=' in trailer:
+                                    # trailer = trailer.replace("http://www.youtube.com/watch?hd=1&v=", self.youtube_player).replace("http://www.youtube.com/watch?v=", self.youtube_player)
+                                # JsonTrailer = (str(duration) + ',' + trailer)
+                                # if JsonTrailer != '120,':
+                                    # JsonTrailerLST.append(JsonTrailer)
+                        # TrailerLST.extend(JsonTrailerLST)     
+                # except Exception,e:
+                    # self.log("getTrailerList failed! " + str(e), xbmc.LOGERROR)
+                    
+        # #Youtube
+        # if TrailersType == '3':
+            # self.log("getTrailerList, Youtube")
+            # try:
+                # YoutubeLST = self.createYoutubeFilelist(REAL_SETTINGS.getSetting('trailerschannel'), '2', '200', '2', '200')
                 
-        #Internet
-        if TrailersType == '4':
-            self.log("getTrailerList, Internet")
-            try:   
-                self.setBackgroundStatus("Initializing: Loading Channel " + str(self.settingChannel),string2="adding Internet Trailers")
-                TrailerLST = self.InternetTrailer()
-            except Exception,e:
-                self.log("getTrailerList failed! " + str(e), xbmc.LOGERROR)
+                # for i in range(len(YoutubeLST)):    
+                    # self.setBackgroundStatus("Initializing: Loading Channel " + str(self.settingChannel),string2="adding Youtube Trailers")
+                    # Youtube = YoutubeLST[i]
+                    # duration = Youtube.split(',')[0]
+                    # trailer = Youtube.split('\n', 1)[-1]
+                    
+                    # if trailer != '' or trailer != None:
+                        # YoutubeTrailer = (str(duration) + ',' + trailer)
+                        # YoutubeTrailerLST.append(YoutubeTrailer)
+                # TrailerLST.extend(YoutubeTrailerLST)
+            # except Exception,e:
+                # self.log("getTrailerList failed! " + str(e), xbmc.LOGERROR)
+                
+        # #Internet
+        # if TrailersType == '4':
+            # self.log("getTrailerList, Internet")
+            # try:   
+                # self.setBackgroundStatus("Initializing: Loading Channel " + str(self.settingChannel),string2="adding Internet Trailers")
+                # TrailerLST = self.InternetTrailer()
+            # except Exception,e:
+                # self.log("getTrailerList failed! " + str(e), xbmc.LOGERROR)
         # cleanup   
         del LocalTrailerLST[:]
         del JsonTrailerLST[:]
@@ -4745,7 +4657,7 @@ class ChannelList:
 
                                     if dur == 0:
                                         self.log('getFileList_NEW, parsing for accurate duration')
-                                        if not file.startswith(("plugin", "upnp")) and isLowPower() == False:
+                                        if not file.startswith(("plugin", "upnp")):
                                             dur = self.getDuration(file)
                                             durParsed = True
                                             
