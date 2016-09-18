@@ -27,6 +27,26 @@
     </extension>
 </addon>
 
+<addon id="plugin.video.adverts" name="TV Adverts" version="0.1.0" provider-name="Lunatixz, lordindy">
+    <requires>
+        <import addon="xbmc.python" version="2.14.0"/>
+        <import addon="script.module.beautifulsoup" version="3.2.1"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="default.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>Watch TV ads from Advertolog</summary>
+        <description>Watch tv ads categorized by country, business, year from Advertolog</description>
+        <platform>all</platform>
+        <license>GNU GENERAL PUBLIC LICENSE. Version 3, June 2007</license>
+        <source>https://github.com/Lunatixz/XBMC_Addons/tree/master/plugin.video.adverts</source>
+        <email>pseudotvlive@gmail.com</email>
+        <website>www.pseudotvlive.com</website>
+        <forum>http://pseudotvlive.com/index.php/forum</forum>
+    </extension>
+</addon>
+
 <addon id="plugin.video.playonbrowser" name="Playon Browser" version="1.0.13" provider-name="Lunatixz, Sytone">
   <requires>
     <import addon="xbmc.python" version="2.14.0"/>
