@@ -203,7 +203,7 @@ class MyPlayer(xbmc.Player):
         # fix for fullscreen video bug when playback is started while epg is opened.
         if self.overlay.isWindowOpen() != False:
             self.overlay.windowSwap(self.overlay.isWindowOpen(),True)
-        self.Player.onPlaybackAction()
+        self.onPlaybackAction()
  
  
     def isOndemand(self, title, file):

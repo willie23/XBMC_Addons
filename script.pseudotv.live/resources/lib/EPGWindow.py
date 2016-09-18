@@ -74,7 +74,7 @@ try:
             try:
                 self.rowCount = int(getProperty("EPG.rowCount"))
             except:
-                self.closeEPG()
+                self.rowCount = 6
                 
             self.channelButtons = [None] * self.rowCount
             self.channelTags = [None] * self.rowCount
@@ -550,8 +550,9 @@ try:
                                 shouldskip = True
                                 tmpdur = 0
                             elif chtype == 8 and datetime_to_epoch(self.MyOverlayWindow.channels[curchannel - 1].getItemtimestamp(playlistpos)) + self.MyOverlayWindow.channels[curchannel - 1].getItemDuration(playlistpos) < time.time():
+                                ADDON_SETTINGS.setSetting('Channel_' + str(curchannel) + '_changed', "True")
                                 shouldskip = True
-                                tmpdur = LIVETV_MAXPARSE 
+                                tmpdur = LIVETV_MAXPARSE
                             elif chtype not in IGNORE_SEEKTIME_CHTYPE:
                                 nextlen = self.MyOverlayWindow.channels[curchannel - 1].getItemDuration(playlistpos + 1)
                                 prevlen = self.MyOverlayWindow.channels[curchannel - 1].getItemDuration(playlistpos - 1)

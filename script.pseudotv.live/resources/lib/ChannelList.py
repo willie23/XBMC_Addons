@@ -1249,6 +1249,7 @@ class ChannelList:
     
     def makeTMPSTR(self, duration, Stitle, year, SEtitle, description, GenreLiveID, file, timestamp=None, includeMeta=True):
         self.log("makeTMPSTR, includeMeta = " + str(includeMeta))
+        chtype = self.getChtype(self.settingChannel)
         genre, LiveID = self.packGenreLiveID(GenreLiveID)
         type, id, dbepid, managed, playcount, rating, hd, cc, stars, year = self.unpackLiveID(LiveID)
         Stitle = self.cleanLabels(Stitle)
@@ -1312,6 +1313,8 @@ class ChannelList:
             self.log("description Trim failed! " + str(e))
             description = (description[:350])  
             
+        if chtype == 8:
+            description = description + ' ' + timestamp
         tmpstr = str(duration) + ',' + Stitle + "//" + SEtitle + "//" + description + "//" + genre + "//" + timestamp + "//" + LiveID + '\n' + file
         tmpstr = tmpstr.replace("\\n", " ").replace("\\r", " ").replace("\\\"", "\"")                  
         return tmpstr
