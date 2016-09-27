@@ -1,0 +1,27 @@
+<settings>
+    <category label="Config">
+        <setting id="Poll_TIME" label="Ping Every X secs" type="slider" default="1" range="1,1,60" option="int" />
+        <setting id="UPNP_OFFSET" type="slider"   label="Playback Offset (milliseconds)"default="0.1" range="0,.01,5" option="float" />
+        <setting id="Enable_Debugging" type="bool" label="Enable Debug Logging" default="false" />
+        <setting type="sep" />
+        <setting id="UPNP1" type="bool" label="Enable Kodi [1]" default="false" />
+        <setting id="UPNP1_IPP" subsetting="true" type="text"  label="Enter IP:Port" visible="eq(-1,true)" default="0.0.0.0:8080" />
+        <setting id="UPNP1_UPW" subsetting="true" type="text"   label="Enter Username:Password" option="hidden" visible="eq(-2,true)" default="kodi:kodi" />
+        <setting type="sep" />
+        <setting id="UPNP2" type="bool"   label="Enable Kodi [2]" default="false" />
+        <setting id="UPNP2_IPP" subsetting="true" type="text"  label="Enter IP:Port" visible="eq(-1,true)" default="0.0.0.0:8080" />
+        <setting id="UPNP2_UPW" subsetting="true" type="text"   label="Enter Username:Password" option="hidden" visible="eq(-2,true)" default="kodi:kodi" />
+        <setting type="sep" />
+        <setting id="UPNP3" type="bool"   label="Enable Kodi [3]" default="false" />
+        <setting id="UPNP3_IPP" subsetting="true" type="text"  label="Enter IP:Port" visible="eq(-1,true)" default="0.0.0.0:8080" />
+        <setting id="UPNP3_UPW" subsetting="true" type="text"   label="Enter Username:Password" option="hidden" visible="eq(-2,true)" default="kodi:kodi" />
+        <setting type="sep" />
+        <setting id="UPNP4" type="bool"   label="Enable Kodi [4]" default="false" />
+        <setting id="UPNP4_IPP" subsetting="true" type="text"  label="Enter IP:Port" visible="eq(-1,true)" default="0.0.0.0:8080" />
+        <setting id="UPNP4_UPW" subsetting="true" type="text"   label="Enter Username:Password" option="hidden" visible="eq(-2,true)" default="kodi:kodi" />
+        <setting type="sep" />
+        <setting id="UPNP5" type="bool"   label="Enable Kodi [5]" default="false" />
+        <setting id="UPNP5_IPP" subsetting="true" type="text"  label="Enter IP:Port" visible="eq(-1,true)" default="0.0.0.0:8080" />
+        <setting id="UPNP5_UPW" subsetting="true" type="text"   label="Enter Username:Password" option="hidden" visible="eq(-2,true)" default="kodi:kodi" />
+    </category>
+</settings>
