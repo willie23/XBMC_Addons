@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window>
+    <allowoverlay>no</allowoverlay>
+    <zorder>1</zorder>
+    <coordinates>
+        <left>0</left>
+        <top>0</top>
+    </coordinates> 
+    <backgroundcolor>0</backgroundcolor>
+    <controls>         
+        <control type="image">
+            <top>0</top>
+            <left>0</left>
+            <width>1920</width>
+            <height>1080</height>
+            <texture>background.png</texture>
+        </control>
+        <control type="grouplist">
+            <description>datetime</description>
+            <top>0</top>
+            <left>0</left>
+            <itemgap>10</itemgap>
+            <orientation>vertical</orientation>
+            <control type="label">
+                <description>TIME</description>
+                <width>800</width>
+                <height>80</height>
+                <visible>true</visible>
+                <align>right</align>
+                <aligny>center</aligny>
+                <scroll>false</scroll>
+                <info>Window(10000).Property(Mirror.TIME)</info>
+                <number></number>
+                <angle>90</angle>
+                <haspath>false</haspath>
+                <font>WeatherTemp</font>
+                <textcolor>FFB2D4F5</textcolor>
+                <shadowcolor>ff000000</shadowcolor>
+                <wrapmultiline>false</wrapmultiline>
+                <scrollspeed>50</scrollspeed>
+                <scrollsuffix> - </scrollsuffix>
+            </control>
+            <control type="label">
+                <description>DAY</description>
+                <width>250</width>
+                <height>30</height>
+                <visible>true</visible>
+                <align>right</align>
+                <aligny>center</aligny>
+                <scroll>false</scroll>
+                <info>Window(10000).Property(Mirror.DAY)</info>
+                <number></number>
+                <angle>90</angle>
+                <haspath>false</haspath>
+                <font>font12</font>
+                <textcolor>FFB2D4F5</textcolor>
+                <shadowcolor>ff000000</shadowcolor>
+                <wrapmultiline>false</wrapmultiline>
+                <scrollspeed>50</scrollspeed>
+                <scrollsuffix> - </scrollsuffix>
+            </control>
+            <control type="label">
+                <description>DATE</description>
+                <width>250</width>
+                <height>30</height>
+                <visible>true</visible>
+                <align>right</align>
+                <aligny>center</aligny>
+                <scroll>false</scroll>
+                <info>Window(10000).Property(Mirror.DATE)</info>
+                <number></number>
+                <angle>90</angle>
+                <haspath>false</haspath>
+                <font>font12</font>
+                <textcolor>FFB2D4F5</textcolor>
+                <shadowcolor>ff000000</shadowcolor>
+                <wrapmultiline>false</wrapmultiline>
+                <scrollspeed>50</scrollspeed>
+                <scrollsuffix> - </scrollsuffix>
+            </control>
+        </control>
+    </controls>     
+</window>
