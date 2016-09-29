@@ -57,9 +57,10 @@ class MIRROR(xbmcgui.WindowXMLDialog):
                 return
             time.sleep(1)
             #todo news fill every 15mins
+            self.fillGreeting()
             self.setTimeLabels()
             self.fillNews()
-            
+            time.sleep(60)
             
           
     def onAction(self, act):
@@ -80,6 +81,20 @@ class MIRROR(xbmcgui.WindowXMLDialog):
             
     def clearProperty(self, str):
         xbmcgui.Window(10000).clearProperty(str)    
+
+        
+    def fillGreeting(self):
+        # todo get user name
+        name = 'Kevin'
+        currentTime = datetime.datetime.now()
+        if currentTime.hour < 12:
+            string = 'Good morning.'
+        elif 12 <= currentTime.hour < 18:
+            string = 'Good afternoon.'
+        else:
+            string = 'Good evening.'
+        self.setProperty('Mirror.GREETING',string)
+        self.setProperty('Mirror.NAME',name)
 
         
     # set the time labels 24/12 hr
@@ -121,3 +136,5 @@ del myMIRROR
 # https://api.darksky.net/forecast/17cca51f6418410bec179f6faf8604b8/37.8267,-122.4233 #enhanced weather api or kodi weather?
 # https://pythonhosted.org/python-geoip/ loc by ip
 # custom fonts todo
+# custom icons todo
+# user settings, rss feeds, weather source?, user name, 24/12 clock

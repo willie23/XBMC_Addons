@@ -16,9 +16,53 @@
             <texture>background.png</texture>
         </control>
         <control type="grouplist">
-            <description>Left Side</description>
+            <description>Left Side Top (Weather)</description>
+            <top>0</top>
+            <left>20</left>
+            <itemgap>10</itemgap>
+            <orientation>vertical</orientation>
+            <control type="label">
+                <description>Greeting</description>
+                <width>800</width>
+                <height>40</height>
+                <info>Window(10000).Property(Mirror.GREETING)</info>
+                <font>font30_title</font>
+                <align>left</align>
+            </control>
+            <control type="label">
+                <description>Greeting</description>
+                <width>800</width>
+                <height>30</height>
+                <info>Window(10000).Property(Mirror.NAME)</info>
+                <font>font16</font>
+                <align>left</align>
+            </control>
+            <control type="group">
+                <top>400</top>
+                <control type="label">
+                    <description>Weather Temperature</description>
+                    <width>800</width>
+                    <height>80</height>
+                    <label>$INFO[Weather.Temperature]</label>
+                    <font>WeatherTemp</font>
+                    <align>left</align>
+                    <visible effect="fade" time="250">Weather.IsFetched</visible>
+                </control>
+                <control type="image">
+                    <left>250</left>
+                    <description>Weather conditions</description>
+                    <width>150</width>
+                    <height>150</height>
+                    <texture>$INFO[Weather.Conditions]</texture>
+                    <colordiffuse>98FFFFFFF</colordiffuse>
+                    <visible effect="fade" time="250">Weather.IsFetched</visible>
+                </control>
+            </control>
+        </control>
+        <control type="grouplist">
+            <description>Left Side Bottom (News)</description>
             <top>540</top>
-            <left>0</left>
+            <left>20</left>
             <itemgap>10</itemgap>
             <orientation>vertical</orientation>
             <control type="group">
