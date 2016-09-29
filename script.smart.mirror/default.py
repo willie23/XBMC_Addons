@@ -16,15 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Smart Mirror.  If not, see <http://www.gnu.org/licenses/>.
 
-
-#setting options
-#trakt, imdb, rot tomato support, change image rotation, change marquee/sign image, enter marquee text, enable pseudo "onnow" banners
-
-#todo
-#autostart, detect kodi res, add trailers, custom marquee, event triggers, pseudotv onnow, random posters, random trailers, next airing, transition anim.
 import threading, random, datetime, time
 import re, os, sys
-import json, urllib, requests
+import json, urllib, requests, feedparser
 import xbmc, xbmcgui, xbmcplugin, xbmcvfs, xbmcaddon
 
 # Plugin Info
@@ -62,8 +56,11 @@ class MIRROR(xbmcgui.WindowXMLDialog):
             if self.isExiting == True:
                 return
             time.sleep(1)
+            #todo news fill every 15mins
             self.setTimeLabels()
-          
+            self.fillNews()
+            
+            
           
     def onAction(self, act):
         action = act.getId()
@@ -85,7 +82,7 @@ class MIRROR(xbmcgui.WindowXMLDialog):
         xbmcgui.Window(10000).clearProperty(str)    
 
         
-    # set the time labels
+    # set the time labels 24/12 hr
     def setTimeLabels(self):
         self.log('setTimeLabels')
         now = datetime.datetime.now()
@@ -93,13 +90,34 @@ class MIRROR(xbmcgui.WindowXMLDialog):
         self.setProperty('Mirror.DATE',now.strftime('%B %d'))
         
         if self.clockMode == 0:
-            self.setProperty('Mirror.TIME',now.strftime('%i:%M'))
+            self.setProperty('Mirror.TIME',now.strftime('%I:%M'))
         else:
             self.setProperty('Mirror.TIME',now.strftime('%H:%M'))
 
+       
+    def fillNews(self):
+        #todo custom user rss feeds
+        self.setProperty('Mirror.NEWS_1',self.feedparse('http://hosted2.ap.org/atom/APDEFAULT/3d281c11a96b4ad082fe88aa0db04305'))
+        self.setProperty('Mirror.NEWS_2',self.feedparse('http://hosted2.ap.org/atom/APDEFAULT/cae69a7523db45408eeb2b3a98c0c9c5'))
+        self.setProperty('Mirror.NEWS_3',self.feedparse('http://hosted2.ap.org/atom/APDEFAULT/495d344a0d10421e9baa8ee77029cfbd'))
+        self.setProperty('Mirror.NEWS_4',self.feedparse('http://hosted2.ap.org/atom/APDEFAULT/b2f0ca3a594644ee9e50a8ec4ce2d6de'))
         
+        
+    def feedparse(self, url):
+        d = feedparser.parse(url)
+        header = (d['feed']['title'])
+        post = d['entries'][0]['title']
+        for post in d.entries:
+            try:
+                return post.title
+            except:
+                pass
         
         
 myMIRROR = MIRROR("mirror.xml", ADDON_PATH, 'default')
 myMIRROR.doModal()
 del myMIRROR
+# http://hosted2.ap.org/APDEFAULT/APNewsFeeds feedparser
+# https://api.darksky.net/forecast/17cca51f6418410bec179f6faf8604b8/37.8267,-122.4233 #enhanced weather api or kodi weather?
+# https://pythonhosted.org/python-geoip/ loc by ip
+# custom fonts todo

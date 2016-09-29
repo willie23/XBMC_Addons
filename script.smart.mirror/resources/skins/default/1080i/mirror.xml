@@ -16,9 +16,113 @@
             <texture>background.png</texture>
         </control>
         <control type="grouplist">
-            <description>datetime</description>
-            <top>0</top>
+            <description>Left Side</description>
+            <top>540</top>
             <left>0</left>
+            <itemgap>10</itemgap>
+            <orientation>vertical</orientation>
+            <control type="group">
+                <control type="image">
+                    <top>0</top>
+                    <left>0</left>
+                    <width>80</width>
+                    <height>80</height>
+                    <align>left</align>
+                    <aligny>top</aligny>
+                    <texture>news.png</texture>
+                </control>
+                <control type="label">
+                    <top>0</top>
+                    <left>100</left>
+                    <width>800</width>
+                    <height>80</height>
+                    <align>left</align>
+                    <aligny>bottom</aligny>
+                    <info>Window(10000).Property(Mirror.NEWS_1)</info>
+                </control>
+            </control>
+            <control type="group">
+                <control type="image">
+                    <top>100</top>
+                    <left>0</left>
+                    <width>80</width>
+                    <height>80</height>
+                    <align>left</align>
+                    <aligny>top</aligny>
+                    <texture>news.png</texture>
+                </control>
+                <control type="label">
+                    <top>100</top>
+                    <left>100</left>
+                    <width>800</width>
+                    <height>80</height>
+                    <align>left</align>
+                    <aligny>bottom</aligny>
+                    <info>Window(10000).Property(Mirror.NEWS_2)</info>
+                </control>
+            </control>
+            <control type="group">
+                <control type="image">
+                    <top>200</top>
+                    <left>0</left>
+                    <width>80</width>
+                    <height>80</height>
+                    <align>left</align>
+                    <aligny>top</aligny>
+                    <texture>news.png</texture>
+                </control>
+                <control type="label">
+                    <top>200</top>
+                    <left>100</left>
+                    <width>800</width>
+                    <height>80</height>
+                    <align>left</align>
+                    <aligny>bottom</aligny>
+                    <info>Window(10000).Property(Mirror.NEWS_3)</info>
+                </control>
+            </control>
+            <control type="group">
+                <control type="image">
+                    <top>300</top>
+                    <left>0</left>
+                    <width>80</width>
+                    <height>80</height>
+                    <align>left</align>
+                    <aligny>top</aligny>
+                    <texture>news.png</texture>
+                </control>
+                <control type="label">
+                    <top>300</top>
+                    <left>100</left>
+                    <width>800</width>
+                    <height>80</height>
+                    <align>left</align>
+                    <aligny>bottom</aligny>
+                    <info>Window(10000).Property(Mirror.NEWS_4)</info>
+                </control>
+            </control>
+        </control>
+            
+            
+            
+            
+            
+            
+        <control type="videowindow">
+            <description>VideoWindow</description>
+            <top>100</top>
+            <left>1520</left>
+            <width>400</width>      
+            <height>200</height>
+            <align>right</align>
+            <aligny>center</aligny>
+            <aspectratio>keep</aspectratio>
+            <visible>Player.Playing</visible>
+        </control>
+        <control type="grouplist">
+            <description>Right Side</description>
+            <top>400</top>
+            <left>1080</left>
             <itemgap>10</itemgap>
             <orientation>vertical</orientation>
             <control type="label">
@@ -31,49 +135,49 @@
                 <scroll>false</scroll>
                 <info>Window(10000).Property(Mirror.TIME)</info>
                 <number></number>
-                <angle>90</angle>
+                <angle>0</angle>
                 <haspath>false</haspath>
                 <font>WeatherTemp</font>
-                <textcolor>FFB2D4F5</textcolor>
-                <shadowcolor>ff000000</shadowcolor>
+                <textcolor>FFFFFFFF</textcolor>
+                <shadowcolor></shadowcolor>
                 <wrapmultiline>false</wrapmultiline>
                 <scrollspeed>50</scrollspeed>
                 <scrollsuffix> - </scrollsuffix>
             </control>
             <control type="label">
                 <description>DAY</description>
-                <width>250</width>
-                <height>30</height>
+                <width>800</width>
+                <height>40</height>
                 <visible>true</visible>
                 <align>right</align>
                 <aligny>center</aligny>
                 <scroll>false</scroll>
                 <info>Window(10000).Property(Mirror.DAY)</info>
                 <number></number>
-                <angle>90</angle>
+                <angle>0</angle>
                 <haspath>false</haspath>
                 <font>font12</font>
-                <textcolor>FFB2D4F5</textcolor>
-                <shadowcolor>ff000000</shadowcolor>
+                <textcolor>FFFFFFFF</textcolor>
+                <shadowcolor></shadowcolor>
                 <wrapmultiline>false</wrapmultiline>
                 <scrollspeed>50</scrollspeed>
                 <scrollsuffix> - </scrollsuffix>
             </control>
             <control type="label">
                 <description>DATE</description>
-                <width>250</width>
-                <height>30</height>
+                <width>800</width>
+                <height>40</height>
                 <visible>true</visible>
                 <align>right</align>
                 <aligny>center</aligny>
                 <scroll>false</scroll>
                 <info>Window(10000).Property(Mirror.DATE)</info>
                 <number></number>
-                <angle>90</angle>
+                <angle>0</angle>
                 <haspath>false</haspath>
                 <font>font12</font>
-                <textcolor>FFB2D4F5</textcolor>
-                <shadowcolor>ff000000</shadowcolor>
+                <textcolor>FFFFFFFF</textcolor>
+                <shadowcolor></shadowcolor>
                 <wrapmultiline>false</wrapmultiline>
                 <scrollspeed>50</scrollspeed>
                 <scrollsuffix> - </scrollsuffix>
