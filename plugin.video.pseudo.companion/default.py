@@ -1,20 +1,20 @@
-#   Copyright (C) 2015 Kevin S. Graer
+#   Copyright (C) 2016 Kevin S. Graer
 #
 #
 # This file is part of PseudoCompanion.
 #
-# PseudoTV is free software: you can redistribute it and/or modify
+# PseudoCompanion is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# PseudoTV is distributed in the hope that it will be useful,
+# PseudoCompanion is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with PseudoTV.  If not, see <http://www.gnu.org/licenses/>.
+# along with PseudoCompanion.  If not, see <http://www.gnu.org/licenses/>.
 
 # -*- coding: utf-8 -*-
 import os, re, sys, time, zipfile, requests, random, traceback
@@ -22,11 +22,6 @@ import urllib, urllib2,cookielib, base64, fileinput, shutil, socket, httplib, ur
 import xbmc, xbmcgui, xbmcplugin, xbmcvfs, xbmcaddon
 import time, _strptime, string, datetime, ftplib, hashlib, smtplib, feedparser, imp, operator
 
-if sys.version_info < (2, 7):
-    import simplejson as json
-else:
-    import json
-    
 from pyfscache import *
 from xml.etree import ElementTree as ET
 from xml.dom.minidom import parse, parseString
@@ -34,10 +29,12 @@ from datetime import timedelta
 from metahandler import metahandlers
 from utils import *
       
-def fillPseudoNetworks():            
-    getParamount()
-    if isDon() == True:
-        addDir('Popcorn Movies','','','getLBchannels',3002,POPCORN_ICON,POPCORN_ICON)
+if sys.version_info < (2, 7):
+    import simplejson as json
+else:
+    import json
+  
+def fillPseudoNetworks(): 
     getLBchannels()
     getExternalChannels('YouTube','Networks')
       
@@ -55,7 +52,7 @@ def getLBchannels(limit=100):
     except:
         return
       
-def getLBchannelsItems(id, limit=MEDIA_LIMIT):
+def getLBchannelsItems(id, limit=100):
     log("getLBchannelsItems")
     try:        
         data = getJson('https://api-public.guidebox.com/v1.43/US/'+GBOX_API_KEY+'/' + ('leanback/%s/0/%d' % (str(id),limit)))
@@ -68,8 +65,7 @@ def getLBchannelsItems(id, limit=MEDIA_LIMIT):
             thumb = uni(Item["thumbnail_400x225"])
             link = uni(youtube_player_ok + Item["free_web_sources"][0]['link'].replace('https://www.youtube.com/watch?v=',''))
             Description = cleanLabels(Item["overview"].replace("\n",' ').replace("\'",'')).split('http:')[0]
-
-            # setup infoList
+            
             infoList = {}
             infoList['mediatype']     = content_type
             infoList['Duration']      = int(Item["duration"])
@@ -77,31 +73,28 @@ def getLBchannelsItems(id, limit=MEDIA_LIMIT):
             infoList['Plot']          = Description
             infoList['Season']        = int(Item["season_number"] or '0')
             infoList['Episode']       = int(Item["episode_number"] or '0')
-            # setup infoArt
             infoArt = {}
             infoArt['thumb']        = thumb
             infoArt['poster']       = thumb
             infoArt['landscape']    = thumb
-
-            # 'imdbid':Item["imdb_id"]
-            # 'tvdbid':Item["tvdb"]
             addLink(title,Description,link,'getLBchannelsItems',5001,thumb,thumb,infoList=infoList,infoArt=infoArt,total=len(rtItems))
     except:
         return
         
 def getSources():
     log('getSources')
-    DonCHK()
     STATE = getProperty('PseudoCompanion.STATE') == 'true'
     STATUS = getProperty('PseudoCompanion.STATUS')
     if STATE == True:
-        addDir('PseudoTV Live: '+STATUS,'','','getSources',9000,PTVL_ICON,PTVL_ICON)
+        getOnline()
     else:
-        addDir('PseudoTV Live: '+STATUS,'','','getSources','',PTVL_ICON_GRAY,PTVL_ICON_GRAY)
-        addDir('Channel Tools','','','',9001)
-        getOnlineMedia()
-        addDir('PseudoLibrary','','','',9003)
-        addDir('Donor Exclusives','','','',9002)
+        getOffline()
+        
+def getOffline():
+    log('getOffline')
+    addDir('Channel Tools','','','',9001)
+    getOnlineMedia()
+    addDir('PseudoLibrary','','','',9003)
         
 def getOnline():
     log('getOnline')
@@ -190,41 +183,24 @@ def getError():
     infoList['Year']          = '0'
     addLink('5', title,'','getMisc',-1,debug_icon,debug_icon,'',infoList,total=1)
    
-def getExclusives():
-    getMedia()
-    # addDir('Update Guidedata','','','getTools',11000)
-    
 def getLibrary():
-    addDir('Browse Local Media','','','getMedia',7003)
+    addDir('Browse Local','','','getMedia',7003)
+    addDir('Browse Strms','','','getMedia',7005)
     
 def getTools():
     addDir('Channel Manager','','','getTools',8001)
     
-def getGuideData():
-    SyncXMLTV_NEW()
-    addLink('Guidedata Last Checked: %s' %REAL_SETTINGS.getSetting("SyncPTV_ChckRun"),'','','getExclusives',-1)
-    addLink('Guidedata Last Updated: %s' %REAL_SETTINGS.getSetting("SyncPTV_LastRun"),'','','getExclusives',-1)
-    addLink('Guidedata Next Updated: %s' %REAL_SETTINGS.getSetting("SyncPTV_NextRun"),'','','getExclusives',-1)
-
 def getMedia():
     log('getMedia')
     addDir('BCT Sources','','','getMedia',7000)
     addDir('PseudoCinema','','','getMedia',7002,PC_ICON,PC_ICON)
     addDir('Popcorn Movies','','genres','getMedia',3001,POPCORN_ICON,POPCORN_ICON)
-    
-def getDonExclusive():
-    if isDon() == True:
-        getExclusives()
-    else:
-        getDonate()
-
-def getDonate():
-    addDir('Donor Exclusives Only Avaiable after Donation','','','getDonExclusive',-1)
-    addDir('Visit www.pseudotvlive.com','','','getDonExclusive',-1)
-    addDir('Enter Donor Login Information in settings','','','getDonExclusive',10004)
 
 def getOnlineMedia():
     addDir('PseudoNetworks','','','getOnlineMedia',3000,WORLD_ICON,WORLD_ICON)
+    
+def getStrms():
+    comingsoon()
     
 def getLocal():
     log('getLocal') 
@@ -234,21 +210,7 @@ def getLocal():
     addDir('Plugin Music','','music','',6001)
     addDir('PVR Backend','','pvr://','',6002)
     addDir('UPNP Servers','','upnp://','',6002)
-        
-def getSideBar():
-    addDir('Now Watching','','1000','getSideBar',9998)
-    addDir('Browse','','','getSideBar',4000)
-    addDir('Search','','','getSideBar',4001)
-    addDir('Last Channel','','{"jsonrpc":"2.0","method":"Input.ExecuteAction","params":{"action":"shift"},"id":9}','getSideBar',9999)
-    addDir('Favorites Flip','','{"jsonrpc":"2.0","method":"Input.ExecuteAction","params":{"action":"symbols"},"id":8}','getSideBar',9999)
-    addDir('Mute','','','getSideBar',4002)
-    addDir('Subtitle','','1008','getSideBar',9998)
-    addDir('Player Settings','','','getSideBar',4003)
-    addDir('Sleep','','{"jsonrpc":"2.0","method":"Input.ExecuteAction","params":{"action":"aspectratio"},"id":7}','getSideBar',9999)
-    addDir('Exit','','1011','getSideBar',9998)
-    
-    # addDir('Show Info','','','',4004)#ACTION_SHOW_INFO
-    # addDir('Show MoreInfo','','','',4005)#ACTION_CONTEXT_MENU
+
 def getReminders():
     log('getReminders')
     try:
@@ -303,13 +265,14 @@ def ChannelGuide():
             chnum  = GuideLstItem['Chnum']
             chname = GuideLstItem['Chname']
             chtype = GuideLstItem['Chtype']
+            chtypeLabel = GuideLstItem['ChtypeLabel']
             chlogo = GuideLstItem['LOGOART']
-            label  = ('%d| %s' %(chnum, chname))
+            label  = GuideLstItem['Label']
             
             infoList = {}
             infoList['mediatype']     = content_type
             infoList['title']         = chname
-            infoList['tvshowtitle']   = getChanTypeLabel(chtype)
+            infoList['tvshowtitle']   = chtypeLabel
             infoList['season']        = 0
             infoList['episode']       = chnum
             addDir(label,'',str(chnum),'ChannelGuide',10000,chlogo,chlogo,chlogo,infoList,False,content_type)
@@ -521,156 +484,6 @@ def getBCTs():
     log('getBCTs')
     comingsoon()
 
-def getParamount():
-    addDir('New Releases','','PLd0LhgZxFkVKh_JNXcdHoPYo832Wu9fub','getParamount',3012,NEWR_ICON,NEWR_ICON)
-    addDir('Movies 4 Men','','PLd0LhgZxFkVJbKX_LyERYB6TRk9pbNO5O','getParamount',3012,MMOVIE_ICON,MMOVIE_ICON)
-    addDir('Action Movies','','PLd0LhgZxFkVII3x-u6Ogh90iEepCLjKcW','getParamount',3012,ACTION_ICON,ACTION_ICON)
-    addDir('Classics Movies','','PLd0LhgZxFkVI7ds18u2o-qVluJfREYsIf','getParamount',3012,CLASSIC_ICON,CLASSIC_ICON)
-    addDir('Comedy Movies','','PLd0LhgZxFkVINkUJWrXd3AdGkrPGfpByw','getParamount',3012,COMEDY_ICON,COMEDY_ICON)
-    addDir('Drama Movies','','PLd0LhgZxFkVLtg4IZ-1jgGPmwZyhR-66o','getParamount',3012,DRAMA_ICON,DRAMA_ICON)
-    addDir('Horror Movies','','PLd0LhgZxFkVKnyj6NIMTwGfL-KqBtGyFZ','getParamount',3012,HORROR_ICON,HORROR_ICON)
-    addDir('Sci-Fi Movies','','PLd0LhgZxFkVJFsvRos55jeIKHKBmfN2uA','getParamount',3012,SCIFI_ICON,SCIFI_ICON)
-    addDir('Thriller Movies','','PLd0LhgZxFkVJ4iI_mkUiHjwhW3c98GoLC','getParamount',3012,THRILLER_ICON,THRILLER_ICON)
-    addDir('Western Movies','','PLd0LhgZxFkVLB8Zs8bQP5B-bnLimzY0FC','getParamount',3012,WESTERN_ICON,WESTERN_ICON)
-
-def getParamountItems(url):
-    getYoutubeVideos('movie', 'getParamountItems', 2, url, '', 200, '')
-    
-def getPopcorn():
-    log('getPopcorn')
-    qualitys = ['1080p','720p','480p']
-    for i in range(len(qualitys)):
-        item = qualitys[i]
-        addDir(item,'','','getPopcorn',3002,POPCORN_ICON,POPCORN_ICON)
- 
-def getPopcorn1(opt):
-    log('getPopcorn1')
-    if opt in ['Popular All','Popular Today','Popcorn Movies']:
-        if opt in ['Popular All','Popcorn Movies']:
-            rss = 'rss?o=-popularity_day'
-        else:
-            rss = 'rss?o=-popularity_all'
-        return getPopcornItems(rss.lower())
-    else:
-        rss = ('rss?q='+opt.replace('p',''))
-        years = ['2010-Now','2000-2010','1990-2000','1980-1990','1970-1980','1960-1970','1950-1960','1940-1950','1930-1940','1920-1930','1910-1920']
-        for i in range(len(years)):
-            item = years[i]
-            addDir(item,'',rss,'getPopcorn',3003,POPCORN_ICON,POPCORN_ICON)
-    
-def getPopcorn2(opt, opt1):
-    log('getPopcorn2')
-    rss = opt1 + ('&y='+opt)
-    genres = ['Action','Adventure','Animation','British','Comedy','Crime','Disaster','Drama','Eastern','Erotic','Family','Fanfilm','Fantasy','Filmnoir','Foreign','History','Holiday','Horror','Indie','Kids','Music','Musical','Mystery','Neo-noir','Road movie','Romance','Science fiction','Short','Sport','Sports film','Suspense','Thriller','Tv movie','War','Western']
-    for i in range(len(genres)):
-        item = genres[i]
-        addDir(item,'',rss,'getPopcorn',3004,POPCORN_ICON,POPCORN_ICON)
-        
-def getPopcorn3(opt, opt1):
-    log('getPopcorn3')
-    rss = opt1 + ('&g='+opt.replace(' ','+'))
-    return getPopcornItems(rss.lower())
-
-def getPopcornItems(url):
-    log("getPopcornItems, url = " + url)
-    setProperty("POPrss", '')
-    showList = []
-    filecount = 0
-    
-    try:
-        line = getDonlist('popcorn.ini')
-        if not line:
-            raise
-    except:
-        addDir('Try Again Later','','','',POPCORN_ICON,POPCORN_ICON)
-        return
-        
-    feed = feedparser.parse(line[0] + url)
-    for i in range(0,len(feed['entries'])):
-        # try:
-        title = feed['entries'][i].title
-        link = str(feed['entries'][i].links[0])
-        link = str(link.split("{'href': u'")[1])
-        link = str(link.split("', ")[0])
-        description = uni(feed['entries'][i].description)
-
-        #Parse Movie info for watch link
-        try:
-            link = read_url_cached(link)
-            imdbid = str(re.compile('<a href="http://www.imdb.com/title/(.+?)"').findall(link)) 
-            imdbid = imdbid.replace("['", "").replace("']", "")
-            watch = str(re.compile('<a href="/watch/(.+?)"').findall(link))
-            watch = watch.replace("['", "").replace("']", "")
-            watch = line[0] + '/watch/' + watch
-        except Exception,e:
-            pass
-
-        #Parse watch link for youtube link
-        try:
-            link = read_url_cached(watch)
-            tubelink = str(re.compile('location = "(.+?)"').findall(link)[0])
-            xbmclink = tubelink.replace("https://", "").replace("http://", "").replace("www.youtube.com/watch?v=", youtube_player_ok).replace("http://www.youtube.com/watch?hd=1&v=", youtube_player_ok)
-            log("popcorn, xbmclink = " + xbmclink)   
-            # except Exception,e:
-                # pass
-
-            #parse youtube for movie info.
-            tubeID = tubelink.replace("https://", "").replace("http://", "").replace("www.youtube.com/watch?v=", "").replace("http://www.youtube.com/watch?hd=1&v=", "")
-            tubeAPI = 'http://gdata.youtube.com/feeds/api/videos?max-results=1&q=' + tubeID
-            tubefeed = feedparser.parse(tubeAPI)
-            year, showduration, showdescription, showtitle, showChname, id, showGenre, hd, cc = getYoutubeMeta(tubeID)
-            showthumbnail = "http://i.ytimg.com/vi/"+tubeID+"/mqdefault.jpg"
-            if tubefeed: 
-                log("popcorn, tubeAPI = " + tubeAPI)   
-                # parse missing info from youtube
-                if title == None:
-                    try:
-                        title = tubefeed['entries'][0].title
-                    except Exception,e:
-                        title = showtitle
-                        
-                if description == None:
-                    try:
-                        description = tubefeed['entries'][0].description
-                    except Exception,e:
-                        description = showdescription 
-                try:
-                    duration = tubefeed['entries'][0].yt_duration['seconds']
-                except Exception,e:
-                    duration = showduration
-                try:
-                    thumburl = tubefeed.entries[0].media_thumbnail[0]['url']
-                except Exception,e:
-                    thumburl = showthumbnail                
-                
-                year, title, showtitle = getTitleYear(title)
-                meta = metaget.get_meta('movie', title, str(year)) 
-                
-                # setup infoList
-                infoList = {}
-                infoList['mediatype']     = 'movies'
-                infoList['Duration']      = int(duration)
-                infoList['Title']         = uni(showtitle)
-                infoList['Year']          = int(year or '0')
-                infoList['Genre']         = uni(meta['genre'] or 'Unknown')
-                infoList['Plot']          = uni(meta['plot'] or description)
-                infoList['tagline']       = uni(meta['tagline'])
-                infoList['imdbnumber']    = uni(meta['imdb_id'])
-                infoList['mpaa']          = uni(meta['mpaa'] or 'NR')
-                infoList['ratings']       = float(meta['rating'] or '0.0')
-                        
-                # setup infoArt
-                infoArt = {}
-                infoArt['thumb']        = (meta['cover_url'] or thumburl)
-                infoArt['poster']       = (meta['cover_url'] or thumburl)
-                infoArt['fanart']       = (meta['backdrop_url'] or thumburl)   
-                infoArt['landscape']    = (meta['backdrop_url'] or thumburl)                       
-                addLink(showtitle,description,xbmclink,'getPopcornItems',5001,infoList=infoList,infoArt=infoArt,total=len(feed['entries']))
-        except Exception,e:
-            log("popcorn, Failed! " + str(e))                        
-    if len(feed['entries']) == 0:
-        addDir('Try Again Later','','','',POPCORN_ICON,POPCORN_ICON)    
-        
 def getCinema():
     log('getCinema')
     addDir('Cinema Theme: Default','','1','getCinema',12000,PC_ICON,PC_ICON)
@@ -678,14 +491,6 @@ def getCinema():
 
 def fillCE(theme):
     log('fillCE')
-    try:
-        theme = int(theme)-1
-        line = getDonlist('ce.ini')
-        if not line:
-            raise
-    except:
-        return
-        
     CE_THEME = ['Default','IMAX'][theme]
     
     CE_INTRO = line[0]
@@ -831,12 +636,6 @@ elif mode == 2001: getExternalChannels('YouTube','Networks')
 #getOnlineMedia
 elif mode == 3000: fillPseudoNetworks()
 elif mode == 3010: getLBchannelsItems(int(url))
-elif mode == 3001: getPopcorn()
-elif mode == 3002: getPopcorn1(name)
-elif mode == 3003: getPopcorn2(name, url)
-elif mode == 3004: getPopcorn3(name, url)
-elif mode == 3011: getParamount()
-elif mode == 3012: getParamountItems(url)
 
 #sidebar
 elif mode == 4000: getLocal()
@@ -858,6 +657,7 @@ elif mode == 7000: getBCTs()
 elif mode == 7002: getCinema()
 elif mode == 7003: getLocal()
 elif mode == 7004: getOnlineMedia()
+elif mode == 7005: getStrms()
 
 #getTools
 elif mode == 8000: getMedia()
@@ -866,7 +666,6 @@ elif mode == 8001: getPTVLManager()
 #getSources
 elif mode == 9000: getOnline()
 elif mode == 9001: getTools()
-elif mode == 9002: getDonExclusive()
 elif mode == 9003: getLibrary()
 
 elif mode == 9998: sendClick(int(url),previous)
@@ -886,13 +685,13 @@ elif mode == 10003: getYoutubePlaylist(url)
 elif mode == 10004: REAL_SETTINGS.openSettings()
 elif mode == 10005: PTVL_SETTINGS.openSettings()
 
-elif mode == 11000: getGuideData()
 
 elif mode == 12000: fillCE(url)
 
 # if mode in [0,1,2,3,4,5,6]: back('Online')                      # Return to Online Menu
 # elif mode in [9995,9999]: back('Main')                        # Return to Main Menu
 
-xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_NONE )
+# xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_NONE )
+xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_LABEL )
 xbmcplugin.setContent(int(sys.argv[1]), 'episodes')
 xbmcplugin.endOfDirectory(int(sys.argv[1]),cacheToDisc=False) # End List

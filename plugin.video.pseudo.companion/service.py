@@ -1,4 +1,4 @@
-#   Copyright (C) 2015 Kevin S. Graer
+#   Copyright (C) 2016 Kevin S. Graer
 #
 #
 # This file is part of PseudoCompanion.
@@ -19,23 +19,15 @@
 # -*- coding: utf-8 -*-
 
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs
-import os
-
-def getProperty(str):
-    return xbmcgui.Window(10000).getProperty(str)
-
-def setProperty(str1, str2):
-    xbmcgui.Window(10000).setProperty(str1, str2)
+from utils import *
 
 monitor = xbmc.Monitor()
 while not monitor.abortRequested():
-    # Sleep/wait for abort for 10 seconds
-    if monitor.waitForAbort(10):
+    # Sleep/wait for abort for 1 seconds
+    if monitor.waitForAbort(1):
         # Abort was requested while waiting. We should exit
         break
-    # chkWriteSettings2()
-    PTVL_RUNNING = getProperty('PseudoTVRunning') == "True"
-    if PTVL_RUNNING == True:
+    if getProperty('PseudoTVRunning') == "True":
         STATE = 'true'
         STATUS = '[COLOR=green]ONLINE[/COLOR]'
     else:

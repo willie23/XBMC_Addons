@@ -30,7 +30,6 @@ else:
 from pyfscache import *
 from xml.etree import ElementTree as ET
 from xml.dom.minidom import parse, parseString
-from metahandler import metahandlers
 
 # Plugin Info
 ADDON_ID = 'plugin.video.pseudo.companion'
@@ -46,17 +45,15 @@ PTVL_ID = 'script.pseudotv.live'
 PTVL_SETTINGS = xbmcaddon.Addon(id=PTVL_ID)
 YT_API_KEY = PTVL_SETTINGS.getSetting('YT_API_KEY')
 LOGODB_API_KEY = PTVL_SETTINGS.getSetting('LOGODB_API_KEY')
+TMDB_API_KEY = PTVL_SETTINGS.getSetting("TMDB_API_KEY")
 GBOX_API_KEY = PTVL_SETTINGS.getSetting("GBOX_API_KEY")
 SETTINGS_LOC = PTVL_SETTINGS.getAddonInfo('profile').decode('utf-8')
 CHANNELS_LOC = os.path.join(SETTINGS_LOC, 'cache','') #LOCKED
 REQUESTS_LOC = xbmc.translatePath(os.path.join(CHANNELS_LOC, 'requests','')) #LOCKED
 LOCK_LOC = xbmc.translatePath(os.path.join(SETTINGS_LOC, 'cache',''))
 XMLTV_CACHE_LOC = xbmc.translatePath(os.path.join(LOCK_LOC, 'xmltv',''))
-LIMIT_VALUES = [25,50,100,250,500,1000,5000,0]#Media Per/Channel, 0 = Unlimited
-try:
-    MEDIA_LIMIT = LIMIT_VALUES[int(PTVL_SETTINGS.getSetting('MEDIA_LIMIT'))]
-except:
-    MEDIA_LIMIT = 25
+PTVL_RUNNING = xbmcgui.Window(10000).getProperty('PseudoTVRunning') == "True"
+MEDIA_LIMIT = 200
 
 # PC Settings Info
 SETTINGS2_LOC = xbmc.translatePath(os.path.join(ADDON_SETTINGS,'settings2.xml'))
@@ -68,7 +65,6 @@ Automatic_Update_Delay = REAL_SETTINGS.getSetting('Automatic_Update_Delay')
 Automatic_Update_Run = REAL_SETTINGS.getSetting('Automatic_Update_Run')
 
 # Globals
-metaget = metahandlers.MetaData(preparezip=False)
 PTVC_ICON = os.path.join(ADDON_PATH, 'icon.png')
 PTVC_FANART = os.path.join(ADDON_PATH, 'fanart.jpg')
 PTVL_ICON = os.path.join(ADDON_PATH,'resources','images','icon.png')
@@ -80,12 +76,13 @@ DEBUG = REAL_SETTINGS.getSetting('Enable_Debugging') == "true"
 youtube_player_ok = 'plugin://plugin.video.youtube/?action=play_video&videoid='
 
 try:
-    UPASS = REAL_SETTINGS.getSetting('Donor_UPASS')
-except:
-    UPASS = "Username:Password"
-PTVLURL = 'http://pseudotvlive.com/ptvl/'
-PTVLURLUP = 'http://%s@pseudotvlive.com/ptvl/' %UPASS
-PTVLXMLURL = PTVLURL + 'ptvlguide.zip'
+    from metahandler import metahandlers
+    metaget = metahandlers.MetaData(preparezip=False, tmdb_api_key=TMDB_API_KEY)
+    ENHANCED_DATA = True                
+except Exception,e:  
+    ENHANCED_DATA = False
+    xbmc.log("script.pseudotv.live-ChannelList: metahandler Import failed! " + str(e))    
+
     
 # pyfscache globals
 cache_daily = FSCache(REQUESTS_LOC, days=1, hours=0, minutes=0)
@@ -954,7 +951,7 @@ def getChanTypeLabel(chantype):
     elif chantype == 13:
         return "Music Videos (Coming Soon)"
     elif chantype == 14:
-        return "Exclusive (Coming Soon)"
+        return "Extra"
     elif chantype == 15:
         return "Plugin"
     elif chantype == 16:
@@ -976,24 +973,7 @@ def remove_duplicates(values):
         return output
     except:
         return values
-  
-def chkVersion():
-    log('utils: chkVersion')
-    curver = xbmc.translatePath(os.path.join(ADDON_PATH,'addon.xml'))    
-    source = open(curver, mode='r')
-    link = source.read()
-    source.close()
-    match = re.compile('" version="(.+?)" name="PseudoTV Live"').findall(link)
-    
-    for vernum in match:
-        log("utils: Current Version = " + str(vernum))
-    try:
-        link = open_url('https://raw.githubusercontent.com/Lunatixz/XBMC_Addons/master/script.pseudotv.live/addon.xml').read() 
-        link = link.replace('\r','').replace('\n','').replace('\t','').replace('&nbsp;','')
-        match = re.compile('" version="(.+?)" name="PseudoTV Live"').findall(link)
-    except:
-        pass   
-        
+          
 def infoDialog(message, header=ADDON_NAME, show=True, sound=False, time=1000, ic=PTVC_ICON):
     setProperty('PTVL.NOTIFY_LOG', message)
     log('utils: infoDialog: ' + message)
@@ -1003,51 +983,7 @@ def infoDialog(message, header=ADDON_NAME, show=True, sound=False, time=1000, ic
         except Exception,e:
             log("utils: infoDialog Failed! " + str(e))
             xbmc.executebuiltin("Notification(%s, %s, %d, %s)" % (header, message, time, PTVC_ICON))
-            
-def isDon():
-    return getProperty("Verified_Donor") == "true"
-    
-def DonCHK():
-    log('utils: DonCHK')     
-    if REAL_SETTINGS.getSetting("Donor_Enabled") == "true": 
-        try:
-            list = getDonlist('ce.ini', test=True)
-            if len(list) == 0:
-                log('utils: DonCHK = Failed')  
-                raise Exception()
-            log('utils: DonCHK = Passed')  
-            if REAL_SETTINGS.getSetting("Donor_Verified") != "1": 
-                REAL_SETTINGS.setSetting("Donor_Verified", "1")
-                infoDialog("Donor Access Activated")
-            setProperty("Verified_Donor", 'true')
-        except:
-            DonFailed()
-    else:
-        DonFailed()
-           
-def DonFailed():
-    log('utils: DonFailed')    
-    if REAL_SETTINGS.getSetting("Donor_Verified") != "0": 
-        REAL_SETTINGS.setSetting("Donor_Verified", "0")
-        REAL_SETTINGS.setSetting("AT_Donor", "false")
-        REAL_SETTINGS.setSetting("COM_Donor", "false")
-    setProperty("Verified_Donor", 'false')
-    
-def getDonlist(list, test=False):
-    log('utils: getDonlist, test = ' + str(test))
-    nlist = []
-    if test == True:
-        list = open_url(PTVLURL + list, UPASS).readlines()
-    else:
-        list = read_url_cached(PTVLURL + list, UPASS, return_type='readlines')
-    for i in range(len(list)):
-        try:
-            nline = (list[i]).replace('\r\n','')
-            nlist.append(nline)
-        except:
-            pass
-    return nlist
-
+      
 def SyncXMLTV(force=False):
     try:
         if isDon() == True: 
@@ -1392,11 +1328,11 @@ def fillExternalList(type, source='', list='Community'):
     ExternalSetting2List = []
     ExternalSetting3List = []
     ExternalSetting4List = []
-    RSSURL = 'http://raw.github.com/PseudoTV/PseudoTV_Lists/master/rss.ini'
-    YoutubeChannelURL = 'http://raw.github.com/PseudoTV/PseudoTV_Lists/master/youtube_channels.ini'
-    YoutubePlaylistURL = 'http://raw.github.com/PseudoTV/PseudoTV_Lists/master/youtube_playlists.ini'
-    YoutubeChannelNetworkURL = 'http://raw.github.com/PseudoTV/PseudoTV_Lists/master/youtube_channels_networks.ini'
-    YoutubePlaylistNetworkURL = 'http://raw.github.com/PseudoTV/PseudoTV_Lists/master/youtube_playlists_networks.ini'
+    RSSURL = 'http://raw.github.com/PseudoTV/PseudoTV_Lists/master/rss_feeds.ini'
+    YoutubeChannelURL = 'http://raw.github.com/PseudoTV/PseudoTV_Lists/master/youtube_channel.ini'
+    YoutubePlaylistURL = 'http://raw.github.com/PseudoTV/PseudoTV_Lists/master/youtube_playlist.ini'
+    YoutubeChannelNetworkURL = 'http://raw.github.com/PseudoTV/PseudoTV_Lists/master/youtube_channel_networks.ini'
+    YoutubePlaylistNetworkURL = 'http://raw.github.com/PseudoTV/PseudoTV_Lists/master/youtube_playlist_networks.ini'
     
     if type == 'LiveTV':
         url = LiveURL
@@ -1456,4 +1392,4 @@ def getExternalChannels(type, source='', list='Community', Channels='True'):
                             YT_Type = 2
                         else:
                             YT_Type = 1
-                        getYoutubeVideos('tvshow', 'getExternalChannels', YT_Type, url[n], '', 200, '')
+                        getYoutubeVideos('tvshow', 'getExternalChannels', YT_Type, url[n], '', MEDIA_LIMIT, '')

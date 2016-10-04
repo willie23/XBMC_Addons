@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.pseudo.companion" version="0.0.12" name="PseudoCompanion" provider-name="Lunatixz">
+<addon id="plugin.video.pseudo.companion" version="0.0.13" name="PseudoCompanion" provider-name="Lunatixz">
     <requires>
         <import addon="xbmc.python" version="2.14.0"/>
         <import addon="script.module.buggalo" version="1.1.6"/>
@@ -14,12 +14,12 @@
         <import addon="plugin.video.vimeo" version="4.1.4"/>
     </requires>
     <extension point="xbmc.python.pluginsource" library="default.py">
-    <provides>video</provides>
+        <provides>video</provides>
     </extension>
     <extension point="xbmc.service" library="service.py" start="startup"/>
     <extension point="xbmc.addon.metadata">
         <platform>all</platform>
-        <description>Control PseudoTV Live via Yatse app. Parse Exclusive Content... Extend PseudoTV Lives Functionality.</description>
+        <description>Companion tools for PseudoTV Live, Features include:&#10;&#10;- PseudoTV Live remote via Yatse, Channel tools and utilities.&#10;&#10;- PseudoNetwork content provided Youtube.&#10;&#10;- PseudoLibrary strm generator.&#10;&#10;- Additional features coming soon</description>
         <platform>all</platform>
         <license>GNU GENERAL PUBLIC LICENSE. Version 3, June 2007</license>
         <source>https://github.com/Lunatixz/XBMC_Addons/tree/master/plugin.video.pseudo.companion</source>
