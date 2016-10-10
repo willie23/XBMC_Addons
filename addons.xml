@@ -271,20 +271,45 @@
     </extension>
 </addon>
 
-<addon id="script.module.pylast" version="0.0.1" name="pylast" provider-name="Lunatixz">
+<addon id="script.module.pyhdhr" version="0.0.1" name="pyHDHR" provider-name="Lunatixz">
+    <requires>
+        <import addon="xbmc.python" version="2.14.0" />
+        <import addon="script.module.simplejson" version="3.3.0"/>
+    </requires>
+    <extension library="lib" point="xbmc.python.module" />
+    <extension point="xbmc.addon.metadata">
+        <summary lang="en_US">A Python interface for the HDHomeRun JSON API</summary>
+        <description lang="en_US">A Python interface for the HDHomeRun JSON API</description>
+        <forum>http://forum.kodi.tv</forum>
+        <website>https://www.silicondust.com/forum/viewtopic.php?t=42717</website>
+        <license>MIT</license>
+        <platform>all</platform>
+        <source>https://github.com/jumpmanjay/PyHDHR</source>
+        <news></news>
+		<assets>
+			<icon>icon.png</icon>
+		</assets>
+    </extension>
+</addon>
+
+<addon id="script.module.pylast" version="0.0.2" name="pyLastFM" provider-name="Lunatixz">
     <requires>
         <import addon="xbmc.python" version="2.14.0" />
         <import addon="script.module.six" version="0.0.1" />
     </requires>
     <extension library="lib" point="xbmc.python.module" />
     <extension point="xbmc.addon.metadata">
-        <summary lang="en_US"></summary>
+        <summary lang="en_US">A Python interface to Last.fm and Libre.fm</summary>
         <description lang="en_US">A Python interface to Last.fm and Libre.fm</description>
         <forum></forum>
         <website>https://pypi.python.org/pypi/pylast</website>
-        <license>BSD</license>
+        <license>Apache2</license>
         <platform>all</platform>
         <source>https://github.com/pylast/pylast</source>
+        <news></news>
+		<assets>
+			<icon>icon.png</icon>
+		</assets>
     </extension>
 </addon>
 
