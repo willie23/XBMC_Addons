@@ -17,15 +17,11 @@
 # along with iSpot.  If not, see <http://www.gnu.org/licenses/>.
 
 # -*- coding: utf-8 -*-
-import os, re, sys, time, zipfile, requests, random, traceback
-import urllib, urllib2,cookielib, base64, fileinput, shutil, socket, httplib, urlparse, HTMLParser
+import os, re, sys, time, datetime, requests, string
+import urllib, urllib2, base64, HTMLParser
 import xbmc, xbmcgui, xbmcplugin, xbmcvfs, xbmcaddon
-import time, _strptime, string, datetime, ftplib, hashlib, smtplib, feedparser, imp, operator
          
 from pyfscache import *
-from xml.etree import ElementTree as ET
-from xml.dom.minidom import parse, parseString
-from datetime import timedelta
 from BeautifulSoup import BeautifulSoup
       
 if sys.version_info < (2, 7):
@@ -46,10 +42,8 @@ ICON = os.path.join(ADDON_PATH, 'icon.png')
 FANART = os.path.join(ADDON_PATH, 'fanart.jpg')
 DEBUG = REAL_SETTINGS.getSetting('Enable_Debugging') == 'true'
 WEB = int(REAL_SETTINGS.getSetting('Preferred_WEB'))
-    
-# pyfscache globals
-from pyfscache import *
-cache_daily = FSCache(REQUESTS_LOC, days=1, hours=0, minutes=0)
+cache = FSCache(REQUESTS_LOC, days=7, hours=0, minutes=0)
+baseurl='http://www.ispot.tv/'
 
 def log(msg, level = xbmc.LOGDEBUG):
     if DEBUG == True:
@@ -61,29 +55,7 @@ def uni(string):
            string = string.encode('utf-8', 'ignore' )
     return string
 
-def show_busy_dialog():
-    xbmc.executebuiltin('ActivateWindow(busydialog)')
-
-def hide_busy_dialog():
-    xbmc.executebuiltin('Dialog.Close(busydialog)')
-    while xbmc.getCondVisibility('Window.IsActive(busydialog)'):
-        xbmc.sleep(100)
-        
-def getTitleYear(showtitle, showyear=0):  
-    # extract year from showtitle, merge then return
-    try:
-        labelshowtitle = re.compile('(.+?) [(](\d{4})[)]$').findall(showtitle)
-        title = labelshowtitle[0][0]
-        year = int(labelshowtitle[0][1])
-    except Exception,e:
-        year = showyear
-        title = showtitle
-    log("getTitleYear, return " + str(year) +', '+ title +', '+ showtitle) 
-    return year, title, showtitle
-   
 def open_url(url, userpass=None):
-    log("open_url")
-    page = ''
     try:
         request = urllib2.Request(url)
         if userpass:
@@ -96,23 +68,16 @@ def open_url(url, userpass=None):
         page.close
         return page
     except urllib2.HTTPError, e:
-        return page
+        log("open_url failed " + str(e))
         
-@cache_daily        
-def read_url_cached(url, userpass=False, return_type='read'):
+@cache        
+def read_url_cached(url, userpass=False):
     log("read_url_cached")
-    try:
-        if return_type == 'readlines':
-            response = open_url(url, userpass).readlines()
-        else:
-            response = open_url(url, userpass).read()
-        return response
-    except Exception,e:
-        pass
+    return open_url(url, userpass).read()
 
 def fillMenu():
-    addDir('Featured','http://www.ispot.tv/browse',1)
-    addDir('Events','http://www.ispot.tv/events',1)
+    addDir('Browse Commercials','http://www.ispot.tv/browse',1)
+    addDir('Event Commercials','http://www.ispot.tv/events',1)
     
 def parseYoutubeDuration(duration):
     duration = 'P'+duration
@@ -126,11 +91,10 @@ def parseYoutubeDuration(duration):
     for a, x in duration_dict.iteritems():
         if x is not None:
             converted_dict[a] = int(NON_DECIMAL.sub('', x))
-    x = time.strptime(str(timedelta(**converted_dict)).split(',')[0],'%H:%M:%S')
+    x = time.strptime(str(datetime.timedelta(**converted_dict)).split(',')[0],'%H:%M:%S')
     return int(datetime.timedelta(hours=x.tm_hour,minutes=x.tm_min,seconds=x.tm_sec).total_seconds())
 
 def PageParse(url):
-    baseurl='http://www.ispot.tv/'
     link = read_url_cached(url)
     soup = BeautifulSoup(link)
     if url.startswith('http://www.ispot.tv/events'):
@@ -139,7 +103,7 @@ def PageParse(url):
         catlink = re.compile('<div class="list-grid__item"><a href="/(.+?)">(.+?)</a></div>').findall(link)
     
     for i in range(len(catlink)):
-        if not catlink[i][1].startswith(('<','&','Request Trial','Terms &')):
+        if not catlink[i][1].startswith(('<','&','Request Trial','Terms &','Most Engaging Ads','Top Spenders')):
             addDir(catlink[i][1],baseurl + catlink[i][0],1)
 
     # if url.startswith('http://www.ispot.tv/event'):
@@ -153,12 +117,12 @@ def PageParse(url):
             link = link.split('"')[0]
             link = link.split('"')[0]
             link = baseurl + 'ad/' + link
-            #VideoParse
             link = read_url_cached(link)
             if len(link) == 0:
                 link = baseurl + 'events/' + link
                 link = read_url_cached(link)
             soup = BeautifulSoup(link)
+            
             try:
                 if WEB == 1:
                     url = ((re.compile("data-webm="'(.+?)"').findall(link))[0]).replace('https','http').replace('"','')
@@ -166,57 +130,59 @@ def PageParse(url):
                     url = ((re.compile("data-mp4="'(.+?)"').findall(link))[0]).replace('https','http').replace('"','')
             except:
                 url = (re.compile("file: '(.+?)'").findall(link))
+                
             title = (re.compile('<title>(.+?)</title>').findall(link))[0]
             description = HTMLParser.HTMLParser().unescape((re.compile('<meta name="description" content="(.+?)">').findall(link))[0])
             thumburl = ((re.compile('<meta property="og:image" content="(.+?)" />').findall(link))[0])
+            ##adDict = (re.compile("data-ad='(.+?)}'").findall(link))[0] + '}'
+            
             try:
                 duration = parseYoutubeDuration((re.compile('<meta itemprop="duration" content="(.+?)" />').findall(link))[0])
-            except:
+            except:                
                 duration = 30
-            ##adDict = (re.compile("data-ad='(.+?)}'").findall(link))[0] + '}'
 
-            # setup infoList
             infoList = {}
             infoList['mediatype']     = 'video'
             infoList['Duration']      = int(duration)
             infoList['Title']         = uni(title)
             infoList['Plot']          = uni(description)
-                    
-            # setup infoArt
+
             infoArt = {}
             infoArt['thumb']        = thumburl
             infoArt['poster']       = thumburl
             infoArt['fanart']       = FANART
             infoArt['landscape']    = FANART
+            
+            # Avoid duplicates
             if title not in titleLST:
                 titleLST.append(title)
-                addLink(title,url,infoList,infoArt)
-        except:
-            pass
-            
+                addLink(title,url,infoList,infoArt,len(catlink))
+        except Exception,e:
+            log('PageParse, failed ' + str(e))
+
+def get_params():
+    param=[]
+    paramstring=sys.argv[2]
+    if len(paramstring)>=2:
+        params=sys.argv[2]
+        cleanedparams=params.replace('?','')
+        if (params[len(params)-1]=='/'):
+            params=params[0:len(params)-2]
+        pairsofparams=cleanedparams.split('&')
+        param={}
+        for i in range(len(pairsofparams)):
+            splitparams={}
+            splitparams=pairsofparams[i].split('=')
+            if (len(splitparams))==2:
+                param[splitparams[0]]=splitparams[1]             
+    return param
+
 def getVideo(url):
     xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, xbmcgui.ListItem(path=url))
     
-def get_params():
-        param=[]
-        paramstring=sys.argv[2]
-        if len(paramstring)>=2:
-            params=sys.argv[2]
-            cleanedparams=params.replace('?','')
-            if (params[len(params)-1]=='/'):
-                params=params[0:len(params)-2]
-            pairsofparams=cleanedparams.split('&')
-            param={}
-            for i in range(len(pairsofparams)):
-                splitparams={}
-                splitparams=pairsofparams[i].split('=')
-                if (len(splitparams))==2:
-                    param[splitparams[0]]=splitparams[1]             
-        return param
-            
-def addLink(name,url,infoList=False,infoArt=False):
+def addLink(name,url,infoList=False,infoArt=False,total=0):
     log('addLink')
-    # u=sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(2)+"&name="+urllib.quote_plus(name)
+    u=sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(2)+"&name="+urllib.quote_plus(name)
     liz=xbmcgui.ListItem(name)
     liz.setProperty('IsPlayable', 'true')
     if infoList == False:
@@ -227,10 +193,12 @@ def addLink(name,url,infoList=False,infoArt=False):
         liz.setArt({'thumb': ICON, 'fanart': FANART})
     else:
         liz.setArt(infoArt)
-    xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=url,listitem=liz)
+    liz.addStreamInfo('video', {})
+    xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,totalItems=total)
         
 def addDir(name,url,mode,infoList=False,infoArt=False):
     log('addDir')
+    name = '- %s'%name
     u=sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.quote_plus(name)
     liz=xbmcgui.ListItem(name)
     liz.setProperty('IsPlayable', 'false')
@@ -242,34 +210,31 @@ def addDir(name,url,mode,infoList=False,infoArt=False):
         liz.setArt({'thumb': ICON, 'fanart': FANART})
     else:
         liz.setArt(infoArt)
+    liz.addStreamInfo('video', {})
     xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True)
 
 params=get_params()
-url=None
-name=None
-mode=None
-
 try:
     url=urllib.unquote_plus(params["url"])
 except:
-        pass
+    url=None
 try:
     name=urllib.unquote_plus(params["name"])
 except:
-        pass
+    name=None
 try:
     mode=int(params["mode"])
 except:
-        pass
+    mode=None
         
 log("Mode: "+str(mode))
-log("URL:  "+str(url))
+log("URL : "+str(url))
 log("Name: "+str(name))
 
-if mode==None: fillMenu()
+if mode==None: PageParse('http://www.ispot.tv/browse')#fillMenu()
 elif mode == 1: PageParse(url)
 elif mode == 2: getVideo(url)
 
 xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_NONE )
-xbmcplugin.setContent(int(sys.argv[1]), 'movies')
+xbmcplugin.setContent(int(sys.argv[1]), 'video')
 xbmcplugin.endOfDirectory(int(sys.argv[1]),cacheToDisc=True) # End List
