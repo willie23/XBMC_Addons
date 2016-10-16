@@ -65,7 +65,6 @@ def open_url(url, userpass=None):
         else:
             request.add_header('User-Agent','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11')
         page = urllib2.urlopen(request)
-        page.close
         return page
     except urllib2.HTTPError, e:
         log("open_url failed " + str(e))

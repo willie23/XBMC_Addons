@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<settings>
-    <setting id="Enable_Debugging" type="bool" label="Enable Debugging" default="false" />
-    <setting id="Enable_Metahandler" type="bool" label="Enable Metahandler" default="true" />
-    <setting id="Preferred_Resolution" label="Preferred Resolution" type="enum" values="1080p|720p|480p" default="1"/>
-    <setting id="YT_API_KEY" visible="false" option="hidden" type="text" default="AIzaSyAnwpqhAmdRShnEHnxLiOUjymHlG4ecE7c"/>
-    <setting id="TMDB_API_KEY" visible="false" option="hidden" type="text" default="9c47d05a3f5f3a00104f6586412306af"/>
-</settings>
